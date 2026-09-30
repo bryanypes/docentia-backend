@@ -2,7 +2,6 @@ package com.uniautonoma.docentia.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.empty;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -51,7 +50,9 @@ class ExpedientePropioTest extends PruebaIntegracion {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.docente.nombreCompleto").value("Julian Hoyos"))
             .andExpect(jsonPath("$.periodo.nombre").value("2026-2"))
-            .andExpect(jsonPath("$.fuentesPendientes", contains("ESTUDIANTES")))
+            .andExpect(jsonPath("$.promedio.estado").value("INCOMPLETO"))
+            .andExpect(jsonPath("$.promedio.valor").doesNotExist())
+            .andExpect(jsonPath("$.promedio.fuentesPendientes", contains("ESTUDIANTES")))
             .andReturn()
             .getResponse()
             .getContentAsString();
@@ -79,12 +80,12 @@ class ExpedientePropioTest extends PruebaIntegracion {
   }
 
   @Test
-  void sinPeriodoActivoElExpedienteLlegaSinPeriodoNiPendientes() throws Exception {
+  void sinPeriodoActivoElExpedienteLlegaSinPeriodoNiPromedio() throws Exception {
     mockMvc
         .perform(get("/expedientes/propio").with(como(docente)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.periodo").doesNotExist())
-        .andExpect(jsonPath("$.fuentesPendientes", empty()));
+        .andExpect(jsonPath("$.promedio").doesNotExist());
   }
 
   @Test
