@@ -9,6 +9,7 @@ import com.uniautonoma.docentia.dto.NotaFuenteResponse;
 import com.uniautonoma.docentia.dto.PeriodoResumenResponse;
 import com.uniautonoma.docentia.dto.PromedioHistoricoResponse;
 import com.uniautonoma.docentia.dto.PromedioPonderadoResponse;
+import com.uniautonoma.docentia.dto.ResultadoDimensionResponse;
 import com.uniautonoma.docentia.entity.Dimension;
 import com.uniautonoma.docentia.entity.EstadoCompromiso;
 import com.uniautonoma.docentia.entity.FuenteEvaluacion;
@@ -85,7 +86,8 @@ public class ExpedienteService {
    * Obtiene el expediente del docente autenticado, sin las notas individuales de cada fuente.
    *
    * @param sesion docente que consulta su propia información
-   * @return datos del docente, periodo activo y su promedio ponderado o el aviso de incompleto
+   * @return promedio ponderado o aviso de incompleto, resultado por dimensión ya ponderado y
+   *     compromisos vigentes
    * @throws RecursoNoEncontradoException si el usuario de la sesión ya no es un docente activo
    */
   public ExpedientePropioResponse obtenerExpedientePropio(UsuarioSesion sesion) {
@@ -94,13 +96,25 @@ public class ExpedienteService {
             .findByIdUsuarioAndRolAndEsActivoTrue(sesion.idUsuario(), Rol.DOCENTE)
             .orElseThrow(() -> new RecursoNoEncontradoException("Docente no encontrado"));
     Optional<PeriodoAcademico> periodoActivo = periodoService.buscarPeriodoActivo();
+    Optional<EvaluacionPeriodo> evaluacion =
+        periodoActivo.map(
+            periodo -> promedioService.cargarEvaluacion(docente.getIdUsuario(), periodo));
     return new ExpedientePropioResponse(
         DocenteResponse.desde(docente),
         periodoActivo.map(PeriodoResumenResponse::desde).orElse(null),
-        periodoActivo
-            .map(
-                periodo -> promedioService.calcularPromedioDocente(docente.getIdUsuario(), periodo))
-            .orElse(null));
+        evaluacion.map(promedioService::calcularPromedio).orElse(null),
+        evaluacion.map(this::listarResultadosPorDimension).orElse(List.of()),
+        listarCompromisosVigentes(docente.getIdUsuario()));
+  }
+
+  private List<ResultadoDimensionResponse> listarResultadosPorDimension(
+      EvaluacionPeriodo evaluacion) {
+    return Arrays.stream(Dimension.values())
+        .map(
+            dimension ->
+                ResultadoDimensionResponse.desde(
+                    dimension, promedioService.calcularResultadoDimension(evaluacion, dimension)))
+        .toList();
   }
 
   private List<NotaFuenteResponse> listarNotasPorFuente(EvaluacionPeriodo evaluacion) {
