@@ -1,14 +1,21 @@
 package com.uniautonoma.docentia.config;
 
+import com.uniautonoma.docentia.entity.Calificacion;
+import com.uniautonoma.docentia.entity.Compromiso;
 import com.uniautonoma.docentia.entity.Facultad;
+import com.uniautonoma.docentia.entity.FuenteEvaluacion;
+import com.uniautonoma.docentia.entity.NotasAspectos;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.Programa;
 import com.uniautonoma.docentia.entity.TipoEtapa;
 import com.uniautonoma.docentia.entity.Usuario;
+import com.uniautonoma.docentia.repository.CalificacionRepository;
+import com.uniautonoma.docentia.repository.CompromisoRepository;
 import com.uniautonoma.docentia.repository.FacultadRepository;
 import com.uniautonoma.docentia.repository.PeriodoAcademicoRepository;
 import com.uniautonoma.docentia.repository.ProgramaRepository;
 import com.uniautonoma.docentia.repository.UsuarioRepository;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -31,6 +38,8 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
   private final FacultadRepository facultadRepository;
   private final ProgramaRepository programaRepository;
   private final PeriodoAcademicoRepository periodoRepository;
+  private final CalificacionRepository calificacionRepository;
+  private final CompromisoRepository compromisoRepository;
   private final PasswordEncoder passwordEncoder;
   private final String contrasenaInicial;
 
@@ -39,12 +48,16 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
       FacultadRepository facultadRepository,
       ProgramaRepository programaRepository,
       PeriodoAcademicoRepository periodoRepository,
+      CalificacionRepository calificacionRepository,
+      CompromisoRepository compromisoRepository,
       PasswordEncoder passwordEncoder,
       @Value("${docentia.desarrollo.contrasena-inicial}") String contrasenaInicial) {
     this.usuarioRepository = usuarioRepository;
     this.facultadRepository = facultadRepository;
     this.programaRepository = programaRepository;
     this.periodoRepository = periodoRepository;
+    this.calificacionRepository = calificacionRepository;
+    this.compromisoRepository = compromisoRepository;
     this.passwordEncoder = passwordEncoder;
     this.contrasenaInicial = contrasenaInicial;
   }
@@ -65,30 +78,61 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
         programaRepository.save(new Programa("Ingeniería Electrónica", ingenieria));
     Programa programaDerecho = programaRepository.save(new Programa("Derecho", derecho));
 
-    usuarioRepository.save(
-        Usuario.crearVicerrector("Elena Muñoz Cerón", "vicerrectoria" + DOMINIO_CORREO, hash));
-    usuarioRepository.save(
-        Usuario.crearCoordinador(
-            "Andrés Felipe Ordóñez", "coordinacion.ingenieria" + DOMINIO_CORREO, hash, ingenieria));
+    Usuario vicerrector =
+        usuarioRepository.save(
+            Usuario.crearVicerrector("Elena Muñoz Cerón", "vicerrectoria" + DOMINIO_CORREO, hash));
+    Usuario coordinadorIngenieria =
+        usuarioRepository.save(
+            Usuario.crearCoordinador(
+                "Andrés Felipe Ordóñez",
+                "coordinacion.ingenieria" + DOMINIO_CORREO,
+                hash,
+                ingenieria));
     usuarioRepository.save(
         Usuario.crearCoordinador(
             "Paola Andrea Sarria", "coordinacion.derecho" + DOMINIO_CORREO, hash, derecho));
 
-    crearDocente("Julián Camilo Hoyos", "julian.hoyos", hash, software);
-    crearDocente("Diana Marcela Astaiza", "diana.astaiza", hash, software);
+    Usuario julian = crearDocente("Julián Camilo Hoyos", "julian.hoyos", hash, software);
+    Usuario diana = crearDocente("Diana Marcela Astaiza", "diana.astaiza", hash, software);
     crearDocente("Óscar Iván Chantre", "oscar.chantre", hash, electronica);
     crearDocente("Luisa Fernanda Mosquera", "luisa.mosquera", hash, programaDerecho);
     crearDocente("Héctor Fabio Quilindo", "hector.quilindo", hash, programaDerecho);
 
-    crearPeriodoActivo();
+    PeriodoAcademico periodoAnterior =
+        periodoRepository.save(
+            new PeriodoAcademico("2026-1", LocalDate.of(2026, 2, 2), LocalDate.of(2026, 6, 6)));
+    PeriodoAcademico periodoActivo = crearPeriodoActivo();
+
+    // El periodo anterior queda con las tres fuentes para que el histórico tenga un promedio
+    // completo; en el activo no hay nota de estudiantes, igual que pasará hasta que se importe.
+    calificar(julian, periodoAnterior, FuenteEvaluacion.ESTUDIANTES, null, "4.2");
+    calificar(julian, periodoAnterior, FuenteEvaluacion.COORDINACION, coordinadorIngenieria, "3.8");
+    calificar(julian, periodoAnterior, FuenteEvaluacion.VICERRECTORIA, vicerrector, "4.0");
+    calificar(julian, periodoActivo, FuenteEvaluacion.COORDINACION, coordinadorIngenieria, "4.3");
+    calificar(julian, periodoActivo, FuenteEvaluacion.VICERRECTORIA, vicerrector, "4.0");
+    calificar(diana, periodoActivo, FuenteEvaluacion.COORDINACION, coordinadorIngenieria, "4.6");
+
+    compromisoRepository.save(
+        new Compromiso(
+            julian,
+            periodoAnterior,
+            "Publicar las notas parciales dentro de los ocho días siguientes a cada corte",
+            LocalDate.of(2026, 11, 13)));
+    compromisoRepository.save(
+        new Compromiso(
+            julian,
+            periodoAnterior,
+            "Actualizar el microcurrículo de Arquitectura de Software",
+            LocalDate.of(2026, 12, 1)));
   }
 
-  private void crearDocente(String nombre, String usuarioCorreo, String hash, Programa programa) {
-    usuarioRepository.save(
+  private Usuario crearDocente(
+      String nombre, String usuarioCorreo, String hash, Programa programa) {
+    return usuarioRepository.save(
         Usuario.crearDocente(nombre, usuarioCorreo + DOMINIO_CORREO, hash, programa));
   }
 
-  private void crearPeriodoActivo() {
+  private PeriodoAcademico crearPeriodoActivo() {
     PeriodoAcademico periodo =
         new PeriodoAcademico("2026-2", LocalDate.of(2026, 8, 3), LocalDate.of(2026, 12, 5));
     periodo.programarEtapa(
@@ -102,6 +146,18 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
     periodo.programarEtapa(
         TipoEtapa.RETROALIMENTACION, LocalDate.of(2026, 11, 23), LocalDate.of(2026, 12, 4));
     periodo.setEsActivo(true);
-    periodoRepository.save(periodo);
+    return periodoRepository.save(periodo);
+  }
+
+  private void calificar(
+      Usuario docente,
+      PeriodoAcademico periodo,
+      FuenteEvaluacion fuente,
+      Usuario evaluador,
+      String nota) {
+    BigDecimal valor = new BigDecimal(nota);
+    Calificacion calificacion = new Calificacion(docente, periodo, fuente);
+    calificacion.registrar(new NotasAspectos(valor, valor, valor, valor, valor), null, evaluador);
+    calificacionRepository.save(calificacion);
   }
 }
