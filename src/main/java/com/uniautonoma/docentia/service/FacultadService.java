@@ -7,6 +7,7 @@ import com.uniautonoma.docentia.exception.RecursoNoEncontradoException;
 import com.uniautonoma.docentia.exception.ReglaNegocioException;
 import com.uniautonoma.docentia.repository.FacultadRepository;
 import com.uniautonoma.docentia.repository.ProgramaRepository;
+import com.uniautonoma.docentia.security.UsuarioSesion;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public class FacultadService {
+
+  private static final String FACULTAD_NO_ENCONTRADA = "Facultad no encontrada";
 
   private final FacultadRepository facultadRepository;
   private final ProgramaRepository programaRepository;
@@ -26,26 +29,32 @@ public class FacultadService {
   }
 
   /**
-   * Lista las facultades vigentes.
+   * Lista las facultades vigentes que el usuario alcanza a ver.
    *
-   * @return facultades activas ordenadas por nombre
+   * @param sesion usuario que consulta
+   * @return facultades activas ordenadas por nombre; para un coordinador, solo la suya
    */
   @Transactional(readOnly = true)
-  public List<FacultadResponse> listarFacultades() {
+  public List<FacultadResponse> listarFacultades(UsuarioSesion sesion) {
     return facultadRepository.findByEsActivaTrueOrderByNombreAsc().stream()
+        .filter(facultad -> sesion.tieneAlcanceSobreFacultad(facultad.getIdFacultad()))
         .map(FacultadResponse::desde)
         .toList();
   }
 
   /**
-   * Obtiene una facultad vigente.
+   * Obtiene una facultad vigente dentro del alcance del usuario.
    *
    * @param idFacultad identificador de la facultad
+   * @param sesion usuario que consulta
    * @return la facultad solicitada
-   * @throws RecursoNoEncontradoException si no existe o fue dada de baja
+   * @throws RecursoNoEncontradoException si no existe, fue dada de baja o está fuera del alcance
    */
   @Transactional(readOnly = true)
-  public FacultadResponse obtenerFacultad(Long idFacultad) {
+  public FacultadResponse obtenerFacultad(Long idFacultad, UsuarioSesion sesion) {
+    if (!sesion.tieneAlcanceSobreFacultad(idFacultad)) {
+      throw new RecursoNoEncontradoException(FACULTAD_NO_ENCONTRADA);
+    }
     return FacultadResponse.desde(buscarFacultadActiva(idFacultad));
   }
 
@@ -107,7 +116,7 @@ public class FacultadService {
   public Facultad buscarFacultadActiva(Long idFacultad) {
     return facultadRepository
         .findByIdFacultadAndEsActivaTrue(idFacultad)
-        .orElseThrow(() -> new RecursoNoEncontradoException("Facultad no encontrada"));
+        .orElseThrow(() -> new RecursoNoEncontradoException(FACULTAD_NO_ENCONTRADA));
   }
 
   private void validarNombreDisponible(String nombre, Long idFacultadActual) {

@@ -44,6 +44,17 @@ public record UsuarioSesion(
         this, null, List.of(new SimpleGrantedAuthority("ROLE_" + rol.name())));
   }
 
+  /**
+   * El vicerrector alcanza todas las facultades y el coordinador solo la suya. El docente no
+   * consulta información de facultades, así que para él siempre es falso.
+   */
+  public boolean tieneAlcanceSobreFacultad(Long idFacultadConsultada) {
+    if (esVicerrector()) {
+      return true;
+    }
+    return esCoordinador() && idFacultad.equals(idFacultadConsultada);
+  }
+
   public boolean esCoordinador() {
     return rol == Rol.COORDINADOR;
   }

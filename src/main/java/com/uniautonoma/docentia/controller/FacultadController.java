@@ -2,11 +2,13 @@ package com.uniautonoma.docentia.controller;
 
 import com.uniautonoma.docentia.dto.FacultadRequest;
 import com.uniautonoma.docentia.dto.FacultadResponse;
+import com.uniautonoma.docentia.security.UsuarioSesion;
 import com.uniautonoma.docentia.service.FacultadService;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,24 +32,27 @@ public class FacultadController {
   }
 
   /**
-   * Lista las facultades vigentes.
+   * Lista las facultades vigentes dentro del alcance del usuario.
    *
+   * @param sesion usuario autenticado
    * @return facultades activas
    */
   @GetMapping
-  public List<FacultadResponse> listarFacultades() {
-    return facultadService.listarFacultades();
+  public List<FacultadResponse> listarFacultades(@AuthenticationPrincipal UsuarioSesion sesion) {
+    return facultadService.listarFacultades(sesion);
   }
 
   /**
    * Consulta una facultad.
    *
    * @param idFacultad identificador de la facultad
+   * @param sesion usuario autenticado
    * @return la facultad solicitada
    */
   @GetMapping("/{idFacultad}")
-  public FacultadResponse obtenerFacultad(@PathVariable Long idFacultad) {
-    return facultadService.obtenerFacultad(idFacultad);
+  public FacultadResponse obtenerFacultad(
+      @PathVariable Long idFacultad, @AuthenticationPrincipal UsuarioSesion sesion) {
+    return facultadService.obtenerFacultad(idFacultad, sesion);
   }
 
   /**
