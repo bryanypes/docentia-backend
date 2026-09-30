@@ -1,11 +1,13 @@
 package com.uniautonoma.docentia.controller;
 
+import com.uniautonoma.docentia.dto.ExpedienteDocenteResponse;
 import com.uniautonoma.docentia.dto.ExpedientePropioResponse;
 import com.uniautonoma.docentia.security.UsuarioSesion;
 import com.uniautonoma.docentia.service.ExpedienteService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -32,5 +34,19 @@ public class ExpedienteController {
   public ExpedientePropioResponse obtenerExpedientePropio(
       @AuthenticationPrincipal UsuarioSesion sesion) {
     return expedienteService.obtenerExpedientePropio(sesion);
+  }
+
+  /**
+   * Devuelve el expediente completo de un docente, con las notas de cada fuente.
+   *
+   * @param idDocente identificador del docente
+   * @param sesion coordinador o vicerrector autenticado
+   * @return notas por fuente, resultado por dimensión, histórico y compromisos vigentes
+   */
+  @GetMapping("/{idDocente}")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
+  public ExpedienteDocenteResponse obtenerExpedienteDocente(
+      @PathVariable Long idDocente, @AuthenticationPrincipal UsuarioSesion sesion) {
+    return expedienteService.obtenerExpedienteDocente(idDocente, sesion);
   }
 }
