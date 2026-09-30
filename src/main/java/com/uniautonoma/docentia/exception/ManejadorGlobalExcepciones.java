@@ -26,9 +26,15 @@ public class ManejadorGlobalExcepciones {
     return new ErrorResponse(excepcion.getMessage());
   }
 
+  @ExceptionHandler(DatosInvalidosException.class)
+  @ResponseStatus(HttpStatus.BAD_REQUEST)
+  public ErrorResponse manejarDatosInvalidos(DatosInvalidosException excepcion) {
+    return new ErrorResponse(excepcion.getMessage());
+  }
+
   @ExceptionHandler(MethodArgumentNotValidException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
-  public ErrorResponse manejarDatosInvalidos(MethodArgumentNotValidException excepcion) {
+  public ErrorResponse manejarCamposInvalidos(MethodArgumentNotValidException excepcion) {
     Map<String, String> errores = new LinkedHashMap<>();
     for (FieldError error : excepcion.getBindingResult().getFieldErrors()) {
       errores.putIfAbsent(error.getField(), error.getDefaultMessage());
