@@ -1,0 +1,19 @@
+spring:
+  application:
+    name: docentia
+  datasource:
+    url: ${DOCENTIA_DB_URL:jdbc:postgresql://localhost:5432/docentia}
+    username: ${DOCENTIA_DB_USUARIO:docentia}
+    password: ${DOCENTIA_DB_CONTRASENA:docentia}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+server:
+  port: 8080
+  servlet:
+    context-path: /api
