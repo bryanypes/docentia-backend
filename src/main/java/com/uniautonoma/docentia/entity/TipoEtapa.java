@@ -1,0 +1,8 @@
+package com.uniautonoma.docentia.entity;
+
+public enum TipoEtapa {
+  EVALUACION_ESTUDIANTES,
+  CALIFICACION_COORDINACION,
+  CALIFICACION_VICERRECTORIA,
+  RETROALIMENTACION
+}
