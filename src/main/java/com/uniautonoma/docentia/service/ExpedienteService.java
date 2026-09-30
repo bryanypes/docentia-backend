@@ -3,19 +3,13 @@ package com.uniautonoma.docentia.service;
 import com.uniautonoma.docentia.dto.DocenteResponse;
 import com.uniautonoma.docentia.dto.ExpedientePropioResponse;
 import com.uniautonoma.docentia.dto.PeriodoResumenResponse;
-import com.uniautonoma.docentia.entity.Calificacion;
-import com.uniautonoma.docentia.entity.FuenteEvaluacion;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.Rol;
 import com.uniautonoma.docentia.entity.Usuario;
 import com.uniautonoma.docentia.exception.RecursoNoEncontradoException;
-import com.uniautonoma.docentia.repository.CalificacionRepository;
 import com.uniautonoma.docentia.repository.UsuarioRepository;
 import com.uniautonoma.docentia.security.UsuarioSesion;
-import java.util.EnumSet;
-import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,23 +19,23 @@ import org.springframework.transaction.annotation.Transactional;
 public class ExpedienteService {
 
   private final UsuarioRepository usuarioRepository;
-  private final CalificacionRepository calificacionRepository;
   private final PeriodoAcademicoService periodoService;
+  private final PromedioService promedioService;
 
   public ExpedienteService(
       UsuarioRepository usuarioRepository,
-      CalificacionRepository calificacionRepository,
-      PeriodoAcademicoService periodoService) {
+      PeriodoAcademicoService periodoService,
+      PromedioService promedioService) {
     this.usuarioRepository = usuarioRepository;
-    this.calificacionRepository = calificacionRepository;
     this.periodoService = periodoService;
+    this.promedioService = promedioService;
   }
 
   /**
    * Obtiene el expediente del docente autenticado, sin las notas individuales de cada fuente.
    *
    * @param sesion docente que consulta su propia información
-   * @return datos del docente, periodo activo y fuentes que aún no lo han calificado
+   * @return datos del docente, periodo activo y su promedio ponderado o el aviso de incompleto
    * @throws RecursoNoEncontradoException si el usuario de la sesión ya no es un docente activo
    */
   public ExpedientePropioResponse obtenerExpedientePropio(UsuarioSesion sesion) {
@@ -53,17 +47,9 @@ public class ExpedienteService {
     return new ExpedientePropioResponse(
         DocenteResponse.desde(docente),
         periodoActivo.map(PeriodoResumenResponse::desde).orElse(null),
-        periodoActivo.map(periodo -> buscarFuentesPendientes(docente, periodo)).orElse(List.of()));
-  }
-
-  private List<FuenteEvaluacion> buscarFuentesPendientes(
-      Usuario docente, PeriodoAcademico periodo) {
-    Set<FuenteEvaluacion> pendientes = EnumSet.allOf(FuenteEvaluacion.class);
-    calificacionRepository
-        .findByDocenteIdUsuarioAndPeriodoIdPeriodo(docente.getIdUsuario(), periodo.getIdPeriodo())
-        .stream()
-        .map(Calificacion::getFuente)
-        .forEach(pendientes::remove);
-    return List.copyOf(pendientes);
+        periodoActivo
+            .map(
+                periodo -> promedioService.calcularPromedioDocente(docente.getIdUsuario(), periodo))
+            .orElse(null));
   }
 }
