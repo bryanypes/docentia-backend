@@ -11,6 +11,7 @@ import com.uniautonoma.docentia.exception.ReglaNegocioException;
 import com.uniautonoma.docentia.repository.PeriodoAcademicoRepository;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -62,6 +63,31 @@ public class PeriodoAcademicoService {
         .findByEsActivoTrue()
         .map(PeriodoAcademicoResponse::desde)
         .orElseThrow(() -> new RecursoNoEncontradoException("No hay un periodo académico activo"));
+  }
+
+  /**
+   * Busca la entidad del periodo activo.
+   *
+   * @return el periodo activo, o vacío si no hay ninguno
+   */
+  @Transactional(readOnly = true)
+  public Optional<PeriodoAcademico> buscarPeriodoActivo() {
+    return periodoRepository.findByEsActivoTrue();
+  }
+
+  /**
+   * Obtiene el periodo activo para una operación que no puede hacerse sin él.
+   *
+   * @return el periodo activo
+   * @throws ReglaNegocioException si no hay un periodo activo
+   */
+  @Transactional(readOnly = true)
+  public PeriodoAcademico exigirPeriodoActivo() {
+    return buscarPeriodoActivo()
+        .orElseThrow(
+            () ->
+                new ReglaNegocioException(
+                    "No hay un periodo académico activo; la vicerrectoría debe activar uno"));
   }
 
   /**
