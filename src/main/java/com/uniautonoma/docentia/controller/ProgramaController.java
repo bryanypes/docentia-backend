@@ -2,11 +2,13 @@ package com.uniautonoma.docentia.controller;
 
 import com.uniautonoma.docentia.dto.ProgramaRequest;
 import com.uniautonoma.docentia.dto.ProgramaResponse;
+import com.uniautonoma.docentia.security.UsuarioSesion;
 import com.uniautonoma.docentia.service.ProgramaService;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -31,25 +33,30 @@ public class ProgramaController {
   }
 
   /**
-   * Lista los programas vigentes.
+   * Lista los programas vigentes dentro del alcance del usuario.
    *
    * @param idFacultad filtro opcional por facultad
+   * @param sesion usuario autenticado
    * @return programas activos
    */
   @GetMapping
-  public List<ProgramaResponse> listarProgramas(@RequestParam(required = false) Long idFacultad) {
-    return programaService.listarProgramas(idFacultad);
+  public List<ProgramaResponse> listarProgramas(
+      @RequestParam(required = false) Long idFacultad,
+      @AuthenticationPrincipal UsuarioSesion sesion) {
+    return programaService.listarProgramas(idFacultad, sesion);
   }
 
   /**
    * Consulta un programa.
    *
    * @param idPrograma identificador del programa
+   * @param sesion usuario autenticado
    * @return el programa solicitado
    */
   @GetMapping("/{idPrograma}")
-  public ProgramaResponse obtenerPrograma(@PathVariable Long idPrograma) {
-    return programaService.obtenerPrograma(idPrograma);
+  public ProgramaResponse obtenerPrograma(
+      @PathVariable Long idPrograma, @AuthenticationPrincipal UsuarioSesion sesion) {
+    return programaService.obtenerPrograma(idPrograma, sesion);
   }
 
   /**

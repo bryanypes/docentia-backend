@@ -7,6 +7,7 @@ import com.uniautonoma.docentia.entity.Programa;
 import com.uniautonoma.docentia.exception.RecursoNoEncontradoException;
 import com.uniautonoma.docentia.exception.ReglaNegocioException;
 import com.uniautonoma.docentia.repository.ProgramaRepository;
+import com.uniautonoma.docentia.security.UsuarioSesion;
 import java.util.List;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,6 +16,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public class ProgramaService {
+
+  private static final String PROGRAMA_NO_ENCONTRADO = "Programa no encontrado";
 
   private final ProgramaRepository programaRepository;
   private final FacultadService facultadService;
@@ -25,31 +28,39 @@ public class ProgramaService {
   }
 
   /**
-   * Lista los programas vigentes, opcionalmente de una sola facultad.
+   * Lista los programas vigentes que el usuario alcanza a ver. Para un coordinador siempre son los
+   * de su facultad, sin importar el filtro que envíe.
    *
    * @param idFacultad facultad por la que se filtra, o nulo para traerlos todos
+   * @param sesion usuario que consulta
    * @return programas activos ordenados por nombre
    */
   @Transactional(readOnly = true)
-  public List<ProgramaResponse> listarProgramas(Long idFacultad) {
+  public List<ProgramaResponse> listarProgramas(Long idFacultad, UsuarioSesion sesion) {
+    Long idFacultadConsulta = sesion.esCoordinador() ? sesion.idFacultad() : idFacultad;
     List<Programa> programas =
-        idFacultad == null
+        idFacultadConsulta == null
             ? programaRepository.findByEsActivoTrueOrderByNombreAsc()
             : programaRepository.findByFacultadIdFacultadAndEsActivoTrueOrderByNombreAsc(
-                idFacultad);
+                idFacultadConsulta);
     return programas.stream().map(ProgramaResponse::desde).toList();
   }
 
   /**
-   * Obtiene un programa vigente.
+   * Obtiene un programa vigente dentro del alcance del usuario.
    *
    * @param idPrograma identificador del programa
+   * @param sesion usuario que consulta
    * @return el programa solicitado
-   * @throws RecursoNoEncontradoException si no existe o fue dado de baja
+   * @throws RecursoNoEncontradoException si no existe, fue dado de baja o es de otra facultad
    */
   @Transactional(readOnly = true)
-  public ProgramaResponse obtenerPrograma(Long idPrograma) {
-    return ProgramaResponse.desde(buscarProgramaActivo(idPrograma));
+  public ProgramaResponse obtenerPrograma(Long idPrograma, UsuarioSesion sesion) {
+    Programa programa = buscarProgramaActivo(idPrograma);
+    if (!sesion.tieneAlcanceSobreFacultad(programa.getFacultad().getIdFacultad())) {
+      throw new RecursoNoEncontradoException(PROGRAMA_NO_ENCONTRADO);
+    }
+    return ProgramaResponse.desde(programa);
   }
 
   /**
@@ -99,7 +110,7 @@ public class ProgramaService {
   private Programa buscarProgramaActivo(Long idPrograma) {
     return programaRepository
         .findByIdProgramaAndEsActivoTrue(idPrograma)
-        .orElseThrow(() -> new RecursoNoEncontradoException("Programa no encontrado"));
+        .orElseThrow(() -> new RecursoNoEncontradoException(PROGRAMA_NO_ENCONTRADO));
   }
 
   private void validarNombreDisponible(Long idFacultad, String nombre, Long idProgramaActual) {
