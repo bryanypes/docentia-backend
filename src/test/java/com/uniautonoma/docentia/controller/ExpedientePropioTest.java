@@ -60,7 +60,7 @@ class ExpedientePropioTest extends PruebaIntegracion {
     assertThat(respuesta)
         .doesNotContain(NOTA_COORDINACION, NOTA_VICERRECTORIA)
         .doesNotContain("Observación reservada", "observacion")
-        .doesNotContain("dominioDisciplinar", "notasPorFuente", "evaluador");
+        .doesNotContain("dominioDisciplinar", "notasPorFuente", "notaCoordinacion", "evaluador");
   }
 
   @Test
