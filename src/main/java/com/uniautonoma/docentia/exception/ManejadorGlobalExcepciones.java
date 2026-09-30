@@ -26,6 +26,12 @@ public class ManejadorGlobalExcepciones {
     return new ErrorResponse(excepcion.getMessage());
   }
 
+  @ExceptionHandler(CredencialesInvalidasException.class)
+  @ResponseStatus(HttpStatus.UNAUTHORIZED)
+  public ErrorResponse manejarCredencialesInvalidas(CredencialesInvalidasException excepcion) {
+    return new ErrorResponse(excepcion.getMessage());
+  }
+
   @ExceptionHandler(DatosInvalidosException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ErrorResponse manejarDatosInvalidos(DatosInvalidosException excepcion) {
