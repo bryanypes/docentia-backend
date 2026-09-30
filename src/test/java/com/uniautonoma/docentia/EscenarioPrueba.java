@@ -1,17 +1,22 @@
 package com.uniautonoma.docentia;
 
+import com.uniautonoma.docentia.entity.Calificacion;
 import com.uniautonoma.docentia.entity.Facultad;
+import com.uniautonoma.docentia.entity.FuenteEvaluacion;
+import com.uniautonoma.docentia.entity.NotasAspectos;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.Programa;
 import com.uniautonoma.docentia.entity.Usuario;
+import com.uniautonoma.docentia.repository.CalificacionRepository;
 import com.uniautonoma.docentia.repository.FacultadRepository;
 import com.uniautonoma.docentia.repository.PeriodoAcademicoRepository;
 import com.uniautonoma.docentia.repository.ProgramaRepository;
 import com.uniautonoma.docentia.repository.UsuarioRepository;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.springframework.stereotype.Component;
 
-/** Crea los datos que se repiten entre pruebas: facultades, programas, usuarios y periodos. */
+/** Crea los datos que se repiten entre pruebas: usuarios por rol, periodos y calificaciones. */
 @Component
 public class EscenarioPrueba {
 
@@ -21,16 +26,19 @@ public class EscenarioPrueba {
   private final ProgramaRepository programaRepository;
   private final UsuarioRepository usuarioRepository;
   private final PeriodoAcademicoRepository periodoRepository;
+  private final CalificacionRepository calificacionRepository;
 
   public EscenarioPrueba(
       FacultadRepository facultadRepository,
       ProgramaRepository programaRepository,
       UsuarioRepository usuarioRepository,
-      PeriodoAcademicoRepository periodoRepository) {
+      PeriodoAcademicoRepository periodoRepository,
+      CalificacionRepository calificacionRepository) {
     this.facultadRepository = facultadRepository;
     this.programaRepository = programaRepository;
     this.usuarioRepository = usuarioRepository;
     this.periodoRepository = periodoRepository;
+    this.calificacionRepository = calificacionRepository;
   }
 
   public Facultad crearFacultad(String nombre) {
@@ -62,6 +70,21 @@ public class EscenarioPrueba {
 
   public PeriodoAcademico crearPeriodoCerrado(String nombre, LocalDate fechaInicio) {
     return periodoRepository.saveAndFlush(crearPeriodo(nombre, fechaInicio));
+  }
+
+  /** Registra una calificación con la misma nota en los cinco aspectos. */
+  public Calificacion registrarCalificacion(
+      Usuario docente, PeriodoAcademico periodo, FuenteEvaluacion fuente, String nota) {
+    BigDecimal valor = new BigDecimal(nota);
+    return registrarCalificacion(
+        docente, periodo, fuente, new NotasAspectos(valor, valor, valor, valor, valor));
+  }
+
+  public Calificacion registrarCalificacion(
+      Usuario docente, PeriodoAcademico periodo, FuenteEvaluacion fuente, NotasAspectos notas) {
+    Calificacion calificacion = new Calificacion(docente, periodo, fuente);
+    calificacion.registrar(notas, "Observación reservada de " + fuente, null);
+    return calificacionRepository.saveAndFlush(calificacion);
   }
 
   private PeriodoAcademico crearPeriodo(String nombre, LocalDate fechaInicio) {
