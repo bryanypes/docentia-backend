@@ -17,3 +17,8 @@ server:
   port: 8080
   servlet:
     context-path: /api
+
+docentia:
+  jwt:
+    secreto: ${DOCENTIA_JWT_SECRETO:}
+    minutos-vigencia: 480

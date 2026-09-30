@@ -29,6 +29,7 @@ class FacultadControllerTest extends PruebaIntegracion {
     mockMvc
         .perform(
             post("/facultades")
+                .with(comoVicerrector())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(aJson(new FacultadRequest("  Ingeniería  "))))
         .andExpect(status().isCreated())
@@ -41,6 +42,7 @@ class FacultadControllerTest extends PruebaIntegracion {
     mockMvc
         .perform(
             post("/facultades")
+                .with(comoVicerrector())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(aJson(new FacultadRequest(" "))))
         .andExpect(status().isBadRequest())
@@ -54,6 +56,7 @@ class FacultadControllerTest extends PruebaIntegracion {
     mockMvc
         .perform(
             post("/facultades")
+                .with(comoVicerrector())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(aJson(new FacultadRequest("ingeniería"))))
         .andExpect(status().isConflict());
@@ -68,7 +71,7 @@ class FacultadControllerTest extends PruebaIntegracion {
     facultadRepository.save(eliminada);
 
     mockMvc
-        .perform(get("/facultades"))
+        .perform(get("/facultades").with(comoVicerrector()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[*].nombre", contains("Derecho", "Ingeniería")));
   }
@@ -80,6 +83,7 @@ class FacultadControllerTest extends PruebaIntegracion {
     mockMvc
         .perform(
             put("/facultades/{id}", facultad.getIdFacultad())
+                .with(comoVicerrector())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(aJson(new FacultadRequest("Ingeniería"))))
         .andExpect(status().isOk())
@@ -92,7 +96,7 @@ class FacultadControllerTest extends PruebaIntegracion {
     programaRepository.save(new Programa("Ingeniería de Software", facultad));
 
     mockMvc
-        .perform(delete("/facultades/{id}", facultad.getIdFacultad()))
+        .perform(delete("/facultades/{id}", facultad.getIdFacultad()).with(comoVicerrector()))
         .andExpect(status().isConflict())
         .andExpect(
             jsonPath("$.mensaje")
@@ -110,16 +114,18 @@ class FacultadControllerTest extends PruebaIntegracion {
     programaRepository.save(programa);
 
     mockMvc
-        .perform(delete("/facultades/{id}", facultad.getIdFacultad()))
+        .perform(delete("/facultades/{id}", facultad.getIdFacultad()).with(comoVicerrector()))
         .andExpect(status().isNoContent());
 
     mockMvc
-        .perform(get("/facultades/{id}", facultad.getIdFacultad()))
+        .perform(get("/facultades/{id}", facultad.getIdFacultad()).with(comoVicerrector()))
         .andExpect(status().isNotFound());
   }
 
   @Test
   void respondeNoEncontradoSiLaFacultadNoExiste() throws Exception {
-    mockMvc.perform(get("/facultades/{id}", 99999)).andExpect(status().isNotFound());
+    mockMvc
+        .perform(get("/facultades/{id}", 99999).with(comoVicerrector()))
+        .andExpect(status().isNotFound());
   }
 }

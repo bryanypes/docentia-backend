@@ -90,12 +90,14 @@ class PeriodoAcademicoControllerTest extends PruebaIntegracion {
         periodoRepository.saveAndFlush(new PeriodoAcademico("2026-2", INICIO, FIN));
 
     mockMvc
-        .perform(put("/periodos-academicos/{id}/activacion", nuevo.getIdPeriodo()))
+        .perform(
+            put("/periodos-academicos/{id}/activacion", nuevo.getIdPeriodo())
+                .with(comoVicerrector()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.esActivo").value(true));
 
     mockMvc
-        .perform(get("/periodos-academicos/activo"))
+        .perform(get("/periodos-academicos/activo").with(comoVicerrector()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.nombre").value("2026-2"));
     assertThat(periodoRepository.findAll().stream().filter(PeriodoAcademico::getEsActivo))
@@ -109,10 +111,14 @@ class PeriodoAcademicoControllerTest extends PruebaIntegracion {
     periodoRepository.saveAndFlush(periodo);
 
     mockMvc
-        .perform(delete("/periodos-academicos/{id}/activacion", periodo.getIdPeriodo()))
+        .perform(
+            delete("/periodos-academicos/{id}/activacion", periodo.getIdPeriodo())
+                .with(comoVicerrector()))
         .andExpect(status().isNoContent());
 
-    mockMvc.perform(get("/periodos-academicos/activo")).andExpect(status().isNotFound());
+    mockMvc
+        .perform(get("/periodos-academicos/activo").with(comoVicerrector()))
+        .andExpect(status().isNotFound());
   }
 
   @Test
@@ -129,6 +135,7 @@ class PeriodoAcademicoControllerTest extends PruebaIntegracion {
     mockMvc
         .perform(
             put("/periodos-academicos/{id}", periodo.getIdPeriodo())
+                .with(comoVicerrector())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     aJson(
@@ -143,6 +150,7 @@ class PeriodoAcademicoControllerTest extends PruebaIntegracion {
   private ResultActions crearPeriodo(PeriodoAcademicoRequest solicitud) throws Exception {
     return mockMvc.perform(
         post("/periodos-academicos")
+            .with(comoVicerrector())
             .contentType(MediaType.APPLICATION_JSON)
             .content(aJson(solicitud)));
   }

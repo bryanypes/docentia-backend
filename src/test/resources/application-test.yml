@@ -5,3 +5,7 @@ spring:
 logging:
   level:
     root: warn
+
+docentia:
+  jwt:
+    secreto: secreto-exclusivo-para-las-pruebas-automatizadas

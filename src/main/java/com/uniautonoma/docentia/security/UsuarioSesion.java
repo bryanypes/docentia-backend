@@ -3,6 +3,10 @@ package com.uniautonoma.docentia.security;
 import com.uniautonoma.docentia.entity.Programa;
 import com.uniautonoma.docentia.entity.Rol;
 import com.uniautonoma.docentia.entity.Usuario;
+import java.util.List;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 /**
  * Datos del usuario que viajan en la sesión. El alcance (facultad y programa) se resuelve una sola
@@ -33,6 +37,11 @@ public record UsuarioSesion(
         usuario.getRol(),
         idFacultad,
         idPrograma);
+  }
+
+  public Authentication aAutenticacion() {
+    return new UsernamePasswordAuthenticationToken(
+        this, null, List.of(new SimpleGrantedAuthority("ROLE_" + rol.name())));
   }
 
   public boolean esCoordinador() {

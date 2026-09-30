@@ -6,6 +6,7 @@ import com.uniautonoma.docentia.service.ProgramaService;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -19,6 +20,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /** Endpoints de administración de programas académicos. */
 @RestController
+@PreAuthorize("hasAnyRole('VICERRECTOR', 'COORDINADOR')")
 @RequestMapping("/programas")
 public class ProgramaController {
 
@@ -56,6 +58,7 @@ public class ProgramaController {
    * @param solicitud datos del programa
    * @return el programa creado
    */
+  @PreAuthorize("hasRole('VICERRECTOR')")
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public ProgramaResponse crearPrograma(@Valid @RequestBody ProgramaRequest solicitud) {
@@ -69,6 +72,7 @@ public class ProgramaController {
    * @param solicitud datos nuevos
    * @return el programa actualizado
    */
+  @PreAuthorize("hasRole('VICERRECTOR')")
   @PutMapping("/{idPrograma}")
   public ProgramaResponse actualizarPrograma(
       @PathVariable Long idPrograma, @Valid @RequestBody ProgramaRequest solicitud) {
@@ -80,6 +84,7 @@ public class ProgramaController {
    *
    * @param idPrograma identificador del programa
    */
+  @PreAuthorize("hasRole('VICERRECTOR')")
   @DeleteMapping("/{idPrograma}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void eliminarPrograma(@PathVariable Long idPrograma) {

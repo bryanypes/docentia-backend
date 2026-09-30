@@ -38,6 +38,7 @@ class ProgramaControllerTest extends PruebaIntegracion {
     mockMvc
         .perform(
             post("/programas")
+                .with(comoVicerrector())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     aJson(
@@ -52,6 +53,7 @@ class ProgramaControllerTest extends PruebaIntegracion {
     mockMvc
         .perform(
             post("/programas")
+                .with(comoVicerrector())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(aJson(new ProgramaRequest("Ingeniería de Software", 99999L))))
         .andExpect(status().isNotFound());
@@ -62,6 +64,7 @@ class ProgramaControllerTest extends PruebaIntegracion {
     mockMvc
         .perform(
             post("/programas")
+                .with(comoVicerrector())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(aJson(new ProgramaRequest("Ingeniería de Software", null))))
         .andExpect(status().isBadRequest())
@@ -75,6 +78,7 @@ class ProgramaControllerTest extends PruebaIntegracion {
     mockMvc
         .perform(
             post("/programas")
+                .with(comoVicerrector())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     aJson(
@@ -85,6 +89,7 @@ class ProgramaControllerTest extends PruebaIntegracion {
     mockMvc
         .perform(
             post("/programas")
+                .with(comoVicerrector())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     aJson(
@@ -100,7 +105,10 @@ class ProgramaControllerTest extends PruebaIntegracion {
     programaRepository.save(new Programa("Derecho", derecho));
 
     mockMvc
-        .perform(get("/programas").param("idFacultad", ingenieria.getIdFacultad().toString()))
+        .perform(
+            get("/programas")
+                .with(comoVicerrector())
+                .param("idFacultad", ingenieria.getIdFacultad().toString()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[*].nombre", contains("Ingeniería Civil", "Ingeniería de Software")));
   }
@@ -112,6 +120,7 @@ class ProgramaControllerTest extends PruebaIntegracion {
     mockMvc
         .perform(
             put("/programas/{id}", programa.getIdPrograma())
+                .with(comoVicerrector())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     aJson(new ProgramaRequest("Derecho Informático", derecho.getIdFacultad()))))
@@ -124,14 +133,14 @@ class ProgramaControllerTest extends PruebaIntegracion {
     Programa programa = programaRepository.save(new Programa("Ingeniería de Software", ingenieria));
 
     mockMvc
-        .perform(delete("/programas/{id}", programa.getIdPrograma()))
+        .perform(delete("/programas/{id}", programa.getIdPrograma()).with(comoVicerrector()))
         .andExpect(status().isNoContent());
 
     mockMvc
-        .perform(get("/programas/{id}", programa.getIdPrograma()))
+        .perform(get("/programas/{id}", programa.getIdPrograma()).with(comoVicerrector()))
         .andExpect(status().isNotFound());
     mockMvc
-        .perform(delete("/facultades/{id}", ingenieria.getIdFacultad()))
+        .perform(delete("/facultades/{id}", ingenieria.getIdFacultad()).with(comoVicerrector()))
         .andExpect(status().isNoContent());
   }
 }

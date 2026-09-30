@@ -6,6 +6,7 @@ import com.uniautonoma.docentia.service.FacultadService;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -18,6 +19,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /** Endpoints de administración de facultades. */
 @RestController
+@PreAuthorize("hasAnyRole('VICERRECTOR', 'COORDINADOR')")
 @RequestMapping("/facultades")
 public class FacultadController {
 
@@ -54,6 +56,7 @@ public class FacultadController {
    * @param solicitud datos de la facultad
    * @return la facultad creada
    */
+  @PreAuthorize("hasRole('VICERRECTOR')")
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public FacultadResponse crearFacultad(@Valid @RequestBody FacultadRequest solicitud) {
@@ -67,6 +70,7 @@ public class FacultadController {
    * @param solicitud datos nuevos
    * @return la facultad actualizada
    */
+  @PreAuthorize("hasRole('VICERRECTOR')")
   @PutMapping("/{idFacultad}")
   public FacultadResponse actualizarFacultad(
       @PathVariable Long idFacultad, @Valid @RequestBody FacultadRequest solicitud) {
@@ -78,6 +82,7 @@ public class FacultadController {
    *
    * @param idFacultad identificador de la facultad
    */
+  @PreAuthorize("hasRole('VICERRECTOR')")
   @DeleteMapping("/{idFacultad}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void eliminarFacultad(@PathVariable Long idFacultad) {

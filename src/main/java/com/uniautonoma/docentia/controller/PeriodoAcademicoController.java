@@ -6,6 +6,7 @@ import com.uniautonoma.docentia.service.PeriodoAcademicoService;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -64,6 +65,7 @@ public class PeriodoAcademicoController {
    * @param solicitud datos del periodo
    * @return el periodo creado, todavía inactivo
    */
+  @PreAuthorize("hasRole('VICERRECTOR')")
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public PeriodoAcademicoResponse crearPeriodo(
@@ -78,6 +80,7 @@ public class PeriodoAcademicoController {
    * @param solicitud datos nuevos
    * @return el periodo actualizado
    */
+  @PreAuthorize("hasRole('VICERRECTOR')")
   @PutMapping("/{idPeriodo}")
   public PeriodoAcademicoResponse actualizarPeriodo(
       @PathVariable Long idPeriodo, @Valid @RequestBody PeriodoAcademicoRequest solicitud) {
@@ -90,6 +93,7 @@ public class PeriodoAcademicoController {
    * @param idPeriodo identificador del periodo
    * @return el periodo activado
    */
+  @PreAuthorize("hasRole('VICERRECTOR')")
   @PutMapping("/{idPeriodo}/activacion")
   public PeriodoAcademicoResponse activarPeriodo(@PathVariable Long idPeriodo) {
     return periodoService.activarPeriodo(idPeriodo);
@@ -100,6 +104,7 @@ public class PeriodoAcademicoController {
    *
    * @param idPeriodo identificador del periodo
    */
+  @PreAuthorize("hasRole('VICERRECTOR')")
   @DeleteMapping("/{idPeriodo}/activacion")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void desactivarPeriodo(@PathVariable Long idPeriodo) {

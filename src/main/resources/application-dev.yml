@@ -1,0 +1,5 @@
+docentia:
+  jwt:
+    secreto: secreto-de-desarrollo-local-no-usar-en-produccion
+  desarrollo:
+    contrasena-inicial: Docentia2026*
