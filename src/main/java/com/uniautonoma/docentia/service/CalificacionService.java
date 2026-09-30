@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-/** Registro y consulta de la calificación que coordinación le da a un docente. */
+/** Registro y consulta de las calificaciones que coordinación y vicerrectoría dan a un docente. */
 @Service
 @Transactional
 public class CalificacionService {
@@ -38,25 +38,29 @@ public class CalificacionService {
   }
 
   /**
-   * Guarda la calificación de coordinación para un docente en el periodo activo. Si ya existía, la
-   * reemplaza.
+   * Guarda la calificación de una fuente para un docente en el periodo activo. Si esa fuente ya
+   * había calificado, la reemplaza.
    *
    * @param idDocente identificador del docente calificado
+   * @param fuente fuente a nombre de la cual se califica
    * @param solicitud notas de los cinco aspectos y observación opcional
-   * @param sesion coordinador que califica
+   * @param sesion usuario que califica; su alcance decide qué docentes puede calificar
    * @return la calificación guardada
-   * @throws RecursoNoEncontradoException si el docente no existe o es de otra facultad
+   * @throws RecursoNoEncontradoException si el docente no existe o está fuera del alcance
    * @throws ReglaNegocioException si no hay un periodo académico activo
    */
   public CalificacionResponse calificarDocente(
-      Long idDocente, CalificacionRequest solicitud, UsuarioSesion sesion) {
+      Long idDocente,
+      FuenteEvaluacion fuente,
+      CalificacionRequest solicitud,
+      UsuarioSesion sesion) {
     Usuario docente = docenteService.buscarDocenteVisible(idDocente, sesion);
     PeriodoAcademico periodo = periodoService.exigirPeriodoActivo();
     Calificacion calificacion =
         calificacionRepository
             .findByDocenteIdUsuarioAndPeriodoIdPeriodoAndFuente(
-                idDocente, periodo.getIdPeriodo(), FuenteEvaluacion.COORDINACION)
-            .orElseGet(() -> new Calificacion(docente, periodo, FuenteEvaluacion.COORDINACION));
+                idDocente, periodo.getIdPeriodo(), fuente)
+            .orElseGet(() -> new Calificacion(docente, periodo, fuente));
     String observacion =
         StringUtils.hasText(solicitud.observacion()) ? solicitud.observacion().trim() : null;
     calificacion.registrar(
@@ -67,22 +71,24 @@ public class CalificacionService {
   }
 
   /**
-   * Consulta la calificación de coordinación de un docente en el periodo activo.
+   * Consulta la calificación que una fuente le dio a un docente en el periodo activo.
    *
    * @param idDocente identificador del docente
-   * @param sesion coordinador que consulta
+   * @param fuente fuente consultada
+   * @param sesion usuario que consulta
    * @return la calificación, o vacío si aún no se ha registrado o no hay periodo activo
-   * @throws RecursoNoEncontradoException si el docente no existe o es de otra facultad
+   * @throws RecursoNoEncontradoException si el docente no existe o está fuera del alcance
    */
   @Transactional(readOnly = true)
-  public Optional<CalificacionResponse> obtenerCalificacion(Long idDocente, UsuarioSesion sesion) {
+  public Optional<CalificacionResponse> obtenerCalificacion(
+      Long idDocente, FuenteEvaluacion fuente, UsuarioSesion sesion) {
     docenteService.buscarDocenteVisible(idDocente, sesion);
     return periodoService
         .buscarPeriodoActivo()
         .flatMap(
             periodo ->
                 calificacionRepository.findByDocenteIdUsuarioAndPeriodoIdPeriodoAndFuente(
-                    idDocente, periodo.getIdPeriodo(), FuenteEvaluacion.COORDINACION))
+                    idDocente, periodo.getIdPeriodo(), fuente))
         .map(CalificacionResponse::desde);
   }
 }
