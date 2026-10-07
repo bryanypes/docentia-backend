@@ -1,0 +1,17 @@
+# Maven
+target/
+*.class
+*.log
+
+# Entorno local
+.env
+.env.local
+application-local.yml
+
+# Editores y herramientas
+.idea/
+*.iml
+.vscode/
+.github/modernize/
+.DS_Store
+Thumbs.db
