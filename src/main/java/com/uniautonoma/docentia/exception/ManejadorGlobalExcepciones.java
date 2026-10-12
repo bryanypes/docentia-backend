@@ -4,6 +4,9 @@ import com.uniautonoma.docentia.dto.ErrorResponse;
 import com.uniautonoma.docentia.dto.EtapaCerradaResponse;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
@@ -14,6 +17,8 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class ManejadorGlobalExcepciones {
+
+  private static final Logger LOG = LoggerFactory.getLogger(ManejadorGlobalExcepciones.class);
 
   @ExceptionHandler(RecursoNoEncontradoException.class)
   @ResponseStatus(HttpStatus.NOT_FOUND)
@@ -31,6 +36,18 @@ public class ManejadorGlobalExcepciones {
   @ResponseStatus(HttpStatus.CONFLICT)
   public EtapaCerradaResponse manejarEtapaCerrada(EtapaCerradaException excepcion) {
     return EtapaCerradaResponse.desde(excepcion);
+  }
+
+  /**
+   * Una restricción de la base rechazó la escritura, casi siempre porque otra persona guardó el
+   * mismo dato al mismo tiempo. El detalle de la base no se envía al cliente.
+   */
+  @ExceptionHandler(DataIntegrityViolationException.class)
+  @ResponseStatus(HttpStatus.CONFLICT)
+  public ErrorResponse manejarConflictoDeDatos(DataIntegrityViolationException excepcion) {
+    LOG.warn("Escritura rechazada por la base: {}", excepcion.getMostSpecificCause().getMessage());
+    return new ErrorResponse(
+        "Otra persona modificó estos datos al mismo tiempo; vuelve a intentarlo");
   }
 
   @ExceptionHandler(CredencialesInvalidasException.class)

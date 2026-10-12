@@ -4,17 +4,15 @@ import com.uniautonoma.docentia.dto.PromedioPonderadoResponse;
 import com.uniautonoma.docentia.entity.Calificacion;
 import com.uniautonoma.docentia.entity.Dimension;
 import com.uniautonoma.docentia.entity.FuenteEvaluacion;
+import com.uniautonoma.docentia.entity.FuentesPendientesConverter;
 import com.uniautonoma.docentia.entity.NotasAspectos;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.PesosFuentes;
 import com.uniautonoma.docentia.entity.Ponderacion;
-import com.uniautonoma.docentia.entity.PromedioDocente;
 import com.uniautonoma.docentia.repository.CalificacionRepository;
 import com.uniautonoma.docentia.repository.DocentePeriodo;
-import com.uniautonoma.docentia.repository.PeriodoAcademicoRepository;
 import com.uniautonoma.docentia.repository.PonderacionRepository;
 import com.uniautonoma.docentia.repository.PromedioDocenteRepository;
-import com.uniautonoma.docentia.repository.UsuarioRepository;
 import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.Map;
@@ -29,25 +27,22 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class PromedioService {
 
+  private static final FuentesPendientesConverter CONVERTIDOR_FUENTES =
+      new FuentesPendientesConverter();
+
   private final CalificacionRepository calificacionRepository;
   private final PonderacionRepository ponderacionRepository;
   private final PromedioDocenteRepository promedioRepository;
-  private final UsuarioRepository usuarioRepository;
-  private final PeriodoAcademicoRepository periodoRepository;
   private final CalculadoraPromedioPonderado calculadora;
 
   public PromedioService(
       CalificacionRepository calificacionRepository,
       PonderacionRepository ponderacionRepository,
       PromedioDocenteRepository promedioRepository,
-      UsuarioRepository usuarioRepository,
-      PeriodoAcademicoRepository periodoRepository,
       CalculadoraPromedioPonderado calculadora) {
     this.calificacionRepository = calificacionRepository;
     this.ponderacionRepository = ponderacionRepository;
     this.promedioRepository = promedioRepository;
-    this.usuarioRepository = usuarioRepository;
-    this.periodoRepository = periodoRepository;
     this.calculadora = calculadora;
   }
 
@@ -71,9 +66,19 @@ public class PromedioService {
    *     incompleto con las tres fuentes pendientes
    */
   public PromedioPonderadoResponse obtenerPromedio(Long idDocente, PeriodoAcademico periodo) {
+    return obtenerPromedio(idDocente, periodo.getIdPeriodo());
+  }
+
+  /**
+   * Consulta el promedio guardado de un docente en un periodo, sin recalcularlo.
+   *
+   * @param idDocente identificador del docente
+   * @param idPeriodo identificador del periodo
+   * @return el promedio guardado, o incompleto con las tres fuentes si no tiene calificaciones
+   */
+  public PromedioPonderadoResponse obtenerPromedio(Long idDocente, Long idPeriodo) {
     return promedioRepository
-        .findByDocenteIdUsuarioAndPeriodoIdPeriodo(idDocente, periodo.getIdPeriodo())
-        .map(PromedioDocente::aRespuesta)
+        .leerPromedio(idDocente, idPeriodo)
         .orElseGet(
             () -> PromedioPonderadoResponse.incompleto(Arrays.asList(FuenteEvaluacion.values())));
   }
@@ -104,16 +109,12 @@ public class PromedioService {
     EvaluacionPeriodo evaluacion = cargarEvaluacion(idDocente, idPeriodo);
     PromedioPonderadoResponse resultado =
         calculadora.calcularPromedio(evaluacion.notasDeFuentes(), evaluacion.pesos());
-    PromedioDocente promedio =
-        promedioRepository
-            .findByDocenteIdUsuarioAndPeriodoIdPeriodo(idDocente, idPeriodo)
-            .orElseGet(
-                () ->
-                    new PromedioDocente(
-                        usuarioRepository.getReferenceById(idDocente),
-                        periodoRepository.getReferenceById(idPeriodo)));
-    promedio.actualizar(resultado);
-    promedioRepository.save(promedio);
+    promedioRepository.guardar(
+        idDocente,
+        idPeriodo,
+        resultado.valor(),
+        resultado.estado().name(),
+        CONVERTIDOR_FUENTES.convertToDatabaseColumn(resultado.fuentesPendientes()));
     return resultado;
   }
 

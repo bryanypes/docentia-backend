@@ -107,6 +107,15 @@ public class EscenarioPrueba {
     return guardada;
   }
 
+  /** Guarda una calificación sin calcular el promedio, como si viniera de una base anterior. */
+  public Calificacion guardarCalificacionSinPromedio(
+      Usuario docente, PeriodoAcademico periodo, FuenteEvaluacion fuente, String nota) {
+    BigDecimal valor = new BigDecimal(nota);
+    Calificacion calificacion = new Calificacion(docente, periodo, fuente);
+    calificacion.registrar(new NotasAspectos(valor, valor, valor, valor, valor), null, null);
+    return calificacionRepository.saveAndFlush(calificacion);
+  }
+
   private PeriodoAcademico crearPeriodo(String nombre, LocalDate fechaInicio) {
     return new PeriodoAcademico(nombre, fechaInicio, fechaInicio.plusMonths(4));
   }

@@ -2,7 +2,10 @@ package com.uniautonoma.docentia.service;
 
 import com.uniautonoma.docentia.dto.CalificacionRequest;
 import com.uniautonoma.docentia.dto.CalificacionResponse;
+import com.uniautonoma.docentia.dto.CorreccionCalificacionResponse;
+import com.uniautonoma.docentia.dto.PromedioPonderadoResponse;
 import com.uniautonoma.docentia.entity.Calificacion;
+import com.uniautonoma.docentia.entity.CorreccionCalificacion;
 import com.uniautonoma.docentia.entity.FuenteEvaluacion;
 import com.uniautonoma.docentia.entity.NotasAspectos;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
@@ -12,8 +15,11 @@ import com.uniautonoma.docentia.exception.EtapaCerradaException;
 import com.uniautonoma.docentia.exception.RecursoNoEncontradoException;
 import com.uniautonoma.docentia.exception.ReglaNegocioException;
 import com.uniautonoma.docentia.repository.CalificacionRepository;
+import com.uniautonoma.docentia.repository.CorreccionCalificacionRepository;
 import com.uniautonoma.docentia.repository.UsuarioRepository;
 import com.uniautonoma.docentia.security.UsuarioSesion;
+import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,13 +27,15 @@ import org.springframework.util.StringUtils;
 
 /**
  * Registro y consulta de las calificaciones de un docente. Cada registro recalcula y guarda su
- * promedio del periodo.
+ * promedio del periodo, y si cambia las notas de una calificación existente deja la corrección en
+ * el historial.
  */
 @Service
 @Transactional
 public class CalificacionService {
 
   private final CalificacionRepository calificacionRepository;
+  private final CorreccionCalificacionRepository correccionRepository;
   private final UsuarioRepository usuarioRepository;
   private final DocenteService docenteService;
   private final PeriodoAcademicoService periodoService;
@@ -36,12 +44,14 @@ public class CalificacionService {
 
   public CalificacionService(
       CalificacionRepository calificacionRepository,
+      CorreccionCalificacionRepository correccionRepository,
       UsuarioRepository usuarioRepository,
       DocenteService docenteService,
       PeriodoAcademicoService periodoService,
       PromedioService promedioService,
       VentanaEtapaService ventanaEtapaService) {
     this.calificacionRepository = calificacionRepository;
+    this.correccionRepository = correccionRepository;
     this.usuarioRepository = usuarioRepository;
     this.docenteService = docenteService;
     this.periodoService = periodoService;
@@ -51,11 +61,11 @@ public class CalificacionService {
 
   /**
    * Guarda la calificación de una fuente para un docente en el periodo activo. Si esa fuente ya
-   * había calificado, la reemplaza.
+   * había calificado, la reemplaza y, si las notas cambiaron, registra la corrección.
    *
    * @param idDocente identificador del docente calificado
    * @param fuente fuente a nombre de la cual se califica
-   * @param solicitud notas de los cinco aspectos y observación opcional
+   * @param solicitud notas de los cinco aspectos, observación y motivo opcionales
    * @param sesion usuario que califica; su alcance decide qué docentes puede calificar
    * @return la calificación guardada
    * @throws RecursoNoEncontradoException si el docente no existe o está fuera del alcance
@@ -70,44 +80,57 @@ public class CalificacionService {
     Usuario docente = docenteService.buscarDocenteVisible(idDocente, sesion);
     PeriodoAcademico periodo = periodoService.exigirPeriodoActivo();
     ventanaEtapaService.exigirEtapaAbierta(periodo, TipoEtapa.RECOLECCION_CALIFICACIONES);
+    Usuario evaluador = usuarioRepository.getReferenceById(sesion.idUsuario());
     Calificacion calificacion =
-        calificacionRepository
-            .findByDocenteIdUsuarioAndPeriodoIdPeriodoAndFuente(
-                idDocente, periodo.getIdPeriodo(), fuente)
-            .orElseGet(() -> new Calificacion(docente, periodo, fuente));
-    String observacion =
-        StringUtils.hasText(solicitud.observacion()) ? solicitud.observacion().trim() : null;
-    calificacion.registrar(
-        solicitud.aNotasAspectos(),
-        observacion,
-        usuarioRepository.getReferenceById(sesion.idUsuario()));
-    CalificacionResponse respuesta =
-        CalificacionResponse.desde(calificacionRepository.saveAndFlush(calificacion));
-    promedioService.recalcular(idDocente, periodo.getIdPeriodo());
-    return respuesta;
+        guardar(
+            docente,
+            periodo,
+            fuente,
+            solicitud.aNotasAspectos(),
+            textoOpcional(solicitud.observacion()),
+            evaluador,
+            evaluador,
+            textoOpcional(solicitud.motivoCorreccion()));
+    return CalificacionResponse.desde(calificacion);
   }
 
   /**
-   * Guarda la nota consolidada de los estudiantes para un docente en un periodo. Es la entrada que
-   * usará la importación desde Campus; si ya había una nota de estudiantes, la reemplaza.
+   * Guarda la nota consolidada de los estudiantes, como lo hace un proceso del sistema (seed).
+   *
+   * @see #registrarCalificacionEstudiantes(Usuario, PeriodoAcademico, NotasAspectos, Long, String)
+   */
+  public ResultadoRegistro registrarCalificacionEstudiantes(
+      Usuario docente, PeriodoAcademico periodo, NotasAspectos notas) {
+    return registrarCalificacionEstudiantes(docente, periodo, notas, null, null);
+  }
+
+  /**
+   * Guarda la nota consolidada de los estudiantes para un docente en un periodo. La usan la carga
+   * de CSV y el seed; no revisa la ventana de la etapa, eso lo hace quien la llama.
    *
    * @param docente docente evaluado
    * @param periodo periodo al que corresponde la evaluación
    * @param notas promedio de los cinco aspectos que dieron los estudiantes
-   * @return la calificación guardada
+   * @param idResponsable usuario que hizo la carga, o nulo si es un proceso del sistema
+   * @param motivo texto que queda en el historial si la nota cambia
+   * @return si la nota era nueva, cambió o quedó igual
    */
-  public CalificacionResponse registrarCalificacionEstudiantes(
-      Usuario docente, PeriodoAcademico periodo, NotasAspectos notas) {
-    Calificacion calificacion =
-        calificacionRepository
-            .findByDocenteIdUsuarioAndPeriodoIdPeriodoAndFuente(
-                docente.getIdUsuario(), periodo.getIdPeriodo(), FuenteEvaluacion.ESTUDIANTES)
-            .orElseGet(() -> new Calificacion(docente, periodo, FuenteEvaluacion.ESTUDIANTES));
-    calificacion.registrar(notas, null, null);
-    CalificacionResponse respuesta =
-        CalificacionResponse.desde(calificacionRepository.saveAndFlush(calificacion));
-    promedioService.recalcular(docente.getIdUsuario(), periodo.getIdPeriodo());
-    return respuesta;
+  public ResultadoRegistro registrarCalificacionEstudiantes(
+      Usuario docente,
+      PeriodoAcademico periodo,
+      NotasAspectos notas,
+      Long idResponsable,
+      String motivo) {
+    Usuario responsable =
+        idResponsable == null ? null : usuarioRepository.getReferenceById(idResponsable);
+    Optional<Calificacion> anterior =
+        calificacionRepository.findByDocenteIdUsuarioAndPeriodoIdPeriodoAndFuente(
+            docente.getIdUsuario(), periodo.getIdPeriodo(), FuenteEvaluacion.ESTUDIANTES);
+    if (anterior.isPresent() && anterior.get().getNotas().mismasNotas(notas)) {
+      return ResultadoRegistro.SIN_CAMBIOS;
+    }
+    guardar(docente, periodo, FuenteEvaluacion.ESTUDIANTES, notas, null, null, responsable, motivo);
+    return anterior.isPresent() ? ResultadoRegistro.CORREGIDA : ResultadoRegistro.NUEVA;
   }
 
   /**
@@ -130,5 +153,69 @@ public class CalificacionService {
                 calificacionRepository.findByDocenteIdUsuarioAndPeriodoIdPeriodoAndFuente(
                     idDocente, periodo.getIdPeriodo(), fuente))
         .map(CalificacionResponse::desde);
+  }
+
+  /**
+   * Lista el historial de correcciones de un docente.
+   *
+   * @param idDocente identificador del docente
+   * @param idPeriodo periodo por el que se filtra, o nulo para todos
+   * @param sesion usuario que consulta; el coordinador solo alcanza docentes de su facultad
+   * @return correcciones de la más reciente a la más antigua
+   * @throws RecursoNoEncontradoException si el docente no existe o está fuera del alcance
+   */
+  @Transactional(readOnly = true)
+  public List<CorreccionCalificacionResponse> listarCorrecciones(
+      Long idDocente, Long idPeriodo, UsuarioSesion sesion) {
+    docenteService.buscarDocenteVisible(idDocente, sesion);
+    return correccionRepository.buscarPorDocente(idDocente, idPeriodo).stream()
+        .map(CorreccionCalificacionResponse::desde)
+        .toList();
+  }
+
+  private Calificacion guardar(
+      Usuario docente,
+      PeriodoAcademico periodo,
+      FuenteEvaluacion fuente,
+      NotasAspectos notas,
+      String observacion,
+      Usuario evaluador,
+      Usuario responsable,
+      String motivo) {
+    Calificacion calificacion =
+        calificacionRepository
+            .findByDocenteIdUsuarioAndPeriodoIdPeriodoAndFuente(
+                docente.getIdUsuario(), periodo.getIdPeriodo(), fuente)
+            .orElseGet(() -> new Calificacion(docente, periodo, fuente));
+    boolean esCorreccion =
+        calificacion.getIdCalificacion() != null && !calificacion.getNotas().mismasNotas(notas);
+    BigDecimal notaAnterior = esCorreccion ? calificacion.getNotas().promedio() : null;
+    PromedioPonderadoResponse promedioAnterior =
+        esCorreccion
+            ? promedioService.obtenerPromedio(docente.getIdUsuario(), periodo.getIdPeriodo())
+            : null;
+
+    calificacion.registrar(notas, observacion, evaluador);
+    Calificacion guardada = calificacionRepository.saveAndFlush(calificacion);
+    PromedioPonderadoResponse promedioNuevo =
+        promedioService.recalcular(docente.getIdUsuario(), periodo.getIdPeriodo());
+
+    if (esCorreccion) {
+      correccionRepository.save(
+          new CorreccionCalificacion(
+              guardada, notaAnterior, promedioAnterior, promedioNuevo, responsable, motivo));
+    }
+    return guardada;
+  }
+
+  private String textoOpcional(String texto) {
+    return StringUtils.hasText(texto) ? texto.trim() : null;
+  }
+
+  /** Lo que pasó con una calificación al registrarla. */
+  public enum ResultadoRegistro {
+    NUEVA,
+    CORREGIDA,
+    SIN_CAMBIOS
   }
 }
