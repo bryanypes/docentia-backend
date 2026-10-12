@@ -30,10 +30,8 @@ import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -65,8 +63,11 @@ public class ImportacionService {
   private final CalificacionService calificacionService;
   private final PeriodoAcademicoService periodoService;
   private final VentanaEtapaService ventanaEtapaService;
+  private final PlantillaMapeoService plantillaService;
+  private final ResolutorMapeo resolutorMapeo = new ResolutorMapeo();
 
   public ImportacionService(
+      PlantillaMapeoService plantillaService,
       LectorCsv lectorCsv,
       ValidadorEvaluacionEstudiantes validador,
       ImportacionProperties propiedades,
@@ -76,6 +77,7 @@ public class ImportacionService {
       CalificacionService calificacionService,
       PeriodoAcademicoService periodoService,
       VentanaEtapaService ventanaEtapaService) {
+    this.plantillaService = plantillaService;
     this.lectorCsv = lectorCsv;
     this.validador = validador;
     this.propiedades = propiedades;
@@ -91,13 +93,16 @@ public class ImportacionService {
    * Revisa el archivo sin guardar nada.
    *
    * @param archivo CSV subido
+   * @param mapeoJson mapeo columna → campo como JSON, o nulo
+   * @param nombrePlantilla plantilla propia a aplicar si no se envía mapeo, o nulo
    * @param sesion coordinador; solo sus docentes cuentan como encontrados
    * @return columnas detectadas, mapeo, errores por fila y vista previa por docente
    * @throws ArchivoDemasiadoGrandeException si supera el tamaño permitido
    */
   @Transactional(readOnly = true)
-  public ReporteImportacionResponse validar(MultipartFile archivo, UsuarioSesion sesion) {
-    Analisis analisis = analizar(archivo, sesion);
+  public ReporteImportacionResponse validar(
+      MultipartFile archivo, String mapeoJson, String nombrePlantilla, UsuarioSesion sesion) {
+    Analisis analisis = analizar(archivo, mapeoJson, nombrePlantilla, sesion);
     Optional<PeriodoAcademico> periodo = periodoService.buscarPeriodoActivo();
     if (periodo.isEmpty()) {
       analisis.advertencias.add(
@@ -114,6 +119,8 @@ public class ImportacionService {
    * comentario, pero la carga queda registrada como rechazada.
    *
    * @param archivo CSV subido
+   * @param mapeoJson mapeo columna → campo como JSON, o nulo
+   * @param nombrePlantilla plantilla propia a aplicar si no se envía mapeo, o nulo
    * @param sesion coordinador que carga
    * @return el registro de la carga y su reporte; {@link ResultadoImportacionResponse#fueExitosa()}
    *     dice si se guardó
@@ -121,10 +128,11 @@ public class ImportacionService {
    * @throws EtapaCerradaException si la recolección de calificaciones no está abierta
    * @throws ArchivoDemasiadoGrandeException si supera el tamaño permitido
    */
-  public ResultadoImportacionResponse importar(MultipartFile archivo, UsuarioSesion sesion) {
+  public ResultadoImportacionResponse importar(
+      MultipartFile archivo, String mapeoJson, String nombrePlantilla, UsuarioSesion sesion) {
     PeriodoAcademico periodo = periodoService.exigirPeriodoActivo();
     ventanaEtapaService.exigirEtapaAbierta(periodo, TipoEtapa.RECOLECCION_CALIFICACIONES);
-    Analisis analisis = analizar(archivo, sesion);
+    Analisis analisis = analizar(archivo, mapeoJson, nombrePlantilla, sesion);
     avisarSiYaSeImporto(analisis, periodo);
     ReporteImportacionResponse reporte = analisis.reporte();
 
@@ -214,7 +222,15 @@ public class ImportacionService {
         comentariosRepetidos);
   }
 
-  private Analisis analizar(MultipartFile archivo, UsuarioSesion sesion) {
+  private Analisis analizar(
+      MultipartFile archivo, String mapeoJson, String nombrePlantilla, UsuarioSesion sesion) {
+    // El mapeo y la plantilla se revisan antes que el archivo: un error ahí es de la petición (400
+    // o 404), no del contenido.
+    Map<String, CampoImportacion> mapeoExplicito = plantillaService.leerMapeo(mapeoJson);
+    Optional<ResolutorMapeo.Plantilla> plantillaNombrada =
+        mapeoExplicito == null && StringUtils.hasText(nombrePlantilla)
+            ? Optional.of(plantillaService.buscarPorNombre(nombrePlantilla, sesion))
+            : Optional.empty();
     byte[] contenido = leerContenido(archivo);
     Analisis analisis =
         new Analisis(nombreSeguro(archivo.getOriginalFilename()), sha256(contenido));
@@ -228,26 +244,47 @@ public class ImportacionService {
     analisis.codificacion = tabla.codificacion();
     analisis.delimitador = String.valueOf(tabla.delimitador());
     analisis.columnas = tabla.columnas();
-    analisis.mapeo = sugerirMapeo(tabla.columnas());
     analisis.filasProcesadas = tabla.filas().size();
     if (tabla.filas().isEmpty()) {
       analisis.erroresArchivo.add(
           ErrorFilaResponse.delArchivo("El archivo solo tiene el encabezado, sin filas de datos"));
     }
 
-    Map<CampoImportacion, String> columnaDeCampo = invertir(analisis.mapeo);
-    analisis.sinMapear =
-        Arrays.stream(CampoImportacion.values())
-            .filter(campo -> campo.isObligatorio() && !columnaDeCampo.containsKey(campo))
-            .toList();
+    ResolutorMapeo.ResultadoMapeo mapeo =
+        resolutorMapeo.resolver(
+            tabla.columnas(),
+            mapeoExplicito,
+            plantillaNombrada,
+            mapeoExplicito == null && plantillaNombrada.isEmpty()
+                ? plantillaService.plantillasDe(sesion)
+                : List.of());
+    analisis.mapeo = mapeo.mapeo();
+    analisis.origenMapeo = mapeo.origen();
+    analisis.nombrePlantilla = mapeo.nombrePlantilla();
+    analisis.columnasFaltantes = mapeo.columnasFaltantes();
+    analisis.columnasNuevas = mapeo.columnasNuevas();
+    analisis.sinMapear = mapeo.obligatoriosSinMapear();
+    if (!mapeo.columnasFaltantes().isEmpty() || !mapeo.columnasNuevas().isEmpty()) {
+      analisis.advertencias.add(
+          "El archivo no tiene las mismas columnas que la plantilla \""
+              + mapeo.nombrePlantilla()
+              + "\". Faltan: "
+              + listar(mapeo.columnasFaltantes())
+              + ". Nuevas: "
+              + listar(mapeo.columnasNuevas()));
+    }
+    mapeo
+        .errores()
+        .forEach(error -> analisis.erroresArchivo.add(ErrorFilaResponse.delArchivo(error)));
     for (CampoImportacion campo : analisis.sinMapear) {
       analisis.erroresArchivo.add(
           ErrorFilaResponse.delArchivo(
-              "Ninguna columna corresponde al campo obligatorio " + campo.getEtiqueta()));
+              "Ninguna columna está asignada al campo obligatorio " + campo.getEtiqueta()));
     }
-    if (!analisis.sinMapear.isEmpty()) {
+    if (!analisis.sinMapear.isEmpty() || !mapeo.errores().isEmpty()) {
       return analisis;
     }
+    Map<CampoImportacion, String> columnaDeCampo = invertir(analisis.mapeo);
     analisis.validacion =
         validador.validar(tabla, columnaDeCampo, buscadorDeDocentes(tabla, columnaDeCampo, sesion));
     return analisis;
@@ -280,16 +317,10 @@ public class ImportacionService {
     return correo -> Optional.ofNullable(visibles.get(correo));
   }
 
-  /** Asigna cada columna al primer campo libre que la reconoce por su nombre. */
-  static Map<String, CampoImportacion> sugerirMapeo(List<String> columnas) {
-    Map<String, CampoImportacion> mapeo = new LinkedHashMap<>();
-    for (String columna : columnas) {
-      Arrays.stream(CampoImportacion.values())
-          .filter(campo -> !mapeo.containsValue(campo) && campo.reconoce(columna))
-          .findFirst()
-          .ifPresent(campo -> mapeo.put(columna, campo));
-    }
-    return mapeo;
+  private static String listar(List<String> columnas) {
+    return columnas.isEmpty()
+        ? "ninguna"
+        : columnas.stream().map(columna -> "\"" + columna + "\"").collect(Collectors.joining(", "));
   }
 
   static Map<CampoImportacion, String> invertir(Map<String, CampoImportacion> mapeo) {
@@ -361,6 +392,10 @@ public class ImportacionService {
     private String delimitador;
     private List<String> columnas = List.of();
     private Map<String, CampoImportacion> mapeo = Map.of();
+    private ResolutorMapeo.OrigenMapeo origenMapeo;
+    private String nombrePlantilla;
+    private List<String> columnasFaltantes = List.of();
+    private List<String> columnasNuevas = List.of();
     private List<CampoImportacion> sinMapear = List.of();
     private int filasProcesadas;
     private ResultadoValidacion validacion;
@@ -396,6 +431,10 @@ public class ImportacionService {
           delimitador,
           columnas,
           mapeo,
+          origenMapeo,
+          nombrePlantilla,
+          columnasFaltantes,
+          columnasNuevas,
           sinMapear,
           filasProcesadas,
           filasConError,

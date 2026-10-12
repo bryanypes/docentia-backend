@@ -390,3 +390,102 @@ Qué pasa al importar:
 
 Lista de `importacion` (mismo objeto de arriba), de la más reciente a la más antigua. Incluye las
 rechazadas. Coordinador: solo las suyas. Vicerrector: todas. Docente: `403`.
+
+---
+
+## C5 — Mapeo de columnas y plantillas
+
+Integra con C4 en un solo flujo: **validar (+ mapeo) → importar (+ el mismo mapeo)**.
+
+### Campos nuevos en `POST /api/importaciones/csv/validar` y `POST /api/importaciones/csv`
+
+Son campos de texto del mismo `multipart/form-data`, además de `archivo`:
+
+| Campo       | Contenido | Ejemplo |
+| ----------- | --------- | ------- |
+| `mapeo`     | JSON **columna del archivo → campo esperado** (valores de la tabla de campos de C4). Las columnas que no aparezcan se ignoran. | `{"Email":"CORREO_DOCENTE","Dom.":"DOMINIO_DISCIPLINAR", …}` |
+| `plantilla` | Nombre de una plantilla propia (sin distinguir mayúsculas). Se ignora si llega `mapeo`. | `Power BI 2026-1` |
+
+En JavaScript:
+
+```js
+const datos = new FormData()
+datos.append('archivo', archivo)
+datos.append('mapeo', JSON.stringify(mapeo)) // opcional
+await fetch('/api/importaciones/csv/validar', { method: 'POST', headers: { Authorization }, body: datos })
+```
+
+**Qué mapeo se aplica (en este orden):**
+
+1. `mapeo` enviado → `origenMapeo: "MANUAL"`.
+2. `plantilla` enviada → `origenMapeo: "PLANTILLA"`.
+3. Una plantilla del usuario con **exactamente las mismas columnas** que el archivo → se usa sola
+   (`"PLANTILLA"`). Así el archivo del siguiente periodo no pide mapear otra vez.
+4. Reconocimiento por nombre de columna → `"AUTOMATICO"`.
+
+**Campos nuevos en el reporte:** `origenMapeo`, `plantilla` (nombre aplicado o `null`),
+`columnasFaltantes` y `columnasNuevas` (diferencias entre el archivo y la plantilla), además de
+`columnas`, `mapeo` y `camposObligatoriosSinMapear` que ya existían.
+
+Pantalla sugerida: después de `/validar`, mostrar una fila por cada valor de `columnas` con un
+selector de campo (precargado con `mapeo`), marcar en rojo `camposObligatoriosSinMapear`, y volver a
+llamar `/validar` con el `mapeo` elegido hasta que `valido` sea `true`. Luego `/csv` con el mismo
+`mapeo`.
+
+**Errores:**
+
+| Código | Motivo |
+| ------ | ------ |
+| `400`  | `mapeo` no es un objeto JSON o usa un campo que no existe: `"El mapeo debe ser un objeto JSON de columna a campo, con campos de la lista esperada"` |
+| `404`  | `plantilla` no existe entre las del usuario: `"Plantilla no encontrada"` |
+| `422`  | (en `/csv`) queda un campo obligatorio sin columna, el mapeo nombra una columna que no está en el archivo o asigna un campo a dos columnas. Van en `reporte.errores` con `fila: null` |
+
+Si la plantilla no coincide con el archivo, el reporte trae una advertencia como
+`El archivo no tiene las mismas columnas que la plantilla "Power BI". Faltan: "Metod.". Nuevas: "Metodología"`,
+las asignaciones de columnas que ya no existen se descartan y, si alguna era obligatoria, aparece en
+`camposObligatoriosSinMapear`.
+
+### `GET /api/importaciones/plantillas`
+
+Solo `COORDINADOR`; cada uno ve únicamente las suyas. `200`:
+
+```json
+[
+  {
+    "idPlantilla": 1,
+    "nombre": "Power BI 2026-1",
+    "columnas": ["Email", "Dom.", "Plan.", "Metod.", "Eval.", "Comp.", "Obs"],
+    "mapeo": { "Email": "CORREO_DOCENTE", "Dom.": "DOMINIO_DISCIPLINAR", "Obs": "COMENTARIO" },
+    "fechaActualizacion": "2026-10-20T10:02:11.5"
+  }
+]
+```
+
+### `POST /api/importaciones/plantillas`
+
+```json
+{
+  "nombre": "Power BI 2026-1",
+  "columnas": ["Email", "Dom.", "Plan.", "Metod.", "Eval.", "Comp.", "Obs"],
+  "mapeo": { "Email": "CORREO_DOCENTE", "Dom.": "DOMINIO_DISCIPLINAR", "Plan.": "PLANEACION_ACADEMICA",
+             "Metod.": "METODOLOGIA_ENSENANZA", "Eval.": "EVALUACION_APRENDIZAJE",
+             "Comp.": "COMPROMISO_INSTITUCIONAL", "Obs": "COMENTARIO" }
+}
+```
+
+Lo natural es enviar `columnas` y `mapeo` tal como los devolvió `/validar` cuando quedó `valido`.
+Si ya existe una plantilla propia con ese nombre, se reemplaza. `200` con la plantilla.
+`400` si falta un campo, si el mapeo usa una columna que no está en `columnas`, si asigna un campo
+dos veces o si no cubre los campos obligatorios.
+
+### `DELETE /api/importaciones/plantillas/{idPlantilla}`
+
+`204`. `404` si no existe o es de otro coordinador.
+
+### Archivos de ejemplo (`docs/ejemplos/`)
+
+| Archivo | Para qué |
+| ------- | -------- |
+| `evaluacion-estudiantes-ejemplo.csv` | Válido, `;`, coma decimal. Julián (corrige su nota de estudiantes del seed: deja rastro en D2) y Óscar (nota nueva y una fila solo con comentario). |
+| `evaluacion-estudiantes-con-errores.csv` | Rechazado a propósito: nota 7, texto en vez de número, nota vacía, docente de Derecho (fuera del alcance de Ingeniería) y correo inexistente. |
+| `evaluacion-power-bi-columnas-propias.csv` + `mapeo-power-bi.json` | Encabezados que no se reconocen solos; se importan enviando el mapeo. |

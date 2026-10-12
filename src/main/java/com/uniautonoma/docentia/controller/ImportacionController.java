@@ -34,6 +34,8 @@ public class ImportacionController {
    * Revisa el archivo sin guardar nada.
    *
    * @param archivo CSV en la parte "archivo" del formulario multipart
+   * @param mapeo opcional: JSON columna → campo; reemplaza la sugerencia automática
+   * @param plantilla opcional: nombre de una plantilla propia, si no se envía mapeo
    * @param sesion coordinador autenticado
    * @return columnas detectadas, mapeo, errores y vista previa; 200 aunque el archivo tenga errores
    */
@@ -41,14 +43,18 @@ public class ImportacionController {
   @PreAuthorize("hasRole('COORDINADOR')")
   public ReporteImportacionResponse validarCsv(
       @RequestPart("archivo") MultipartFile archivo,
+      @RequestParam(required = false) String mapeo,
+      @RequestParam(required = false) String plantilla,
       @AuthenticationPrincipal UsuarioSesion sesion) {
-    return importacionService.validar(archivo, sesion);
+    return importacionService.validar(archivo, mapeo, plantilla, sesion);
   }
 
   /**
    * Importa el archivo en el periodo activo.
    *
    * @param archivo CSV en la parte "archivo" del formulario multipart
+   * @param mapeo opcional: JSON columna → campo; reemplaza la sugerencia automática
+   * @param plantilla opcional: nombre de una plantilla propia, si no se envía mapeo
    * @param sesion coordinador autenticado
    * @return 200 si se importó; 422 con el reporte si se rechazó y no se guardó nada
    */
@@ -56,8 +62,11 @@ public class ImportacionController {
   @PreAuthorize("hasRole('COORDINADOR')")
   public ResponseEntity<ResultadoImportacionResponse> importarCsv(
       @RequestPart("archivo") MultipartFile archivo,
+      @RequestParam(required = false) String mapeo,
+      @RequestParam(required = false) String plantilla,
       @AuthenticationPrincipal UsuarioSesion sesion) {
-    ResultadoImportacionResponse resultado = importacionService.importar(archivo, sesion);
+    ResultadoImportacionResponse resultado =
+        importacionService.importar(archivo, mapeo, plantilla, sesion);
     HttpStatus estado = resultado.fueExitosa() ? HttpStatus.OK : HttpStatus.UNPROCESSABLE_ENTITY;
     return ResponseEntity.status(estado).body(resultado);
   }
