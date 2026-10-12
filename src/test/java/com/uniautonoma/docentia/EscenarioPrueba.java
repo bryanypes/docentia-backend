@@ -12,6 +12,7 @@ import com.uniautonoma.docentia.repository.FacultadRepository;
 import com.uniautonoma.docentia.repository.PeriodoAcademicoRepository;
 import com.uniautonoma.docentia.repository.ProgramaRepository;
 import com.uniautonoma.docentia.repository.UsuarioRepository;
+import com.uniautonoma.docentia.service.PromedioService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.springframework.stereotype.Component;
@@ -27,13 +28,16 @@ public class EscenarioPrueba {
   private final UsuarioRepository usuarioRepository;
   private final PeriodoAcademicoRepository periodoRepository;
   private final CalificacionRepository calificacionRepository;
+  private final PromedioService promedioService;
 
   public EscenarioPrueba(
       FacultadRepository facultadRepository,
       ProgramaRepository programaRepository,
       UsuarioRepository usuarioRepository,
       PeriodoAcademicoRepository periodoRepository,
-      CalificacionRepository calificacionRepository) {
+      CalificacionRepository calificacionRepository,
+      PromedioService promedioService) {
+    this.promedioService = promedioService;
     this.facultadRepository = facultadRepository;
     this.programaRepository = programaRepository;
     this.usuarioRepository = usuarioRepository;
@@ -84,7 +88,10 @@ public class EscenarioPrueba {
       Usuario docente, PeriodoAcademico periodo, FuenteEvaluacion fuente, NotasAspectos notas) {
     Calificacion calificacion = new Calificacion(docente, periodo, fuente);
     calificacion.registrar(notas, "Observación reservada de " + fuente, null);
-    return calificacionRepository.saveAndFlush(calificacion);
+    Calificacion guardada = calificacionRepository.saveAndFlush(calificacion);
+    // Igual que al calificar por la API: cada calificación deja el promedio al día.
+    promedioService.recalcular(docente.getIdUsuario(), periodo.getIdPeriodo());
+    return guardada;
   }
 
   private PeriodoAcademico crearPeriodo(String nombre, LocalDate fechaInicio) {

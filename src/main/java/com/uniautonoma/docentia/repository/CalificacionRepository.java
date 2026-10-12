@@ -44,4 +44,34 @@ public interface CalificacionRepository extends JpaRepository<Calificacion, Long
       order by c.periodo.fechaInicio desc
       """)
   List<PeriodoAcademico> buscarPeriodosCalificados(Long idDocente);
+
+  /**
+   * Lista los docentes que tienen al menos una calificación en un periodo.
+   *
+   * @param idPeriodo identificador del periodo
+   * @return identificadores de los docentes, sin repetir
+   */
+  @Query(
+      """
+      select distinct c.docente.idUsuario from Calificacion c
+      where c.periodo.idPeriodo = :idPeriodo
+      """)
+  List<Long> buscarDocentesCalificados(Long idPeriodo);
+
+  /**
+   * Lista los pares docente y periodo que tienen calificaciones pero todavía no un promedio
+   * guardado, como en las bases creadas antes de que existiera la tabla de promedios.
+   *
+   * @return pares sin promedio, sin repetir
+   */
+  @Query(
+      """
+      select distinct new com.uniautonoma.docentia.repository.DocentePeriodo(
+          c.docente.idUsuario, c.periodo.idPeriodo)
+      from Calificacion c
+      where not exists (
+          select 1 from PromedioDocente p
+          where p.docente = c.docente and p.periodo = c.periodo)
+      """)
+  List<DocentePeriodo> buscarSinPromedio();
 }

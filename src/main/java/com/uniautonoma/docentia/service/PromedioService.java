@@ -6,27 +6,48 @@ import com.uniautonoma.docentia.entity.Dimension;
 import com.uniautonoma.docentia.entity.FuenteEvaluacion;
 import com.uniautonoma.docentia.entity.NotasAspectos;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
+import com.uniautonoma.docentia.entity.PesosFuentes;
+import com.uniautonoma.docentia.entity.Ponderacion;
+import com.uniautonoma.docentia.entity.PromedioDocente;
 import com.uniautonoma.docentia.repository.CalificacionRepository;
+import com.uniautonoma.docentia.repository.DocentePeriodo;
+import com.uniautonoma.docentia.repository.PeriodoAcademicoRepository;
+import com.uniautonoma.docentia.repository.PonderacionRepository;
+import com.uniautonoma.docentia.repository.PromedioDocenteRepository;
+import com.uniautonoma.docentia.repository.UsuarioRepository;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.Map;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-/** Promedio ponderado de un docente a partir de las calificaciones registradas en un periodo. */
+/**
+ * Promedio ponderado de un docente. Se calcula y se guarda cada vez que cambia una calificación o
+ * la ponderación del periodo; las consultas leen el valor guardado.
+ */
 @Service
 @Transactional(readOnly = true)
 public class PromedioService {
 
   private final CalificacionRepository calificacionRepository;
-  private final PonderacionService ponderacionService;
+  private final PonderacionRepository ponderacionRepository;
+  private final PromedioDocenteRepository promedioRepository;
+  private final UsuarioRepository usuarioRepository;
+  private final PeriodoAcademicoRepository periodoRepository;
   private final CalculadoraPromedioPonderado calculadora;
 
   public PromedioService(
       CalificacionRepository calificacionRepository,
-      PonderacionService ponderacionService,
+      PonderacionRepository ponderacionRepository,
+      PromedioDocenteRepository promedioRepository,
+      UsuarioRepository usuarioRepository,
+      PeriodoAcademicoRepository periodoRepository,
       CalculadoraPromedioPonderado calculadora) {
     this.calificacionRepository = calificacionRepository;
-    this.ponderacionService = ponderacionService;
+    this.ponderacionRepository = ponderacionRepository;
+    this.promedioRepository = promedioRepository;
+    this.usuarioRepository = usuarioRepository;
+    this.periodoRepository = periodoRepository;
     this.calculadora = calculadora;
   }
 
@@ -38,27 +59,28 @@ public class PromedioService {
    * @return notas por fuente registradas hasta ahora y pesos con que se ponderan
    */
   public EvaluacionPeriodo cargarEvaluacion(Long idDocente, PeriodoAcademico periodo) {
-    Map<FuenteEvaluacion, NotasAspectos> notasPorFuente = new EnumMap<>(FuenteEvaluacion.class);
-    for (Calificacion calificacion :
-        calificacionRepository.findByDocenteIdUsuarioAndPeriodoIdPeriodo(
-            idDocente, periodo.getIdPeriodo())) {
-      notasPorFuente.put(calificacion.getFuente(), calificacion.getNotas());
-    }
-    return new EvaluacionPeriodo(notasPorFuente, ponderacionService.buscarPesos(periodo));
+    return cargarEvaluacion(idDocente, periodo.getIdPeriodo());
   }
 
   /**
-   * Calcula el promedio ponderado general de una evaluación.
+   * Consulta el promedio guardado de un docente en un periodo, sin recalcularlo.
    *
-   * @param evaluacion calificaciones y pesos del periodo
-   * @return promedio completo, o incompleto si alguna fuente no ha calificado
+   * @param idDocente identificador del docente
+   * @param periodo periodo evaluado
+   * @return el promedio guardado; si el docente no tiene calificaciones en el periodo, un promedio
+   *     incompleto con las tres fuentes pendientes
    */
-  public PromedioPonderadoResponse calcularPromedio(EvaluacionPeriodo evaluacion) {
-    return calculadora.calcularPromedio(evaluacion.notasDeFuentes(), evaluacion.pesos());
+  public PromedioPonderadoResponse obtenerPromedio(Long idDocente, PeriodoAcademico periodo) {
+    return promedioRepository
+        .findByDocenteIdUsuarioAndPeriodoIdPeriodo(idDocente, periodo.getIdPeriodo())
+        .map(PromedioDocente::aRespuesta)
+        .orElseGet(
+            () -> PromedioPonderadoResponse.incompleto(Arrays.asList(FuenteEvaluacion.values())));
   }
 
   /**
-   * Calcula el resultado ponderado de una sola dimensión.
+   * Calcula el resultado ponderado de una sola dimensión. No se guarda: se deriva de las notas en
+   * cada consulta.
    *
    * @param evaluacion calificaciones y pesos del periodo
    * @param dimension dimensión consultada
@@ -70,14 +92,73 @@ public class PromedioService {
   }
 
   /**
-   * Calcula el promedio ponderado de un docente en un periodo, con los pesos de ese periodo.
+   * Recalcula y guarda el promedio de un docente en un periodo. Se llama después de registrar o
+   * corregir cualquiera de sus calificaciones.
    *
    * @param idDocente identificador del docente
-   * @param periodo periodo evaluado
-   * @return promedio completo, o incompleto si alguna fuente no ha calificado
+   * @param idPeriodo identificador del periodo
+   * @return el promedio guardado
    */
-  public PromedioPonderadoResponse calcularPromedioDocente(
-      Long idDocente, PeriodoAcademico periodo) {
-    return calcularPromedio(cargarEvaluacion(idDocente, periodo));
+  @Transactional
+  public PromedioPonderadoResponse recalcular(Long idDocente, Long idPeriodo) {
+    EvaluacionPeriodo evaluacion = cargarEvaluacion(idDocente, idPeriodo);
+    PromedioPonderadoResponse resultado =
+        calculadora.calcularPromedio(evaluacion.notasDeFuentes(), evaluacion.pesos());
+    PromedioDocente promedio =
+        promedioRepository
+            .findByDocenteIdUsuarioAndPeriodoIdPeriodo(idDocente, idPeriodo)
+            .orElseGet(
+                () ->
+                    new PromedioDocente(
+                        usuarioRepository.getReferenceById(idDocente),
+                        periodoRepository.getReferenceById(idPeriodo)));
+    promedio.actualizar(resultado);
+    promedioRepository.save(promedio);
+    return resultado;
+  }
+
+  /**
+   * Recalcula los promedios de todos los docentes calificados en un periodo. Se llama cuando
+   * cambian las ponderaciones de ese periodo.
+   *
+   * @param idPeriodo identificador del periodo
+   */
+  @Transactional
+  public void recalcularPeriodo(Long idPeriodo) {
+    for (Long idDocente : calificacionRepository.buscarDocentesCalificados(idPeriodo)) {
+      recalcular(idDocente, idPeriodo);
+    }
+  }
+
+  /**
+   * Calcula los promedios que faltan: calificaciones registradas antes de que existiera la tabla de
+   * promedios.
+   *
+   * @return cuántos promedios se calcularon
+   */
+  @Transactional
+  public int recalcularPendientes() {
+    int calculados = 0;
+    for (DocentePeriodo pendiente : calificacionRepository.buscarSinPromedio()) {
+      recalcular(pendiente.idDocente(), pendiente.idPeriodo());
+      calculados++;
+    }
+    return calculados;
+  }
+
+  private EvaluacionPeriodo cargarEvaluacion(Long idDocente, Long idPeriodo) {
+    Map<FuenteEvaluacion, NotasAspectos> notasPorFuente = new EnumMap<>(FuenteEvaluacion.class);
+    for (Calificacion calificacion :
+        calificacionRepository.findByDocenteIdUsuarioAndPeriodoIdPeriodo(idDocente, idPeriodo)) {
+      notasPorFuente.put(calificacion.getFuente(), calificacion.getNotas());
+    }
+    return new EvaluacionPeriodo(notasPorFuente, buscarPesos(idPeriodo));
+  }
+
+  private PesosFuentes buscarPesos(Long idPeriodo) {
+    return ponderacionRepository
+        .findByPeriodoIdPeriodo(idPeriodo)
+        .map(Ponderacion::getPesos)
+        .orElseGet(PesosFuentes::predeterminados);
   }
 }

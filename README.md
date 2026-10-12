@@ -44,7 +44,28 @@ usuarios con la contraseña `Docentia2026*`:
 | Docente      | julian.hoyos@uniautonoma.edu.co            | Ingeniería de Software |
 | Docente      | luisa.mosquera@uniautonoma.edu.co          | Derecho                |
 
+Además quedan el periodo 2026-1 cerrado y el 2026-2 activo. En 2026-2, Julián Hoyos y Diana
+Astaiza tienen las tres fuentes (estudiantes, coordinación y vicerrectoría), así que su promedio
+sale completo; los demás docentes siguen sin calificar y su promedio sale incompleto.
+
 Fuera del perfil `dev` hay que definir `DOCENTIA_JWT_SECRETO` (mínimo 32 caracteres).
+
+### Recrear la base de desarrollo
+
+Los datos de ejemplo **solo se cargan si la tabla `usuarios` está vacía**. Si la base ya tiene
+datos de una versión anterior, los cambios del seed no aparecen hasta recrearla:
+
+```sql
+-- con la API detenida, desde psql como superusuario
+drop database docentia;
+create database docentia owner docentia;
+```
+
+Al arrancar de nuevo con el perfil `dev`, Flyway crea las tablas y se cargan los datos de ejemplo.
+
+Los promedios ponderados se guardan en la tabla `promedios_docente` y se recalculan cada vez que
+cambia una calificación o la ponderación del periodo. Si una base trae calificaciones sin promedio
+guardado, se calculan solos al arrancar la API.
 
 ## Pruebas y formato
 

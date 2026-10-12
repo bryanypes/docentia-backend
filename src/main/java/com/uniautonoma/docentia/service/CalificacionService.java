@@ -4,6 +4,7 @@ import com.uniautonoma.docentia.dto.CalificacionRequest;
 import com.uniautonoma.docentia.dto.CalificacionResponse;
 import com.uniautonoma.docentia.entity.Calificacion;
 import com.uniautonoma.docentia.entity.FuenteEvaluacion;
+import com.uniautonoma.docentia.entity.NotasAspectos;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.Usuario;
 import com.uniautonoma.docentia.exception.RecursoNoEncontradoException;
@@ -16,7 +17,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
-/** Registro y consulta de las calificaciones que coordinación y vicerrectoría dan a un docente. */
+/**
+ * Registro y consulta de las calificaciones de un docente. Cada registro recalcula y guarda su
+ * promedio del periodo.
+ */
 @Service
 @Transactional
 public class CalificacionService {
@@ -25,16 +29,19 @@ public class CalificacionService {
   private final UsuarioRepository usuarioRepository;
   private final DocenteService docenteService;
   private final PeriodoAcademicoService periodoService;
+  private final PromedioService promedioService;
 
   public CalificacionService(
       CalificacionRepository calificacionRepository,
       UsuarioRepository usuarioRepository,
       DocenteService docenteService,
-      PeriodoAcademicoService periodoService) {
+      PeriodoAcademicoService periodoService,
+      PromedioService promedioService) {
     this.calificacionRepository = calificacionRepository;
     this.usuarioRepository = usuarioRepository;
     this.docenteService = docenteService;
     this.periodoService = periodoService;
+    this.promedioService = promedioService;
   }
 
   /**
@@ -67,7 +74,33 @@ public class CalificacionService {
         solicitud.aNotasAspectos(),
         observacion,
         usuarioRepository.getReferenceById(sesion.idUsuario()));
-    return CalificacionResponse.desde(calificacionRepository.saveAndFlush(calificacion));
+    CalificacionResponse respuesta =
+        CalificacionResponse.desde(calificacionRepository.saveAndFlush(calificacion));
+    promedioService.recalcular(idDocente, periodo.getIdPeriodo());
+    return respuesta;
+  }
+
+  /**
+   * Guarda la nota consolidada de los estudiantes para un docente en un periodo. Es la entrada que
+   * usará la importación desde Campus; si ya había una nota de estudiantes, la reemplaza.
+   *
+   * @param docente docente evaluado
+   * @param periodo periodo al que corresponde la evaluación
+   * @param notas promedio de los cinco aspectos que dieron los estudiantes
+   * @return la calificación guardada
+   */
+  public CalificacionResponse registrarCalificacionEstudiantes(
+      Usuario docente, PeriodoAcademico periodo, NotasAspectos notas) {
+    Calificacion calificacion =
+        calificacionRepository
+            .findByDocenteIdUsuarioAndPeriodoIdPeriodoAndFuente(
+                docente.getIdUsuario(), periodo.getIdPeriodo(), FuenteEvaluacion.ESTUDIANTES)
+            .orElseGet(() -> new Calificacion(docente, periodo, FuenteEvaluacion.ESTUDIANTES));
+    calificacion.registrar(notas, null, null);
+    CalificacionResponse respuesta =
+        CalificacionResponse.desde(calificacionRepository.saveAndFlush(calificacion));
+    promedioService.recalcular(docente.getIdUsuario(), periodo.getIdPeriodo());
+    return respuesta;
   }
 
   /**

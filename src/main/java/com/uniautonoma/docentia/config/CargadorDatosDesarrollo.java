@@ -15,6 +15,8 @@ import com.uniautonoma.docentia.repository.FacultadRepository;
 import com.uniautonoma.docentia.repository.PeriodoAcademicoRepository;
 import com.uniautonoma.docentia.repository.ProgramaRepository;
 import com.uniautonoma.docentia.repository.UsuarioRepository;
+import com.uniautonoma.docentia.service.CalificacionService;
+import com.uniautonoma.docentia.service.PromedioService;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,6 +42,8 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
   private final PeriodoAcademicoRepository periodoRepository;
   private final CalificacionRepository calificacionRepository;
   private final CompromisoRepository compromisoRepository;
+  private final CalificacionService calificacionService;
+  private final PromedioService promedioService;
   private final PasswordEncoder passwordEncoder;
   private final String contrasenaInicial;
 
@@ -50,6 +54,8 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
       PeriodoAcademicoRepository periodoRepository,
       CalificacionRepository calificacionRepository,
       CompromisoRepository compromisoRepository,
+      CalificacionService calificacionService,
+      PromedioService promedioService,
       PasswordEncoder passwordEncoder,
       @Value("${docentia.desarrollo.contrasena-inicial}") String contrasenaInicial) {
     this.usuarioRepository = usuarioRepository;
@@ -58,6 +64,8 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
     this.periodoRepository = periodoRepository;
     this.calificacionRepository = calificacionRepository;
     this.compromisoRepository = compromisoRepository;
+    this.calificacionService = calificacionService;
+    this.promedioService = promedioService;
     this.passwordEncoder = passwordEncoder;
     this.contrasenaInicial = contrasenaInicial;
   }
@@ -104,13 +112,20 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
     PeriodoAcademico periodoActivo = crearPeriodoActivo();
 
     // El periodo anterior queda con las tres fuentes para que el histórico tenga un promedio
-    // completo; en el activo no hay nota de estudiantes, igual que pasará hasta que se importe.
+    // completo (Julián: 4.04 con los pesos 50/30/20).
     calificar(julian, periodoAnterior, FuenteEvaluacion.ESTUDIANTES, null, "4.2");
     calificar(julian, periodoAnterior, FuenteEvaluacion.COORDINACION, coordinadorIngenieria, "3.8");
     calificar(julian, periodoAnterior, FuenteEvaluacion.VICERRECTORIA, vicerrector, "4.0");
+
+    // En el activo, Julián y Diana tienen las tres fuentes y su promedio sale completo (4.34 y
+    // 4.31); Óscar, Luisa y Héctor siguen sin calificar para mostrar el caso incompleto. La nota de
+    // estudiantes entra por el mismo camino que usará la importación desde Campus.
     calificar(julian, periodoActivo, FuenteEvaluacion.COORDINACION, coordinadorIngenieria, "4.3");
     calificar(julian, periodoActivo, FuenteEvaluacion.VICERRECTORIA, vicerrector, "4.0");
+    calificarEstudiantes(julian, periodoActivo, "4.5");
     calificar(diana, periodoActivo, FuenteEvaluacion.COORDINACION, coordinadorIngenieria, "4.6");
+    calificar(diana, periodoActivo, FuenteEvaluacion.VICERRECTORIA, vicerrector, "4.4");
+    calificarEstudiantes(diana, periodoActivo, "4.1");
 
     compromisoRepository.save(
         new Compromiso(
@@ -155,9 +170,18 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
       FuenteEvaluacion fuente,
       Usuario evaluador,
       String nota) {
-    BigDecimal valor = new BigDecimal(nota);
     Calificacion calificacion = new Calificacion(docente, periodo, fuente);
-    calificacion.registrar(new NotasAspectos(valor, valor, valor, valor, valor), null, evaluador);
-    calificacionRepository.save(calificacion);
+    calificacion.registrar(notasIguales(nota), null, evaluador);
+    calificacionRepository.saveAndFlush(calificacion);
+    promedioService.recalcular(docente.getIdUsuario(), periodo.getIdPeriodo());
+  }
+
+  private void calificarEstudiantes(Usuario docente, PeriodoAcademico periodo, String nota) {
+    calificacionService.registrarCalificacionEstudiantes(docente, periodo, notasIguales(nota));
+  }
+
+  private NotasAspectos notasIguales(String nota) {
+    BigDecimal valor = new BigDecimal(nota);
+    return new NotasAspectos(valor, valor, valor, valor, valor);
   }
 }
