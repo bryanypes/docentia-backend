@@ -31,3 +31,6 @@ docentia:
   importacion:
     tamano-maximo-bytes: 2097152
     filas-maximas: 5000
+
+  kpi:
+    destacado-umbral: 4.5
