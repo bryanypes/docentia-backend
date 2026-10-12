@@ -48,6 +48,12 @@ Además quedan el periodo 2026-1 cerrado y el 2026-2 activo. En 2026-2, Julián 
 Astaiza tienen las tres fuentes (estudiantes, coordinación y vicerrectoría), así que su promedio
 sale completo; los demás docentes siguen sin calificar y su promedio sale incompleto.
 
+Las etapas de 2026-2 son: recolección de calificaciones del 28 de septiembre al 13 de noviembre,
+revisión de hallazgos del 16 al 20 de noviembre, agenda de citas del 23 al 27 de noviembre y firma
+de actas del 30 de noviembre al 4 de diciembre. Calificar y cargar el CSV de estudiantes solo se
+puede durante la recolección; fuera de ella la API responde 409. Si hace falta probar otra fecha,
+se cambian las etapas desde la pantalla de periodos.
+
 Fuera del perfil `dev` hay que definir `DOCENTIA_JWT_SECRETO` (mínimo 32 caracteres).
 
 ### Recrear la base de desarrollo

@@ -6,6 +6,7 @@ import com.uniautonoma.docentia.entity.FuenteEvaluacion;
 import com.uniautonoma.docentia.entity.NotasAspectos;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.Programa;
+import com.uniautonoma.docentia.entity.TipoEtapa;
 import com.uniautonoma.docentia.entity.Usuario;
 import com.uniautonoma.docentia.repository.CalificacionRepository;
 import com.uniautonoma.docentia.repository.FacultadRepository;
@@ -68,6 +69,18 @@ public class EscenarioPrueba {
 
   public PeriodoAcademico crearPeriodoActivo(String nombre) {
     PeriodoAcademico periodo = crearPeriodo(nombre, LocalDate.of(2026, 8, 3));
+    // La recolección cubre todo el periodo, así que incluye el día fijo de las pruebas.
+    periodo.programarEtapa(
+        TipoEtapa.RECOLECCION_CALIFICACIONES, periodo.getFechaInicio(), periodo.getFechaFin());
+    periodo.setEsActivo(true);
+    return periodoRepository.saveAndFlush(periodo);
+  }
+
+  /** Crea el periodo activo con la recolección abierta solo entre las fechas indicadas. */
+  public PeriodoAcademico crearPeriodoActivoConRecoleccion(
+      String nombre, LocalDate apertura, LocalDate cierre) {
+    PeriodoAcademico periodo = crearPeriodo(nombre, LocalDate.of(2026, 8, 3));
+    periodo.programarEtapa(TipoEtapa.RECOLECCION_CALIFICACIONES, apertura, cierre);
     periodo.setEsActivo(true);
     return periodoRepository.saveAndFlush(periodo);
   }

@@ -150,16 +150,18 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
   private PeriodoAcademico crearPeriodoActivo() {
     PeriodoAcademico periodo =
         new PeriodoAcademico("2026-2", LocalDate.of(2026, 8, 3), LocalDate.of(2026, 12, 5));
+    // La recolección cubre las semanas de desarrollo y la entrega del 6 de noviembre, para que en
+    // local se pueda calificar y cargar el CSV sin tocar fechas.
     periodo.programarEtapa(
-        TipoEtapa.EVALUACION_ESTUDIANTES, LocalDate.of(2026, 10, 19), LocalDate.of(2026, 10, 30));
+        TipoEtapa.RECOLECCION_CALIFICACIONES,
+        LocalDate.of(2026, 9, 28),
+        LocalDate.of(2026, 11, 13));
     periodo.programarEtapa(
-        TipoEtapa.CALIFICACION_COORDINACION, LocalDate.of(2026, 11, 2), LocalDate.of(2026, 11, 13));
+        TipoEtapa.REVISION_HALLAZGOS, LocalDate.of(2026, 11, 16), LocalDate.of(2026, 11, 20));
     periodo.programarEtapa(
-        TipoEtapa.CALIFICACION_VICERRECTORIA,
-        LocalDate.of(2026, 11, 9),
-        LocalDate.of(2026, 11, 20));
+        TipoEtapa.AGENDA_CITAS, LocalDate.of(2026, 11, 23), LocalDate.of(2026, 11, 27));
     periodo.programarEtapa(
-        TipoEtapa.RETROALIMENTACION, LocalDate.of(2026, 11, 23), LocalDate.of(2026, 12, 4));
+        TipoEtapa.FIRMA_ACTAS, LocalDate.of(2026, 11, 30), LocalDate.of(2026, 12, 4));
     periodo.setEsActivo(true);
     return periodoRepository.save(periodo);
   }

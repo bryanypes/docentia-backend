@@ -6,7 +6,9 @@ import com.uniautonoma.docentia.entity.Calificacion;
 import com.uniautonoma.docentia.entity.FuenteEvaluacion;
 import com.uniautonoma.docentia.entity.NotasAspectos;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
+import com.uniautonoma.docentia.entity.TipoEtapa;
 import com.uniautonoma.docentia.entity.Usuario;
+import com.uniautonoma.docentia.exception.EtapaCerradaException;
 import com.uniautonoma.docentia.exception.RecursoNoEncontradoException;
 import com.uniautonoma.docentia.exception.ReglaNegocioException;
 import com.uniautonoma.docentia.repository.CalificacionRepository;
@@ -30,18 +32,21 @@ public class CalificacionService {
   private final DocenteService docenteService;
   private final PeriodoAcademicoService periodoService;
   private final PromedioService promedioService;
+  private final VentanaEtapaService ventanaEtapaService;
 
   public CalificacionService(
       CalificacionRepository calificacionRepository,
       UsuarioRepository usuarioRepository,
       DocenteService docenteService,
       PeriodoAcademicoService periodoService,
-      PromedioService promedioService) {
+      PromedioService promedioService,
+      VentanaEtapaService ventanaEtapaService) {
     this.calificacionRepository = calificacionRepository;
     this.usuarioRepository = usuarioRepository;
     this.docenteService = docenteService;
     this.periodoService = periodoService;
     this.promedioService = promedioService;
+    this.ventanaEtapaService = ventanaEtapaService;
   }
 
   /**
@@ -55,6 +60,7 @@ public class CalificacionService {
    * @return la calificación guardada
    * @throws RecursoNoEncontradoException si el docente no existe o está fuera del alcance
    * @throws ReglaNegocioException si no hay un periodo académico activo
+   * @throws EtapaCerradaException si hoy no está abierta la recolección de calificaciones
    */
   public CalificacionResponse calificarDocente(
       Long idDocente,
@@ -63,6 +69,7 @@ public class CalificacionService {
       UsuarioSesion sesion) {
     Usuario docente = docenteService.buscarDocenteVisible(idDocente, sesion);
     PeriodoAcademico periodo = periodoService.exigirPeriodoActivo();
+    ventanaEtapaService.exigirEtapaAbierta(periodo, TipoEtapa.RECOLECCION_CALIFICACIONES);
     Calificacion calificacion =
         calificacionRepository
             .findByDocenteIdUsuarioAndPeriodoIdPeriodoAndFuente(

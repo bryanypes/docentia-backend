@@ -1,6 +1,7 @@
 package com.uniautonoma.docentia.exception;
 
 import com.uniautonoma.docentia.dto.ErrorResponse;
+import com.uniautonoma.docentia.dto.EtapaCerradaResponse;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
@@ -24,6 +25,12 @@ public class ManejadorGlobalExcepciones {
   @ResponseStatus(HttpStatus.CONFLICT)
   public ErrorResponse manejarReglaNegocio(ReglaNegocioException excepcion) {
     return new ErrorResponse(excepcion.getMessage());
+  }
+
+  @ExceptionHandler(EtapaCerradaException.class)
+  @ResponseStatus(HttpStatus.CONFLICT)
+  public EtapaCerradaResponse manejarEtapaCerrada(EtapaCerradaException excepcion) {
+    return EtapaCerradaResponse.desde(excepcion);
   }
 
   @ExceptionHandler(CredencialesInvalidasException.class)
