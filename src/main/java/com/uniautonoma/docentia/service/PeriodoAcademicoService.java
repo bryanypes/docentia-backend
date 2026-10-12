@@ -3,6 +3,7 @@ package com.uniautonoma.docentia.service;
 import com.uniautonoma.docentia.dto.EtapaPeriodoRequest;
 import com.uniautonoma.docentia.dto.PeriodoAcademicoRequest;
 import com.uniautonoma.docentia.dto.PeriodoAcademicoResponse;
+import com.uniautonoma.docentia.dto.VentanaEtapaResponse;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.TipoEtapa;
 import com.uniautonoma.docentia.exception.DatosInvalidosException;
@@ -22,9 +23,24 @@ import org.springframework.transaction.annotation.Transactional;
 public class PeriodoAcademicoService {
 
   private final PeriodoAcademicoRepository periodoRepository;
+  private final VentanaEtapaService ventanaEtapaService;
 
-  public PeriodoAcademicoService(PeriodoAcademicoRepository periodoRepository) {
+  public PeriodoAcademicoService(
+      PeriodoAcademicoRepository periodoRepository, VentanaEtapaService ventanaEtapaService) {
     this.periodoRepository = periodoRepository;
+    this.ventanaEtapaService = ventanaEtapaService;
+  }
+
+  /**
+   * Describe hoy las cuatro etapas del periodo activo. Las etapas se cargan bajo demanda, así que
+   * el periodo y sus etapas se leen dentro de la misma transacción.
+   *
+   * @return una entrada por etapa, en el orden del proceso
+   * @throws ReglaNegocioException si no hay un periodo activo
+   */
+  @Transactional(readOnly = true)
+  public List<VentanaEtapaResponse> describirVentanasActivas() {
+    return ventanaEtapaService.describirVentanas(exigirPeriodoActivo());
   }
 
   /**

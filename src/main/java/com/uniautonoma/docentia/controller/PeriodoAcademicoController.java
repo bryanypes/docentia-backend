@@ -4,7 +4,6 @@ import com.uniautonoma.docentia.dto.PeriodoAcademicoRequest;
 import com.uniautonoma.docentia.dto.PeriodoAcademicoResponse;
 import com.uniautonoma.docentia.dto.VentanaEtapaResponse;
 import com.uniautonoma.docentia.service.PeriodoAcademicoService;
-import com.uniautonoma.docentia.service.VentanaEtapaService;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -25,12 +24,9 @@ import org.springframework.web.bind.annotation.RestController;
 public class PeriodoAcademicoController {
 
   private final PeriodoAcademicoService periodoService;
-  private final VentanaEtapaService ventanaEtapaService;
 
-  public PeriodoAcademicoController(
-      PeriodoAcademicoService periodoService, VentanaEtapaService ventanaEtapaService) {
+  public PeriodoAcademicoController(PeriodoAcademicoService periodoService) {
     this.periodoService = periodoService;
-    this.ventanaEtapaService = ventanaEtapaService;
   }
 
   /**
@@ -60,7 +56,7 @@ public class PeriodoAcademicoController {
    */
   @GetMapping("/activo/ventanas")
   public List<VentanaEtapaResponse> listarVentanasActivas() {
-    return ventanaEtapaService.describirVentanas(periodoService.exigirPeriodoActivo());
+    return periodoService.describirVentanasActivas();
   }
 
   /**
