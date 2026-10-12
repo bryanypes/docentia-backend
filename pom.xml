@@ -22,9 +22,15 @@
     <jjwt.version>0.13.0</jjwt.version>
     <embedded-postgres.version>2.2.2</embedded-postgres.version>
     <spotless.version>3.10.3</spotless.version>
+    <commons-csv.version>1.14.0</commons-csv.version>
   </properties>
 
   <dependencies>
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-csv</artifactId>
+      <version>${commons-csv.version}</version>
+    </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-web</artifactId>
