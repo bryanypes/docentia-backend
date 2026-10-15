@@ -47,6 +47,10 @@ public class ComentarioEstudiante {
 
   protected ComentarioEstudiante() {}
 
+  public Long getIdComentario() {
+    return idComentario;
+  }
+
   public String getTexto() {
     return texto;
   }

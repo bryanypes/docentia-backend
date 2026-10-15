@@ -34,3 +34,16 @@ docentia:
 
   kpi:
     destacado-umbral: 4.5
+  # Análisis de comentarios con IA (E1). Apagado por defecto: enviar comentarios a un proveedor
+  # externo exige revisar la política de tratamiento de datos de la universidad (Ley 1581 de 2012).
+  ia:
+    habilitado: ${DOCENTIA_IA_HABILITADO:false}
+    proveedor: ${DOCENTIA_IA_PROVEEDOR:simulado}
+    url-base: ${DOCENTIA_IA_URL_BASE:}
+    modelo: ${DOCENTIA_IA_MODELO:}
+    timeout-segundos: ${DOCENTIA_IA_TIMEOUT_SEGUNDOS:60}
+    clave: ${DOCENTIA_IA_CLAVE:}
+    minimo-encuestas: 10
+    worker:
+      habilitado: ${DOCENTIA_IA_WORKER:true}
+      intervalo-ms: 5000

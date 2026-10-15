@@ -4,21 +4,27 @@ import com.uniautonoma.docentia.entity.Calificacion;
 import com.uniautonoma.docentia.entity.Compromiso;
 import com.uniautonoma.docentia.entity.Facultad;
 import com.uniautonoma.docentia.entity.FuenteEvaluacion;
+import com.uniautonoma.docentia.entity.Importacion;
 import com.uniautonoma.docentia.entity.NotasAspectos;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.Programa;
+import com.uniautonoma.docentia.entity.ResultadoImportacion;
 import com.uniautonoma.docentia.entity.TipoEtapa;
 import com.uniautonoma.docentia.entity.Usuario;
 import com.uniautonoma.docentia.repository.CalificacionRepository;
+import com.uniautonoma.docentia.repository.ComentarioEstudianteRepository;
 import com.uniautonoma.docentia.repository.CompromisoRepository;
 import com.uniautonoma.docentia.repository.FacultadRepository;
+import com.uniautonoma.docentia.repository.ImportacionRepository;
 import com.uniautonoma.docentia.repository.PeriodoAcademicoRepository;
 import com.uniautonoma.docentia.repository.ProgramaRepository;
 import com.uniautonoma.docentia.repository.UsuarioRepository;
 import com.uniautonoma.docentia.service.CalificacionService;
 import com.uniautonoma.docentia.service.PromedioService;
+import com.uniautonoma.docentia.service.importacion.ValidadorEvaluacionEstudiantes;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
@@ -46,8 +52,12 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
   private final PromedioService promedioService;
   private final PasswordEncoder passwordEncoder;
   private final String contrasenaInicial;
+  private final ImportacionRepository importacionRepository;
+  private final ComentarioEstudianteRepository comentarioRepository;
 
   public CargadorDatosDesarrollo(
+      ImportacionRepository importacionRepository,
+      ComentarioEstudianteRepository comentarioRepository,
       UsuarioRepository usuarioRepository,
       FacultadRepository facultadRepository,
       ProgramaRepository programaRepository,
@@ -58,6 +68,8 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
       PromedioService promedioService,
       PasswordEncoder passwordEncoder,
       @Value("${docentia.desarrollo.contrasena-inicial}") String contrasenaInicial) {
+    this.importacionRepository = importacionRepository;
+    this.comentarioRepository = comentarioRepository;
     this.usuarioRepository = usuarioRepository;
     this.facultadRepository = facultadRepository;
     this.programaRepository = programaRepository;
@@ -127,6 +139,40 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
     calificar(diana, periodoActivo, FuenteEvaluacion.VICERRECTORIA, vicerrector, "4.4");
     calificarEstudiantes(diana, periodoActivo, "4.1");
 
+    // Comentarios de estudiantes como si vinieran del CSV de Power BI. Julián tiene 13 encuestas
+    // cerradas (alcanza para el análisis con IA) y dos de sus comentarios son ofensivos o sobre su
+    // persona, para que el filtro los excluya. Diana tiene 6: su análisis sale INSUFICIENTE.
+    cargarComentarios(
+        coordinadorIngenieria,
+        periodoActivo,
+        julian,
+        List.of(
+            "Explica con ejemplos reales del sector y se nota que domina la arquitectura de"
+                + " software.",
+            "Las notas de los parciales se demoran más de dos semanas en publicarse.",
+            "Responde las dudas en clase con paciencia.",
+            "A veces el ritmo de la clase es muy rápido y cuesta seguirlo.",
+            "Los talleres prácticos ayudan mucho a entender los patrones de diseño.",
+            "La metodología es pésima: lee las diapositivas y no explica nada.",
+            "Es puntual y siempre llega preparado.",
+            "Los criterios de evaluación de los proyectos no son claros desde el inicio.",
+            "Recomiendo su materia, se aprende bastante.",
+            "La retroalimentación de las entregas llega tarde.",
+            "Excelente manejo del repositorio y de las herramientas del curso.",
+            "Es un profesor muy feo y se viste mal.",
+            "Ese profesor es un idiota."));
+    cargarComentarios(
+        coordinadorIngenieria,
+        periodoActivo,
+        diana,
+        List.of(
+            "Muy clara en sus explicaciones.",
+            "Las clases empiezan siempre a tiempo.",
+            "Deja suficiente material de estudio.",
+            "Califica con criterios justos.",
+            "Podría dejar más ejercicios para practicar.",
+            "Buena docente."));
+
     compromisoRepository.save(
         new Compromiso(
             julian,
@@ -139,6 +185,31 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
             periodoAnterior,
             "Actualizar el microcurrículo de Arquitectura de Software",
             LocalDate.of(2026, 12, 1)));
+  }
+
+  private void cargarComentarios(
+      Usuario coordinador, PeriodoAcademico periodo, Usuario docente, List<String> textos) {
+    Importacion carga =
+        importacionRepository.save(
+            new Importacion(
+                "seed-evaluacion-estudiantes.csv",
+                "seed-" + docente.getCorreo(),
+                periodo,
+                coordinador,
+                ResultadoImportacion.EXITOSA,
+                "UTF-8",
+                ";",
+                textos.size(),
+                0));
+    importacionRepository.flush();
+    for (String texto : textos) {
+      comentarioRepository.insertarSiNoExiste(
+          docente.getIdUsuario(),
+          periodo.getIdPeriodo(),
+          texto,
+          ValidadorEvaluacionEstudiantes.huellaComentario(texto, 1),
+          carga.getIdImportacion());
+    }
   }
 
   private Usuario crearDocente(
@@ -156,8 +227,10 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
         TipoEtapa.RECOLECCION_CALIFICACIONES,
         LocalDate.of(2026, 9, 28),
         LocalDate.of(2026, 11, 13));
+    // En desarrollo las etapas se solapan para poder demostrar todo el flujo entre la demo del
+    // sprint y la entrega del 6 de noviembre; en producción las define la vicerrectoría.
     periodo.programarEtapa(
-        TipoEtapa.REVISION_HALLAZGOS, LocalDate.of(2026, 11, 16), LocalDate.of(2026, 11, 20));
+        TipoEtapa.REVISION_HALLAZGOS, LocalDate.of(2026, 10, 13), LocalDate.of(2026, 11, 20));
     periodo.programarEtapa(
         TipoEtapa.AGENDA_CITAS, LocalDate.of(2026, 11, 23), LocalDate.of(2026, 11, 27));
     periodo.programarEtapa(
