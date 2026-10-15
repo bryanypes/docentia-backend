@@ -13,7 +13,7 @@
 
   <groupId>com.uniautonoma</groupId>
   <artifactId>docentia</artifactId>
-  <version>0.1.0-SNAPSHOT</version>
+  <version>0.2.0</version>
   <name>docentia</name>
   <description>Sistema de evaluación docente de la Corporación Universitaria Autónoma del Cauca</description>
 
