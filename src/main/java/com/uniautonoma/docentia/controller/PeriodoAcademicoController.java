@@ -2,6 +2,7 @@ package com.uniautonoma.docentia.controller;
 
 import com.uniautonoma.docentia.dto.PeriodoAcademicoRequest;
 import com.uniautonoma.docentia.dto.PeriodoAcademicoResponse;
+import com.uniautonoma.docentia.dto.VentanaEtapaResponse;
 import com.uniautonoma.docentia.service.PeriodoAcademicoService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -46,6 +47,16 @@ public class PeriodoAcademicoController {
   @GetMapping("/activo")
   public PeriodoAcademicoResponse obtenerPeriodoActivo() {
     return periodoService.obtenerPeriodoActivo();
+  }
+
+  /**
+   * Dice qué etapas del periodo activo están abiertas hoy, para habilitar o no cada acción.
+   *
+   * @return las cuatro etapas con sus fechas y si están abiertas
+   */
+  @GetMapping("/activo/ventanas")
+  public List<VentanaEtapaResponse> listarVentanasActivas() {
+    return periodoService.describirVentanasActivas();
   }
 
   /**

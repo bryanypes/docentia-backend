@@ -2,13 +2,33 @@ package com.uniautonoma.docentia.repository;
 
 import com.uniautonoma.docentia.entity.Rol;
 import com.uniautonoma.docentia.entity.Usuario;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 
 /** Acceso a datos de los usuarios del sistema. */
 public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
+
+  /**
+   * Busca en una sola consulta los docentes activos de una lista de correos, con su programa y
+   * facultad cargados.
+   *
+   * @param correos correos en minúsculas
+   * @return los docentes que existen; los correos que no aparecen no son de un docente activo
+   */
+  @Query(
+      """
+      select u from Usuario u
+      join fetch u.programa p
+      join fetch p.facultad
+      where u.rol = com.uniautonoma.docentia.entity.Rol.DOCENTE
+        and u.esActivo = true
+        and lower(u.correo) in :correos
+      """)
+  List<Usuario> buscarDocentesActivosPorCorreo(Collection<String> correos);
 
   /**
    * Busca un usuario activo por su correo institucional, sin distinguir mayúsculas.
@@ -17,6 +37,32 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
    * @return el usuario, o vacío si no existe o está inactivo
    */
   Optional<Usuario> findByCorreoIgnoreCaseAndEsActivoTrue(String correo);
+
+  /**
+   * Busca un usuario por correo, activo o no, sin distinguir mayúsculas. Sirve para validar que el
+   * correo no esté tomado, igual que el índice único de la base.
+   *
+   * @param correo correo buscado
+   * @return el usuario que ya usa ese correo, si existe
+   */
+  Optional<Usuario> findByCorreoIgnoreCase(String correo);
+
+  /**
+   * Lista todos los usuarios con su facultad y programa cargados.
+   *
+   * @return usuarios ordenados por nombre
+   */
+  @EntityGraph(attributePaths = {"facultad", "programa", "programa.facultad"})
+  List<Usuario> findAllByOrderByNombreCompletoAsc();
+
+  /**
+   * Busca un usuario con su facultad y programa cargados.
+   *
+   * @param idUsuario identificador del usuario
+   * @return el usuario, si existe
+   */
+  @EntityGraph(attributePaths = {"facultad", "programa", "programa.facultad"})
+  Optional<Usuario> findConAlcanceByIdUsuario(Long idUsuario);
 
   /**
    * Lista los usuarios activos de un rol, con su programa y facultad cargados.

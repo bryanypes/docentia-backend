@@ -19,11 +19,15 @@ public class PonderacionService {
 
   private final PonderacionRepository ponderacionRepository;
   private final PeriodoAcademicoService periodoService;
+  private final PromedioService promedioService;
 
   public PonderacionService(
-      PonderacionRepository ponderacionRepository, PeriodoAcademicoService periodoService) {
+      PonderacionRepository ponderacionRepository,
+      PeriodoAcademicoService periodoService,
+      PromedioService promedioService) {
     this.ponderacionRepository = ponderacionRepository;
     this.periodoService = periodoService;
+    this.promedioService = promedioService;
   }
 
   /**
@@ -44,7 +48,8 @@ public class PonderacionService {
   }
 
   /**
-   * Fija los pesos de las tres fuentes para el periodo activo.
+   * Fija los pesos de las tres fuentes para el periodo activo y recalcula los promedios guardados
+   * de ese periodo.
    *
    * @param solicitud pesos de estudiantes, coordinación y vicerrectoría
    * @return la ponderación guardada
@@ -62,21 +67,8 @@ public class PonderacionService {
             .findByPeriodoIdPeriodo(periodo.getIdPeriodo())
             .orElseGet(() -> new Ponderacion(periodo, pesos));
     ponderacion.setPesos(pesos);
-    ponderacionRepository.save(ponderacion);
+    ponderacionRepository.saveAndFlush(ponderacion);
+    promedioService.recalcularPeriodo(periodo.getIdPeriodo());
     return PonderacionResponse.desde(periodo, pesos, false);
-  }
-
-  /**
-   * Obtiene los pesos con los que se calcula el promedio de un periodo.
-   *
-   * @param periodo periodo consultado
-   * @return pesos configurados para el periodo, o los predeterminados
-   */
-  @Transactional(readOnly = true)
-  public PesosFuentes buscarPesos(PeriodoAcademico periodo) {
-    return ponderacionRepository
-        .findByPeriodoIdPeriodo(periodo.getIdPeriodo())
-        .map(Ponderacion::getPesos)
-        .orElseGet(PesosFuentes::predeterminados);
   }
 }

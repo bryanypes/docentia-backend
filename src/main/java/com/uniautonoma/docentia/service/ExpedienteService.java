@@ -75,7 +75,9 @@ public class ExpedienteService {
     return new ExpedienteDocenteResponse(
         DocenteResponse.desde(docente),
         periodoActivo.map(PeriodoResumenResponse::desde).orElse(null),
-        evaluacion.map(promedioService::calcularPromedio).orElse(null),
+        periodoActivo
+            .map(periodo -> promedioService.obtenerPromedio(idDocente, periodo))
+            .orElse(null),
         evaluacion.map(this::listarNotasPorFuente).orElse(List.of()),
         evaluacion.map(this::listarDimensionesPorFuente).orElse(List.of()),
         listarHistorico(idDocente, periodoActivo.map(PeriodoAcademico::getIdPeriodo).orElse(null)),
@@ -102,7 +104,9 @@ public class ExpedienteService {
     return new ExpedientePropioResponse(
         DocenteResponse.desde(docente),
         periodoActivo.map(PeriodoResumenResponse::desde).orElse(null),
-        evaluacion.map(promedioService::calcularPromedio).orElse(null),
+        periodoActivo
+            .map(periodo -> promedioService.obtenerPromedio(docente.getIdUsuario(), periodo))
+            .orElse(null),
         evaluacion.map(this::listarResultadosPorDimension).orElse(List.of()),
         listarCompromisosVigentes(docente.getIdUsuario()));
   }
@@ -154,7 +158,7 @@ public class ExpedienteService {
             periodo ->
                 new PromedioHistoricoResponse(
                     PeriodoResumenResponse.desde(periodo),
-                    promedioService.calcularPromedioDocente(idDocente, periodo)))
+                    promedioService.obtenerPromedio(idDocente, periodo)))
         .toList();
   }
 

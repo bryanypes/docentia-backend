@@ -1,0 +1,37 @@
+# Reglas del filtro de comentarios (E2). Un comentario que cumple cualquier regla NO se envía al
+# modelo de IA y queda registrado como filtrado.
+#
+# Formato: CATEGORIA | expresión regular
+# - La expresión se aplica al texto normalizado: minúsculas, sin tildes y con un solo espacio entre
+#   palabras ("Está MUY viejo" se revisa como "esta muy viejo").
+# - Las líneas vacías y las que empiezan con # se ignoran.
+# - Al cambiar este archivo hay que reiniciar el backend.
+#
+# Criterio: se filtra lo ofensivo y lo que habla de la PERSONA (apariencia, edad, género, vida
+# privada). Una crítica dura a la práctica docente ("la metodología es pésima", "el material es
+# viejo") NO se filtra: por eso las reglas ambiguas exigen que el sujeto sea el docente.
+
+# Insultos: palabras que son ofensivas en cualquier contexto.
+INSULTO | \b(idiota|imbecil|estupid[oa]|pendej[oa]|hijueputa|hpta|malparid[oa]|gonorrea|huev[oó]n|guevon|marica|zorr[oa]|cretin[oa]|tarad[oa])\b
+# Insultos que dependen del contexto: solo cuando se dicen de la persona.
+INSULTO | \b(es|eres)\s+(un|una)\s+(inutil|basura|bestia|animal|burr[oa])\b
+
+# Apariencia física del docente.
+APARIENCIA | \b(profesor|profesora|profe|docente|el|ella)\s+(es\s+|esta\s+)?(muy\s+)?(fe[oa]|gord[oa]|flac[oa]|calv[oa]|barrigon[a]?|horrible)\b
+APARIENCIA | \b(se viste mal|mal vestid[oa]|su ropa|su cara|su cuerpo|su peinado|su barriga|su aspecto)\b
+
+# Edad.
+EDAD | \b(profesor|profesora|profe|docente|senor|senora)\s+(ya\s+)?(es\s+|esta\s+)?(muy\s+)?(viej[oa]|ancian[oa])\b
+EDAD | \b(ancian[oa]|cucho|cucha|vejestorio)\b
+EDAD | \b(deberia jubilarse|que se jubile|ya se deberia jubilar|por su edad|muy (joven|pelad[oa]) para)\b
+
+# Género, identidad u orientación.
+GENERO | \b(por ser (mujer|hombre)|las mujeres no|los hombres no|histeric[oa]|marimacha|machorra)\b
+GENERO | \b(es|parece)\s+(gay|lesbiana|homosexual|trans|travesti)\b
+
+# Vida privada.
+# "su familia", "su pareja" y "amante" se dejaron por fuera a propósito: aparecen en comentarios
+# válidos ("nos trata como su familia", "trabajo con su pareja de laboratorio", "amante de la
+# programación").
+VIDA_PRIVADA | \bsu (espos[oa]|novi[oa]|hij[oa]s?|divorcio|religion|vida personal|matrimonio)\b
+VIDA_PRIVADA | \b(divorciad[oa]|borrach[oa]|embarazada)\b
