@@ -3,3 +3,9 @@ docentia:
     secreto: secreto-de-desarrollo-local-no-usar-en-produccion
   desarrollo:
     contrasena-inicial: Docentia2026*
+  ia:
+    habilitado: true
+    proveedor: simulado
+    worker:
+      habilitado: true
+      intervalo-ms: 3000

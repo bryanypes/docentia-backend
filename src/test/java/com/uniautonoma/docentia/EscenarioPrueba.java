@@ -1,21 +1,30 @@
 package com.uniautonoma.docentia;
 
 import com.uniautonoma.docentia.entity.Calificacion;
+import com.uniautonoma.docentia.entity.ComentarioEstudiante;
 import com.uniautonoma.docentia.entity.Facultad;
 import com.uniautonoma.docentia.entity.FuenteEvaluacion;
+import com.uniautonoma.docentia.entity.Importacion;
 import com.uniautonoma.docentia.entity.NotasAspectos;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.Programa;
+import com.uniautonoma.docentia.entity.ResultadoImportacion;
 import com.uniautonoma.docentia.entity.TipoEtapa;
 import com.uniautonoma.docentia.entity.Usuario;
 import com.uniautonoma.docentia.repository.CalificacionRepository;
+import com.uniautonoma.docentia.repository.ComentarioEstudianteRepository;
 import com.uniautonoma.docentia.repository.FacultadRepository;
+import com.uniautonoma.docentia.repository.ImportacionRepository;
 import com.uniautonoma.docentia.repository.PeriodoAcademicoRepository;
 import com.uniautonoma.docentia.repository.ProgramaRepository;
 import com.uniautonoma.docentia.repository.UsuarioRepository;
 import com.uniautonoma.docentia.service.PromedioService;
+import com.uniautonoma.docentia.service.importacion.ValidadorEvaluacionEstudiantes;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import org.springframework.stereotype.Component;
 
 /** Crea los datos que se repiten entre pruebas: usuarios por rol, periodos y calificaciones. */
@@ -30,6 +39,8 @@ public class EscenarioPrueba {
   private final PeriodoAcademicoRepository periodoRepository;
   private final CalificacionRepository calificacionRepository;
   private final PromedioService promedioService;
+  private final ImportacionRepository importacionRepository;
+  private final ComentarioEstudianteRepository comentarioRepository;
 
   public EscenarioPrueba(
       FacultadRepository facultadRepository,
@@ -37,13 +48,61 @@ public class EscenarioPrueba {
       UsuarioRepository usuarioRepository,
       PeriodoAcademicoRepository periodoRepository,
       CalificacionRepository calificacionRepository,
-      PromedioService promedioService) {
+      PromedioService promedioService,
+      ImportacionRepository importacionRepository,
+      ComentarioEstudianteRepository comentarioRepository) {
     this.promedioService = promedioService;
+    this.importacionRepository = importacionRepository;
+    this.comentarioRepository = comentarioRepository;
     this.facultadRepository = facultadRepository;
     this.programaRepository = programaRepository;
     this.usuarioRepository = usuarioRepository;
     this.periodoRepository = periodoRepository;
     this.calificacionRepository = calificacionRepository;
+  }
+
+  /**
+   * Carga comentarios de estudiantes como si vinieran de un CSV importado por el coordinador.
+   *
+   * @return los identificadores de los comentarios en el orden recibido
+   */
+  public List<Long> cargarComentarios(
+      Usuario docente, PeriodoAcademico periodo, Usuario coordinador, List<String> textos) {
+    Importacion importacion =
+        importacionRepository.saveAndFlush(
+            new Importacion(
+                "prueba.csv",
+                "0".repeat(64),
+                periodo,
+                coordinador,
+                ResultadoImportacion.EXITOSA,
+                "UTF-8",
+                ";",
+                textos.size(),
+                0));
+    Map<String, Integer> apariciones = new HashMap<>();
+    for (String texto : textos) {
+      int aparicion = apariciones.merge(texto, 1, Integer::sum);
+      comentarioRepository.insertarSiNoExiste(
+          docente.getIdUsuario(),
+          periodo.getIdPeriodo(),
+          texto,
+          ValidadorEvaluacionEstudiantes.huellaComentario(texto, aparicion),
+          importacion.getIdImportacion());
+    }
+    return comentarioRepository
+        .findByDocenteIdUsuarioAndPeriodoIdPeriodoOrderByIdComentarioAsc(
+            docente.getIdUsuario(), periodo.getIdPeriodo())
+        .stream()
+        .map(ComentarioEstudiante::getIdComentario)
+        .toList();
+  }
+
+  /** Programa o reprograma una etapa del periodo. */
+  public PeriodoAcademico abrirEtapa(
+      PeriodoAcademico periodo, TipoEtapa etapa, LocalDate apertura, LocalDate cierre) {
+    periodo.programarEtapa(etapa, apertura, cierre);
+    return periodoRepository.saveAndFlush(periodo);
   }
 
   public Facultad crearFacultad(String nombre) {

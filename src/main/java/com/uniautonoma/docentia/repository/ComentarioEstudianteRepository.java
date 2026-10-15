@@ -35,4 +35,6 @@ public interface ComentarioEstudianteRepository extends JpaRepository<Comentario
    */
   List<ComentarioEstudiante> findByDocenteIdUsuarioAndPeriodoIdPeriodoOrderByIdComentarioAsc(
       Long idDocente, Long idPeriodo);
+
+  long countByDocenteIdUsuarioAndPeriodoIdPeriodo(Long idDocente, Long idPeriodo);
 }

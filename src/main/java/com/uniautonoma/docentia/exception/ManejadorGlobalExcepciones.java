@@ -44,6 +44,12 @@ public class ManejadorGlobalExcepciones {
     return EtapaCerradaResponse.desde(excepcion);
   }
 
+  @ExceptionHandler(ServicioDeshabilitadoException.class)
+  @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
+  public ErrorResponse manejarServicioDeshabilitado(ServicioDeshabilitadoException excepcion) {
+    return new ErrorResponse(excepcion.getMessage());
+  }
+
   /**
    * Una restricción de la base rechazó la escritura, casi siempre porque otra persona guardó el
    * mismo dato al mismo tiempo. El detalle de la base no se envía al cliente.
