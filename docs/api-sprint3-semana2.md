@@ -210,3 +210,102 @@ rol docente y el expediente propio no incluye hallazgos. El borrador tiene su pr
 (`borrador.estado`, hoy siempre `PENDIENTE_VALIDACION`). Cuando E4 permita validarlo completo
 (`VALIDADO`), un endpoint del docente solo podrá mostrar borradores en ese estado y, dentro de ellos,
 solo hallazgos `VALIDADO`. La regla ya está en el modelo (`SolicitudAnalisis.esVisibleParaDocente`).
+
+---
+
+## F1 — Franjas horarias del coordinador
+
+Franjas de **30 minutos exactos** en las que el coordinador atiende citas de retroalimentación.
+Siempre en el **periodo activo**. Abrir, cerrar y eliminar solo se puede durante la etapa
+**agenda de citas** (409 con el cuerpo de B2 fuera de ella); consultar se puede siempre.
+
+Reglas:
+
+- `horaFin` = `horaInicio` + 30 minutos; inicio en minutos exactos y no después de las 23:30.
+- La fecha no puede ser pasada y debe estar dentro de las fechas del periodo.
+- Dos franjas **abiertas** del mismo coordinador no pueden cruzarse. Pegadas sí (9:00–9:30 y
+  9:30–10:00). La regla también está en la base (restricción de exclusión sobre rangos), así que ni
+  dos peticiones simultáneas pueden crear un cruce.
+- Una franja **cerrada** no bloquea: se puede abrir otra en el mismo horario.
+- Una franja con **cita reservada** no se puede cerrar ni eliminar (409).
+- Solo se elimina una franja que nunca tuvo citas; si tuvo, hay que cerrarla (409).
+
+Todos los endpoints son solo para `COORDINADOR` (vicerrector y docente → `403`). Cada coordinador
+maneja únicamente sus franjas; una ajena responde `404 Franja no encontrada`.
+
+### `POST /api/franjas`
+
+```json
+{ "fecha": "2026-11-09", "horaInicio": "08:00", "horaFin": "08:30" }
+```
+
+`201`:
+
+```json
+{
+  "idFranja": 7,
+  "fecha": "2026-11-09",
+  "horaInicio": "08:00:00",
+  "horaFin": "08:30:00",
+  "estado": "ABIERTA",
+  "reservada": false,
+  "reserva": null
+}
+```
+
+| Código | Motivo |
+| ------ | ------ |
+| `400`  | Duración distinta de 30 minutos, fecha pasada, fuera del periodo, campos faltantes |
+| `409`  | Se cruza con otra franja abierta (`"Se cruza con la franja abierta del 2026-11-09 de 08:00 a 08:30"`), agenda cerrada, no hay periodo activo |
+
+### `POST /api/franjas/lote`
+
+Abre o cierra varias franjas. Cada una se procesa por separado: las que no se pueden se **omiten**
+con su motivo y no impiden las demás. Nunca toca franjas reservadas. Máximo 200 por lote.
+
+```json
+{ "accion": "ABRIR", "franjas": [ { "fecha": "2026-11-09", "horaInicio": "08:00", "horaFin": "08:30" } ] }
+```
+
+```json
+{ "accion": "CERRAR", "ids": [7, 8, 9] }
+```
+
+`200`:
+
+```json
+{
+  "accion": "CERRAR",
+  "aplicadas": [
+    { "indice": 0, "idFranja": 7, "fecha": "2026-11-09", "horaInicio": "08:00:00", "horaFin": "08:30:00", "motivo": null }
+  ],
+  "omitidas": [
+    { "indice": 1, "idFranja": 8, "fecha": "2026-11-09", "horaInicio": "08:30:00", "horaFin": "09:00:00", "motivo": "Tiene una cita reservada" },
+    { "indice": 2, "idFranja": 9, "fecha": null, "horaInicio": null, "horaFin": null, "motivo": "Franja no encontrada" }
+  ]
+}
+```
+
+`indice` es la posición en la lista enviada. Motivos posibles al abrir: las mismas reglas del
+`POST` individual y `"Se cruza con otra franja del mismo lote (08:00)"`. Al cerrar:
+`"Tiene una cita reservada"`, `"La franja ya estaba cerrada"`, `"Franja no encontrada"`. La agenda
+cerrada responde `409` para todo el lote.
+
+### `PATCH /api/franjas/{idFranja}/cierre`
+
+Sin cuerpo. `200` con la franja `CERRADA` (si ya estaba cerrada, igual). `409` si tiene cita
+reservada.
+
+### `DELETE /api/franjas/{idFranja}`
+
+`204`. `409` si tiene cita reservada o historial de citas.
+
+### `GET /api/franjas?fecha=&estado=`
+
+Franjas propias del periodo activo, ordenadas por fecha y hora. Filtros opcionales: `fecha`
+(`yyyy-MM-dd`) y `estado` (`ABIERTA`, `CERRADA`). Si una franja está reservada:
+
+```json
+"reservada": true,
+"reserva": { "idCita": 3, "idDocente": 4, "nombreDocente": "Julián Camilo Hoyos" }
+```

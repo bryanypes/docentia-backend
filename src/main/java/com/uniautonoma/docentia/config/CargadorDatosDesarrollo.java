@@ -3,6 +3,7 @@ package com.uniautonoma.docentia.config;
 import com.uniautonoma.docentia.entity.Calificacion;
 import com.uniautonoma.docentia.entity.Compromiso;
 import com.uniautonoma.docentia.entity.Facultad;
+import com.uniautonoma.docentia.entity.FranjaHoraria;
 import com.uniautonoma.docentia.entity.FuenteEvaluacion;
 import com.uniautonoma.docentia.entity.Importacion;
 import com.uniautonoma.docentia.entity.NotasAspectos;
@@ -15,6 +16,7 @@ import com.uniautonoma.docentia.repository.CalificacionRepository;
 import com.uniautonoma.docentia.repository.ComentarioEstudianteRepository;
 import com.uniautonoma.docentia.repository.CompromisoRepository;
 import com.uniautonoma.docentia.repository.FacultadRepository;
+import com.uniautonoma.docentia.repository.FranjaHorariaRepository;
 import com.uniautonoma.docentia.repository.ImportacionRepository;
 import com.uniautonoma.docentia.repository.PeriodoAcademicoRepository;
 import com.uniautonoma.docentia.repository.ProgramaRepository;
@@ -24,6 +26,7 @@ import com.uniautonoma.docentia.service.PromedioService;
 import com.uniautonoma.docentia.service.importacion.ValidadorEvaluacionEstudiantes;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -54,8 +57,10 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
   private final String contrasenaInicial;
   private final ImportacionRepository importacionRepository;
   private final ComentarioEstudianteRepository comentarioRepository;
+  private final FranjaHorariaRepository franjaRepository;
 
   public CargadorDatosDesarrollo(
+      FranjaHorariaRepository franjaRepository,
       ImportacionRepository importacionRepository,
       ComentarioEstudianteRepository comentarioRepository,
       UsuarioRepository usuarioRepository,
@@ -70,6 +75,7 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
       @Value("${docentia.desarrollo.contrasena-inicial}") String contrasenaInicial) {
     this.importacionRepository = importacionRepository;
     this.comentarioRepository = comentarioRepository;
+    this.franjaRepository = franjaRepository;
     this.usuarioRepository = usuarioRepository;
     this.facultadRepository = facultadRepository;
     this.programaRepository = programaRepository;
@@ -108,9 +114,10 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
                 "coordinacion.ingenieria" + DOMINIO_CORREO,
                 hash,
                 ingenieria));
-    usuarioRepository.save(
-        Usuario.crearCoordinador(
-            "Paola Andrea Sarria", "coordinacion.derecho" + DOMINIO_CORREO, hash, derecho));
+    Usuario coordinadorDerecho =
+        usuarioRepository.save(
+            Usuario.crearCoordinador(
+                "Paola Andrea Sarria", "coordinacion.derecho" + DOMINIO_CORREO, hash, derecho));
 
     Usuario julian = crearDocente("Julián Camilo Hoyos", "julian.hoyos", hash, software);
     Usuario diana = crearDocente("Diana Marcela Astaiza", "diana.astaiza", hash, software);
@@ -173,6 +180,28 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
             "Podría dejar más ejercicios para practicar.",
             "Buena docente."));
 
+    // Franjas abiertas para las citas de retroalimentación: los docentes de Ingeniería ven las del
+    // coordinador de Ingeniería y los de Derecho las de su coordinadora.
+    for (String hora : List.of("08:00", "08:30", "09:00", "09:30")) {
+      franjaRepository.save(
+          new FranjaHoraria(
+              coordinadorIngenieria,
+              periodoActivo,
+              LocalDate.of(2026, 11, 9),
+              LocalTime.parse(hora)));
+    }
+    for (String hora : List.of("14:00", "14:30")) {
+      franjaRepository.save(
+          new FranjaHoraria(
+              coordinadorIngenieria,
+              periodoActivo,
+              LocalDate.of(2026, 11, 10),
+              LocalTime.parse(hora)));
+    }
+    franjaRepository.save(
+        new FranjaHoraria(
+            coordinadorDerecho, periodoActivo, LocalDate.of(2026, 11, 9), LocalTime.of(10, 0)));
+
     compromisoRepository.save(
         new Compromiso(
             julian,
@@ -232,7 +261,7 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
     periodo.programarEtapa(
         TipoEtapa.REVISION_HALLAZGOS, LocalDate.of(2026, 10, 13), LocalDate.of(2026, 11, 20));
     periodo.programarEtapa(
-        TipoEtapa.AGENDA_CITAS, LocalDate.of(2026, 11, 23), LocalDate.of(2026, 11, 27));
+        TipoEtapa.AGENDA_CITAS, LocalDate.of(2026, 10, 13), LocalDate.of(2026, 11, 27));
     periodo.programarEtapa(
         TipoEtapa.FIRMA_ACTAS, LocalDate.of(2026, 11, 30), LocalDate.of(2026, 12, 4));
     periodo.setEsActivo(true);

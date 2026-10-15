@@ -49,7 +49,7 @@ Astaiza tienen las tres fuentes (estudiantes, coordinación y vicerrectoría), a
 sale completo; los demás docentes siguen sin calificar y su promedio sale incompleto.
 
 Las etapas de 2026-2 son: recolección de calificaciones del 28 de septiembre al 13 de noviembre,
-revisión de hallazgos del 13 de octubre al 20 de noviembre, agenda de citas del 23 al 27 de
+revisión de hallazgos del 13 de octubre al 20 de noviembre, agenda de citas del 13 de octubre al 27 de
 noviembre y firma de actas del 30 de noviembre al 4 de diciembre. **En desarrollo las etapas se
 solapan a propósito** para poder demostrar todo el flujo antes de la entrega del 6 de noviembre; en
 producción las define la vicerrectoría. Cada acción solo se puede hacer dentro de su etapa; fuera de
@@ -59,6 +59,10 @@ periodos.
 En 2026-2 también hay comentarios de estudiantes, como si vinieran del CSV: Julián tiene 13 (dos
 son ofensivos o sobre su persona, para probar el filtro) y Diana 6, así que su análisis con IA sale
 "evidencia insuficiente".
+
+Para las citas de retroalimentación, el coordinador de Ingeniería tiene franjas abiertas el 9 de
+noviembre (8:00 a 10:00) y el 10 de noviembre (14:00 a 15:00), y la coordinadora de Derecho una el 9
+de noviembre a las 10:00.
 
 Fuera del perfil `dev` hay que definir `DOCENTIA_JWT_SECRETO` (mínimo 32 caracteres).
 
