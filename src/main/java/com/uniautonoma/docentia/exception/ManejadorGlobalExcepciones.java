@@ -44,6 +44,12 @@ public class ManejadorGlobalExcepciones {
     return EtapaCerradaResponse.desde(excepcion);
   }
 
+  @ExceptionHandler(NoProcesableException.class)
+  @ResponseStatus(HttpStatus.UNPROCESSABLE_ENTITY)
+  public ErrorResponse manejarNoProcesable(NoProcesableException excepcion) {
+    return new ErrorResponse(excepcion.getMessage());
+  }
+
   @ExceptionHandler(ServicioDeshabilitadoException.class)
   @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
   public ErrorResponse manejarServicioDeshabilitado(ServicioDeshabilitadoException excepcion) {

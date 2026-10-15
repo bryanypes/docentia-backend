@@ -14,6 +14,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -43,11 +44,17 @@ public class Hallazgo {
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false, length = 30)
-  private EstadoHallazgo estado = EstadoHallazgo.PENDIENTE_VALIDACION;
+  private EstadoHallazgo estado = EstadoHallazgo.SIN_CITA_VERIFICADA;
 
   @OneToMany(mappedBy = "hallazgo", cascade = CascadeType.ALL, orphanRemoval = true)
   @OrderBy("idCita asc")
   private List<CitaHallazgo> citas = new ArrayList<>();
+
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "id_validador")
+  private Usuario validador;
+
+  private LocalDateTime fechaValidacion;
 
   protected Hallazgo() {}
 
@@ -61,9 +68,49 @@ public class Hallazgo {
     this.solicitud = solicitud;
   }
 
+  /** Agrega una cita y recalcula el estado: sin ninguna cita verificada no se puede validar. */
   public void agregarCita(CitaHallazgo cita) {
     cita.asignarHallazgo(this);
     citas.add(cita);
+    actualizarEstadoSegunCitas();
+  }
+
+  /** Deja el estado según las citas; un hallazgo sin citas también queda sin cita verificada. */
+  public void actualizarEstadoSegunCitas() {
+    if (estado != EstadoHallazgo.VALIDADO) {
+      estado =
+          tieneCitaVerificada()
+              ? EstadoHallazgo.PENDIENTE_VALIDACION
+              : EstadoHallazgo.SIN_CITA_VERIFICADA;
+    }
+  }
+
+  public boolean tieneCitaVerificada() {
+    return citas.stream().anyMatch(CitaHallazgo::isVerificada);
+  }
+
+  /**
+   * Marca el hallazgo como válido.
+   *
+   * @throws IllegalStateException si no tiene ninguna cita verificada
+   */
+  public void validar(Usuario quien) {
+    if (!tieneCitaVerificada()) {
+      throw new IllegalStateException("El hallazgo no tiene una cita verificada");
+    }
+    if (estado != EstadoHallazgo.VALIDADO) {
+      estado = EstadoHallazgo.VALIDADO;
+      validador = quien;
+      fechaValidacion = LocalDateTime.now();
+    }
+  }
+
+  public Usuario getValidador() {
+    return validador;
+  }
+
+  public LocalDateTime getFechaValidacion() {
+    return fechaValidacion;
   }
 
   public Long getIdHallazgo() {

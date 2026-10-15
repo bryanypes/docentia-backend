@@ -29,11 +29,20 @@ public class CitaHallazgo {
   @Column(nullable = false, length = 1000)
   private String fragmento;
 
+  /** El fragmento aparece en un comentario no filtrado del docente y periodo. */
+  @Column(nullable = false)
+  private boolean verificada;
+
   protected CitaHallazgo() {}
 
-  public CitaHallazgo(Long idComentarioCitado, String fragmento) {
+  public CitaHallazgo(Long idComentarioCitado, String fragmento, boolean verificada) {
     this.idComentarioCitado = idComentarioCitado;
     this.fragmento = fragmento;
+    this.verificada = verificada;
+  }
+
+  public boolean isVerificada() {
+    return verificada;
   }
 
   void asignarHallazgo(Hallazgo hallazgo) {

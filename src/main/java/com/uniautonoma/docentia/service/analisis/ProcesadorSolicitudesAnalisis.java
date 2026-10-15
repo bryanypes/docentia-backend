@@ -180,6 +180,8 @@ public class ProcesadorSolicitudesAnalisis {
 
   private void guardarBorrador(Long idSolicitud, PeticionAnalisis peticion, Generado generado) {
     SolicitudAnalisis solicitud = solicitudRepository.findById(idSolicitud).orElseThrow();
+    // Solo cuentan los comentarios que de verdad se enviaron: no filtrados, del docente y periodo.
+    VerificadorCitas verificador = new VerificadorCitas(peticion.comentarios());
     List<Hallazgo> hallazgos = new ArrayList<>();
     int orden = 1;
     for (HallazgoPropuesto propuesto : generado.hallazgos()) {
@@ -188,7 +190,11 @@ public class ProcesadorSolicitudesAnalisis {
           .citas()
           .forEach(
               cita ->
-                  hallazgo.agregarCita(new CitaHallazgo(cita.comentarioId(), cita.fragmento())));
+                  hallazgo.agregarCita(
+                      new CitaHallazgo(
+                          cita.comentarioId(),
+                          cita.fragmento(),
+                          verificador.esVerificable(cita.comentarioId(), cita.fragmento()))));
       hallazgos.add(hallazgo);
     }
     int encuestas =

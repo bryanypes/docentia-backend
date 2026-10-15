@@ -185,6 +185,14 @@ public class SolicitudAnalisis {
     return estadoBorrador;
   }
 
+  /**
+   * Regla de visibilidad: el docente solo puede ver el borrador cuando coordinación lo validó
+   * completo (E4). Cualquier endpoint futuro para el docente debe consultar esto.
+   */
+  public boolean esVisibleParaDocente() {
+    return estado == EstadoSolicitudAnalisis.COMPLETADO && "VALIDADO".equals(estadoBorrador);
+  }
+
   public LocalDateTime getFechaSolicitud() {
     return fechaSolicitud;
   }
