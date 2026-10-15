@@ -255,3 +255,138 @@ el valor original aunque después haya correcciones: las correcciones posteriore
 dos recálculos simultáneos del mismo docente no fallan ni duplican filas. Lo demuestra
 `PromedioConcurrenciaTest` (10 docentes, dos hilos por docente al mismo tiempo); con la versión
 anterior (buscar y luego insertar) esa prueba fallaba por llave duplicada.
+
+---
+
+## C4 — Carga del CSV de evaluación de estudiantes
+
+Flujo en la pantalla: el coordinador elige el archivo → `POST /api/importaciones/csv/validar`
+(no guarda nada, muestra el reporte) → si `valido` es `true`, el mismo archivo va a
+`POST /api/importaciones/csv`. Con C5 los dos endpoints aceptan además el mapeo de columnas
+(ver la sección C5).
+
+**Roles:** solo `COORDINADOR` puede validar e importar (vicerrector y docente → `403`). No existe
+rol administrador. El historial lo ven coordinador (sus cargas) y vicerrector (todas).
+
+**Formato de la petición:** `multipart/form-data` con el archivo en la parte `archivo`.
+
+### Qué archivo acepta
+
+- Separador `;` o `,` (se detecta en el encabezado). Comillas dobles para textos con `;`, `,` o
+  saltos de línea.
+- UTF-8 (con o sin BOM) o ISO-8859-1/Windows-1252, como lo guarda Excel en español.
+- Decimales con punto o coma: `4.5` y `4,5` valen lo mismo. Sin separador de miles ni signo.
+- Tamaño máximo 2 MB y 5 000 filas de datos (configurable con `docentia.importacion.*`).
+- Primera fila: encabezados. Las filas totalmente vacías se saltan y no cuentan.
+
+| Campo                      | Obligatorio | Encabezados que se reconocen solos (sin tildes ni mayúsculas)    |
+| -------------------------- | ----------- | ----------------------------------------------------------------- |
+| `CORREO_DOCENTE`           | sí          | correo, correo docente, correo del docente, correo electrónico, email |
+| `DOMINIO_DISCIPLINAR`      | sí          | dominio disciplinar                                               |
+| `PLANEACION_ACADEMICA`     | sí          | planeación académica                                              |
+| `METODOLOGIA_ENSENANZA`    | sí          | metodología de enseñanza                                          |
+| `EVALUACION_APRENDIZAJE`   | sí          | evaluación del aprendizaje                                        |
+| `COMPROMISO_INSTITUCIONAL` | sí          | compromiso institucional                                          |
+| `COMENTARIO`               | no          | comentario, comentarios, observación, observaciones               |
+
+Las demás columnas (nombre, programa, etc.) se ignoran.
+
+### Reglas por fila (se valida todo antes de guardar)
+
+- El correo es obligatorio y debe ser de un docente activo **de la facultad del coordinador**. Si
+  no existe o es de otra facultad el motivo es el mismo: `Docente no encontrado`.
+- Las cinco notas van juntas: todas llenas o todas vacías. Cada una entre **0 y 5**.
+- Una fila sin notas pero con comentario es válida (solo agrega el comentario).
+- Una fila sin notas ni comentario es un error.
+- Si un docente tiene varias filas con notas, su nota por aspecto es el **promedio** de esas filas,
+  redondeado a 2 decimales. Con una sola fila por docente queda tal cual.
+- **Todo o nada:** con un solo error no se guarda ninguna nota ni comentario.
+
+### `POST /api/importaciones/csv/validar`
+
+`200` siempre que el archivo llegue (aunque tenga errores; mirar `valido`).
+
+```json
+{
+  "valido": false,
+  "nombreArchivo": "evaluacion-estudiantes.csv",
+  "hashSha256": "9f2c…64 caracteres",
+  "codificacion": "UTF-8",
+  "delimitador": ";",
+  "columnas": ["Correo docente", "Dominio disciplinar", "…", "Comentario"],
+  "mapeo": { "Correo docente": "CORREO_DOCENTE", "Dominio disciplinar": "DOMINIO_DISCIPLINAR" },
+  "camposObligatoriosSinMapear": [],
+  "filasProcesadas": 3,
+  "filasConError": 1,
+  "errores": [
+    { "fila": 3, "columna": "Dominio disciplinar", "valor": "7", "motivo": "La nota debe estar entre 0 y 5" }
+  ],
+  "docentes": [
+    {
+      "idDocente": 4, "nombreCompleto": "Julián Camilo Hoyos",
+      "correo": "julian.hoyos@uniautonoma.edu.co",
+      "filas": 2, "filasConNotas": 2, "comentarios": 2,
+      "dominioDisciplinar": 4.25, "planeacionAcademica": 4.00, "metodologiaEnsenanza": 4.00,
+      "evaluacionAprendizaje": 4.00, "compromisoInstitucional": 4.00, "notaFuente": 4.05
+    }
+  ],
+  "advertencias": ["Este mismo archivo ya se importó en 2026-2 (carga #3); volver a importarlo no duplica notas ni comentarios"]
+}
+```
+
+- `fila` es el número de registro como en Excel (encabezado = 1). Es `null` si el error es del
+  archivo completo (vacío, sin separador, comillas sin cerrar, columna obligatoria faltante);
+  `columna` es `null` si el error es de la fila completa.
+- `errores` trae como máximo 500; `filasConError` tiene el total.
+- `docentes` solo incluye filas válidas. `notaFuente` es el promedio de los cinco aspectos.
+- `advertencias`: archivo ya importado, recolección cerrada hoy, no hay periodo activo.
+
+### `POST /api/importaciones/csv`
+
+Importa en el **periodo activo**. Respuestas:
+
+| Código | Cuándo | Cuerpo |
+| ------ | ------ | ------ |
+| `200`  | Se importó | `ResultadoImportacion` con `importacion.resultado = "EXITOSA"` |
+| `422`  | El archivo tiene errores; **no se guardó nada** | `ResultadoImportacion` con `resultado = "RECHAZADA"` y el reporte |
+| `409`  | No hay periodo activo, o la recolección de calificaciones está cerrada (cuerpo de B2) | error |
+| `413`  | El archivo pesa más de 2 MB | `{ "mensaje": "El archivo pesa más de 2048 KB" }` |
+| `400`  | Falta la parte `archivo` | `{ "mensaje": "Falta la parte \"archivo\" del formulario" }` |
+
+```json
+{
+  "importacion": {
+    "idImportacion": 5,
+    "nombreArchivo": "evaluacion-estudiantes.csv",
+    "hashSha256": "9f2c…",
+    "idPeriodo": 2, "nombrePeriodo": "2026-2",
+    "idUsuario": 2, "nombreUsuario": "Andrés Felipe Ordóñez",
+    "fechaImportacion": "2026-10-20T09:41:10.231",
+    "resultado": "EXITOSA",
+    "codificacion": "UTF-8", "delimitador": ";",
+    "filasProcesadas": 3, "filasConError": 0,
+    "docentesAfectados": 2,
+    "notasNuevas": 1, "notasCorregidas": 1, "notasSinCambios": 0,
+    "comentariosNuevos": 3, "comentariosRepetidos": 0
+  },
+  "reporte": { "…": "mismo formato que /validar" }
+}
+```
+
+Qué pasa al importar:
+
+- La nota de la fuente `ESTUDIANTES` de cada docente se crea o se reemplaza (clave: docente +
+  periodo + fuente). Si cambia, queda en el historial de correcciones (D2) con el motivo
+  `Carga de CSV #<id> (<archivo>)`. La nota guarda qué carga fijó su valor.
+- Se recalcula el promedio ponderado (D1) solo de los docentes cuya nota cambió.
+- Los comentarios se guardan sin duplicar. Clave: docente + periodo + hash del texto normalizado y
+  de su número de aparición en el archivo. Recargar el mismo archivo no agrega nada, pero si dos
+  estudiantes escribieron exactamente lo mismo en el mismo archivo se conservan los dos.
+- Repetir el mismo archivo: `notasSinCambios` y `comentariosRepetidos` suben, nada se duplica, y
+  la carga igual queda registrada.
+- **Los comentarios todavía no se muestran en ningún endpoint** (pendiente: decidir quién los ve).
+
+### `GET /api/importaciones?idPeriodo=`
+
+Lista de `importacion` (mismo objeto de arriba), de la más reciente a la más antigua. Incluye las
+rechazadas. Coordinador: solo las suyas. Vicerrector: todas. Docente: `403`.

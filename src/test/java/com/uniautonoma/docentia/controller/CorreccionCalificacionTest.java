@@ -111,10 +111,10 @@ class CorreccionCalificacionTest extends PruebaIntegracion {
 
     ResultadoRegistro resultado =
         calificacionService.registrarCalificacionEstudiantes(
-            docente, periodo, notas("3.0"), coordinador.getIdUsuario(), "Carga CSV #7");
+            docente, periodo, notas("3.0"), coordinador.getIdUsuario(), "Carga CSV #7", null);
     ResultadoRegistro repetido =
         calificacionService.registrarCalificacionEstudiantes(
-            docente, periodo, notas("3.0"), coordinador.getIdUsuario(), "Carga CSV #8");
+            docente, periodo, notas("3.0"), coordinador.getIdUsuario(), "Carga CSV #8", null);
 
     assertThat(resultado).isEqualTo(ResultadoRegistro.CORREGIDA);
     assertThat(repetido).isEqualTo(ResultadoRegistro.SIN_CAMBIOS);

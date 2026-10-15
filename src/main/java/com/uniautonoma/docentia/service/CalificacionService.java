@@ -7,6 +7,7 @@ import com.uniautonoma.docentia.dto.PromedioPonderadoResponse;
 import com.uniautonoma.docentia.entity.Calificacion;
 import com.uniautonoma.docentia.entity.CorreccionCalificacion;
 import com.uniautonoma.docentia.entity.FuenteEvaluacion;
+import com.uniautonoma.docentia.entity.Importacion;
 import com.uniautonoma.docentia.entity.NotasAspectos;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.TipoEtapa;
@@ -90,18 +91,20 @@ public class CalificacionService {
             textoOpcional(solicitud.observacion()),
             evaluador,
             evaluador,
-            textoOpcional(solicitud.motivoCorreccion()));
+            textoOpcional(solicitud.motivoCorreccion()),
+            null);
     return CalificacionResponse.desde(calificacion);
   }
 
   /**
    * Guarda la nota consolidada de los estudiantes, como lo hace un proceso del sistema (seed).
    *
-   * @see #registrarCalificacionEstudiantes(Usuario, PeriodoAcademico, NotasAspectos, Long, String)
+   * @see #registrarCalificacionEstudiantes(Usuario, PeriodoAcademico, NotasAspectos, Long, String,
+   *     Importacion)
    */
   public ResultadoRegistro registrarCalificacionEstudiantes(
       Usuario docente, PeriodoAcademico periodo, NotasAspectos notas) {
-    return registrarCalificacionEstudiantes(docente, periodo, notas, null, null);
+    return registrarCalificacionEstudiantes(docente, periodo, notas, null, null, null);
   }
 
   /**
@@ -113,14 +116,17 @@ public class CalificacionService {
    * @param notas promedio de los cinco aspectos que dieron los estudiantes
    * @param idResponsable usuario que hizo la carga, o nulo si es un proceso del sistema
    * @param motivo texto que queda en el historial si la nota cambia
-   * @return si la nota era nueva, cambió o quedó igual
+   * @param importacion carga de CSV de la que sale la nota, o nula
+   * @return si la nota era nueva, cambió o quedó igual; si quedó igual no se toca nada y la nota
+   *     sigue apuntando a la carga que fijó su valor
    */
   public ResultadoRegistro registrarCalificacionEstudiantes(
       Usuario docente,
       PeriodoAcademico periodo,
       NotasAspectos notas,
       Long idResponsable,
-      String motivo) {
+      String motivo,
+      Importacion importacion) {
     Usuario responsable =
         idResponsable == null ? null : usuarioRepository.getReferenceById(idResponsable);
     Optional<Calificacion> anterior =
@@ -129,7 +135,16 @@ public class CalificacionService {
     if (anterior.isPresent() && anterior.get().getNotas().mismasNotas(notas)) {
       return ResultadoRegistro.SIN_CAMBIOS;
     }
-    guardar(docente, periodo, FuenteEvaluacion.ESTUDIANTES, notas, null, null, responsable, motivo);
+    guardar(
+        docente,
+        periodo,
+        FuenteEvaluacion.ESTUDIANTES,
+        notas,
+        null,
+        null,
+        responsable,
+        motivo,
+        importacion);
     return anterior.isPresent() ? ResultadoRegistro.CORREGIDA : ResultadoRegistro.NUEVA;
   }
 
@@ -181,7 +196,8 @@ public class CalificacionService {
       String observacion,
       Usuario evaluador,
       Usuario responsable,
-      String motivo) {
+      String motivo,
+      Importacion importacion) {
     Calificacion calificacion =
         calificacionRepository
             .findByDocenteIdUsuarioAndPeriodoIdPeriodoAndFuente(
@@ -195,7 +211,7 @@ public class CalificacionService {
             ? promedioService.obtenerPromedio(docente.getIdUsuario(), periodo.getIdPeriodo())
             : null;
 
-    calificacion.registrar(notas, observacion, evaluador);
+    calificacion.registrar(notas, observacion, evaluador, importacion);
     Calificacion guardada = calificacionRepository.saveAndFlush(calificacion);
     PromedioPonderadoResponse promedioNuevo =
         promedioService.recalcular(docente.getIdUsuario(), periodo.getIdPeriodo());

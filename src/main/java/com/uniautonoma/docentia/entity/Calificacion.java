@@ -46,6 +46,11 @@ public class Calificacion {
   @Column(length = 1000)
   private String observacion;
 
+  /** Carga de CSV que fijó el valor actual; nula si la nota la registró una persona. */
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "id_importacion")
+  private Importacion importacion;
+
   @CreationTimestamp
   @Column(nullable = false, updatable = false)
   private LocalDateTime fechaRegistro;
@@ -63,9 +68,19 @@ public class Calificacion {
   }
 
   public void registrar(NotasAspectos notas, String observacion, Usuario evaluador) {
+    registrar(notas, observacion, evaluador, null);
+  }
+
+  public void registrar(
+      NotasAspectos notas, String observacion, Usuario evaluador, Importacion importacion) {
     this.notas = notas;
     this.observacion = observacion;
     this.evaluador = evaluador;
+    this.importacion = importacion;
+  }
+
+  public Importacion getImportacion() {
+    return importacion;
   }
 
   public Long getIdCalificacion() {

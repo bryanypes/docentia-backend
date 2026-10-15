@@ -12,6 +12,12 @@ spring:
   flyway:
     enabled: true
     locations: classpath:db/migration
+  servlet:
+    multipart:
+      # Un poco más que docentia.importacion.tamano-maximo-bytes para que el límite propio, con
+      # su mensaje claro, actúe antes que el del servidor.
+      max-file-size: 3MB
+      max-request-size: 4MB
 
 server:
   port: 8080
@@ -22,3 +28,6 @@ docentia:
   jwt:
     secreto: ${DOCENTIA_JWT_SECRETO:}
     minutos-vigencia: 480
+  importacion:
+    tamano-maximo-bytes: 2097152
+    filas-maximas: 5000
