@@ -8,7 +8,6 @@ import com.uniautonoma.docentia.entity.SolicitudAnalisis;
 import com.uniautonoma.docentia.repository.SolicitudAnalisisRepository;
 import com.uniautonoma.docentia.service.analisis.LectorRespuestaAnalisis.HallazgoPropuesto;
 import com.uniautonoma.docentia.service.analisis.LectorRespuestaAnalisis.RespuestaInvalidaException;
-import com.uniautonoma.docentia.service.analisis.ModeloIA.ComentarioAnonimo;
 import com.uniautonoma.docentia.service.analisis.ModeloIA.ModeloIAException;
 import com.uniautonoma.docentia.service.analisis.ModeloIA.PeticionAnalisis;
 import com.uniautonoma.docentia.service.analisis.ModeloIA.RespuestaModelo;
@@ -29,7 +28,8 @@ import org.springframework.transaction.support.TransactionTemplate;
  * <ol>
  *   <li>tomar la siguiente EN_COLA y pasarla a EN_PROCESO (con SKIP LOCKED, así dos procesadores
  *       nunca toman la misma);
- *   <li>preparar los comentarios: contar encuestas, anonimizar; si no alcanzan, INSUFICIENTE;
+ *   <li>preparar los comentarios: contar encuestas (si no alcanzan, INSUFICIENTE), excluir los
+ *       ofensivos o sobre la persona del docente y anonimizar el resto;
  *   <li>llamar al modelo fuera de la transacción, validar el JSON (un reintento) y guardar.
  * </ol>
  */
@@ -43,7 +43,7 @@ public class ProcesadorSolicitudesAnalisis {
 
   private final SolicitudAnalisisRepository solicitudRepository;
   private final ProveedorComentarios proveedorComentarios;
-  private final Anonimizador anonimizador;
+  private final PreparadorComentarios preparador;
   private final InstruccionAnalisis instruccion;
   private final ModeloIA modelo;
   private final LectorRespuestaAnalisis lector;
@@ -54,7 +54,7 @@ public class ProcesadorSolicitudesAnalisis {
   public ProcesadorSolicitudesAnalisis(
       SolicitudAnalisisRepository solicitudRepository,
       ProveedorComentarios proveedorComentarios,
-      Anonimizador anonimizador,
+      PreparadorComentarios preparador,
       InstruccionAnalisis instruccion,
       ModeloIA modelo,
       LectorRespuestaAnalisis lector,
@@ -63,7 +63,7 @@ public class ProcesadorSolicitudesAnalisis {
       JdbcTemplate jdbcTemplate) {
     this.solicitudRepository = solicitudRepository;
     this.proveedorComentarios = proveedorComentarios;
-    this.anonimizador = anonimizador;
+    this.preparador = preparador;
     this.instruccion = instruccion;
     this.modelo = modelo;
     this.lector = lector;
@@ -144,13 +144,14 @@ public class ProcesadorSolicitudesAnalisis {
               + " requeridas)");
       return Optional.empty();
     }
-    List<ComentarioAnonimo> comentarios = new ArrayList<>();
-    for (ComentarioFuente comentario : proveedorComentarios.comentarios(idDocente, idPeriodo)) {
-      comentarios.add(
-          new ComentarioAnonimo(
-              comentario.idComentario(), anonimizador.anonimizar(comentario.texto())));
+    PreparadorComentarios.Preparados preparados = preparador.preparar(solicitud);
+    solicitud.registrarFiltrados(preparados.filtrados());
+    if (preparados.enviados().isEmpty()) {
+      solicitud.marcarInsuficiente(
+          encuestas, "evidencia insuficiente: el filtro excluyó todos los comentarios");
+      return Optional.empty();
     }
-    return Optional.of(new PeticionAnalisis(instruccion.texto(), List.copyOf(comentarios)));
+    return Optional.of(new PeticionAnalisis(instruccion.texto(), preparados.enviados()));
   }
 
   /**
