@@ -309,3 +309,64 @@ Franjas propias del periodo activo, ordenadas por fecha y hora. Filtros opcional
 "reservada": true,
 "reserva": { "idCita": 3, "idDocente": 4, "nombreDocente": "Julián Camilo Hoyos" }
 ```
+
+---
+
+## F2 — Reserva de franja por el docente
+
+Reglas:
+
+- El docente solo ve y reserva franjas **abiertas, sin reserva, de hoy en adelante, del periodo
+  activo y de un coordinador de su facultad**. Una franja de otra facultad responde
+  `404 Franja no encontrada`.
+- Un docente tiene **una sola cita activa por periodo**. Reservar otra franja **libera la anterior
+  en la misma operación**: si la nueva reserva falla, la anterior se conserva.
+- Al reservar, la franja deja de aparecer como disponible para los demás docentes.
+- Dos docentes que reservan la misma franja al mismo tiempo: uno obtiene `201` y el otro `409`.
+  La franja se bloquea en la base mientras se reserva (`SELECT … FOR UPDATE`) y además hay índices
+  únicos (una cita activa por franja y una por docente y periodo).
+- Solo durante la etapa **agenda de citas** (409 con el cuerpo de B2 fuera de ella).
+- Liberar una cita a propósito (F3) todavía no existe; la cita ya tiene el estado `LIBERADA` y el
+  motivo `LIBERADA_POR_DOCENTE` para cuando se construya.
+
+Todos los endpoints son solo para `DOCENTE` (coordinador y vicerrector → `403`).
+
+### `GET /api/franjas/disponibles`
+
+```json
+[
+  { "idFranja": 7, "fecha": "2026-11-09", "horaInicio": "08:00:00", "horaFin": "08:30:00", "nombreCoordinador": "Andrés Felipe Ordóñez" }
+]
+```
+
+Ordenadas por fecha y hora. `409` si no hay periodo activo.
+
+### `POST /api/franjas/{idFranja}/reserva`
+
+Sin cuerpo. `201`:
+
+```json
+{
+  "idCita": 12,
+  "estado": "ACTIVA",
+  "fechaReserva": "2026-10-22T10:01:33.5",
+  "idFranja": 8,
+  "fecha": "2026-11-09",
+  "horaInicio": "08:30:00",
+  "horaFin": "09:00:00",
+  "nombreCoordinador": "Andrés Felipe Ordóñez",
+  "idCitaLiberada": 11
+}
+```
+
+`idCitaLiberada` es la cita anterior del docente que se liberó (o `null`).
+
+| Código | Motivo |
+| ------ | ------ |
+| `404`  | Franja inexistente, de otro periodo o de un coordinador de otra facultad |
+| `409`  | `"La franja ya fue reservada por otro docente"`, `"Ya tienes reservada esta franja"`, `"La franja está cerrada"`, `"La franja ya pasó"`, agenda cerrada |
+
+### `GET /api/citas/mia`
+
+`200` con la cita activa del docente en el periodo activo (mismo formato, `idCitaLiberada` en
+`null`) o `204` si no tiene.
