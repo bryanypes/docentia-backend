@@ -84,6 +84,32 @@ class FranjaTest extends PruebaIntegracion {
   }
 
   @Test
+  void elListadoSeFiltraPorFechaPorEstadoOPorAmbos() throws Exception {
+    crear(coordinador, "08:00");
+    crear(coordinador, "08:30").cerrar();
+    franjaRepository.saveAndFlush(
+        new FranjaHoraria(coordinador, periodo, DIA.plusDays(1), LocalTime.of(8, 0)));
+
+    mockMvc
+        .perform(get("/franjas").param("fecha", DIA.toString()).with(como(coordinador)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$", hasSize(2)));
+    mockMvc
+        .perform(get("/franjas").param("estado", "CERRADA").with(como(coordinador)))
+        .andExpect(jsonPath("$", hasSize(1)));
+    mockMvc
+        .perform(
+            get("/franjas")
+                .param("fecha", DIA.plusDays(1).toString())
+                .param("estado", "ABIERTA")
+                .with(como(coordinador)))
+        .andExpect(jsonPath("$", hasSize(1)));
+    mockMvc
+        .perform(get("/franjas").param("fecha", "no-es-fecha").with(como(coordinador)))
+        .andExpect(status().isBadRequest());
+  }
+
+  @Test
   void rechazaDuracionDistintaFechasPasadasYFueraDelPeriodo() throws Exception {
     abrir(coordinador, "09:00", "09:45")
         .andExpect(status().isBadRequest())

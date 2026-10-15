@@ -4,6 +4,7 @@ import com.uniautonoma.docentia.entity.EstadoFranja;
 import com.uniautonoma.docentia.entity.FranjaHoraria;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -15,7 +16,9 @@ public interface FranjaHorariaRepository extends JpaRepository<FranjaHoraria, Lo
   Optional<FranjaHoraria> findByIdFranjaAndCoordinadorIdUsuario(Long idFranja, Long idCoordinador);
 
   /**
-   * Lista las franjas de un coordinador en un periodo, opcionalmente de un día y un estado.
+   * Lista las franjas de un coordinador en un periodo, entre dos fechas y con ciertos estados. Los
+   * filtros son siempre valores concretos: con "parámetro is null" PostgreSQL no logra deducir el
+   * tipo de una fecha nula y la consulta falla.
    *
    * @return ordenadas por fecha y hora
    */
@@ -24,12 +27,16 @@ public interface FranjaHorariaRepository extends JpaRepository<FranjaHoraria, Lo
       select f from FranjaHoraria f
       where f.coordinador.idUsuario = :idCoordinador
         and f.periodo.idPeriodo = :idPeriodo
-        and (:fecha is null or f.fecha = :fecha)
-        and (:estado is null or f.estado = :estado)
+        and f.fecha between :desde and :hasta
+        and f.estado in :estados
       order by f.fecha, f.horaInicio
       """)
   List<FranjaHoraria> buscarDelCoordinador(
-      Long idCoordinador, Long idPeriodo, LocalDate fecha, EstadoFranja estado);
+      Long idCoordinador,
+      Long idPeriodo,
+      LocalDate desde,
+      LocalDate hasta,
+      Collection<EstadoFranja> estados);
 
   /**
    * Busca una franja abierta del coordinador que se cruce con el horario dado. Es la misma regla
