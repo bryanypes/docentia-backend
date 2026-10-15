@@ -33,7 +33,7 @@ class PeriodoAcademicoControllerTest extends PruebaIntegracion {
   void creaUnPeriodoInactivoConSusEtapas() throws Exception {
     EtapaPeriodoRequest etapa =
         new EtapaPeriodoRequest(
-            TipoEtapa.CALIFICACION_COORDINACION,
+            TipoEtapa.RECOLECCION_CALIFICACIONES,
             LocalDate.of(2026, 11, 2),
             LocalDate.of(2026, 11, 13));
 
@@ -41,7 +41,7 @@ class PeriodoAcademicoControllerTest extends PruebaIntegracion {
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.esActivo").value(false))
         .andExpect(jsonPath("$.etapas", hasSize(1)))
-        .andExpect(jsonPath("$.etapas[0].tipoEtapa").value("CALIFICACION_COORDINACION"))
+        .andExpect(jsonPath("$.etapas[0].tipoEtapa").value("RECOLECCION_CALIFICACIONES"))
         .andExpect(jsonPath("$.etapas[0].fechaApertura").value("2026-11-02"));
   }
 
@@ -55,7 +55,7 @@ class PeriodoAcademicoControllerTest extends PruebaIntegracion {
   void rechazaUnaEtapaFueraDelPeriodo() throws Exception {
     EtapaPeriodoRequest etapaTardia =
         new EtapaPeriodoRequest(
-            TipoEtapa.RETROALIMENTACION, LocalDate.of(2026, 12, 1), LocalDate.of(2026, 12, 20));
+            TipoEtapa.FIRMA_ACTAS, LocalDate.of(2026, 12, 1), LocalDate.of(2026, 12, 20));
 
     crearPeriodo(new PeriodoAcademicoRequest("2026-2", INICIO, FIN, List.of(etapaTardia)))
         .andExpect(status().isBadRequest())
@@ -67,7 +67,7 @@ class PeriodoAcademicoControllerTest extends PruebaIntegracion {
   @Test
   void rechazaUnaEtapaRepetida() throws Exception {
     EtapaPeriodoRequest etapa =
-        new EtapaPeriodoRequest(TipoEtapa.RETROALIMENTACION, INICIO, INICIO.plusDays(5));
+        new EtapaPeriodoRequest(TipoEtapa.FIRMA_ACTAS, INICIO, INICIO.plusDays(5));
 
     crearPeriodo(new PeriodoAcademicoRequest("2026-2", INICIO, FIN, List.of(etapa, etapa)))
         .andExpect(status().isBadRequest());
@@ -124,13 +124,13 @@ class PeriodoAcademicoControllerTest extends PruebaIntegracion {
   @Test
   void reprogramaUnaEtapaExistenteYRetiraLasQueYaNoVienen() throws Exception {
     PeriodoAcademico periodo = new PeriodoAcademico("2026-2", INICIO, FIN);
-    periodo.programarEtapa(TipoEtapa.CALIFICACION_COORDINACION, INICIO, INICIO.plusDays(10));
-    periodo.programarEtapa(TipoEtapa.RETROALIMENTACION, FIN.minusDays(10), FIN);
+    periodo.programarEtapa(TipoEtapa.RECOLECCION_CALIFICACIONES, INICIO, INICIO.plusDays(10));
+    periodo.programarEtapa(TipoEtapa.FIRMA_ACTAS, FIN.minusDays(10), FIN);
     periodoRepository.saveAndFlush(periodo);
 
     EtapaPeriodoRequest reprogramada =
         new EtapaPeriodoRequest(
-            TipoEtapa.CALIFICACION_COORDINACION, INICIO.plusDays(7), INICIO.plusDays(20));
+            TipoEtapa.RECOLECCION_CALIFICACIONES, INICIO.plusDays(7), INICIO.plusDays(20));
 
     mockMvc
         .perform(

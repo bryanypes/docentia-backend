@@ -102,3 +102,77 @@ La contraseña es temporal: el login con correo y contraseña existe mientras ll
 Mismo cuerpo que `POST`. `contrasena` es opcional: si llega vacía o nula se conserva la actual.
 Permite cambiar el rol; el vínculo anterior se reemplaza. `200` con el `UsuarioResponse`. Errores
 iguales a `POST`, más `404` si el usuario no existe.
+
+---
+
+## B2 — Etapas del periodo y ventanas
+
+### Cambio que rompe el frontend: nombres de las etapas
+
+`tipoEtapa` ahora solo acepta estos cuatro valores (en `POST`/`PUT /api/periodos-academicos` y en
+las respuestas). Hay que actualizar `src/utils/etapasPeriodo.js` y su test:
+
+| `tipoEtapa`                  | Nombre para mostrar            | Acciones que bloquea              |
+| ---------------------------- | ------------------------------ | --------------------------------- |
+| `RECOLECCION_CALIFICACIONES` | Recolección de calificaciones  | Calificar (coordinación y vicerrectoría), cargar CSV de estudiantes |
+| `REVISION_HALLAZGOS`         | Revisión de hallazgos          | (historia E, pendiente)           |
+| `AGENDA_CITAS`               | Agenda de citas                | (historia F, pendiente)           |
+| `FIRMA_ACTAS`                | Firma de actas                 | (historia G, pendiente)           |
+
+Los valores viejos (`EVALUACION_ESTUDIANTES`, `CALIFICACION_COORDINACION`,
+`CALIFICACION_VICERRECTORIA`, `RETROALIMENTACION`) responden 400. En las bases existentes la
+migración V10 juntó las tres etapas de calificación en la recolección (de la primera apertura al
+último cierre) y convirtió la retroalimentación en revisión de hallazgos.
+
+Las etapas siguen siendo opcionales al crear el periodo; una etapa sin fechas cuenta como cerrada.
+Las fechas son inclusivas y se comparan contra la fecha de Colombia.
+
+Solo hay un periodo activo: activar uno desactiva el anterior (sin cambios).
+
+### `GET /api/periodos-academicos/activo/ventanas`
+
+Cualquier rol autenticado. Sirve para habilitar o deshabilitar botones según la fecha.
+
+```json
+[
+  {
+    "etapa": "RECOLECCION_CALIFICACIONES",
+    "nombreEtapa": "Recolección de calificaciones",
+    "fechaApertura": "2026-09-28",
+    "fechaCierre": "2026-11-13",
+    "abierta": true
+  },
+  { "etapa": "REVISION_HALLAZGOS", "nombreEtapa": "Revisión de hallazgos",
+    "fechaApertura": "2026-11-16", "fechaCierre": "2026-11-20", "abierta": false },
+  { "etapa": "AGENDA_CITAS", "nombreEtapa": "Agenda de citas",
+    "fechaApertura": null, "fechaCierre": null, "abierta": false },
+  { "etapa": "FIRMA_ACTAS", "nombreEtapa": "Firma de actas",
+    "fechaApertura": "2026-11-30", "fechaCierre": "2026-12-04", "abierta": false }
+]
+```
+
+Siempre llegan las cuatro, en ese orden. `409` si no hay periodo activo.
+
+### Respuesta cuando la etapa está cerrada (409)
+
+Cualquier acción bloqueada por fecha (hoy: `PUT /api/docentes/{id}/calificaciones/coordinacion`,
+`PUT /api/docentes/{id}/calificaciones/vicerrectoria` y la carga de CSV) responde:
+
+```json
+{
+  "mensaje": "La etapa Recolección de calificaciones del periodo 2026-2 está abierta del 2026-10-21 al 2026-10-30; hoy es 2026-10-20",
+  "errores": {},
+  "etapa": "RECOLECCION_CALIFICACIONES",
+  "nombreEtapa": "Recolección de calificaciones",
+  "fechaApertura": "2026-10-21",
+  "fechaCierre": "2026-10-30",
+  "fechaActual": "2026-10-20"
+}
+```
+
+Si la etapa no está programada, `fechaApertura` y `fechaCierre` llegan `null` y el mensaje dice que
+la vicerrectoría debe programarla. El 404 de alcance tiene prioridad: un coordinador que intenta
+calificar a un docente de otra facultad recibe 404 aunque la etapa esté cerrada.
+
+**Para las historias E, F y G:** el bloqueo es una sola línea en el servicio,
+`ventanaEtapaService.exigirEtapaAbierta(periodo, TipoEtapa.X)`, antes de modificar datos.
