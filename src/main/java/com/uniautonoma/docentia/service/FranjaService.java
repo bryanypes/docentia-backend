@@ -165,7 +165,11 @@ public class FranjaService {
     PeriodoAcademico periodo = periodoService.exigirPeriodoActivo();
     List<FranjaHoraria> franjas =
         franjaRepository.buscarDelCoordinador(
-            sesion.idUsuario(), periodo.getIdPeriodo(), fecha, estado);
+            sesion.idUsuario(),
+            periodo.getIdPeriodo(),
+            fecha != null ? fecha : periodo.getFechaInicio(),
+            fecha != null ? fecha : periodo.getFechaFin(),
+            estado != null ? List.of(estado) : List.of(EstadoFranja.values()));
     Map<Long, Cita> reservas =
         franjas.isEmpty()
             ? Map.of()

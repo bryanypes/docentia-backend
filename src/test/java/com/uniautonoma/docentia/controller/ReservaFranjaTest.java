@@ -148,7 +148,11 @@ class ReservaFranjaTest extends PruebaIntegracion {
   void noSeReservanFranjasCerradasPasadasNiDeOtraFacultad() throws Exception {
     List<FranjaHoraria> todas =
         franjaRepository.buscarDelCoordinador(
-            ocho.getCoordinador().getIdUsuario(), periodo.getIdPeriodo(), null, null);
+            ocho.getCoordinador().getIdUsuario(),
+            periodo.getIdPeriodo(),
+            periodo.getFechaInicio(),
+            periodo.getFechaFin(),
+            List.of(com.uniautonoma.docentia.entity.EstadoFranja.values()));
     FranjaHoraria pasada = todas.get(0);
     FranjaHoraria cerrada = todas.get(todas.size() - 1);
 
