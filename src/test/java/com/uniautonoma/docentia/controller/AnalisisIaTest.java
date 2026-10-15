@@ -95,6 +95,14 @@ class AnalisisIaTest extends PruebaIntegracion {
         .andExpect(jsonPath("$.borrador.fechaGeneracion").exists())
         .andExpect(jsonPath("$.borrador.estado").value("PENDIENTE_VALIDACION"))
         .andExpect(jsonPath("$.borrador.hallazgos", hasSize(6)))
+        .andExpect(
+            jsonPath(
+                "$.borrador.hallazgos[*].estado",
+                everyItem(org.hamcrest.Matchers.is("PENDIENTE_VALIDACION"))))
+        .andExpect(
+            jsonPath(
+                "$.borrador.hallazgos[*].citas[*].verificada",
+                everyItem(org.hamcrest.Matchers.is(true))))
         .andExpect(jsonPath("$.borrador.hallazgos[0].tipo").value("FORTALEZA"))
         .andExpect(jsonPath("$.borrador.hallazgos[0].citas[0].idComentario").isNumber())
         // Lo que llegó al modelo ya no tenía el nombre ni el correo del estudiante.

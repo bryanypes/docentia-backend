@@ -71,7 +71,7 @@ public record SolicitudAnalisisResponse(
   public record HallazgoBorrador(
       Long idHallazgo, String tipo, String texto, String estado, List<CitaBorrador> citas) {
 
-    static HallazgoBorrador desde(Hallazgo hallazgo) {
+    public static HallazgoBorrador desde(Hallazgo hallazgo) {
       return new HallazgoBorrador(
           hallazgo.getIdHallazgo(),
           hallazgo.getTipo().name(),
@@ -81,10 +81,14 @@ public record SolicitudAnalisisResponse(
     }
   }
 
-  public record CitaBorrador(Long idCita, Long idComentario, String fragmento) {
+  /**
+   * @param verificada el fragmento aparece en un comentario no filtrado del docente y periodo
+   */
+  public record CitaBorrador(Long idCita, Long idComentario, String fragmento, boolean verificada) {
 
     static CitaBorrador desde(CitaHallazgo cita) {
-      return new CitaBorrador(cita.getIdCita(), cita.getIdComentarioCitado(), cita.getFragmento());
+      return new CitaBorrador(
+          cita.getIdCita(), cita.getIdComentarioCitado(), cita.getFragmento(), cita.isVerificada());
     }
   }
 }

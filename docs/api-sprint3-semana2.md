@@ -157,3 +157,56 @@ Roles y alcance iguales al `GET` de la solicitud (coordinador con alcance, vicer
   }
 ]
 ```
+
+---
+
+## E3 — Citas textuales verificables
+
+Cada hallazgo trae sus citas: `idComentario` (el comentario de origen) y `fragmento` (el texto
+citado). Al guardar el borrador, el servidor comprueba cada cita:
+
+- el comentario tiene que ser uno de los que **se enviaron al modelo**: del mismo docente y periodo
+  y **no filtrado** (E2);
+- el fragmento tiene que aparecer en ese comentario, comparando en minúsculas, sin tildes, sin
+  signos de puntuación y con espacios simples. Debe tener al menos 2 palabras completas.
+
+Una cita inventada, parafraseada, de otro comentario o de un comentario filtrado queda con
+`"verificada": false`.
+
+| Estado del hallazgo     | Significado |
+| ----------------------- | ----------- |
+| `PENDIENTE_VALIDACION`  | Tiene al menos una cita verificada; el coordinador puede validarlo |
+| `SIN_CITA_VERIFICADA`   | Ninguna cita se pudo verificar (o no trae citas); **no se puede validar** |
+| `VALIDADO`              | El coordinador lo validó |
+
+### Cambio en `GET /api/analisis-ia/solicitudes/{id}`
+
+Cada cita del borrador trae `verificada` (booleano):
+
+```json
+"citas": [
+  { "idCita": 40, "idComentario": 101, "fragmento": "las notas de los parciales se demoran", "verificada": true }
+]
+```
+
+### `POST /api/analisis-ia/hallazgos/{idHallazgo}/validacion`
+
+Rol: `COORDINADOR` con alcance sobre el docente del borrador. Sin cuerpo. Solo durante la etapa
+**revisión de hallazgos**.
+
+`200` con el hallazgo (`"estado": "VALIDADO"`). Validar dos veces no cambia nada.
+
+| Código | Motivo |
+| ------ | ------ |
+| `403`  | Vicerrector o docente |
+| `404`  | Hallazgo inexistente o de un docente fuera del alcance (`Hallazgo no encontrado`) |
+| `409`  | La revisión de hallazgos está cerrada (cuerpo de B2) |
+| `422`  | El hallazgo no tiene ninguna cita verificada: `"El hallazgo no tiene ninguna cita que aparezca en los comentarios de los estudiantes; no se puede marcar como válido"` |
+
+### Visibilidad para el docente
+
+El borrador **no se expone al docente en ningún endpoint**: los `GET` de análisis responden `403` al
+rol docente y el expediente propio no incluye hallazgos. El borrador tiene su propio estado
+(`borrador.estado`, hoy siempre `PENDIENTE_VALIDACION`). Cuando E4 permita validarlo completo
+(`VALIDADO`), un endpoint del docente solo podrá mostrar borradores en ese estado y, dentro de ellos,
+solo hallazgos `VALIDADO`. La regla ya está en el modelo (`SolicitudAnalisis.esVisibleParaDocente`).
