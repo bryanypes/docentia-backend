@@ -1,5 +1,6 @@
 package com.uniautonoma.docentia.entity;
 
+import com.uniautonoma.docentia.exception.DatosInvalidosException;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -82,6 +83,67 @@ public class Usuario {
     return new Usuario(nombreCompleto, correo, contrasenaHash, Rol.VICERRECTOR);
   }
 
+  /**
+   * Crea un usuario con cualquiera de los tres roles, validando su vínculo.
+   *
+   * @throws DatosInvalidosException si el vínculo no corresponde al rol
+   */
+  public static Usuario crear(
+      String nombreCompleto,
+      String correo,
+      String contrasenaHash,
+      Rol rol,
+      Facultad facultad,
+      Programa programa) {
+    Usuario usuario = new Usuario(nombreCompleto, correo, contrasenaHash, rol);
+    usuario.asignarAlcance(rol, facultad, programa);
+    return usuario;
+  }
+
+  /**
+   * Cambia el rol y el vínculo del usuario. Es la misma regla que la base de datos exige con
+   * ck_usuarios_alcance, pero aquí produce un mensaje que el usuario entiende.
+   *
+   * @param rol el único rol que tendrá el usuario
+   * @param facultad facultad del coordinador; nula para los demás roles
+   * @param programa programa del docente; nulo para los demás roles
+   * @throws DatosInvalidosException si el vínculo no corresponde al rol
+   */
+  public void asignarAlcance(Rol rol, Facultad facultad, Programa programa) {
+    if (rol == null) {
+      throw new DatosInvalidosException("El rol es obligatorio");
+    }
+    switch (rol) {
+      case COORDINADOR -> {
+        if (facultad == null) {
+          throw new DatosInvalidosException("El coordinador debe estar vinculado a una facultad");
+        }
+        if (programa != null) {
+          throw new DatosInvalidosException(
+              "El coordinador se vincula a una facultad, no a un programa");
+        }
+      }
+      case DOCENTE -> {
+        if (programa == null) {
+          throw new DatosInvalidosException("El docente debe estar vinculado a un programa");
+        }
+        if (facultad != null) {
+          throw new DatosInvalidosException(
+              "El docente se vincula a un programa; su facultad es la del programa");
+        }
+      }
+      case VICERRECTOR -> {
+        if (facultad != null || programa != null) {
+          throw new DatosInvalidosException(
+              "El vicerrector no se vincula a una facultad ni a un programa");
+        }
+      }
+    }
+    this.rol = rol;
+    this.facultad = facultad;
+    this.programa = programa;
+  }
+
   public Long getIdUsuario() {
     return idUsuario;
   }
@@ -96,6 +158,10 @@ public class Usuario {
 
   public String getCorreo() {
     return correo;
+  }
+
+  public void setCorreo(String correo) {
+    this.correo = correo;
   }
 
   public String getContrasenaHash() {

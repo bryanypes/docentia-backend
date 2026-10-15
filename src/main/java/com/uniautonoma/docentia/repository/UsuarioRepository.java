@@ -19,6 +19,32 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
   Optional<Usuario> findByCorreoIgnoreCaseAndEsActivoTrue(String correo);
 
   /**
+   * Busca un usuario por correo, activo o no, sin distinguir mayúsculas. Sirve para validar que el
+   * correo no esté tomado, igual que el índice único de la base.
+   *
+   * @param correo correo buscado
+   * @return el usuario que ya usa ese correo, si existe
+   */
+  Optional<Usuario> findByCorreoIgnoreCase(String correo);
+
+  /**
+   * Lista todos los usuarios con su facultad y programa cargados.
+   *
+   * @return usuarios ordenados por nombre
+   */
+  @EntityGraph(attributePaths = {"facultad", "programa", "programa.facultad"})
+  List<Usuario> findAllByOrderByNombreCompletoAsc();
+
+  /**
+   * Busca un usuario con su facultad y programa cargados.
+   *
+   * @param idUsuario identificador del usuario
+   * @return el usuario, si existe
+   */
+  @EntityGraph(attributePaths = {"facultad", "programa", "programa.facultad"})
+  Optional<Usuario> findConAlcanceByIdUsuario(Long idUsuario);
+
+  /**
    * Lista los usuarios activos de un rol, con su programa y facultad cargados.
    *
    * @param rol rol buscado
