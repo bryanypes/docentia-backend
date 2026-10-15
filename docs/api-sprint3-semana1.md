@@ -489,3 +489,50 @@ dos veces o si no cubre los campos obligatorios.
 | `evaluacion-estudiantes-ejemplo.csv` | Válido, `;`, coma decimal. Julián (corrige su nota de estudiantes del seed: deja rastro en D2) y Óscar (nota nueva y una fila solo con comentario). |
 | `evaluacion-estudiantes-con-errores.csv` | Rechazado a propósito: nota 7, texto en vez de número, nota vacía, docente de Derecho (fuera del alcance de Ingeniería) y correo inexistente. |
 | `evaluacion-power-bi-columnas-propias.csv` + `mapeo-power-bi.json` | Encabezados que no se reconocen solos; se importan enviando el mapeo. |
+
+---
+
+## I5 — Indicadores generales (KPIs)
+
+### `GET /api/kpis?periodoId=&facultadId=`
+
+| Rol           | Alcance |
+| ------------- | ------- |
+| `VICERRECTOR` | Institucional; con `facultadId` se limita a esa facultad |
+| `COORDINADOR` | Siempre su facultad; `facultadId` se ignora (igual que en A3) |
+| `DOCENTE`     | `403` |
+
+`periodoId` opcional: sin él se usa el periodo activo (`409` si no hay). `404` si `periodoId` o
+`facultadId` no existen. `400` si no son números.
+
+```json
+{
+  "periodo": { "idPeriodo": 2, "nombre": "2026-2" },
+  "periodoAnterior": { "idPeriodo": 1, "nombre": "2026-1" },
+  "idFacultad": null,
+  "umbralDestacado": 4.5,
+  "docentesEvaluados":      { "valor": 2,    "valorAnterior": 1,    "variacion": 1 },
+  "promedioGeneral":        { "valor": 4.33, "valorAnterior": 4.04, "variacion": 0.29 },
+  "evaluacionesRealizadas": { "valor": 6,    "valorAnterior": 3,    "variacion": 3 },
+  "docentesDestacados":     { "valor": 0,    "valorAnterior": 0,    "variacion": 0 }
+}
+```
+
+(Ese es el resultado con el seed de desarrollo, consultado por la vicerrectoría.)
+
+| Indicador                | Definición |
+| ------------------------ | ---------- |
+| `docentesEvaluados`      | Docentes con promedio **COMPLETO** en el periodo (las tres fuentes) |
+| `promedioGeneral`        | Promedio simple de esos promedios ponderados, 2 decimales. `null` si nadie está completo |
+| `evaluacionesRealizadas` | Calificaciones registradas en el periodo, de cualquier fuente (máximo 3 por docente) |
+| `docentesDestacados`     | Docentes con promedio completo **≥ `umbralDestacado`** |
+
+- `periodoAnterior`: el periodo que empezó justo antes. `null` si no existe.
+- `valorAnterior` y `variacion` son **`null` (no `0`)** si no hay periodo anterior o si ese periodo
+  no tiene ninguna calificación dentro del alcance. `variacion` = `valor − valorAnterior`, en la
+  misma unidad (docentes, evaluaciones o puntos de promedio).
+- El umbral se configura con `docentia.kpi.destacado-umbral` (por defecto `4.5`).
+- **Con el seed actual nadie es destacado:** Julián tiene 4.34 y Diana 4.31 en 2026-2. Para verlo
+  en la demo hay que calificar a alguien con notas altas o bajar el umbral; no se agregaron datos
+  inventados para forzarlo.
+- Los docentes se ubican en la facultad de su programa **actual**.
