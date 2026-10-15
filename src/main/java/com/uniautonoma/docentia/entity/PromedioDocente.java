@@ -1,7 +1,6 @@
 package com.uniautonoma.docentia.entity;
 
 import com.uniautonoma.docentia.dto.EstadoPromedio;
-import com.uniautonoma.docentia.dto.PromedioPonderadoResponse;
 import jakarta.persistence.Column;
 import jakarta.persistence.Convert;
 import jakarta.persistence.Entity;
@@ -52,24 +51,8 @@ public class PromedioDocente {
   @Column(nullable = false)
   private LocalDateTime fechaCalculo;
 
+  // Solo lectura desde Java: las filas las escribe PromedioDocenteRepository.guardar con un upsert.
   protected PromedioDocente() {}
-
-  public PromedioDocente(Usuario docente, PeriodoAcademico periodo) {
-    this.docente = docente;
-    this.periodo = periodo;
-  }
-
-  /** Reemplaza el resultado guardado por uno recién calculado. */
-  public void actualizar(PromedioPonderadoResponse resultado) {
-    this.valor = resultado.valor();
-    this.estado = resultado.estado();
-    this.fuentesPendientes = List.copyOf(resultado.fuentesPendientes());
-    this.fechaCalculo = LocalDateTime.now();
-  }
-
-  public PromedioPonderadoResponse aRespuesta() {
-    return new PromedioPonderadoResponse(estado, valor, fuentesPendientes);
-  }
 
   public Long getIdPromedio() {
     return idPromedio;

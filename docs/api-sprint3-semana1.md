@@ -176,3 +176,82 @@ calificar a un docente de otra facultad recibe 404 aunque la etapa esté cerrada
 
 **Para las historias E, F y G:** el bloqueo es una sola línea en el servicio,
 `ventanaEtapaService.exigirEtapaAbierta(periodo, TipoEtapa.X)`, antes de modificar datos.
+
+---
+
+## D2 — Corrección de notas e historial
+
+Corregir una nota es volver a enviar la calificación de esa fuente
+(`PUT /api/docentes/{id}/calificaciones/coordinacion` o `/vicerrectoria`, o recargar el CSV de
+estudiantes). Si las notas cambian, el backend:
+
+1. guarda la nota nueva;
+2. recalcula el promedio ponderado y lo guarda con una nueva fecha de cálculo;
+3. agrega una fila al historial con la nota y el promedio de antes y de después.
+
+Si se envían las mismas notas (aunque cambie la observación) no hay corrección. La primera
+calificación de una fuente tampoco es una corrección.
+
+### Cambio en `PUT /api/docentes/{id}/calificaciones/coordinacion` y `/vicerrectoria`
+
+Campo nuevo, opcional: `motivoCorreccion` (máximo 500 caracteres). Solo se usa si la calificación
+ya existía y sus notas cambian.
+
+```json
+{
+  "dominioDisciplinar": 4.5, "planeacionAcademica": 4.0, "metodologiaEnsenanza": 4.0,
+  "evaluacionAprendizaje": 4.5, "compromisoInstitucional": 5.0,
+  "observacion": "…",
+  "motivoCorreccion": "Error de digitación en la visita de aula"
+}
+```
+
+`400` con `errores.motivoCorreccion` si supera 500 caracteres. Puede responder `409` si la
+recolección está cerrada (ver B2) o si dos personas guardan lo mismo al mismo tiempo
+(`"Otra persona modificó estos datos al mismo tiempo; vuelve a intentarlo"`).
+
+### `GET /api/docentes/{idDocente}/calificaciones/correcciones?idPeriodo=`
+
+Roles: `COORDINADOR` (solo docentes de su facultad; otro docente → `404 Docente no encontrado`) y
+`VICERRECTOR`. `DOCENTE` → `403` (el docente nunca ve notas por fuente, regla A4).
+
+`idPeriodo` opcional; sin él trae todos los periodos. Orden: de la más reciente a la más antigua.
+
+```json
+[
+  {
+    "idCorreccion": 3,
+    "idPeriodo": 2,
+    "nombrePeriodo": "2026-2",
+    "fuente": "COORDINACION",
+    "notaAnterior": 3.000,
+    "notaNueva": 5.000,
+    "promedioAnterior": { "estado": "COMPLETO", "valor": 3.90, "fuentesPendientes": [] },
+    "promedioNuevo": { "estado": "COMPLETO", "valor": 4.50, "fuentesPendientes": [] },
+    "idUsuario": 2,
+    "nombreUsuario": "Andrés Felipe Ordóñez",
+    "motivo": "Error de digitación en la visita de aula",
+    "fechaCorreccion": "2026-10-20T10:15:42.120331"
+  }
+]
+```
+
+- `notaAnterior`/`notaNueva`: nota de la fuente = promedio de sus cinco aspectos (hasta 3 decimales).
+- `promedioAnterior.valor` es `null` si el promedio estaba `INCOMPLETO`. En el historial
+  `fuentesPendientes` siempre llega vacío; el estado basta.
+- `idUsuario`/`nombreUsuario` son `null` solo para cambios de procesos del sistema (seed).
+
+### Actas firmadas (historia G, pendiente)
+
+No se construyen actas todavía. Cuando se firme un acta, debe **copiar** a sus propias columnas el
+promedio de `promedios_docente` (valor, estado, fecha de cálculo) y las notas por fuente de ese
+momento, y guardar el `id_correccion` más reciente del docente en ese periodo. Así el acta conserva
+el valor original aunque después haya correcciones: las correcciones posteriores quedan en
+`correcciones_calificacion` con fecha mayor a la de la firma y no tocan el acta.
+
+### Concurrencia del promedio (pendiente de D1, resuelto)
+
+`promedios_docente` se escribe con `INSERT … ON CONFLICT (id_docente, id_periodo) DO UPDATE`, así
+dos recálculos simultáneos del mismo docente no fallan ni duplican filas. Lo demuestra
+`PromedioConcurrenciaTest` (10 docentes, dos hilos por docente al mismo tiempo); con la versión
+anterior (buscar y luego insertar) esa prueba fallaba por llave duplicada.

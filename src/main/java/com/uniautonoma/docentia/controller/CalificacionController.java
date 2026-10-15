@@ -2,10 +2,12 @@ package com.uniautonoma.docentia.controller;
 
 import com.uniautonoma.docentia.dto.CalificacionRequest;
 import com.uniautonoma.docentia.dto.CalificacionResponse;
+import com.uniautonoma.docentia.dto.CorreccionCalificacionResponse;
 import com.uniautonoma.docentia.entity.FuenteEvaluacion;
 import com.uniautonoma.docentia.security.UsuarioSesion;
 import com.uniautonoma.docentia.service.CalificacionService;
 import jakarta.validation.Valid;
+import java.util.List;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -14,6 +16,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -92,6 +95,24 @@ public class CalificacionController {
       @AuthenticationPrincipal UsuarioSesion sesion) {
     return calificacionService.calificarDocente(
         idDocente, FuenteEvaluacion.VICERRECTORIA, solicitud, sesion);
+  }
+
+  /**
+   * Lista las correcciones de notas del docente: qué cambió, quién, cuándo y cómo movió el
+   * promedio.
+   *
+   * @param idDocente identificador del docente
+   * @param idPeriodo filtro opcional por periodo
+   * @param sesion coordinador (solo docentes de su facultad) o vicerrector
+   * @return correcciones de la más reciente a la más antigua
+   */
+  @GetMapping("/correcciones")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
+  public List<CorreccionCalificacionResponse> listarCorrecciones(
+      @PathVariable Long idDocente,
+      @RequestParam(required = false) Long idPeriodo,
+      @AuthenticationPrincipal UsuarioSesion sesion) {
+    return calificacionService.listarCorrecciones(idDocente, idPeriodo, sesion);
   }
 
   private ResponseEntity<CalificacionResponse> responder(

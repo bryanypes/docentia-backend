@@ -27,4 +27,17 @@ public record NotasAspectos(
         .add(compromisoInstitucional)
         .divide(CANTIDAD_ASPECTOS);
   }
+
+  /**
+   * Compara aspecto por aspecto por valor numérico: 4.0 y 4.00 son la misma nota, aunque {@code
+   * equals} de BigDecimal diga lo contrario.
+   */
+  public boolean mismasNotas(NotasAspectos otras) {
+    return otras != null
+        && dominioDisciplinar.compareTo(otras.dominioDisciplinar) == 0
+        && planeacionAcademica.compareTo(otras.planeacionAcademica) == 0
+        && metodologiaEnsenanza.compareTo(otras.metodologiaEnsenanza) == 0
+        && evaluacionAprendizaje.compareTo(otras.evaluacionAprendizaje) == 0
+        && compromisoInstitucional.compareTo(otras.compromisoInstitucional) == 0;
+  }
 }
