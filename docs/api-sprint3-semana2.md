@@ -107,3 +107,53 @@ Sirve para que la pantalla del docente en coordinación muestre el último anál
   ("me llamo…"). No se envía el nombre del docente.
 - El modelo debe responder `{"hallazgos":[{"tipo","texto","citas":[{"comentarioId","fragmento"}]}]}`.
   Si la respuesta no cumple el formato se pide una vez más; si vuelve a fallar, `ERROR`.
+
+---
+
+## E2 — Filtro de comentarios ofensivos o sobre rasgos personales
+
+Antes de armar la petición al modelo, cada comentario pasa por un filtro. Los que se excluyen:
+
+- **no se envían** al modelo, así que no pueden aparecer en el borrador ni citarse;
+- quedan registrados en `comentarios_filtrados` con la solicitud, la categoría, la regla y la fecha.
+
+Las **encuestas cerradas** se cuentan antes del filtro (el umbral de 10 mide la evidencia
+recogida). Si el filtro excluye todos los comentarios, la solicitud queda `INSUFICIENTE` con el
+mensaje `"evidencia insuficiente: el filtro excluyó todos los comentarios"`.
+
+**Reglas:** `src/main/resources/filtros/reglas-comentarios.txt`, una por línea con el formato
+`CATEGORIA | expresión regular`. Se comparan contra el texto en minúsculas, sin tildes y con
+espacios simples. Categorías actuales: `INSULTO`, `APARIENCIA`, `EDAD`, `GENERO`, `VIDA_PRIVADA`.
+Para usar un archivo fuera del jar: `docentia.ia.filtro-reglas=file:/ruta/reglas.txt` (requiere
+reiniciar).
+
+**Criterio:** se excluye lo ofensivo y lo que habla de la persona. Una crítica dura a la práctica
+docente se conserva ("la metodología es pésima", "el material es viejo", "es el peor profesor, no
+prepara las clases"). Por eso las palabras ambiguas solo cuentan cuando el sujeto es el docente
+("el profesor está muy viejo" sí, "el material es viejo" no).
+
+**Limitación:** un filtro por reglas no es perfecto. Puede dejar pasar un insulto escrito de forma
+rara o, en casos poco comunes, excluir algo válido. Por eso cada hallazgo del borrador lo valida un
+coordinador (E4) antes de que el docente lo vea, y la lista de filtrados es consultable.
+
+### Cambio en `GET /api/analisis-ia/solicitudes/{id}`
+
+Campo nuevo `comentariosFiltrados` (entero; `null` mientras la solicitud no se ha procesado).
+`comentariosEnviados` ya descuenta los filtrados.
+
+### `GET /api/analisis-ia/solicitudes/{idSolicitud}/comentarios-filtrados`
+
+Roles y alcance iguales al `GET` de la solicitud (coordinador con alcance, vicerrector; docente
+`403`; fuera de alcance `404`).
+
+```json
+[
+  {
+    "idComentario": 112,
+    "texto": "Es un profesor muy feo y se viste mal.",
+    "categoria": "APARIENCIA",
+    "regla": "\b(se viste mal|mal vestid[oa]|su ropa|…)\b",
+    "fechaFiltro": "2026-10-21T09:00:03.9"
+  }
+]
+```

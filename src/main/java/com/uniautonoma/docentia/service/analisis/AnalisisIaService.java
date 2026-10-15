@@ -1,6 +1,7 @@
 package com.uniautonoma.docentia.service.analisis;
 
 import com.uniautonoma.docentia.config.IaProperties;
+import com.uniautonoma.docentia.dto.ComentarioFiltradoResponse;
 import com.uniautonoma.docentia.dto.SolicitudAnalisisRequest;
 import com.uniautonoma.docentia.dto.SolicitudAnalisisResponse;
 import com.uniautonoma.docentia.entity.EstadoSolicitudAnalisis;
@@ -12,6 +13,7 @@ import com.uniautonoma.docentia.exception.EtapaCerradaException;
 import com.uniautonoma.docentia.exception.RecursoNoEncontradoException;
 import com.uniautonoma.docentia.exception.ReglaNegocioException;
 import com.uniautonoma.docentia.exception.ServicioDeshabilitadoException;
+import com.uniautonoma.docentia.repository.ComentarioFiltradoRepository;
 import com.uniautonoma.docentia.repository.PeriodoAcademicoRepository;
 import com.uniautonoma.docentia.repository.SolicitudAnalisisRepository;
 import com.uniautonoma.docentia.repository.UsuarioRepository;
@@ -40,6 +42,7 @@ public class AnalisisIaService {
   private final DocenteService docenteService;
   private final VentanaEtapaService ventanaEtapaService;
   private final IaProperties propiedades;
+  private final ComentarioFiltradoRepository filtradoRepository;
 
   public AnalisisIaService(
       SolicitudAnalisisRepository solicitudRepository,
@@ -47,7 +50,9 @@ public class AnalisisIaService {
       UsuarioRepository usuarioRepository,
       DocenteService docenteService,
       VentanaEtapaService ventanaEtapaService,
-      IaProperties propiedades) {
+      IaProperties propiedades,
+      ComentarioFiltradoRepository filtradoRepository) {
+    this.filtradoRepository = filtradoRepository;
     this.solicitudRepository = solicitudRepository;
     this.periodoRepository = periodoRepository;
     this.usuarioRepository = usuarioRepository;
@@ -104,6 +109,23 @@ public class AnalisisIaService {
    */
   @Transactional(readOnly = true)
   public SolicitudAnalisisResponse consultar(Long idSolicitud, UsuarioSesion sesion) {
+    return SolicitudAnalisisResponse.desde(buscarVisible(idSolicitud, sesion));
+  }
+
+  /**
+   * Lista los comentarios que el filtro excluyó de una solicitud y por qué.
+   *
+   * @throws RecursoNoEncontradoException si no existe o su docente está fuera del alcance
+   */
+  @Transactional(readOnly = true)
+  public List<ComentarioFiltradoResponse> listarFiltrados(Long idSolicitud, UsuarioSesion sesion) {
+    buscarVisible(idSolicitud, sesion);
+    return filtradoRepository.buscarPorSolicitud(idSolicitud).stream()
+        .map(ComentarioFiltradoResponse::desde)
+        .toList();
+  }
+
+  private SolicitudAnalisis buscarVisible(Long idSolicitud, UsuarioSesion sesion) {
     SolicitudAnalisis solicitud =
         solicitudRepository
             .findById(idSolicitud)
@@ -113,7 +135,7 @@ public class AnalisisIaService {
     } catch (RecursoNoEncontradoException fueraDeAlcance) {
       throw new RecursoNoEncontradoException("Solicitud no encontrada");
     }
-    return SolicitudAnalisisResponse.desde(solicitud);
+    return solicitud;
   }
 
   /**

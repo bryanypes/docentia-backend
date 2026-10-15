@@ -1,5 +1,6 @@
 package com.uniautonoma.docentia.controller;
 
+import com.uniautonoma.docentia.dto.ComentarioFiltradoResponse;
 import com.uniautonoma.docentia.dto.SolicitudAnalisisRequest;
 import com.uniautonoma.docentia.dto.SolicitudAnalisisResponse;
 import com.uniautonoma.docentia.security.UsuarioSesion;
@@ -56,6 +57,18 @@ public class AnalisisIaController {
   public SolicitudAnalisisResponse consultar(
       @PathVariable Long idSolicitud, @AuthenticationPrincipal UsuarioSesion sesion) {
     return analisisService.consultar(idSolicitud, sesion);
+  }
+
+  /**
+   * Comentarios que el filtro excluyó de la solicitud, con la regla que los excluyó.
+   *
+   * @param idSolicitud identificador de la solicitud
+   */
+  @GetMapping("/{idSolicitud}/comentarios-filtrados")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
+  public List<ComentarioFiltradoResponse> listarFiltrados(
+      @PathVariable Long idSolicitud, @AuthenticationPrincipal UsuarioSesion sesion) {
+    return analisisService.listarFiltrados(idSolicitud, sesion);
   }
 
   /**

@@ -52,6 +52,8 @@ public class SolicitudAnalisis {
 
   private Integer comentariosEnviados;
 
+  private Integer comentariosFiltrados;
+
   @Column(nullable = false)
   private int intentos;
 
@@ -84,6 +86,10 @@ public class SolicitudAnalisis {
     this.docente = docente;
     this.periodo = periodo;
     this.solicitante = solicitante;
+  }
+
+  public void registrarFiltrados(int filtrados) {
+    this.comentariosFiltrados = filtrados;
   }
 
   public void marcarInsuficiente(int encuestas, String mensaje) {
@@ -153,6 +159,10 @@ public class SolicitudAnalisis {
 
   public Integer getComentariosEnviados() {
     return comentariosEnviados;
+  }
+
+  public Integer getComentariosFiltrados() {
+    return comentariosFiltrados;
   }
 
   public int getIntentos() {
