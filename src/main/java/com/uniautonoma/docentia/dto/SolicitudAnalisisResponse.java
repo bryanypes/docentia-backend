@@ -6,6 +6,7 @@ import com.uniautonoma.docentia.entity.Hallazgo;
 import com.uniautonoma.docentia.entity.SolicitudAnalisis;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Estado de una solicitud de análisis. El borrador solo viene cuando el estado es COMPLETADO.
@@ -29,6 +30,15 @@ public record SolicitudAnalisisResponse(
     Borrador borrador) {
 
   public static SolicitudAnalisisResponse desde(SolicitudAnalisis solicitud) {
+    return desde(solicitud, Map.of());
+  }
+
+  /**
+   * @param comentariosEnviados texto anonimizado de cada comentario que se envió al modelo, por id;
+   *     con él cada cita muestra el comentario de origen
+   */
+  public static SolicitudAnalisisResponse desde(
+      SolicitudAnalisis solicitud, Map<Long, String> comentariosEnviados) {
     Borrador borrador =
         solicitud.getEstado() == EstadoSolicitudAnalisis.COMPLETADO
             ? new Borrador(
@@ -36,7 +46,9 @@ public record SolicitudAnalisisResponse(
                 solicitud.getVersionInstruccion(),
                 solicitud.getFechaBorrador(),
                 solicitud.getEstadoBorrador(),
-                solicitud.getHallazgos().stream().map(HallazgoBorrador::desde).toList())
+                solicitud.getHallazgos().stream()
+                    .map(hallazgo -> HallazgoBorrador.desde(hallazgo, comentariosEnviados))
+                    .toList())
             : null;
     return new SolicitudAnalisisResponse(
         solicitud.getIdSolicitud(),
@@ -72,23 +84,37 @@ public record SolicitudAnalisisResponse(
       Long idHallazgo, String tipo, String texto, String estado, List<CitaBorrador> citas) {
 
     public static HallazgoBorrador desde(Hallazgo hallazgo) {
+      return desde(hallazgo, Map.of());
+    }
+
+    static HallazgoBorrador desde(Hallazgo hallazgo, Map<Long, String> comentariosEnviados) {
       return new HallazgoBorrador(
           hallazgo.getIdHallazgo(),
           hallazgo.getTipo().name(),
           hallazgo.getTexto(),
           hallazgo.getEstado().name(),
-          hallazgo.getCitas().stream().map(CitaBorrador::desde).toList());
+          hallazgo.getCitas().stream()
+              .map(cita -> CitaBorrador.desde(cita, comentariosEnviados))
+              .toList());
     }
   }
 
   /**
    * @param verificada el fragmento aparece en un comentario no filtrado del docente y periodo
+   * @param comentario texto anonimizado del comentario citado, tal como lo recibió el modelo; nulo
+   *     si el id no es de un comentario enviado (cita inventada o de un comentario filtrado)
    */
-  public record CitaBorrador(Long idCita, Long idComentario, String fragmento, boolean verificada) {
+  public record CitaBorrador(
+      Long idCita, Long idComentario, String fragmento, boolean verificada, String comentario) {
 
-    static CitaBorrador desde(CitaHallazgo cita) {
+    static CitaBorrador desde(CitaHallazgo cita, Map<Long, String> comentariosEnviados) {
+      Long idComentario = cita.getIdComentarioCitado();
       return new CitaBorrador(
-          cita.getIdCita(), cita.getIdComentarioCitado(), cita.getFragmento(), cita.isVerificada());
+          cita.getIdCita(),
+          idComentario,
+          cita.getFragmento(),
+          cita.isVerificada(),
+          idComentario == null ? null : comentariosEnviados.get(idComentario));
     }
   }
 }

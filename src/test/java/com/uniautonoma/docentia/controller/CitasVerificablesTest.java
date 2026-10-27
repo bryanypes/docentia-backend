@@ -1,5 +1,6 @@
 package com.uniautonoma.docentia.controller;
 
+import static org.hamcrest.Matchers.nullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -122,6 +123,21 @@ class CitasVerificablesTest extends PruebaIntegracion {
         .andExpect(jsonPath("$.borrador.hallazgos[2].citas[0].verificada").value(false))
         // Hallazgo sin citas.
         .andExpect(jsonPath("$.borrador.hallazgos[3].estado").value("SIN_CITA_VERIFICADA"));
+  }
+
+  @Test
+  void cadaCitaMuestraElComentarioDeOrigenSoloSiSeEnvioAlModelo() throws Exception {
+    mockMvc
+        .perform(get("/analisis-ia/solicitudes/{id}", idSolicitud).with(como(coordinador)))
+        .andExpect(
+            jsonPath("$.borrador.hallazgos[0].citas[0].comentario")
+                .value("Las notas de los parciales se demoran más de dos semanas."))
+        // La cita inventada apunta a un comentario enviado: se muestra para poder compararlos.
+        .andExpect(
+            jsonPath("$.borrador.hallazgos[1].citas[0].comentario")
+                .value("Las notas de los parciales se demoran más de dos semanas."))
+        // El comentario filtrado nunca se muestra dentro del borrador.
+        .andExpect(jsonPath("$.borrador.hallazgos[2].citas[0].comentario").value(nullValue()));
   }
 
   @Test

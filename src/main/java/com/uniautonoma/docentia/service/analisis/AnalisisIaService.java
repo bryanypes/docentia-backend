@@ -21,7 +21,11 @@ import com.uniautonoma.docentia.security.UsuarioSesion;
 import com.uniautonoma.docentia.service.DocenteService;
 import com.uniautonoma.docentia.service.VentanaEtapaService;
 import java.util.EnumSet;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -43,6 +47,8 @@ public class AnalisisIaService {
   private final VentanaEtapaService ventanaEtapaService;
   private final IaProperties propiedades;
   private final ComentarioFiltradoRepository filtradoRepository;
+  private final ProveedorComentarios proveedorComentarios;
+  private final Anonimizador anonimizador;
 
   public AnalisisIaService(
       SolicitudAnalisisRepository solicitudRepository,
@@ -51,8 +57,12 @@ public class AnalisisIaService {
       DocenteService docenteService,
       VentanaEtapaService ventanaEtapaService,
       IaProperties propiedades,
-      ComentarioFiltradoRepository filtradoRepository) {
+      ComentarioFiltradoRepository filtradoRepository,
+      ProveedorComentarios proveedorComentarios,
+      Anonimizador anonimizador) {
     this.filtradoRepository = filtradoRepository;
+    this.proveedorComentarios = proveedorComentarios;
+    this.anonimizador = anonimizador;
     this.solicitudRepository = solicitudRepository;
     this.periodoRepository = periodoRepository;
     this.usuarioRepository = usuarioRepository;
@@ -109,7 +119,30 @@ public class AnalisisIaService {
    */
   @Transactional(readOnly = true)
   public SolicitudAnalisisResponse consultar(Long idSolicitud, UsuarioSesion sesion) {
-    return SolicitudAnalisisResponse.desde(buscarVisible(idSolicitud, sesion));
+    SolicitudAnalisis solicitud = buscarVisible(idSolicitud, sesion);
+    if (solicitud.getEstado() != EstadoSolicitudAnalisis.COMPLETADO) {
+      return SolicitudAnalisisResponse.desde(solicitud);
+    }
+    return SolicitudAnalisisResponse.desde(solicitud, comentariosEnviados(solicitud));
+  }
+
+  /**
+   * Comentarios del docente y periodo que pasaron el filtro, anonimizados como los recibió el
+   * modelo. Solo de esos se muestra el texto: una cita con un id ajeno o de un comentario filtrado
+   * no expone nada.
+   */
+  private Map<Long, String> comentariosEnviados(SolicitudAnalisis solicitud) {
+    Set<Long> filtrados =
+        new HashSet<>(filtradoRepository.idsFiltrados(solicitud.getIdSolicitud()));
+    Map<Long, String> textos = new HashMap<>();
+    for (ComentarioFuente comentario :
+        proveedorComentarios.comentarios(
+            solicitud.getDocente().getIdUsuario(), solicitud.getPeriodo().getIdPeriodo())) {
+      if (!filtrados.contains(comentario.idComentario())) {
+        textos.put(comentario.idComentario(), anonimizador.anonimizar(comentario.texto()));
+      }
+    }
+    return textos;
   }
 
   /**
