@@ -203,6 +203,24 @@ Rol: `COORDINADOR` con alcance sobre el docente del borrador. Sin cuerpo. Solo d
 | `409`  | La revisión de hallazgos está cerrada (cuerpo de B2) |
 | `422`  | El hallazgo no tiene ninguna cita verificada: `"El hallazgo no tiene ninguna cita que aparezca en los comentarios de los estudiantes; no se puede marcar como válido"` |
 
+### Comentario de origen de cada cita (agregado el 27 de octubre)
+
+Para que la coordinación compare la cita con lo que escribió el estudiante, en
+`GET /api/analisis-ia/solicitudes/{id}` cada cita trae además `comentario`:
+
+```json
+{ "idCita": 40, "idComentario": 101, "fragmento": "las notas de los parciales se demoran",
+  "verificada": true, "comentario": "Las notas de los parciales se demoran más de dos semanas." }
+```
+
+- Es el texto **anonimizado**, el mismo que recibió el modelo y contra el que se verificó la cita.
+- Solo se llena si `idComentario` es de un comentario **enviado** (del mismo docente y periodo y no
+  filtrado). Una cita con un id inventado o de un comentario filtrado trae `"comentario": null`: el
+  borrador nunca muestra un comentario excluido ni uno de otro docente.
+- La respuesta de `POST /hallazgos/{id}/validacion` y la lista `GET /solicitudes?docenteId=&periodoId=`
+  traen `comentario` en `null`; para verlo se consulta la solicitud por id.
+- Lo cubre `CitasVerificablesTest.cadaCitaMuestraElComentarioDeOrigenSoloSiSeEnvioAlModelo`.
+
 ### Visibilidad para el docente
 
 El borrador **no se expone al docente en ningún endpoint**: los `GET` de análisis responden `403` al
