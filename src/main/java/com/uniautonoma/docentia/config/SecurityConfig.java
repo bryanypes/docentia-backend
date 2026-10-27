@@ -7,9 +7,11 @@ import com.uniautonoma.docentia.security.ProveedorTokenJwt;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import java.util.List;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -21,10 +23,13 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.web.cors.CorsConfiguration;
+import org.springframework.web.cors.CorsConfigurationSource;
+import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableMethodSecurity
-@EnableConfigurationProperties(JwtProperties.class)
+@EnableConfigurationProperties({JwtProperties.class, CorsProperties.class})
 public class SecurityConfig {
 
   private final ObjectMapper objectMapper;
@@ -34,9 +39,11 @@ public class SecurityConfig {
   }
 
   @Bean
-  SecurityFilterChain cadenaFiltrosSeguridad(HttpSecurity http, ProveedorTokenJwt proveedorTokenJwt)
+  SecurityFilterChain cadenaFiltrosSeguridad(
+      HttpSecurity http, ProveedorTokenJwt proveedorTokenJwt, CorsProperties corsProperties)
       throws Exception {
     return http.csrf(AbstractHttpConfigurer::disable)
+        .cors(cors -> cors.configurationSource(fuenteCors(corsProperties)))
         .sessionManagement(sesion -> sesion.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(
             peticiones ->
@@ -64,6 +71,25 @@ public class SecurityConfig {
             new FiltroAutenticacionJwt(proveedorTokenJwt),
             UsernamePasswordAuthenticationFilter.class)
         .build();
+  }
+
+  /**
+   * Sin orígenes configurados no se registra ninguna ruta: el navegador bloquea cualquier llamada
+   * desde otro dominio. No se usan cookies, así que no se permiten credenciales.
+   */
+  static CorsConfigurationSource fuenteCors(CorsProperties corsProperties) {
+    UrlBasedCorsConfigurationSource fuente = new UrlBasedCorsConfigurationSource();
+    if (corsProperties.origenesPermitidos().isEmpty()) {
+      return fuente;
+    }
+    CorsConfiguration configuracion = new CorsConfiguration();
+    configuracion.setAllowedOrigins(corsProperties.origenesPermitidos());
+    configuracion.setAllowedMethods(List.of("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
+    configuracion.setAllowedHeaders(List.of(HttpHeaders.AUTHORIZATION, HttpHeaders.CONTENT_TYPE));
+    configuracion.setAllowCredentials(false);
+    configuracion.setMaxAge(3600L);
+    fuente.registerCorsConfiguration("/**", configuracion);
+    return fuente;
   }
 
   @Bean
