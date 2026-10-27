@@ -28,6 +28,10 @@ docentia:
   jwt:
     secreto: ${DOCENTIA_JWT_SECRETO:}
     minutos-vigencia: 480
+  # Orígenes exactos, separados por coma, que pueden llamar al API desde otro dominio. Vacío = sin
+  # CORS (el frontend va en el mismo origen o detrás de un proxy, como Vite en desarrollo).
+  cors:
+    origenes-permitidos: ${DOCENTIA_CORS_ORIGENES:}
   importacion:
     tamano-maximo-bytes: 2097152
     filas-maximas: 5000

@@ -1,7 +1,7 @@
 # Demo Sprint 3 — recorrido de punta a punta
 
 Recorrido completo con `curl` desde Git Bash, sobre una base recién creada con el seed de
-desarrollo. Los valores de ejemplo son los que dio la última corrida (15 de octubre de 2026); si se
+desarrollo. Los valores de ejemplo son los que dio la última corrida (27 de octubre de 2026); si se
 corre otro día, cambian las fechas de reserva pero no los números.
 
 Orden: login coordinador → importar CSV (C4/C5) → promedio recalculado y KPIs (I5) → solicitar
@@ -15,7 +15,7 @@ desarrollo" en el README) y Python para leer el JSON en la consola (`jq` tambié
 
 ```bash
 export JAVA_HOME="/c/Program Files/Eclipse Adoptium/jdk-21.0.11.10-hotspot"
-mvn spring-boot:run -Dspring-boot.run.profiles=dev      # en otra terminal; queda en :8080/api
+./mvnw spring-boot:run -Dspring-boot.run.profiles=dev    # en otra terminal; queda en :8080/api
 ```
 
 En otra terminal, desde la raíz del repositorio:
@@ -46,7 +46,7 @@ curl -s -H "Authorization: Bearer $C" \
   $B/importaciones/csv/validar | json
 ```
 
-→ `"valido": false`, 4 filas con error: nota 7, "cuatro", nota vacía, docente de Derecho y correo
+→ `"valido": false`, 4 filas con error y 5 problemas (la fila 4 tiene dos): nota 7, "cuatro", nota vacía, docente de Derecho y correo
 inexistente (los dos últimos como `Docente no encontrado`). Importarlo da **422** y la carga queda
 como `RECHAZADA` en `GET $B/importaciones`.
 
