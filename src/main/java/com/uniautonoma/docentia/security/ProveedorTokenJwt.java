@@ -24,6 +24,7 @@ public class ProveedorTokenJwt {
   private static final String CLAIM_ROL = "rol";
   private static final String CLAIM_ID_FACULTAD = "idFacultad";
   private static final String CLAIM_ID_PROGRAMA = "idPrograma";
+  private static final String CLAIM_CONTRASENA_TEMPORAL = "contrasenaTemporal";
 
   private final SecretKey llaveFirma;
   private final Duration vigencia;
@@ -52,6 +53,7 @@ public class ProveedorTokenJwt {
         .claim(CLAIM_ROL, sesion.rol().name())
         .claim(CLAIM_ID_FACULTAD, sesion.idFacultad())
         .claim(CLAIM_ID_PROGRAMA, sesion.idPrograma())
+        .claim(CLAIM_CONTRASENA_TEMPORAL, sesion.debeCambiarContrasena())
         .issuedAt(Date.from(ahora))
         .expiration(Date.from(ahora.plus(vigencia)))
         .signWith(llaveFirma)
@@ -72,7 +74,8 @@ public class ProveedorTokenJwt {
               claims.getSubject(),
               Rol.valueOf(claims.get(CLAIM_ROL, String.class)),
               leerIdentificador(claims, CLAIM_ID_FACULTAD),
-              leerIdentificador(claims, CLAIM_ID_PROGRAMA)));
+              leerIdentificador(claims, CLAIM_ID_PROGRAMA),
+              Boolean.TRUE.equals(claims.get(CLAIM_CONTRASENA_TEMPORAL, Boolean.class))));
     } catch (JwtException | IllegalArgumentException excepcion) {
       return Optional.empty();
     }

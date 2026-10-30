@@ -1,5 +1,6 @@
 package com.uniautonoma.docentia.controller;
 
+import com.uniautonoma.docentia.dto.CambioContrasenaRequest;
 import com.uniautonoma.docentia.dto.InicioSesionRequest;
 import com.uniautonoma.docentia.dto.SesionResponse;
 import com.uniautonoma.docentia.security.UsuarioSesion;
@@ -9,6 +10,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -46,5 +48,19 @@ public class SesionController {
   @GetMapping("/actual")
   public UsuarioSesion obtenerSesionActual(@AuthenticationPrincipal UsuarioSesion sesion) {
     return sesion;
+  }
+
+  /**
+   * Cambia la contraseña propia. Es lo único que acepta una sesión con la contraseña temporal.
+   *
+   * @param sesion sesión leída del token
+   * @param solicitud contraseña actual y nueva
+   * @return sesión nueva, sin la marca de contraseña temporal
+   */
+  @PutMapping("/actual/contrasena")
+  public SesionResponse cambiarContrasena(
+      @AuthenticationPrincipal UsuarioSesion sesion,
+      @Valid @RequestBody CambioContrasenaRequest solicitud) {
+    return autenticacionService.cambiarContrasena(sesion, solicitud);
   }
 }

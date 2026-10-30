@@ -51,6 +51,10 @@ public class Usuario {
   @Column(nullable = false)
   private boolean esActivo = true;
 
+  /** La contraseña la asignó la vicerrectoría y el usuario todavía no la ha cambiado. */
+  @Column(nullable = false)
+  private boolean debeCambiarContrasena;
+
   @CreationTimestamp
   @Column(nullable = false, updatable = false)
   private LocalDateTime fechaCreacion;
@@ -190,6 +194,22 @@ public class Usuario {
 
   public void setEsActivo(boolean esActivo) {
     this.esActivo = esActivo;
+  }
+
+  public boolean getDebeCambiarContrasena() {
+    return debeCambiarContrasena;
+  }
+
+  /** Contraseña puesta por la vicerrectoría: el usuario debe cambiarla antes de usar el sistema. */
+  public void asignarContrasenaTemporal(String contrasenaHash) {
+    this.contrasenaHash = contrasenaHash;
+    this.debeCambiarContrasena = true;
+  }
+
+  /** Contraseña elegida por el propio usuario. */
+  public void cambiarContrasenaPropia(String contrasenaHash) {
+    this.contrasenaHash = contrasenaHash;
+    this.debeCambiarContrasena = false;
   }
 
   public LocalDateTime getFechaCreacion() {

@@ -4,10 +4,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.uniautonoma.docentia.dto.ErrorResponse;
 import com.uniautonoma.docentia.security.FiltroAutenticacionJwt;
 import com.uniautonoma.docentia.security.ProveedorTokenJwt;
+import com.uniautonoma.docentia.security.UsuarioSesion;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.function.Supplier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,13 +17,18 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
+import org.springframework.security.authorization.AuthorizationDecision;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
@@ -50,8 +57,13 @@ public class SecurityConfig {
                 peticiones
                     .requestMatchers(HttpMethod.POST, "/sesiones")
                     .permitAll()
+                    // Lo único que puede hacer una sesión con la contraseña temporal.
+                    .requestMatchers(HttpMethod.GET, "/sesiones/actual")
+                    .authenticated()
+                    .requestMatchers(HttpMethod.PUT, "/sesiones/actual/contrasena")
+                    .authenticated()
                     .anyRequest()
-                    .authenticated())
+                    .access(SecurityConfig::autenticadoSinContrasenaTemporal))
         .exceptionHandling(
             errores ->
                 errores
@@ -66,11 +78,33 @@ public class SecurityConfig {
                             escribirError(
                                 response,
                                 HttpStatus.FORBIDDEN,
-                                "No tienes permiso para realizar esta acción")))
+                                tieneContrasenaTemporal(
+                                        SecurityContextHolder.getContext().getAuthentication())
+                                    ? "Debes cambiar tu contraseña temporal antes de continuar"
+                                    : "No tienes permiso para realizar esta acción")))
         .addFilterBefore(
             new FiltroAutenticacionJwt(proveedorTokenJwt),
             UsernamePasswordAuthenticationFilter.class)
         .build();
+  }
+
+  /** Sesión iniciada y con una contraseña elegida por el propio usuario. */
+  static AuthorizationDecision autenticadoSinContrasenaTemporal(
+      Supplier<Authentication> autenticacion, RequestAuthorizationContext contexto) {
+    Authentication actual = autenticacion.get();
+    boolean autenticado =
+        actual != null
+            && actual.isAuthenticated()
+            && !(actual instanceof AnonymousAuthenticationToken);
+    return new AuthorizationDecision(autenticado && !tieneContrasenaTemporal(actual));
+  }
+
+  static boolean tieneContrasenaTemporal(Authentication autenticacion) {
+    return autenticacion != null
+        && autenticacion.getAuthorities().stream()
+            .anyMatch(
+                autoridad ->
+                    UsuarioSesion.AUTORIDAD_CONTRASENA_TEMPORAL.equals(autoridad.getAuthority()));
   }
 
   /**

@@ -81,14 +81,17 @@ public class UsuarioService {
     String correo = normalizarCorreo(solicitud.correo());
     validarCorreoDisponible(correo, null);
     Vinculo vinculo = resolverVinculo(solicitud);
+    String contrasenaHash = passwordEncoder.encode(solicitud.contrasena());
     Usuario usuario =
         Usuario.crear(
             solicitud.nombreCompleto().trim(),
             correo,
-            passwordEncoder.encode(solicitud.contrasena()),
+            contrasenaHash,
             solicitud.rol(),
             vinculo.facultad(),
             vinculo.programa());
+    // La contraseña la conoce quien creó la cuenta: el usuario la cambia al primer ingreso.
+    usuario.asignarContrasenaTemporal(contrasenaHash);
     return UsuarioResponse.desde(usuarioRepository.save(usuario));
   }
 
@@ -112,8 +115,28 @@ public class UsuarioService {
     usuario.setCorreo(correo);
     usuario.asignarAlcance(solicitud.rol(), vinculo.facultad(), vinculo.programa());
     if (StringUtils.hasText(solicitud.contrasena())) {
-      usuario.setContrasenaHash(passwordEncoder.encode(solicitud.contrasena()));
+      usuario.asignarContrasenaTemporal(passwordEncoder.encode(solicitud.contrasena()));
     }
+    return UsuarioResponse.desde(usuarioRepository.saveAndFlush(usuario));
+  }
+
+  /**
+   * Activa o desactiva una cuenta. Una cuenta inactiva no puede iniciar sesión; sus sesiones
+   * abiertas siguen hasta que el token vence, igual que con un cambio de rol.
+   *
+   * @param idUsuario cuenta a cambiar
+   * @param esActivo estado nuevo
+   * @param idUsuarioActual quien hace el cambio
+   * @return el usuario con su estado nuevo
+   * @throws RecursoNoEncontradoException si el usuario no existe
+   * @throws ReglaNegocioException si alguien intenta desactivar su propia cuenta
+   */
+  public UsuarioResponse cambiarEstado(Long idUsuario, boolean esActivo, Long idUsuarioActual) {
+    Usuario usuario = buscarUsuario(idUsuario);
+    if (!esActivo && idUsuario.equals(idUsuarioActual)) {
+      throw new ReglaNegocioException("No puedes desactivar tu propia cuenta");
+    }
+    usuario.setEsActivo(esActivo);
     return UsuarioResponse.desde(usuarioRepository.saveAndFlush(usuario));
   }
 

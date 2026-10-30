@@ -6,11 +6,15 @@ import com.uniautonoma.docentia.entity.Usuario;
 import java.util.List;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 
 /**
  * Datos del usuario que viajan en la sesión. El alcance (facultad y programa) se resuelve una sola
  * vez al iniciar sesión para no volver a consultarlo en cada petición.
+ *
+ * @param debeCambiarContrasena la contraseña es temporal: hasta cambiarla la sesión no sirve para
+ *     nada más que consultarse a sí misma y cambiar la contraseña
  */
 public record UsuarioSesion(
     Long idUsuario,
@@ -18,7 +22,11 @@ public record UsuarioSesion(
     String correo,
     Rol rol,
     Long idFacultad,
-    Long idPrograma) {
+    Long idPrograma,
+    boolean debeCambiarContrasena) {
+
+  /** Autoridad que reemplaza al rol mientras la contraseña sea temporal. */
+  public static final String AUTORIDAD_CONTRASENA_TEMPORAL = "CONTRASENA_TEMPORAL";
 
   public static UsuarioSesion desde(Usuario usuario) {
     Programa programa = usuario.getPrograma();
@@ -36,12 +44,19 @@ public record UsuarioSesion(
         usuario.getCorreo(),
         usuario.getRol(),
         idFacultad,
-        idPrograma);
+        idPrograma,
+        usuario.getDebeCambiarContrasena());
   }
 
+  /**
+   * Con la contraseña temporal la sesión no lleva el rol: ningún endpoint protegido por rol la
+   * acepta, y las reglas generales de SecurityConfig dejan pasar solo el cambio de contraseña.
+   */
   public Authentication aAutenticacion() {
-    return new UsernamePasswordAuthenticationToken(
-        this, null, List.of(new SimpleGrantedAuthority("ROLE_" + rol.name())));
+    GrantedAuthority autoridad =
+        new SimpleGrantedAuthority(
+            debeCambiarContrasena ? AUTORIDAD_CONTRASENA_TEMPORAL : "ROLE_" + rol.name());
+    return new UsernamePasswordAuthenticationToken(this, null, List.of(autoridad));
   }
 
   /**
