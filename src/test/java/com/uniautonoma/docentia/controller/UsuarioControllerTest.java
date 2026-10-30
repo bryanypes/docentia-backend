@@ -10,6 +10,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.JsonNode;
 import com.uniautonoma.docentia.EscenarioPrueba;
 import com.uniautonoma.docentia.PruebaIntegracion;
+import com.uniautonoma.docentia.dto.CambioContrasenaRequest;
 import com.uniautonoma.docentia.dto.InicioSesionRequest;
 import com.uniautonoma.docentia.dto.UsuarioRequest;
 import com.uniautonoma.docentia.entity.Facultad;
@@ -192,7 +193,21 @@ class UsuarioControllerTest extends PruebaIntegracion {
             .andReturn()
             .getResponse()
             .getContentAsString();
-    JsonNode sesion = objectMapper.readTree(cuerpo);
+    String tokenTemporal = objectMapper.readTree(cuerpo).get("token").asText();
+
+    // La contraseña la puso la vicerrectoría: hay que cambiarla antes de usar el sistema.
+    String cambio =
+        mockMvc
+            .perform(
+                put("/sesiones/actual/contrasena")
+                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + tokenTemporal)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(aJson(new CambioContrasenaRequest(CONTRASENA, "Clave-propia-2"))))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    JsonNode sesion = objectMapper.readTree(cambio);
 
     // Con el token real (sin simular la sesión) el filtro por facultad sale de los claims.
     mockMvc

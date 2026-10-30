@@ -1,14 +1,18 @@
 package com.uniautonoma.docentia.controller;
 
+import com.uniautonoma.docentia.dto.EstadoUsuarioRequest;
 import com.uniautonoma.docentia.dto.UsuarioRequest;
 import com.uniautonoma.docentia.dto.UsuarioResponse;
 import com.uniautonoma.docentia.entity.Rol;
+import com.uniautonoma.docentia.security.UsuarioSesion;
 import com.uniautonoma.docentia.service.UsuarioService;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -78,5 +82,21 @@ public class UsuarioController {
   public UsuarioResponse actualizarUsuario(
       @PathVariable Long idUsuario, @Valid @RequestBody UsuarioRequest solicitud) {
     return usuarioService.actualizarUsuario(idUsuario, solicitud);
+  }
+
+  /**
+   * Activa o desactiva una cuenta.
+   *
+   * @param idUsuario identificador del usuario
+   * @param solicitud estado nuevo
+   * @param sesion vicerrectoría que hace el cambio; no puede desactivarse a sí misma
+   * @return el usuario con su estado nuevo
+   */
+  @PatchMapping("/{idUsuario}/estado")
+  public UsuarioResponse cambiarEstado(
+      @PathVariable Long idUsuario,
+      @Valid @RequestBody EstadoUsuarioRequest solicitud,
+      @AuthenticationPrincipal UsuarioSesion sesion) {
+    return usuarioService.cambiarEstado(idUsuario, solicitud.esActivo(), sesion.idUsuario());
   }
 }

@@ -5,7 +5,12 @@ import com.uniautonoma.docentia.entity.Programa;
 import com.uniautonoma.docentia.entity.Rol;
 import com.uniautonoma.docentia.entity.Usuario;
 
-/** Usuario con su rol y su alcance. La facultad del docente es la de su programa. */
+/**
+ * Usuario con su rol y su alcance. La facultad del docente es la de su programa.
+ *
+ * @param debeCambiarContrasena la cuenta tiene la contraseña temporal que le asignó la
+ *     vicerrectoría
+ */
 public record UsuarioResponse(
     Long idUsuario,
     String nombreCompleto,
@@ -15,7 +20,8 @@ public record UsuarioResponse(
     String nombreFacultad,
     Long idPrograma,
     String nombrePrograma,
-    boolean esActivo) {
+    boolean esActivo,
+    boolean debeCambiarContrasena) {
 
   public static UsuarioResponse desde(Usuario usuario) {
     Programa programa = usuario.getPrograma();
@@ -29,6 +35,7 @@ public record UsuarioResponse(
         facultad != null ? facultad.getNombre() : null,
         programa != null ? programa.getIdPrograma() : null,
         programa != null ? programa.getNombre() : null,
-        usuario.getEsActivo());
+        usuario.getEsActivo(),
+        usuario.getDebeCambiarContrasena());
   }
 }

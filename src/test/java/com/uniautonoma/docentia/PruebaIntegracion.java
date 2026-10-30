@@ -38,7 +38,8 @@ public abstract class PruebaIntegracion {
                 "vicerrectoria@prueba.co",
                 Rol.VICERRECTOR,
                 null,
-                null)
+                null,
+                false)
             .aAutenticacion());
   }
 
@@ -50,7 +51,8 @@ public abstract class PruebaIntegracion {
                 "coordinacion@prueba.co",
                 Rol.COORDINADOR,
                 idFacultad,
-                null)
+                null,
+                false)
             .aAutenticacion());
   }
 

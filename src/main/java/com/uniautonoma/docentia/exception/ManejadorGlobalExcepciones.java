@@ -77,6 +77,10 @@ public class ManejadorGlobalExcepciones {
   @ExceptionHandler(DatosInvalidosException.class)
   @ResponseStatus(HttpStatus.BAD_REQUEST)
   public ErrorResponse manejarDatosInvalidos(DatosInvalidosException excepcion) {
+    if (excepcion.getCampo() != null) {
+      return new ErrorResponse(
+          "Hay campos con datos inválidos", Map.of(excepcion.getCampo(), excepcion.getMessage()));
+    }
     return new ErrorResponse(excepcion.getMessage());
   }
 
