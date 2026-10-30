@@ -3,7 +3,7 @@
 Sistema de evaluación docente de la Corporación Universitaria Autónoma del Cauca.
 
 Este repositorio es la API REST. La aplicación web está en
-[docentia-frontend](https://github.com/bryanypes/docentia-frontend).
+[DocenteIA](https://github.com/vXro1/DocenteIA).
 
 Stack: Spring Boot, Java 21, PostgreSQL, Flyway y Maven (incluido como Maven Wrapper).
 
@@ -65,7 +65,7 @@ Stack: Spring Boot, Java 21, PostgreSQL, Flyway y Maven (incluido como Maven Wra
 
    Debe devolver `201` con un `token`.
 
-4. Levantar el [frontend](https://github.com/bryanypes/docentia-frontend) (`npm install` y
+4. Levantar el [frontend](https://github.com/vXro1/DocenteIA) (`npm install` y
    `npm run dev`); Vite reenvía `/api` a este backend.
 
 ### Usuarios de desarrollo
@@ -104,6 +104,9 @@ son ofensivos o sobre su persona, para probar el filtro) y Diana 6, así que su 
 Para las citas de retroalimentación, el coordinador de Ingeniería tiene franjas abiertas el 9 de
 noviembre (8:00 a 10:00) y el 10 de noviembre (14:00 a 15:00), y la coordinadora de Derecho una el 9
 de noviembre a las 10:00.
+
+Las cuentas que crea la vicerrectoría desde la aplicación quedan con **contraseña temporal**: hasta
+cambiarla, la API responde 403 a todo lo demás. Los usuarios del seed no la tienen.
 
 Fuera del perfil `dev` hay que definir `DOCENTIA_JWT_SECRETO` (mínimo 32 caracteres).
 
