@@ -7,6 +7,9 @@ logging:
     root: warn
 
 docentia:
+  notificaciones:
+    programador:
+      habilitado: false
   jwt:
     secreto: secreto-exclusivo-para-las-pruebas-automatizadas
   ia:

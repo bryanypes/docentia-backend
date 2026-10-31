@@ -15,6 +15,7 @@ import com.uniautonoma.docentia.entity.FuenteEvaluacion;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.Rol;
 import com.uniautonoma.docentia.entity.TipoEtapa;
+import com.uniautonoma.docentia.entity.TipoNotificacion;
 import com.uniautonoma.docentia.entity.Usuario;
 import com.uniautonoma.docentia.exception.DatosInvalidosException;
 import com.uniautonoma.docentia.exception.NoProcesableException;
@@ -25,6 +26,7 @@ import com.uniautonoma.docentia.repository.CitaRepository;
 import com.uniautonoma.docentia.repository.CorreccionCalificacionRepository;
 import com.uniautonoma.docentia.repository.UsuarioRepository;
 import com.uniautonoma.docentia.security.UsuarioSesion;
+import com.uniautonoma.docentia.service.notificacion.EventoNotificacion;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.security.SecureRandom;
@@ -34,6 +36,7 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,7 +49,11 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class ActaService {
 
+  private final ApplicationEventPublisher eventos;
+
   private static final SecureRandom ALEATORIO = new SecureRandom();
+  private static final String ENLACE_ACTA = "/mi-acta";
+  private static final String ENTIDAD_ACTA = "ACTA";
 
   private final ActaRepository actaRepository;
   private final CitaRepository citaRepository;
@@ -71,7 +78,9 @@ public class ActaService {
       VentanaEtapaService ventanaEtapaService,
       GeneradorPdfActa generadorPdf,
       ActasProperties propiedades,
-      Clock reloj) {
+      Clock reloj,
+      ApplicationEventPublisher eventos) {
+    this.eventos = eventos;
     this.actaRepository = actaRepository;
     this.citaRepository = citaRepository;
     this.correccionRepository = correccionRepository;
@@ -102,7 +111,9 @@ public class ActaService {
     }
     Acta acta = new Acta(docente, periodo, propiedades.compromisos().umbral());
     congelar(acta);
-    return ActaResponse.desde(actaRepository.save(acta));
+    Acta guardada = actaRepository.saveAndFlush(acta);
+    avisarSiEstaLista(guardada);
+    return ActaResponse.desde(guardada);
   }
 
   /**
@@ -149,7 +160,9 @@ public class ActaService {
       throw new DatosInvalidosException("El plazo no puede estar en el pasado", "fechaLimite");
     }
     acta.agregarCompromiso(solicitud.descripcion().trim(), solicitud.fechaLimite());
-    return ActaResponse.desde(actaRepository.saveAndFlush(acta));
+    Acta guardada = actaRepository.saveAndFlush(acta);
+    avisarSiEstaLista(guardada);
+    return ActaResponse.desde(guardada);
   }
 
   /** Quita un compromiso del acta en borrador. */
@@ -217,7 +230,9 @@ public class ActaService {
     if (acta.firmadaPor(Rol.DOCENTE) && acta.firmadaPor(Rol.COORDINADOR)) {
       cerrar(acta, ahora);
     }
-    return ActaResponse.desde(actaRepository.saveAndFlush(acta));
+    Acta guardada = actaRepository.saveAndFlush(acta);
+    avisarFirma(guardada, sesion);
+    return ActaResponse.desde(guardada);
   }
 
   /**
@@ -241,7 +256,16 @@ public class ActaService {
     actaRepository.saveAndFlush(anterior);
     Acta nueva = Acta.nuevaVersion(anterior, motivo.trim(), sesion.idUsuario());
     congelar(nueva);
-    return ActaResponse.desde(actaRepository.saveAndFlush(nueva));
+    Acta guardada = actaRepository.saveAndFlush(nueva);
+    eventos.publishEvent(
+        EventoNotificacion.aUsuario(
+            TipoNotificacion.ACTA_CORREGIDA,
+            guardada.getDocente().getIdUsuario(),
+            ENLACE_ACTA,
+            ENTIDAD_ACTA,
+            guardada.getIdActa(),
+            "acta:" + guardada.getIdActa()));
+    return ActaResponse.desde(guardada);
   }
 
   /** PDF guardado del acta; nunca se regenera. */
@@ -329,5 +353,47 @@ public class ActaService {
       throw new RecursoNoEncontradoException("Acta no encontrada");
     }
     return acta;
+  }
+
+  /**
+   * El docente se entera cuando el acta ya se puede firmar: con el compromiso exigido, si aplica.
+   */
+  private void avisarSiEstaLista(Acta acta) {
+    if (acta.requiereCompromisos() && acta.getCompromisos().isEmpty()) {
+      return;
+    }
+    eventos.publishEvent(
+        EventoNotificacion.aUsuario(
+            TipoNotificacion.ACTA_POR_FIRMAR,
+            acta.getDocente().getIdUsuario(),
+            ENLACE_ACTA,
+            ENTIDAD_ACTA,
+            acta.getIdActa(),
+            "acta:" + acta.getIdActa()));
+  }
+
+  private void avisarFirma(Acta acta, UsuarioSesion sesion) {
+    String clave = "acta:" + acta.getIdActa();
+    if (sesion.esDocente()) {
+      eventos.publishEvent(
+          EventoNotificacion.aCoordinadores(
+              TipoNotificacion.ACTA_FIRMADA_DOCENTE,
+              acta.getDocente(),
+              "/docentes/" + acta.getDocente().getIdUsuario(),
+              ENTIDAD_ACTA,
+              acta.getIdActa(),
+              clave));
+    }
+    if (acta.getEstado() == EstadoActa.FIRMADA) {
+      eventos.publishEvent(
+          EventoNotificacion.aUsuario(
+                  TipoNotificacion.ACTA_FIRMADA,
+                  acta.getDocente().getIdUsuario(),
+                  ENLACE_ACTA,
+                  ENTIDAD_ACTA,
+                  acta.getIdActa(),
+                  clave)
+              .conDetalle("Código de verificación: " + acta.getCodigoVerificacion() + "."));
+    }
   }
 }

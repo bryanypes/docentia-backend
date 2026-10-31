@@ -105,6 +105,10 @@ public class EscenarioPrueba {
     return periodoRepository.saveAndFlush(periodo);
   }
 
+  public Usuario recargar(Usuario usuario) {
+    return usuarioRepository.findById(usuario.getIdUsuario()).orElseThrow();
+  }
+
   public Facultad crearFacultad(String nombre) {
     return facultadRepository.save(new Facultad(nombre));
   }

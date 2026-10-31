@@ -93,4 +93,10 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
    */
   @EntityGraph(attributePaths = {"programa", "programa.facultad"})
   Optional<Usuario> findByIdUsuarioAndRolAndEsActivoTrue(Long idUsuario, Rol rol);
+
+  /** Coordinadores activos de una facultad. */
+  @Query(
+      "select u from Usuario u where u.rol = com.uniautonoma.docentia.entity.Rol.COORDINADOR"
+          + " and u.facultad.idFacultad = :idFacultad and u.esActivo = true")
+  List<Usuario> buscarCoordinadoresActivos(Long idFacultad);
 }

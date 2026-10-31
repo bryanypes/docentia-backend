@@ -27,6 +27,13 @@ services:
       retries: 10
       start_period: 10s
 
+  # Solo desarrollo: atrapa los correos para verlos en el navegador.
+  mailpit:
+    image: axllent/mailpit:v1.21
+    restart: unless-stopped
+    ports:
+      - "${MAILPIT_PORT:-8025}:8025"
+
   api:
     image: docentia-api
     build:
@@ -41,6 +48,13 @@ services:
       DOCENTIA_DB_CONTRASENA: ${POSTGRES_PASSWORD:-docentia}
       DOCENTIA_JWT_SECRETO: ${DOCENTIA_JWT_SECRETO:-secreto-de-desarrollo-local-no-usar-en-produccion}
       DOCENTIA_GOOGLE_CLIENT_ID: ${DOCENTIA_GOOGLE_CLIENT_ID:-}
+      DOCENTIA_APP_URL: ${DOCENTIA_APP_URL:-http://localhost:5173}
+      DOCENTIA_MAIL_HOST: ${DOCENTIA_MAIL_HOST:-mailpit}
+      DOCENTIA_MAIL_PORT: ${DOCENTIA_MAIL_PORT:-1025}
+      DOCENTIA_MAIL_USER: ${DOCENTIA_MAIL_USER:-}
+      DOCENTIA_MAIL_PASS: ${DOCENTIA_MAIL_PASS:-}
+      DOCENTIA_MAIL_FROM: ${DOCENTIA_MAIL_FROM:-no-responder@uniautonoma.edu.co}
+      DOCENTIA_MAIL_TLS: ${DOCENTIA_MAIL_TLS:-false}
       DOCENTIA_COMPROMISOS_UMBRAL: ${DOCENTIA_COMPROMISOS_UMBRAL:-3.8}
       DOCENTIA_ACTAS_ROL_CORRECTOR: ${DOCENTIA_ACTAS_ROL_CORRECTOR:-VICERRECTOR}
       DOCENTIA_IA_HABILITADO: ${DOCENTIA_IA_HABILITADO:-true}

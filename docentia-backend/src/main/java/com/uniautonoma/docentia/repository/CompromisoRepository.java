@@ -39,4 +39,18 @@ public interface CompromisoRepository extends JpaRepository<Compromiso, Long> {
       order by c.fechaLimite
       """)
   List<Compromiso> buscarEnFirme(Long idDocente, Long idPeriodo);
+
+  /** Compromisos vigentes y en firme que vencen hasta una fecha, con docente y facultad. */
+  @Query(
+      """
+      select c from Compromiso c
+      join fetch c.docente d
+      join fetch d.programa p
+      join fetch p.facultad
+      left join c.acta a
+      where c.estado = com.uniautonoma.docentia.entity.EstadoCompromiso.VIGENTE
+        and c.fechaLimite <= :limite
+        and (a is null or a.estado = com.uniautonoma.docentia.entity.EstadoActa.FIRMADA)
+      """)
+  List<Compromiso> buscarVigentesEnFirmeHasta(java.time.LocalDate limite);
 }
