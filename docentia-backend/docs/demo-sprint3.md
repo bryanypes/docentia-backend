@@ -89,8 +89,9 @@ curl -s -H "Authorization: Bearer $V" $B/kpis | json
 
 - El promedio de Julián pasó de **4.34 a 4.27**: su nota de estudiantes bajó de 4.50 a 4.36.
 - El historial (D2) muestra esa corrección con motivo `Carga de CSV #… (evaluacion-estudiantes-ejemplo.csv)`.
-- KPIs institucionales: docentes evaluados **2** (antes 1), promedio general **4.29** (antes 4.04,
-  +0.25), evaluaciones **7** (antes 3), destacados **0** (nadie llega a 4.5 con el seed).
+- KPIs institucionales: el seed de la Resolución 074 agrega tres docentes, así que antes de cargar
+  el CSV parte de **5** evaluados y promedio general **3.63**. Las cifras de esta sección anteriores
+  a ese cambio ya no aplican.
 
 ## 4. Solicitar el análisis con IA (E1)
 
