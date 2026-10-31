@@ -24,12 +24,12 @@
   animation: crecer 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
-.barra-nota__relleno--excelente {
-  background: var(--color-nivel-excelente);
+.barra-nota__relleno--muy-alto {
+  background: var(--color-nivel-muy-alto);
 }
 
-.barra-nota__relleno--bueno {
-  background: var(--color-nivel-bueno);
+.barra-nota__relleno--alto {
+  background: var(--color-nivel-alto);
 }
 
 .barra-nota__relleno--aceptable {
@@ -38,4 +38,8 @@
 
 .barra-nota__relleno--bajo {
   background: var(--color-nivel-bajo);
+}
+
+.barra-nota__relleno--muy-bajo {
+  background: var(--color-nivel-muy-bajo);
 }

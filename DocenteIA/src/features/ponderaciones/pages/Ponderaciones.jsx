@@ -13,7 +13,7 @@ import { guardarPonderacionActiva, obtenerPonderacionActiva } from '../services/
 const FUENTES = [
   { campo: 'pesoEstudiantes', etiqueta: 'Estudiantes' },
   { campo: 'pesoCoordinacion', etiqueta: 'Coordinación' },
-  { campo: 'pesoVicerrectoria', etiqueta: 'Vicerrectoría' },
+  { campo: 'pesoAutoevaluacion', etiqueta: 'Autoevaluación' },
 ]
 const NOMBRES_CAMPOS = Object.fromEntries(FUENTES.map(({ campo, etiqueta }) => [campo, etiqueta]))
 

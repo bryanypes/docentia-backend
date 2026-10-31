@@ -2,7 +2,6 @@ import { api } from '../../../services/api.js'
 
 const RUTA_FUENTE = {
   COORDINACION: 'coordinacion',
-  VICERRECTORIA: 'vicerrectoria',
 }
 
 function ruta(idDocente, fuente) {
@@ -26,4 +25,13 @@ export function guardarCalificacion(idDocente, fuente, calificacion) {
 export function listarCorrecciones(idDocente, idPeriodo) {
   const consulta = idPeriodo ? `?idPeriodo=${encodeURIComponent(idPeriodo)}` : ''
   return api.get(`/docentes/${encodeURIComponent(idDocente)}/calificaciones/correcciones${consulta}`)
+}
+
+/** Autoevaluación del docente autenticado, o null si aún no existe (204). */
+export function obtenerAutoevaluacion() {
+  return api.get('/autoevaluacion')
+}
+
+export function guardarAutoevaluacion(calificacion) {
+  return api.put('/autoevaluacion', calificacion)
 }

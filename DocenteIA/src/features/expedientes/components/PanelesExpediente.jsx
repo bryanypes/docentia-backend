@@ -1,3 +1,4 @@
+import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
 import { BarraNota } from '../../../shared/components/ui/BarraNota/BarraNota.jsx'
 import { EtiquetaNivel } from '../../../shared/components/ui/EtiquetaNivel/EtiquetaNivel.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
@@ -8,12 +9,22 @@ import {
   formatearPeso,
   listarFuentes,
   nivelDeNota,
+  textoFormula,
 } from '../../../shared/utils/formatters.js'
 import './PanelesExpediente.css'
 
-/** Valor del promedio ponderado. Si está incompleto no muestra ningún número parcial. */
+function pesosDe(notasPorFuente) {
+  const peso = (fuente) => notasPorFuente.find((f) => f.fuente === fuente)?.peso ?? 0
+  return {
+    pesoEstudiantes: peso('ESTUDIANTES'),
+    pesoCoordinacion: peso('COORDINACION'),
+    pesoAutoevaluacion: peso('AUTOEVALUACION'),
+  }
+}
+
+/** Valor del promedio ponderado; "Pendiente" cuando aún no hay un número que mostrar. */
 export function ValorPromedio({ promedio, tamano = 'grande' }) {
-  if (!promedio || promedio.estado === 'INCOMPLETO') {
+  if (promedio?.valor === null || promedio?.valor === undefined) {
     return <strong className={`valor-promedio valor-promedio--${tamano} valor-promedio--pendiente`}>Pendiente</strong>
   }
   const nivel = nivelDeNota(promedio.valor)
@@ -28,6 +39,7 @@ export function ValorPromedio({ promedio, tamano = 'grande' }) {
 export function PanelFuentes({ notasPorFuente, promedio, descripcion, children }) {
   return (
     <Panel titulo="Calificación por fuente" descripcion={descripcion}>
+      <p className="fuentes__formula">{textoFormula(pesosDe(notasPorFuente))}</p>
       <ul className="fuentes">
         {notasPorFuente.map((f) => (
           <li key={f.fuente} className="fuentes__fila">
@@ -44,8 +56,16 @@ export function PanelFuentes({ notasPorFuente, promedio, descripcion, children }
         <span>Promedio ponderado</span>
         <ValorPromedio promedio={promedio} />
       </div>
-      {promedio?.estado === 'INCOMPLETO' && (
-        <p className="fuentes__nota-pie">Falta la calificación de {listarFuentes(promedio.fuentesPendientes)}.</p>
+      {promedio?.estado === 'PARCIAL' && (
+        <Aviso tipo="alerta" titulo="Promedio parcial">
+          Falta {listarFuentes(promedio.fuentesPendientes)}. Se calculó con las fuentes disponibles y puede cambiar.
+        </Aviso>
+      )}
+      {promedio?.estado === 'SIN_NOTA' && <p className="fuentes__nota-pie">Aún no hay calificaciones registradas.</p>}
+      {promedio?.categoria && (
+        <p className="fuentes__accion">
+          <strong>Acción institucional:</strong> {promedio.categoria.accionInstitucional}
+        </p>
       )}
       {children}
     </Panel>

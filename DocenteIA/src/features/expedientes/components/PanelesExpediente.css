@@ -21,12 +21,12 @@
   letter-spacing: -1.8px;
 }
 
-.valor-promedio--excelente {
-  color: var(--color-nivel-excelente);
+.valor-promedio--muy-alto {
+  color: var(--color-nivel-muy-alto);
 }
 
-.valor-promedio--bueno {
-  color: var(--color-nivel-bueno);
+.valor-promedio--alto {
+  color: var(--color-nivel-alto);
 }
 
 .valor-promedio--aceptable {
@@ -34,7 +34,11 @@
 }
 
 .valor-promedio--bajo {
-  color: var(--color-nivel-bajo);
+  color: #8a5a00;
+}
+
+.valor-promedio--muy-bajo {
+  color: var(--color-nivel-muy-bajo);
 }
 
 .valor-promedio--pendiente {
@@ -231,4 +235,16 @@
   margin: 0;
   font-size: 13.5px;
   font-weight: var(--peso-semi);
+}
+
+.fuentes__formula {
+  margin: 0 0 12px;
+  font-size: 13px;
+  font-weight: var(--peso-semi);
+  color: var(--color-azul);
+}
+
+.fuentes__accion {
+  margin: 12px 0 0;
+  font-size: 13.5px;
 }

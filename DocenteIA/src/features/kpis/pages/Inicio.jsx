@@ -22,7 +22,9 @@ import {
 } from '../components/PanelesSeguimiento.jsx'
 import { AsistenteResumen } from '../components/AsistenteResumen.jsx'
 import { TarjetaKpi, TarjetaPromedio } from '../components/TarjetaKpi.jsx'
+import { LineaTiempo } from '../../periodos/components/LineaTiempo.jsx'
 import { analizarSeguimiento } from '../seguimiento.js'
+import { obtenerConfiguracionEvaluacion } from '../services/configuracionService.js'
 import { obtenerKpis } from '../services/kpisService.js'
 import './Inicio.css'
 
@@ -48,6 +50,7 @@ export default function Inicio() {
     [facultadId, esVicerrector],
   )
   const seguimiento = useFetch(cargarSeguimiento, [cargarSeguimiento])
+  const configuracion = useFetch(obtenerConfiguracionEvaluacion)
 
   const listaFacultades = facultades.datos ?? []
   const nombreFacultad = esVicerrector
@@ -61,14 +64,15 @@ export default function Inicio() {
   const agrupacion = esVicerrector ? 'facultad' : 'programa'
   const analisis = useMemo(
     () =>
-      seguimiento.datos?.periodo
+      seguimiento.datos?.periodo && configuracion.datos
         ? analizarSeguimiento(
             seguimiento.datos.docentes,
             miFuente,
             agrupacion === 'facultad' ? 'nombreFacultad' : 'nombrePrograma',
+            Number(configuracion.datos.umbralCompromisos),
           )
         : null,
-    [seguimiento.datos, miFuente, agrupacion],
+    [seguimiento.datos, miFuente, agrupacion, configuracion.datos],
   )
   const recoleccion = useVentanaEtapa(ETAPAS.RECOLECCION_CALIFICACIONES)
 
@@ -148,6 +152,8 @@ export default function Inicio() {
             recoleccion={recoleccion}
           />
         )}
+
+        <LineaTiempo />
 
         <h2 className="inicio__seccion">
           Indicadores de {kpis.datos?.periodo.nombre ?? 'el periodo'}

@@ -1,22 +1,21 @@
 import { NIVELES } from '../../shared/constants/dominio.js'
 import { nivelDeNota } from '../../shared/utils/formatters.js'
 
-export const FUENTES = ['ESTUDIANTES', 'COORDINACION', 'VICERRECTORIA']
-// Por debajo de "Bueno" un docente merece una conversación de seguimiento.
-export const UMBRAL_ATENCION = 4.0
+export const FUENTES = ['ESTUDIANTES', 'COORDINACION', 'AUTOEVALUACION']
 
 /**
  * Resume el seguimiento del periodo activo (GET /docentes/seguimiento) en lo que el tablero muestra.
  * @param agruparPor 'nombreFacultad' para la vicerrectoría, 'nombrePrograma' para la coordinación
+ * @param umbral nota bajo la cual el acta exige compromisos (docentia.compromisos.umbral)
  */
-export function analizarSeguimiento(docentes, miFuente, agruparPor) {
+export function analizarSeguimiento(docentes, miFuente, agruparPor, umbral) {
   const total = docentes.length
   const completos = docentes.filter((d) => d.promedio?.estado === 'COMPLETO')
   const faltanPorFuente = Object.fromEntries(
     FUENTES.map((f) => [f, docentes.filter((d) => d.promedio?.fuentesPendientes?.includes(f)).length]),
   )
 
-  // Rango legible de cada nivel, para la leyenda: "desde 4,5", "4 a 4,5", "menos de 3,5".
+  // Rango legible de cada nivel, para la leyenda: "desde 4,6", "3,8 a 4,6", "menos de 2,2".
   const coma = (n) => String(n).replace('.', ',')
   const porNivel = NIVELES.map((nivel, i) => ({
     ...nivel,
@@ -30,7 +29,7 @@ export function analizarSeguimiento(docentes, miFuente, agruparPor) {
   }))
 
   const atencion = completos
-    .filter((d) => Number(d.promedio.valor) < UMBRAL_ATENCION)
+    .filter((d) => Number(d.promedio.valor) < umbral)
     .sort((a, b) => Number(a.promedio.valor) - Number(b.promedio.valor))
 
   const grupos = new Map()
@@ -46,5 +45,5 @@ export function analizarSeguimiento(docentes, miFuente, agruparPor) {
     .map((g) => ({ ...g, promedio: Math.round((g.suma / g.cantidad) * 100 + 1e-9) / 100 }))
     .sort((a, b) => b.promedio - a.promedio)
 
-  return { total, completos: completos.length, faltanPorFuente, faltaMia: faltanPorFuente[miFuente] ?? 0, porNivel, atencion, porGrupo }
+  return { total, umbral, completos: completos.length, faltanPorFuente, faltaMia: faltanPorFuente[miFuente] ?? 0, porNivel, atencion, porGrupo }
 }
