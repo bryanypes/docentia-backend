@@ -40,6 +40,12 @@ docentia:
 
   kpi:
     destacado-umbral: 4.5
+  # Con una nota menor al umbral el acta exige al menos un compromiso con plazo.
+  compromisos:
+    umbral: ${DOCENTIA_COMPROMISOS_UMBRAL:3.8}
+  # Rol que puede corregir un acta firmada (VICERRECTOR o COORDINADOR).
+  actas:
+    rol-corrector: ${DOCENTIA_ACTAS_ROL_CORRECTOR:VICERRECTOR}
   # Análisis de comentarios con IA (E1). Apagado por defecto: enviar comentarios a un proveedor
   # externo exige revisar la política de tratamiento de datos de la universidad (Ley 1581 de 2012).
   ia:

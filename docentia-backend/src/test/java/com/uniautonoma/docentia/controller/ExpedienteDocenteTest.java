@@ -137,7 +137,7 @@ class ExpedienteDocenteTest extends PruebaIntegracion {
     Compromiso cumplido =
         new Compromiso(
             docente, periodoActivo, "Asistir a la capacitación", LocalDate.of(2026, 9, 1));
-    cumplido.marcarCumplido();
+    cumplido.marcarCumplido("Hecho");
     compromisoRepository.saveAndFlush(cumplido);
 
     consultarComoCoordinador()
