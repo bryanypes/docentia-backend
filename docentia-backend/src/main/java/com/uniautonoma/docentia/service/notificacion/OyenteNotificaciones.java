@@ -16,6 +16,8 @@ class OyenteNotificaciones {
 
   @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
   void alConfirmar(EventoNotificacion evento) {
-    notificacionService.notificar(evento);
+    if (!SilencioNotificaciones.activo()) {
+      notificacionService.notificar(evento);
+    }
   }
 }

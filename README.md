@@ -14,6 +14,8 @@ Sistema de evaluación docente de la Corporación Universitaria Autónoma del Ca
 Solo necesitas Docker Desktop abierto:
 
 ```bash
+git clone -b main https://github.com/bryanypes/docentia-backend.git
+cd docentia-backend
 docker compose up --build -d
 ```
 

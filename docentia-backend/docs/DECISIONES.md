@@ -94,6 +94,9 @@ ambigüedad. La fuente de verdad es la resolución; el Excel v2 tiene errores (v
 - **Swagger.** No está instalado; la API se documenta en `docs/` y Postman.
 - **Zona horaria.** La API corre en `America/Bogota`, igual que su reloj. La cola de correo compara con
   el reloj de la base, para no depender de que ambos coincidan.
+- **Aviso de apertura.** Solo los primeros 3 días de la etapa; así las etapas ya abiertas del seed no
+  generan correos, y una caída corta de la app no hace perder el aviso.
+- **Seed silencioso.** Lo que crea el seed no notifica a nadie.
 - **Campana.** Va fija en el contenedor principal para que las páginas no dependan de ella.
 
 ## Estructura de repositorios

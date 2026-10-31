@@ -52,7 +52,9 @@ flowchart LR
 | Etapa cierra en 3 días | Coordinaciones | App y correo | `VENTANA_POR_CERRAR` |
 | Docente con resultado definitivo Muy bajo | Vicerrectoría | App y correo | `ALERTA_INFORMATIVA` |
 | Etapa cerrada | Vicerrectoría | App y correo | `VENTANA_CERRADA` |
-| Etapa abierta | Coordinaciones; docentes si participan | App y correo | `VENTANA_ABIERTA` |
+| Etapa abierta, hasta 3 días después de abrir | Coordinaciones; docentes si participan | App y correo | `VENTANA_ABIERTA` |
+
+El seed de desarrollo no genera avisos ni correos. Los recordatorios reales, como un compromiso vencido, sí corren sobre esos datos.
 
 ## Configuración
 
