@@ -51,12 +51,12 @@ class SeguimientoDocentesTest extends PruebaIntegracion {
         .andExpect(jsonPath("$.docentes[0].promedio.estado").value("COMPLETO"))
         .andExpect(jsonPath("$.docentes[0].promedio.valor").value(4.0))
         .andExpect(jsonPath("$.docentes[0].notasPorFuente").doesNotExist())
-        .andExpect(jsonPath("$.docentes[1].promedio.estado").value("INCOMPLETO"))
+        .andExpect(jsonPath("$.docentes[1].promedio.estado").value("SIN_NOTA"))
         .andExpect(jsonPath("$.docentes[1].promedio.valor").value(nullValue()))
         .andExpect(
             jsonPath(
                 "$.docentes[1].promedio.fuentesPendientes",
-                containsInAnyOrder("ESTUDIANTES", "COORDINACION", "VICERRECTORIA")));
+                containsInAnyOrder("ESTUDIANTES", "COORDINACION", "AUTOEVALUACION")));
   }
 
   @Test

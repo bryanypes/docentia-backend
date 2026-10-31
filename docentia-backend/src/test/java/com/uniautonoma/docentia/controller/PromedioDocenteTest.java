@@ -41,12 +41,12 @@ class PromedioDocenteTest extends PruebaIntegracion {
   @Test
   void conCoordinacionYVicerrectoriaPeroSinEstudiantesElPromedioEsIncompleto() throws Exception {
     escenario.registrarCalificacion(docente, periodo, FuenteEvaluacion.COORDINACION, "3.0");
-    escenario.registrarCalificacion(docente, periodo, FuenteEvaluacion.VICERRECTORIA, "5.0");
+    escenario.registrarCalificacion(docente, periodo, FuenteEvaluacion.AUTOEVALUACION, "5.0");
 
     mockMvc
         .perform(get("/expedientes/propio").with(como(docente)))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.promedio.estado").value("INCOMPLETO"))
+        .andExpect(jsonPath("$.promedio.estado").value("PARCIAL"))
         .andExpect(jsonPath("$.promedio.valor").doesNotExist())
         .andExpect(jsonPath("$.promedio.fuentesPendientes", contains("ESTUDIANTES")));
   }
@@ -109,12 +109,12 @@ class PromedioDocenteTest extends PruebaIntegracion {
 
     mockMvc
         .perform(get("/expedientes/propio").with(como(docente)))
-        .andExpect(jsonPath("$.promedio.estado").value("INCOMPLETO"));
+        .andExpect(jsonPath("$.promedio.estado").value("SIN_NOTA"));
   }
 
   private void registrarLasTresFuentes() {
     escenario.registrarCalificacion(docente, periodo, FuenteEvaluacion.ESTUDIANTES, "4.0");
     escenario.registrarCalificacion(docente, periodo, FuenteEvaluacion.COORDINACION, "3.0");
-    escenario.registrarCalificacion(docente, periodo, FuenteEvaluacion.VICERRECTORIA, "5.0");
+    escenario.registrarCalificacion(docente, periodo, FuenteEvaluacion.AUTOEVALUACION, "5.0");
   }
 }

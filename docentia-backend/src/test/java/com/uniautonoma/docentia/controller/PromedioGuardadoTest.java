@@ -13,6 +13,7 @@ import com.uniautonoma.docentia.dto.CalificacionRequest;
 import com.uniautonoma.docentia.dto.EstadoPromedio;
 import com.uniautonoma.docentia.dto.PonderacionRequest;
 import com.uniautonoma.docentia.entity.Calificacion;
+import com.uniautonoma.docentia.entity.CategoriaDesempeno;
 import com.uniautonoma.docentia.entity.Facultad;
 import com.uniautonoma.docentia.entity.FuenteEvaluacion;
 import com.uniautonoma.docentia.entity.NotasAspectos;
@@ -36,7 +37,7 @@ import org.springframework.test.web.servlet.ResultActions;
 class PromedioGuardadoTest extends PruebaIntegracion {
 
   private static final String RUTA_COORDINACION = "/docentes/{id}/calificaciones/coordinacion";
-  private static final String RUTA_VICERRECTORIA = "/docentes/{id}/calificaciones/vicerrectoria";
+  private static final String RUTA_AUTOEVALUACION = "/autoevaluacion";
 
   @Autowired private EscenarioPrueba escenario;
   @Autowired private CalificacionService calificacionService;
@@ -68,10 +69,11 @@ class PromedioGuardadoTest extends PruebaIntegracion {
     calificar(coordinador, RUTA_COORDINACION, docente, "3.0").andExpect(status().isOk());
 
     PromedioDocente guardado = promedioGuardado(docente);
-    assertThat(guardado.getEstado()).isEqualTo(EstadoPromedio.INCOMPLETO);
-    assertThat(guardado.getValor()).isNull();
+    assertThat(guardado.getEstado()).isEqualTo(EstadoPromedio.PARCIAL);
+    assertThat(guardado.getValor()).isEqualByComparingTo("3.00");
+    assertThat(guardado.getCategoria()).isEqualTo(CategoriaDesempeno.ACEPTABLE);
     assertThat(guardado.getFuentesPendientes())
-        .containsExactly(FuenteEvaluacion.ESTUDIANTES, FuenteEvaluacion.VICERRECTORIA);
+        .containsExactly(FuenteEvaluacion.ESTUDIANTES, FuenteEvaluacion.AUTOEVALUACION);
     assertThat(guardado.getFechaCalculo()).isNotNull();
   }
 
@@ -155,11 +157,12 @@ class PromedioGuardadoTest extends PruebaIntegracion {
   void sinCalificacionesEnElPeriodoElPromedioEsIncompletoConLasTresFuentes() throws Exception {
     mockMvc
         .perform(get("/expedientes/propio").with(como(docente)))
-        .andExpect(jsonPath("$.promedio.estado").value("INCOMPLETO"))
+        .andExpect(jsonPath("$.promedio.estado").value("SIN_NOTA"))
+        .andExpect(jsonPath("$.promedio.valor").doesNotExist())
         .andExpect(
             jsonPath(
                 "$.promedio.fuentesPendientes",
-                contains("ESTUDIANTES", "COORDINACION", "VICERRECTORIA")));
+                contains("ESTUDIANTES", "COORDINACION", "AUTOEVALUACION")));
     assertThat(promedioRepository.count()).isZero();
   }
 
@@ -171,7 +174,7 @@ class PromedioGuardadoTest extends PruebaIntegracion {
     calificacionRepository.saveAndFlush(calificacion);
 
     assertThat(promedioService.recalcularPendientes()).isEqualTo(1);
-    assertThat(promedioGuardado(docente).getEstado()).isEqualTo(EstadoPromedio.INCOMPLETO);
+    assertThat(promedioGuardado(docente).getEstado()).isEqualTo(EstadoPromedio.PARCIAL);
     assertThat(promedioService.recalcularPendientes()).isZero();
   }
 
@@ -212,7 +215,7 @@ class PromedioGuardadoTest extends PruebaIntegracion {
     assertThat(respuesta)
         .doesNotContain("3.9", "4.7", "2.3")
         .doesNotContain("notasPorFuente", "notaEstudiantes", "notaCoordinacion")
-        .doesNotContain("notaVicerrectoria", "dominioDisciplinar", "observacion", "evaluador");
+        .doesNotContain("notaAutoevaluacion", "dominioDisciplinar", "observacion", "evaluador");
   }
 
   private void registrarLasTresFuentes(
@@ -221,7 +224,7 @@ class PromedioGuardadoTest extends PruebaIntegracion {
     calificacionService.registrarCalificacionEstudiantes(
         calificado, periodo, notasIguales(estudiantes));
     calificar(coordinador, RUTA_COORDINACION, calificado, coordinacion).andExpect(status().isOk());
-    calificar(vicerrector, RUTA_VICERRECTORIA, calificado, vicerrectoria)
+    calificar(calificado, RUTA_AUTOEVALUACION, calificado, vicerrectoria)
         .andExpect(status().isOk());
   }
 

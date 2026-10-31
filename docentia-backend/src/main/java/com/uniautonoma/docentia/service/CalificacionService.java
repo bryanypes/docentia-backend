@@ -10,6 +10,7 @@ import com.uniautonoma.docentia.entity.FuenteEvaluacion;
 import com.uniautonoma.docentia.entity.Importacion;
 import com.uniautonoma.docentia.entity.NotasAspectos;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
+import com.uniautonoma.docentia.entity.Rol;
 import com.uniautonoma.docentia.entity.TipoEtapa;
 import com.uniautonoma.docentia.entity.Usuario;
 import com.uniautonoma.docentia.exception.EtapaCerradaException;
@@ -94,6 +95,60 @@ public class CalificacionService {
             textoOpcional(solicitud.motivoCorreccion()),
             null);
     return CalificacionResponse.desde(calificacion);
+  }
+
+  /**
+   * Guarda la autoevaluación del docente autenticado en el periodo activo. La corrige él mismo
+   * mientras la recolección esté abierta.
+   *
+   * @param solicitud notas de los cinco aspectos, observación y motivo opcionales
+   * @param sesion docente que se autoevalúa
+   * @return la autoevaluación guardada
+   * @throws RecursoNoEncontradoException si el usuario de la sesión ya no es un docente activo
+   * @throws EtapaCerradaException si hoy no está abierta la recolección de calificaciones
+   */
+  public CalificacionResponse registrarAutoevaluacion(
+      CalificacionRequest solicitud, UsuarioSesion sesion) {
+    Usuario docente = buscarDocentePropio(sesion);
+    PeriodoAcademico periodo = periodoService.exigirPeriodoActivo();
+    ventanaEtapaService.exigirEtapaAbierta(periodo, TipoEtapa.RECOLECCION_CALIFICACIONES);
+    return CalificacionResponse.desde(
+        guardar(
+            docente,
+            periodo,
+            FuenteEvaluacion.AUTOEVALUACION,
+            solicitud.aNotasAspectos(),
+            textoOpcional(solicitud.observacion()),
+            docente,
+            docente,
+            textoOpcional(solicitud.motivoCorreccion()),
+            null));
+  }
+
+  /**
+   * Consulta la autoevaluación propia en el periodo activo.
+   *
+   * @param sesion docente que consulta
+   * @return la autoevaluación, o vacío si aún no existe o no hay periodo activo
+   */
+  @Transactional(readOnly = true)
+  public Optional<CalificacionResponse> obtenerAutoevaluacion(UsuarioSesion sesion) {
+    Usuario docente = buscarDocentePropio(sesion);
+    return periodoService
+        .buscarPeriodoActivo()
+        .flatMap(
+            periodo ->
+                calificacionRepository.findByDocenteIdUsuarioAndPeriodoIdPeriodoAndFuente(
+                    docente.getIdUsuario(),
+                    periodo.getIdPeriodo(),
+                    FuenteEvaluacion.AUTOEVALUACION))
+        .map(CalificacionResponse::desde);
+  }
+
+  private Usuario buscarDocentePropio(UsuarioSesion sesion) {
+    return usuarioRepository
+        .findByIdUsuarioAndRolAndEsActivoTrue(sesion.idUsuario(), Rol.DOCENTE)
+        .orElseThrow(() -> new RecursoNoEncontradoException("Docente no encontrado"));
   }
 
   /**

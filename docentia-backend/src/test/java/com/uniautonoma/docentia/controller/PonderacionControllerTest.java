@@ -34,7 +34,7 @@ class PonderacionControllerTest extends PruebaIntegracion {
         .andExpect(jsonPath("$.periodo.nombre").value("2026-2"))
         .andExpect(jsonPath("$.pesoEstudiantes").value(50))
         .andExpect(jsonPath("$.pesoCoordinacion").value(30))
-        .andExpect(jsonPath("$.pesoVicerrectoria").value(20))
+        .andExpect(jsonPath("$.pesoAutoevaluacion").value(20))
         .andExpect(jsonPath("$.esPredeterminada").value(true));
   }
 
