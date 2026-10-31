@@ -1,0 +1,12 @@
+{
+  "name": "docentia-e2e",
+  "private": true,
+  "type": "commonjs",
+  "scripts": {
+    "instalar": "playwright install chromium",
+    "test": "node --test --test-concurrency=1 demo.test.cjs"
+  },
+  "dependencies": {
+    "playwright": "1.48.2"
+  }
+}
