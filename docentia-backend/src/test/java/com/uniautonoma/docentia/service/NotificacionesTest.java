@@ -337,6 +337,27 @@ class NotificacionesTest extends PruebaIntegracion {
   }
 
   @Test
+  void laAperturaSeAvisaAlAbrirYNoDiasDespues() {
+    recordatorios.generar();
+    assertThat(tiposDe(docente)).contains("VENTANA_ABIERTA");
+    assertThat(tiposDe(coordinador)).contains("VENTANA_ABIERTA");
+
+    jdbcTemplate.update("delete from notificaciones");
+    jdbcTemplate.update(
+        "update etapas_periodo set fecha_apertura = fecha_apertura - 10 where id_periodo = ?",
+        periodo.getIdPeriodo());
+    recordatorios.generar();
+    assertThat(tiposDe(docente)).doesNotContain("VENTANA_ABIERTA");
+  }
+
+  private List<String> tiposDe(Usuario usuario) {
+    return jdbcTemplate.queryForList(
+        "select tipo from notificaciones where usuario_id = ?",
+        String.class,
+        usuario.getIdUsuario());
+  }
+
+  @Test
   void losRecordatoriosNoSeDuplicanAunqueCorranDosVeces() {
     transaccion.executeWithoutResult(
         estado -> {

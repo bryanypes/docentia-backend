@@ -24,6 +24,7 @@ import com.uniautonoma.docentia.repository.UsuarioRepository;
 import com.uniautonoma.docentia.service.CalificacionService;
 import com.uniautonoma.docentia.service.PromedioService;
 import com.uniautonoma.docentia.service.importacion.ValidadorEvaluacionEstudiantes;
+import com.uniautonoma.docentia.service.notificacion.SilencioNotificaciones;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -33,7 +34,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Profile;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * Crea usuarios y datos de ejemplo para trabajar en local mientras no exista el SSO. Solo corre con
@@ -55,6 +56,7 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
   private final PromedioService promedioService;
   private final PasswordEncoder passwordEncoder;
   private final String contrasenaInicial;
+  private final TransactionTemplate transaccion;
   private final ImportacionRepository importacionRepository;
   private final ComentarioEstudianteRepository comentarioRepository;
   private final FranjaHorariaRepository franjaRepository;
@@ -72,7 +74,9 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
       CalificacionService calificacionService,
       PromedioService promedioService,
       PasswordEncoder passwordEncoder,
-      @Value("${docentia.desarrollo.contrasena-inicial}") String contrasenaInicial) {
+      @Value("${docentia.desarrollo.contrasena-inicial}") String contrasenaInicial,
+      TransactionTemplate transaccion) {
+    this.transaccion = transaccion;
     this.importacionRepository = importacionRepository;
     this.comentarioRepository = comentarioRepository;
     this.franjaRepository = franjaRepository;
@@ -88,9 +92,21 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
     this.contrasenaInicial = contrasenaInicial;
   }
 
+  /**
+   * El seed no es un suceso real: nada de lo que crea avisa a nadie. El silencio envuelve la
+   * transacción porque los avisos salen después del commit.
+   */
   @Override
-  @Transactional
   public void run(String... args) {
+    SilencioNotificaciones.activar();
+    try {
+      transaccion.executeWithoutResult(estado -> cargar());
+    } finally {
+      SilencioNotificaciones.desactivar();
+    }
+  }
+
+  private void cargar() {
     if (usuarioRepository.count() > 0) {
       return;
     }

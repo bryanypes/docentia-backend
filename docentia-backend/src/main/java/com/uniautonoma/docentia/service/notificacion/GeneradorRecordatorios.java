@@ -29,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class GeneradorRecordatorios {
 
   private static final String ENLACE_PLAN = "/mi-evaluacion";
+  private static final int DIAS_AVISO_APERTURA = 3;
   private static final Set<TipoEtapa> ETAPAS_CON_DOCENTES =
       Set.of(TipoEtapa.RECOLECCION_CALIFICACIONES, TipoEtapa.AGENDA_CITAS, TipoEtapa.FIRMA_ACTAS);
 
@@ -144,7 +145,10 @@ public class GeneradorRecordatorios {
       if (hoy.isBefore(etapa.getFechaApertura())) {
         continue;
       }
-      avisarApertura(etapa, clave, idPeriodo);
+      // Una etapa que ya llevaba días abierta no es noticia, como las del seed.
+      if (!hoy.isAfter(etapa.getFechaApertura().plusDays(DIAS_AVISO_APERTURA))) {
+        avisarApertura(etapa, clave, idPeriodo);
+      }
       if (!hoy.isBefore(etapa.getFechaCierre().minusDays(3))) {
         avisarAFacultades(TipoNotificacion.VENTANA_POR_CERRAR, etapa, clave, idPeriodo);
       }

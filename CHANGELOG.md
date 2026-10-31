@@ -25,6 +25,11 @@
 - La publicación de hallazgos ya no se puede repetir.
 - Los logs ya no incluyen el mensaje de la base, que podía traer datos.
 
+- El seed ya no genera notificaciones ni correos, y las etapas que llevan días abiertas no se avisan.
+- La cola de correo no se atrasa por zona horaria y las fechas de los contenedores salen en hora de
+  Colombia.
+- La campana se actualiza al leer notificaciones en la bandeja.
+
 ### Seguridad
 
 - Tomcat 10.1.59, Jackson 2.21.7, PostgreSQL JDBC 42.7.12 y Guava 33.7.2.
