@@ -8,6 +8,7 @@ import com.uniautonoma.docentia.entity.FranjaHoraria;
 import com.uniautonoma.docentia.entity.MotivoLiberacion;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.TipoEtapa;
+import com.uniautonoma.docentia.entity.TipoNotificacion;
 import com.uniautonoma.docentia.exception.EtapaCerradaException;
 import com.uniautonoma.docentia.exception.RecursoNoEncontradoException;
 import com.uniautonoma.docentia.exception.ReglaNegocioException;
@@ -15,9 +16,11 @@ import com.uniautonoma.docentia.repository.CitaRepository;
 import com.uniautonoma.docentia.repository.FranjaHorariaRepository;
 import com.uniautonoma.docentia.repository.UsuarioRepository;
 import com.uniautonoma.docentia.security.UsuarioSesion;
+import com.uniautonoma.docentia.service.notificacion.EventoNotificacion;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,6 +33,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public class CitaService {
+
+  private final ApplicationEventPublisher eventos;
 
   private static final String FRANJA_NO_ENCONTRADA = "Franja no encontrada";
 
@@ -44,7 +49,9 @@ public class CitaService {
       CitaRepository citaRepository,
       UsuarioRepository usuarioRepository,
       PeriodoAcademicoService periodoService,
-      VentanaEtapaService ventanaEtapaService) {
+      VentanaEtapaService ventanaEtapaService,
+      ApplicationEventPublisher eventos) {
+    this.eventos = eventos;
     this.franjaRepository = franjaRepository;
     this.citaRepository = citaRepository;
     this.usuarioRepository = usuarioRepository;
@@ -123,6 +130,7 @@ public class CitaService {
       Cita nueva =
           citaRepository.saveAndFlush(
               new Cita(franja, usuarioRepository.getReferenceById(sesion.idUsuario())));
+      avisarReserva(nueva, idLiberada, sesion);
       return CitaResponse.desde(nueva, idLiberada);
     } catch (DataIntegrityViolationException choque) {
       throw new ReglaNegocioException(
@@ -141,5 +149,29 @@ public class CitaService {
     return citaRepository
         .buscarActiva(sesion.idUsuario(), periodo.getIdPeriodo())
         .map(cita -> CitaResponse.desde(cita, null));
+  }
+
+  private void avisarReserva(Cita cita, Long idLiberada, UsuarioSesion sesion) {
+    String clave = "cita:" + cita.getIdCita();
+    eventos.publishEvent(
+        EventoNotificacion.aUsuario(
+            idLiberada == null ? TipoNotificacion.CITA_AGENDADA : TipoNotificacion.CITA_CAMBIADA,
+            sesion.idUsuario(),
+            "/mi-cita",
+            "CITA",
+            cita.getIdCita(),
+            clave));
+    eventos.publishEvent(
+        new EventoNotificacion(
+            idLiberada == null
+                ? TipoNotificacion.CITA_RESERVADA
+                : TipoNotificacion.CITA_REEMPLAZADA,
+            EventoNotificacion.Destino.COORDINADORES_FACULTAD,
+            sesion.idFacultad(),
+            "/agenda",
+            "CITA",
+            cita.getIdCita(),
+            clave,
+            null));
   }
 }

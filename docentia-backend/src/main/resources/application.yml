@@ -46,6 +46,18 @@ docentia:
   # Rol que puede corregir un acta firmada (VICERRECTOR o COORDINADOR).
   actas:
     rol-corrector: ${DOCENTIA_ACTAS_ROL_CORRECTOR:VICERRECTOR}
+  # Avisos dentro de la app y correo. Sin DOCENTIA_MAIL_HOST los correos solo se registran.
+  notificaciones:
+    url-aplicacion: ${DOCENTIA_APP_URL:http://localhost:5173}
+    retencion-dias: ${DOCENTIA_NOTIFICACIONES_RETENCION_DIAS:90}
+    lote-correo: 20
+    correo:
+      host: ${DOCENTIA_MAIL_HOST:}
+      puerto: ${DOCENTIA_MAIL_PORT:587}
+      usuario: ${DOCENTIA_MAIL_USER:}
+      contrasena: ${DOCENTIA_MAIL_PASS:}
+      remitente: ${DOCENTIA_MAIL_FROM:no-responder@uniautonoma.edu.co}
+      tls: ${DOCENTIA_MAIL_TLS:true}
   # Análisis de comentarios con IA (E1). Apagado por defecto: enviar comentarios a un proveedor
   # externo exige revisar la política de tratamiento de datos de la universidad (Ley 1581 de 2012).
   ia:
