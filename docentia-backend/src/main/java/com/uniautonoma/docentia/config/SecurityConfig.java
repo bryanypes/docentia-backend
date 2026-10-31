@@ -57,6 +57,8 @@ public class SecurityConfig {
                 peticiones
                     .requestMatchers(HttpMethod.POST, "/sesiones")
                     .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/verificacion-actas/*")
+                    .permitAll()
                     .requestMatchers(HttpMethod.POST, "/sesiones/google")
                     .permitAll()
                     // Lo único que puede hacer una sesión con la contraseña temporal.

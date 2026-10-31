@@ -23,6 +23,7 @@
     <embedded-postgres.version>2.2.2</embedded-postgres.version>
     <spotless.version>3.10.3</spotless.version>
     <commons-csv.version>1.14.0</commons-csv.version>
+    <openpdf.version>2.0.3</openpdf.version>
     <google-api-client.version>2.7.2</google-api-client.version>
   </properties>
 
@@ -31,6 +32,11 @@
       <groupId>org.apache.commons</groupId>
       <artifactId>commons-csv</artifactId>
       <version>${commons-csv.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>com.github.librepdf</groupId>
+      <artifactId>openpdf</artifactId>
+      <version>${openpdf.version}</version>
     </dependency>
     <dependency>
       <groupId>org.springframework.boot</groupId>
