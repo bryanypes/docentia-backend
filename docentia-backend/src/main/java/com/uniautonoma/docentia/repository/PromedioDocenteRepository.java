@@ -3,6 +3,7 @@ package com.uniautonoma.docentia.repository;
 import com.uniautonoma.docentia.dto.PromedioPonderadoResponse;
 import com.uniautonoma.docentia.entity.PromedioDocente;
 import java.math.BigDecimal;
+import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
@@ -20,6 +21,23 @@ public interface PromedioDocenteRepository extends JpaRepository<PromedioDocente
    */
   Optional<PromedioDocente> findByDocenteIdUsuarioAndPeriodoIdPeriodo(
       Long idDocente, Long idPeriodo);
+
+  /**
+   * Promedios clasificados de un periodo con el docente y su programa.
+   *
+   * @param idFacultad facultad del programa del docente, o nulo para toda la institución
+   */
+  @Query(
+      """
+      select p from PromedioDocente p
+      join fetch p.docente d
+      join fetch d.programa pr
+      where p.periodo.idPeriodo = :idPeriodo
+        and p.categoria is not null
+        and (cast(:idFacultad as Long) is null or pr.facultad.idFacultad = :idFacultad)
+      order by p.valor asc, d.nombreCompleto asc
+      """)
+  List<PromedioDocente> listarClasificados(Long idPeriodo, Long idFacultad);
 
   /**
    * Lee el promedio guardado sin cargar la entidad, así nunca se responde con una copia vieja que

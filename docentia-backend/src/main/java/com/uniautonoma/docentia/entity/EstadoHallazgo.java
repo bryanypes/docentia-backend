@@ -6,5 +6,7 @@ public enum EstadoHallazgo {
   /** Ninguna de sus citas aparece en los comentarios: no se puede validar. */
   SIN_CITA_VERIFICADA,
   /** El coordinador confirmó que es válido. */
-  VALIDADO
+  VALIDADO,
+  /** La coordinación lo excluyó: el docente nunca lo ve. */
+  DESCARTADO
 }
