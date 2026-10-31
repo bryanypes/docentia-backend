@@ -13,7 +13,6 @@ import com.uniautonoma.docentia.repository.CalificacionRepository;
 import com.uniautonoma.docentia.repository.DocentePeriodo;
 import com.uniautonoma.docentia.repository.PonderacionRepository;
 import com.uniautonoma.docentia.repository.PromedioDocenteRepository;
-import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.Map;
 import org.springframework.stereotype.Service;
@@ -62,8 +61,8 @@ public class PromedioService {
    *
    * @param idDocente identificador del docente
    * @param periodo periodo evaluado
-   * @return el promedio guardado; si el docente no tiene calificaciones en el periodo, un promedio
-   *     incompleto con las tres fuentes pendientes
+   * @return el promedio guardado; si el docente no tiene calificaciones en el periodo, SIN_NOTA con
+   *     las tres fuentes pendientes
    */
   public PromedioPonderadoResponse obtenerPromedio(Long idDocente, PeriodoAcademico periodo) {
     return obtenerPromedio(idDocente, periodo.getIdPeriodo());
@@ -74,13 +73,12 @@ public class PromedioService {
    *
    * @param idDocente identificador del docente
    * @param idPeriodo identificador del periodo
-   * @return el promedio guardado, o incompleto con las tres fuentes si no tiene calificaciones
+   * @return el promedio guardado, o SIN_NOTA si no tiene calificaciones
    */
   public PromedioPonderadoResponse obtenerPromedio(Long idDocente, Long idPeriodo) {
     return promedioRepository
         .leerPromedio(idDocente, idPeriodo)
-        .orElseGet(
-            () -> PromedioPonderadoResponse.incompleto(Arrays.asList(FuenteEvaluacion.values())));
+        .orElseGet(PromedioPonderadoResponse::sinNota);
   }
 
   /**
@@ -114,6 +112,7 @@ public class PromedioService {
         idPeriodo,
         resultado.valor(),
         resultado.estado().name(),
+        resultado.categoria() == null ? null : resultado.categoria().codigo().name(),
         CONVERTIDOR_FUENTES.convertToDatabaseColumn(resultado.fuentesPendientes()));
     return resultado;
   }

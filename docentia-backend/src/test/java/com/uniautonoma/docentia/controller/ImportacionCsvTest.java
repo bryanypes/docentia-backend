@@ -85,7 +85,7 @@ class ImportacionCsvTest extends PruebaIntegracion {
   @Test
   void importarGuardaNotasYComentariosYRecalculaElPromedio() throws Exception {
     escenario.registrarCalificacion(julian, periodo, FuenteEvaluacion.COORDINACION, "4.0");
-    escenario.registrarCalificacion(julian, periodo, FuenteEvaluacion.VICERRECTORIA, "4.0");
+    escenario.registrarCalificacion(julian, periodo, FuenteEvaluacion.AUTOEVALUACION, "4.0");
 
     enviar("/importaciones/csv", csvValido(), como(coordinador))
         .andExpect(status().isOk())

@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.uniautonoma.docentia.dto.EstadoPromedio;
 import com.uniautonoma.docentia.dto.PromedioPonderadoResponse;
+import com.uniautonoma.docentia.entity.CategoriaDesempeno;
 import com.uniautonoma.docentia.entity.FuenteEvaluacion;
 import com.uniautonoma.docentia.entity.PesosFuentes;
 import java.math.BigDecimal;
@@ -30,9 +31,20 @@ class CalculadoraPromedioPonderadoTest {
     PromedioPonderadoResponse promedio =
         calculadora.calcularPromedio(notas(null, "3.0", "5.0"), PesosFuentes.predeterminados());
 
-    assertThat(promedio.estado()).isEqualTo(EstadoPromedio.INCOMPLETO);
-    assertThat(promedio.valor()).isNull();
+    // Se renormaliza entre coordinación y autoevaluación: (3.0*30 + 5.0*20) / 50 = 3.80
+    assertThat(promedio.estado()).isEqualTo(EstadoPromedio.PARCIAL);
+    assertThat(promedio.valor()).isEqualByComparingTo("3.80");
+    assertThat(promedio.categoria().codigo()).isEqualTo(CategoriaDesempeno.ALTO);
     assertThat(promedio.fuentesPendientes()).containsExactly(FuenteEvaluacion.ESTUDIANTES);
+  }
+
+  @Test
+  void aplicaLaFormulaDeLaResolucion074() {
+    PromedioPonderadoResponse promedio =
+        calculadora.calcularPromedio(notas("4.5", "4.0", "4.8"), PesosFuentes.predeterminados());
+
+    assertThat(promedio.estado()).isEqualTo(EstadoPromedio.COMPLETO);
+    assertThat(promedio.valor()).isEqualByComparingTo("4.41");
   }
 
   @Test
@@ -46,7 +58,7 @@ class CalculadoraPromedioPonderadoTest {
             calculadora
                 .calcularPromedio(notas("4.0", "3.0", null), PesosFuentes.predeterminados())
                 .fuentesPendientes())
-        .containsExactly(FuenteEvaluacion.VICERRECTORIA);
+        .containsExactly(FuenteEvaluacion.AUTOEVALUACION);
   }
 
   @Test
@@ -54,12 +66,14 @@ class CalculadoraPromedioPonderadoTest {
     PromedioPonderadoResponse promedio =
         calculadora.calcularPromedio(notas(null, null, null), PesosFuentes.predeterminados());
 
-    assertThat(promedio.estado()).isEqualTo(EstadoPromedio.INCOMPLETO);
+    assertThat(promedio.estado()).isEqualTo(EstadoPromedio.SIN_NOTA);
+    assertThat(promedio.valor()).isNull();
+    assertThat(promedio.categoria()).isNull();
     assertThat(promedio.fuentesPendientes())
         .containsExactly(
             FuenteEvaluacion.ESTUDIANTES,
             FuenteEvaluacion.COORDINACION,
-            FuenteEvaluacion.VICERRECTORIA);
+            FuenteEvaluacion.AUTOEVALUACION);
   }
 
   @Test
@@ -98,7 +112,7 @@ class CalculadoraPromedioPonderadoTest {
     Map<FuenteEvaluacion, BigDecimal> notasPorFuente = new EnumMap<>(FuenteEvaluacion.class);
     agregar(notasPorFuente, FuenteEvaluacion.ESTUDIANTES, estudiantes);
     agregar(notasPorFuente, FuenteEvaluacion.COORDINACION, coordinacion);
-    agregar(notasPorFuente, FuenteEvaluacion.VICERRECTORIA, vicerrectoria);
+    agregar(notasPorFuente, FuenteEvaluacion.AUTOEVALUACION, vicerrectoria);
     return notasPorFuente;
   }
 
