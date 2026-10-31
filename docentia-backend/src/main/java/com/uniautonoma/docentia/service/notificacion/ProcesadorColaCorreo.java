@@ -1,9 +1,6 @@
 package com.uniautonoma.docentia.service.notificacion;
 
 import com.uniautonoma.docentia.config.NotificacionProperties;
-import java.sql.Timestamp;
-import java.time.Clock;
-import java.time.LocalDateTime;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +9,8 @@ import org.springframework.stereotype.Component;
 
 /**
  * Envía la cola de correo. Tomar el lote deja cada fila apartada unos minutos con FOR UPDATE SKIP
- * LOCKED, así varias instancias no envían dos veces. El envío ocurre fuera de transacción.
+ * LOCKED, así varias instancias no envían dos veces. El envío ocurre fuera de transacción. Las
+ * fechas las pone la base, la misma que las generó al encolar.
  */
 @Component
 public class ProcesadorColaCorreo {
@@ -24,10 +22,11 @@ public class ProcesadorColaCorreo {
   private static final String TOMAR_LOTE =
       """
       update cola_correo
-      set intentos = intentos + 1, proximo_intento = ?
+      set intentos = intentos + 1,
+          proximo_intento = localtimestamp + (? * interval '1 minute')
       where id in (
           select id from cola_correo
-          where estado = 'PENDIENTE' and proximo_intento <= ?
+          where estado = 'PENDIENTE' and proximo_intento <= localtimestamp
           order by proximo_intento, id
           for update skip locked
           limit ?)
@@ -36,17 +35,12 @@ public class ProcesadorColaCorreo {
 
   private final JdbcTemplate jdbcTemplate;
   private final EnviadorCorreo enviador;
-  private final Clock reloj;
   private final int lote;
 
   public ProcesadorColaCorreo(
-      JdbcTemplate jdbcTemplate,
-      EnviadorCorreo enviador,
-      Clock reloj,
-      NotificacionProperties propiedades) {
+      JdbcTemplate jdbcTemplate, EnviadorCorreo enviador, NotificacionProperties propiedades) {
     this.jdbcTemplate = jdbcTemplate;
     this.enviador = enviador;
-    this.reloj = reloj;
     this.lote = propiedades.loteCorreo();
   }
 
@@ -56,7 +50,6 @@ public class ProcesadorColaCorreo {
    * @return correos intentados
    */
   public int procesarLote() {
-    LocalDateTime ahora = LocalDateTime.now(reloj);
     List<CorreoTomado> tomados =
         jdbcTemplate.query(
             TOMAR_LOTE,
@@ -67,20 +60,18 @@ public class ProcesadorColaCorreo {
                     fila.getString("asunto"),
                     fila.getString("cuerpo"),
                     fila.getInt("intentos")),
-            Timestamp.valueOf(ahora.plusMinutes(MINUTOS_APARTADO)),
-            Timestamp.valueOf(ahora),
+            MINUTOS_APARTADO,
             lote);
-    tomados.forEach(correo -> enviar(correo, ahora));
+    tomados.forEach(this::enviar);
     return tomados.size();
   }
 
-  private void enviar(CorreoTomado correo, LocalDateTime ahora) {
+  private void enviar(CorreoTomado correo) {
     try {
       enviador.enviar(correo.destinatario(), correo.asunto(), correo.cuerpo());
       jdbcTemplate.update(
-          "update cola_correo set estado = 'ENVIADO', enviada_en = ?, ultimo_error = null"
-              + " where id = ?",
-          Timestamp.valueOf(ahora),
+          "update cola_correo set estado = 'ENVIADO', enviada_en = localtimestamp,"
+              + " ultimo_error = null where id = ?",
           correo.id());
     } catch (RuntimeException fallo) {
       // Solo el tipo de error: el mensaje del servidor SMTP puede traer direcciones.
@@ -93,8 +84,9 @@ public class ProcesadorColaCorreo {
             correo.id());
       } else {
         jdbcTemplate.update(
-            "update cola_correo set proximo_intento = ?, ultimo_error = ? where id = ?",
-            Timestamp.valueOf(ahora.plusMinutes(1L << correo.intentos())),
+            "update cola_correo set proximo_intento = localtimestamp"
+                + " + (? * interval '1 minute'), ultimo_error = ? where id = ?",
+            1 << correo.intentos(),
             error,
             correo.id());
       }

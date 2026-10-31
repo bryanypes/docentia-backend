@@ -32,9 +32,11 @@ export function Campana() {
     actualizar()
     const temporizador = setInterval(actualizar, INTERVALO_MS)
     document.addEventListener('visibilitychange', actualizar)
+    window.addEventListener('docentia:notificaciones', actualizar)
     return () => {
       clearInterval(temporizador)
       document.removeEventListener('visibilitychange', actualizar)
+      window.removeEventListener('docentia:notificaciones', actualizar)
     }
   }, [actualizar])
 
