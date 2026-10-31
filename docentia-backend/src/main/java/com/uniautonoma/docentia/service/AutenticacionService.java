@@ -1,14 +1,19 @@
 package com.uniautonoma.docentia.service;
 
+import com.uniautonoma.docentia.config.GoogleProperties;
 import com.uniautonoma.docentia.dto.CambioContrasenaRequest;
+import com.uniautonoma.docentia.dto.InicioSesionGoogleRequest;
 import com.uniautonoma.docentia.dto.InicioSesionRequest;
 import com.uniautonoma.docentia.dto.SesionResponse;
 import com.uniautonoma.docentia.entity.Usuario;
 import com.uniautonoma.docentia.exception.CredencialesInvalidasException;
 import com.uniautonoma.docentia.exception.DatosInvalidosException;
+import com.uniautonoma.docentia.exception.ServicioDeshabilitadoException;
 import com.uniautonoma.docentia.repository.UsuarioRepository;
 import com.uniautonoma.docentia.security.ProveedorTokenJwt;
 import com.uniautonoma.docentia.security.UsuarioSesion;
+import com.uniautonoma.docentia.security.VerificadorTokenGoogle;
+import java.util.Locale;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,17 +25,25 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 public class AutenticacionService {
 
+  private static final String SUFIJO_CORREO_INSTITUCIONAL = "@uniautonoma.edu.co";
+
   private final UsuarioRepository usuarioRepository;
   private final PasswordEncoder passwordEncoder;
   private final ProveedorTokenJwt proveedorTokenJwt;
+  private final VerificadorTokenGoogle verificadorTokenGoogle;
+  private final GoogleProperties googleProperties;
 
   public AutenticacionService(
       UsuarioRepository usuarioRepository,
       PasswordEncoder passwordEncoder,
-      ProveedorTokenJwt proveedorTokenJwt) {
+      ProveedorTokenJwt proveedorTokenJwt,
+      VerificadorTokenGoogle verificadorTokenGoogle,
+      GoogleProperties googleProperties) {
     this.usuarioRepository = usuarioRepository;
     this.passwordEncoder = passwordEncoder;
     this.proveedorTokenJwt = proveedorTokenJwt;
+    this.verificadorTokenGoogle = verificadorTokenGoogle;
+    this.googleProperties = googleProperties;
   }
 
   /**
@@ -51,6 +64,36 @@ public class AutenticacionService {
                     passwordEncoder.matches(solicitud.contrasena(), encontrado.getContrasenaHash()))
             .orElseThrow(CredencialesInvalidasException::new);
     return abrirSesion(usuario);
+  }
+
+  /**
+   * Abre sesión con un ID token de Google. Solo acepta correos {@code @uniautonoma.edu.co} ya
+   * registrados y activos en DOCENTIA.
+   *
+   * @param solicitud token emitido por Google Identity Services
+   * @return token JWT y datos del usuario con su alcance
+   * @throws ServicioDeshabilitadoException si no hay Client ID configurado
+   * @throws CredencialesInvalidasException si el token, el dominio o la cuenta no son válidos
+   */
+  @Transactional(readOnly = true)
+  public SesionResponse iniciarSesionConGoogle(InicioSesionGoogleRequest solicitud) {
+    if (!googleProperties.habilitado()) {
+      throw new ServicioDeshabilitadoException(
+          "El inicio de sesión con Google no está configurado en este ambiente");
+    }
+    String correo = verificadorTokenGoogle.validarYExtraerCorreo(solicitud.idToken().trim());
+    if (!esCorreoInstitucional(correo)) {
+      throw new CredencialesInvalidasException();
+    }
+    Usuario usuario =
+        usuarioRepository
+            .findByCorreoIgnoreCaseAndEsActivoTrue(correo)
+            .orElseThrow(CredencialesInvalidasException::new);
+    return abrirSesion(usuario);
+  }
+
+  static boolean esCorreoInstitucional(String correo) {
+    return correo != null && correo.toLowerCase(Locale.ROOT).endsWith(SUFIJO_CORREO_INSTITUCIONAL);
   }
 
   /**
