@@ -82,8 +82,7 @@ class DocenteControllerTest extends PruebaIntegracion {
             .andExpect(status().isNotFound())
             .andReturn();
 
-    assertThat(deOtraFacultad.getResponse().getContentAsString())
-        .isEqualTo(inexistente.getResponse().getContentAsString());
+    assertThat(sinCorrelacion(deOtraFacultad)).isEqualTo(sinCorrelacion(inexistente));
   }
 
   @Test
@@ -135,5 +134,12 @@ class DocenteControllerTest extends PruebaIntegracion {
             get("/programas/{id}", programaDerecho.getIdPrograma())
                 .with(comoCoordinador(ingenieria.getIdFacultad())))
         .andExpect(status().isNotFound());
+  }
+
+  private static String sinCorrelacion(MvcResult resultado) throws Exception {
+    return resultado
+        .getResponse()
+        .getContentAsString()
+        .replaceAll("\"correlationId\":\"[^\"]*\"", "");
   }
 }

@@ -1,5 +1,5 @@
 import { Download, FileSignature, Plus, RefreshCw, Trash2 } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { useCallback, useRef, useState } from 'react'
 import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { Campo } from '../../../shared/components/ui/Campo/Campo.jsx'
@@ -38,7 +38,7 @@ function guardarArchivo(blob, nombre) {
   URL.revokeObjectURL(url)
 }
 
-function Compromisos({ acta, editable, ejecutar }) {
+function Compromisos({ acta, editable, ejecutar, ocupado }) {
   const [descripcion, setDescripcion] = useState('')
   const [fechaLimite, setFechaLimite] = useState('')
 
@@ -97,7 +97,7 @@ function Compromisos({ acta, editable, ejecutar }) {
               onChange={(e) => setFechaLimite(e.target.value)}
             />
           </Campo>
-          <Boton type="submit" variante="contorno" icono={Plus}>
+          <Boton type="submit" variante="contorno" icono={Plus} disabled={ocupado}>
             Agregar compromiso
           </Boton>
         </form>
@@ -106,7 +106,7 @@ function Compromisos({ acta, editable, ejecutar }) {
   )
 }
 
-function Firma({ acta, usuario, ejecutar }) {
+function Firma({ acta, usuario, ejecutar, ocupado }) {
   const [confirmado, setConfirmado] = useState(false)
   const puedeFirmar =
     acta.estado === 'BORRADOR' &&
@@ -139,7 +139,7 @@ function Firma({ acta, usuario, ejecutar }) {
             />{' '}
             Leí el acta y entiendo que firmar es irreversible.
           </label>
-          <Boton icono={FileSignature} disabled={!confirmado} onClick={() => ejecutar(() => firmarActa(acta.idActa))}>
+          <Boton icono={FileSignature} disabled={!confirmado || ocupado} onClick={() => ejecutar(() => firmarActa(acta.idActa))}>
             Firmar acta
           </Boton>
         </div>
@@ -148,7 +148,7 @@ function Firma({ acta, usuario, ejecutar }) {
   )
 }
 
-function Correccion({ acta, ejecutar }) {
+function Correccion({ acta, ejecutar, ocupado }) {
   const [motivo, setMotivo] = useState('')
   const id = `motivo-correccion-${acta.idActa}`
 
@@ -170,14 +170,14 @@ function Correccion({ acta, ejecutar }) {
           onChange={(e) => setMotivo(e.target.value)}
         />
       </Campo>
-      <Boton type="submit" variante="contorno">
+      <Boton type="submit" variante="contorno" disabled={ocupado}>
         Corregir con una versión nueva
       </Boton>
     </form>
   )
 }
 
-function DetalleActa({ acta, usuario, rolCorrector, ejecutar, onDescargar }) {
+function DetalleActa({ acta, usuario, rolCorrector, ejecutar, ocupado, onDescargar }) {
   const estado = ESTADO_ACTA[acta.estado]
   const editable = acta.estado === 'BORRADOR' && usuario.rol === ROLES.COORDINADOR && acta.firmas.length === 0
   const umbral = formatearNota(acta.umbralCompromisos)
@@ -207,8 +207,8 @@ function DetalleActa({ acta, usuario, rolCorrector, ejecutar, onDescargar }) {
             : 'Basta con la confirmación de lectura; los compromisos son opcionales.'}
         </Aviso>
       )}
-      <Compromisos acta={acta} editable={editable} ejecutar={ejecutar} />
-      <Firma acta={acta} usuario={usuario} ejecutar={ejecutar} />
+      <Compromisos acta={acta} editable={editable} ejecutar={ejecutar} ocupado={ocupado} />
+      <Firma acta={acta} usuario={usuario} ejecutar={ejecutar} ocupado={ocupado} />
       {acta.estado === 'FIRMADA' && (
         <>
           <p className="acta__sello">
@@ -219,7 +219,7 @@ function DetalleActa({ acta, usuario, rolCorrector, ejecutar, onDescargar }) {
           <Boton variante="contorno" icono={Download} onClick={() => onDescargar(acta)}>
             Descargar PDF
           </Boton>
-          {usuario.rol === rolCorrector && <Correccion acta={acta} ejecutar={ejecutar} />}
+          {usuario.rol === rolCorrector && <Correccion acta={acta} ejecutar={ejecutar} ocupado={ocupado} />}
         </>
       )}
     </div>
@@ -238,8 +238,12 @@ export function PanelActa({ idDocente }) {
   const configuracion = useFetch(obtenerConfiguracionEvaluacion)
   const [error, setError] = useState(null)
   const [ocupado, setOcupado] = useState(false)
+  // La referencia frena el doble clic antes de que React vuelva a dibujar.
+  const enCurso = useRef(false)
 
   async function ejecutar(accion) {
+    if (enCurso.current) return false
+    enCurso.current = true
     setOcupado(true)
     setError(null)
     try {
@@ -250,6 +254,7 @@ export function PanelActa({ idDocente }) {
       setError(errorApi)
       return false
     } finally {
+      enCurso.current = false
       setOcupado(false)
     }
   }
@@ -266,7 +271,7 @@ export function PanelActa({ idDocente }) {
   const lista = actas.datos ?? []
   const [vigente, ...anteriores] = lista
   const rolCorrector = configuracion.datos?.rolCorrectorActas
-  const propsDetalle = { usuario, rolCorrector, ejecutar, onDescargar: descargar }
+  const propsDetalle = { usuario, rolCorrector, ejecutar, ocupado, onDescargar: descargar }
 
   return (
     <Panel titulo="Acta de retroalimentación" icono={FileSignature}>

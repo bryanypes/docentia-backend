@@ -37,6 +37,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class AnalisisIaService {
 
+  private static final int MAXIMO_EN_COLA = 200;
+
   private static final EnumSet<EstadoSolicitudAnalisis> EN_CURSO =
       EnumSet.of(EstadoSolicitudAnalisis.EN_COLA, EstadoSolicitudAnalisis.EN_PROCESO);
 
@@ -105,6 +107,9 @@ public class AnalisisIaService {
                       + enCurso.getIdSolicitud()
                       + ")");
             });
+    if (solicitudRepository.countByEstado(EstadoSolicitudAnalisis.EN_COLA) >= MAXIMO_EN_COLA) {
+      throw new ReglaNegocioException("Hay muchos análisis en cola; intenta en unos minutos");
+    }
     SolicitudAnalisis nueva =
         solicitudRepository.saveAndFlush(
             new SolicitudAnalisis(

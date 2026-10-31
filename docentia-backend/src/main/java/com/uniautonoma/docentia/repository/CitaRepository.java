@@ -3,6 +3,7 @@ package com.uniautonoma.docentia.repository;
 import com.uniautonoma.docentia.entity.Cita;
 import com.uniautonoma.docentia.entity.EstadoCita;
 import jakarta.persistence.LockModeType;
+import java.time.LocalDate;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -46,4 +47,14 @@ public interface CitaRepository extends JpaRepository<Cita, Long> {
       where c.franja.idFranja in :idsFranjas and c.estado = :estado
       """)
   List<Cita> buscarPorFranjas(Collection<Long> idsFranjas, EstadoCita estado);
+
+  /** Citas en un estado cuya franja cae entre dos fechas. */
+  @Query(
+      """
+      select c from Cita c
+      join fetch c.franja f
+      join fetch c.docente
+      where c.estado = :estado and f.fecha between :desde and :hasta
+      """)
+  List<Cita> buscarConFranjaEntre(EstadoCita estado, LocalDate desde, LocalDate hasta);
 }

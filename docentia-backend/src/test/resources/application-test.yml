@@ -7,6 +7,12 @@ logging:
     root: warn
 
 docentia:
+  login:
+    maximo-por-correo: 100000
+    maximo-por-ip: 100000
+  notificaciones:
+    programador:
+      habilitado: false
   jwt:
     secreto: secreto-exclusivo-para-las-pruebas-automatizadas
   ia:

@@ -1,0 +1,1632 @@
+{
+  "info": {
+    "name": "DOCENTIA 0.3.1",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{token}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080/api"
+    },
+    {
+      "key": "token",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "acciones-sugeridas",
+      "item": [
+        {
+          "name": "GET /acciones-sugeridas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/acciones-sugeridas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "acciones-sugeridas"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "actas",
+      "item": [
+        {
+          "name": "POST /actas",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "actas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /actas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "actas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /actas/:id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actas/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "actas",
+                ":id"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /actas/:id/compromisos",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actas/:id/compromisos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "actas",
+                ":id",
+                "compromisos"
+              ]
+            }
+          }
+        },
+        {
+          "name": "DELETE /actas/:id/compromisos/:id2",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actas/:id/compromisos/:id2",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "actas",
+                ":id",
+                "compromisos",
+                ":id2"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /actas/:id/firmas",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actas/:id/firmas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "actas",
+                ":id",
+                "firmas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /actas/:id/correcciones",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actas/:id/correcciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "actas",
+                ":id",
+                "correcciones"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /actas/:id/pdf",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/actas/:id/pdf",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "actas",
+                ":id",
+                "pdf"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "analisis-ia",
+      "item": [
+        {
+          "name": "POST /analisis-ia/solicitudes",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/analisis-ia/solicitudes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "analisis-ia",
+                "solicitudes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /analisis-ia/solicitudes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/analisis-ia/solicitudes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "analisis-ia",
+                "solicitudes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /analisis-ia/solicitudes/:id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/analisis-ia/solicitudes/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "analisis-ia",
+                "solicitudes",
+                ":id"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /analisis-ia/solicitudes/:id/comentarios-filtrados",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/analisis-ia/solicitudes/:id/comentarios-filtrados",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "analisis-ia",
+                "solicitudes",
+                ":id",
+                "comentarios-filtrados"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /analisis-ia/solicitudes/:id/publicacion",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/analisis-ia/solicitudes/:id/publicacion",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "analisis-ia",
+                "solicitudes",
+                ":id",
+                "publicacion"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /analisis-ia/resultados/propio",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/analisis-ia/resultados/propio",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "analisis-ia",
+                "resultados",
+                "propio"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /analisis-ia/hallazgos/:id/validacion",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/analisis-ia/hallazgos/:id/validacion",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "analisis-ia",
+                "hallazgos",
+                ":id",
+                "validacion"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /analisis-ia/hallazgos/:id/descarte",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/analisis-ia/hallazgos/:id/descarte",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "analisis-ia",
+                "hallazgos",
+                ":id",
+                "descarte"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PUT /analisis-ia/hallazgos/:id",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/analisis-ia/hallazgos/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "analisis-ia",
+                "hallazgos",
+                ":id"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /analisis-ia/hallazgos/:id/versiones",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/analisis-ia/hallazgos/:id/versiones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "analisis-ia",
+                "hallazgos",
+                ":id",
+                "versiones"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "auditoria",
+      "item": [
+        {
+          "name": "GET /auditoria",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/auditoria",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "auditoria"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "autoevaluacion",
+      "item": [
+        {
+          "name": "GET /autoevaluacion",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/autoevaluacion",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "autoevaluacion"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PUT /autoevaluacion",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/autoevaluacion",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "autoevaluacion"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "citas",
+      "item": [
+        {
+          "name": "GET /citas/mia",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/citas/mia",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "citas",
+                "mia"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "compromisos",
+      "item": [
+        {
+          "name": "PUT /compromisos/:id/cumplimiento",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/compromisos/:id/cumplimiento",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "compromisos",
+                ":id",
+                "cumplimiento"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "configuracion",
+      "item": [
+        {
+          "name": "GET /configuracion/evaluacion",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/configuracion/evaluacion",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "configuracion",
+                "evaluacion"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "docentes",
+      "item": [
+        {
+          "name": "GET /docentes/:id/calificaciones/coordinacion",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/docentes/:id/calificaciones/coordinacion",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "docentes",
+                ":id",
+                "calificaciones",
+                "coordinacion"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PUT /docentes/:id/calificaciones/coordinacion",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/docentes/:id/calificaciones/coordinacion",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "docentes",
+                ":id",
+                "calificaciones",
+                "coordinacion"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /docentes/:id/calificaciones/correcciones",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/docentes/:id/calificaciones/correcciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "docentes",
+                ":id",
+                "calificaciones",
+                "correcciones"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /docentes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/docentes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "docentes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /docentes/seguimiento",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/docentes/seguimiento",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "docentes",
+                "seguimiento"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /docentes/:id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/docentes/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "docentes",
+                ":id"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /docentes/:id/plan-seguimiento",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/docentes/:id/plan-seguimiento",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "docentes",
+                ":id",
+                "plan-seguimiento"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "expedientes",
+      "item": [
+        {
+          "name": "GET /expedientes/propio",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/expedientes/propio",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "expedientes",
+                "propio"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /expedientes/:id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/expedientes/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "expedientes",
+                ":id"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "facultades",
+      "item": [
+        {
+          "name": "GET /facultades",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/facultades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "facultades"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /facultades/:id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/facultades/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "facultades",
+                ":id"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /facultades",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/facultades",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "facultades"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PUT /facultades/:id",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/facultades/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "facultades",
+                ":id"
+              ]
+            }
+          }
+        },
+        {
+          "name": "DELETE /facultades/:id",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/facultades/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "facultades",
+                ":id"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "franjas",
+      "item": [
+        {
+          "name": "GET /franjas/disponibles",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/franjas/disponibles",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "franjas",
+                "disponibles"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /franjas/:id/reserva",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/franjas/:id/reserva",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "franjas",
+                ":id",
+                "reserva"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /franjas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/franjas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "franjas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /franjas",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/franjas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "franjas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /franjas/lote",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/franjas/lote",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "franjas",
+                "lote"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PATCH /franjas/:id/cierre",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/franjas/:id/cierre",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "franjas",
+                ":id",
+                "cierre"
+              ]
+            }
+          }
+        },
+        {
+          "name": "DELETE /franjas/:id",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/franjas/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "franjas",
+                ":id"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "importaciones",
+      "item": [
+        {
+          "name": "POST /importaciones/csv/validar",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/importaciones/csv/validar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "importaciones",
+                "csv",
+                "validar"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /importaciones/csv",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/importaciones/csv",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "importaciones",
+                "csv"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /importaciones",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/importaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "importaciones"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /importaciones/plantillas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/importaciones/plantillas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "importaciones",
+                "plantillas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /importaciones/plantillas",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/importaciones/plantillas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "importaciones",
+                "plantillas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "DELETE /importaciones/plantillas/:id",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/importaciones/plantillas/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "importaciones",
+                "plantillas",
+                ":id"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "kpis",
+      "item": [
+        {
+          "name": "GET /kpis",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/kpis",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "kpis"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /kpis/panel",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/kpis/panel",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "kpis",
+                "panel"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "notificaciones",
+      "item": [
+        {
+          "name": "GET /notificaciones",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notificaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notificaciones"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /notificaciones/no-leidas/conteo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notificaciones/no-leidas/conteo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notificaciones",
+                "no-leidas",
+                "conteo"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PATCH /notificaciones/:id/leida",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notificaciones/:id/leida",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notificaciones",
+                ":id",
+                "leida"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PATCH /notificaciones/leer-todas",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notificaciones/leer-todas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notificaciones",
+                "leer-todas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /notificaciones/preferencias",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notificaciones/preferencias",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notificaciones",
+                "preferencias"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PUT /notificaciones/preferencias",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/notificaciones/preferencias",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "notificaciones",
+                "preferencias"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "periodos-academicos",
+      "item": [
+        {
+          "name": "GET /periodos-academicos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/periodos-academicos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "periodos-academicos"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /periodos-academicos/activo",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/periodos-academicos/activo",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "periodos-academicos",
+                "activo"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /periodos-academicos/activo/calendario",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/periodos-academicos/activo/calendario",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "periodos-academicos",
+                "activo",
+                "calendario"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /periodos-academicos/activo/ventanas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/periodos-academicos/activo/ventanas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "periodos-academicos",
+                "activo",
+                "ventanas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /periodos-academicos/:id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/periodos-academicos/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "periodos-academicos",
+                ":id"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /periodos-academicos",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/periodos-academicos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "periodos-academicos"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PUT /periodos-academicos/:id",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/periodos-academicos/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "periodos-academicos",
+                ":id"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PUT /periodos-academicos/:id/activacion",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/periodos-academicos/:id/activacion",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "periodos-academicos",
+                ":id",
+                "activacion"
+              ]
+            }
+          }
+        },
+        {
+          "name": "DELETE /periodos-academicos/:id/activacion",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/periodos-academicos/:id/activacion",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "periodos-academicos",
+                ":id",
+                "activacion"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /periodos-academicos/activo/ponderaciones",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/periodos-academicos/activo/ponderaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "periodos-academicos",
+                "activo",
+                "ponderaciones"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PUT /periodos-academicos/activo/ponderaciones",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/periodos-academicos/activo/ponderaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "periodos-academicos",
+                "activo",
+                "ponderaciones"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "plan-seguimiento",
+      "item": [
+        {
+          "name": "GET /plan-seguimiento/propio",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/plan-seguimiento/propio",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "plan-seguimiento",
+                "propio"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "programas",
+      "item": [
+        {
+          "name": "GET /programas",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/programas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "programas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /programas/:id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/programas/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "programas",
+                ":id"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /programas",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/programas",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "programas"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PUT /programas/:id",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/programas/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "programas",
+                ":id"
+              ]
+            }
+          }
+        },
+        {
+          "name": "DELETE /programas/:id",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/programas/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "programas",
+                ":id"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "sesiones",
+      "item": [
+        {
+          "name": "POST /sesiones",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sesiones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sesiones"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /sesiones/google",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sesiones/google",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sesiones",
+                "google"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /sesiones/actual",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sesiones/actual",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sesiones",
+                "actual"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PUT /sesiones/actual/contrasena",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/sesiones/actual/contrasena",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "sesiones",
+                "actual",
+                "contrasena"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "usuarios",
+      "item": [
+        {
+          "name": "GET /usuarios",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /usuarios/:id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                ":id"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /usuarios",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PUT /usuarios/:id",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                ":id"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PATCH /usuarios/:id/estado",
+          "request": {
+            "method": "PATCH",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/usuarios/:id/estado",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "usuarios",
+                ":id",
+                "estado"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "verificacion-actas",
+      "item": [
+        {
+          "name": "GET /verificacion-actas/:id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/verificacion-actas/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "verificacion-actas",
+                ":id"
+              ]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}
