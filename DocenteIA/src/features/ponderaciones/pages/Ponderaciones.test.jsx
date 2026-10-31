@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { describe, expect, it, vi } from 'vitest'
 import { FormularioPonderacion } from './Ponderaciones.jsx'
 
-const GUARDADA = { pesoEstudiantes: 50, pesoCoordinacion: 30, pesoVicerrectoria: 20 }
+const GUARDADA = { pesoEstudiantes: 50, pesoCoordinacion: 30, pesoAutoevaluacion: 20 }
 
 describe('FormularioPonderacion', () => {
   it('solo deja guardar si los pesos suman 100', async () => {
@@ -19,6 +19,6 @@ describe('FormularioPonderacion', () => {
     await userEvent.type(screen.getByLabelText('Coordinación (%)'), '40')
     await userEvent.click(screen.getByRole('button', { name: 'Guardar ponderación' }))
 
-    expect(onGuardar).toHaveBeenCalledWith({ pesoEstudiantes: 40, pesoCoordinacion: 40, pesoVicerrectoria: 20 })
+    expect(onGuardar).toHaveBeenCalledWith({ pesoEstudiantes: 40, pesoCoordinacion: 40, pesoAutoevaluacion: 20 })
   })
 })

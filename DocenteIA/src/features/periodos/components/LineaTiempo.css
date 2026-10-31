@@ -1,0 +1,32 @@
+.linea-tiempo__etapas {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 6px;
+  padding: 0;
+  list-style: none;
+}
+
+.linea-tiempo__etapa {
+  display: grid;
+  align-content: start;
+  justify-items: start;
+  gap: 2px;
+  padding: 10px 12px;
+  border-top: 3px solid var(--color-borde-suave);
+  font-size: 12.5px;
+}
+
+.linea-tiempo__etapa strong {
+  font-size: 13.5px;
+}
+
+.linea-tiempo__etapa--vigente {
+  border-top-color: #e3c924;
+}
+
+@media (max-width: 800px) {
+  .linea-tiempo__etapas {
+    grid-template-columns: 1fr;
+  }
+}

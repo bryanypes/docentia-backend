@@ -13,19 +13,18 @@ export const ETIQUETA_ROL = {
 export const ETIQUETA_FUENTE = {
   ESTUDIANTES: 'Estudiantes',
   COORDINACION: 'Coordinación',
-  VICERRECTORIA: 'Vicerrectoría',
+  AUTOEVALUACION: 'Autoevaluación',
 }
 
 export const ORIGEN_FUENTE = {
   ESTUDIANTES: 'Sincronizado del sistema de encuestas',
   COORDINACION: 'Registrada por coordinación',
-  VICERRECTORIA: 'Registrada por vicerrectoría',
+  AUTOEVALUACION: 'Registrada por el docente',
 }
 
-/** Fuente con la que califica cada rol. El docente no califica. */
+/** Fuente que registra cada rol en la evaluación de otros. La vicerrectoría no califica (Res. 074). */
 export const FUENTE_DEL_ROL = {
   COORDINADOR: 'COORDINACION',
-  VICERRECTOR: 'VICERRECTORIA',
 }
 
 /** Los cinco aspectos que se califican, en el orden y con los nombres del backend. */
@@ -82,10 +81,11 @@ export const ETIQUETA_ORIGEN_MAPEO = {
   AUTOMATICO: 'Reconocido por nombre de columna',
 }
 
-/** Niveles de desempeño del maquetado. El color siempre va acompañado de la etiqueta. */
+/** Escala de la Resolución 074. Quien clasifica es el backend; esto solo pinta y arma la leyenda. */
 export const NIVELES = [
-  { etiqueta: 'Excelente', desde: 4.5, clase: 'excelente' },
-  { etiqueta: 'Bueno', desde: 4.0, clase: 'bueno' },
-  { etiqueta: 'Aceptable', desde: 3.5, clase: 'aceptable' },
-  { etiqueta: 'Bajo', desde: 0, clase: 'bajo' },
+  { codigo: 'MUY_ALTO', etiqueta: 'Muy alto', desde: 4.6, clase: 'muy-alto' },
+  { codigo: 'ALTO', etiqueta: 'Alto', desde: 3.8, clase: 'alto' },
+  { codigo: 'ACEPTABLE', etiqueta: 'Aceptable', desde: 3.0, clase: 'aceptable' },
+  { codigo: 'BAJO', etiqueta: 'Bajo', desde: 2.2, clase: 'bajo' },
+  { codigo: 'MUY_BAJO', etiqueta: 'Muy bajo', desde: 0, clase: 'muy-bajo' },
 ]

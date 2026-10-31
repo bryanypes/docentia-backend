@@ -150,14 +150,14 @@
   opacity: 0.3;
 }
 
-.distribucion__segmento--excelente,
-.distribucion__muestra--excelente {
-  background: var(--grafico-excelente);
+.distribucion__segmento--muy-alto,
+.distribucion__muestra--muy-alto {
+  background: var(--grafico-muy-alto);
 }
 
-.distribucion__segmento--bueno,
-.distribucion__muestra--bueno {
-  background: var(--grafico-bueno);
+.distribucion__segmento--alto,
+.distribucion__muestra--alto {
+  background: var(--grafico-alto);
 }
 
 .distribucion__segmento--aceptable,
@@ -168,6 +168,11 @@
 .distribucion__segmento--bajo,
 .distribucion__muestra--bajo {
   background: var(--grafico-bajo);
+}
+
+.distribucion__segmento--muy-bajo,
+.distribucion__muestra--muy-bajo {
+  background: var(--grafico-muy-bajo);
 }
 
 .distribucion__leyenda {

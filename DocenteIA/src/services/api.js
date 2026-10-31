@@ -51,11 +51,12 @@ async function leerCuerpo(respuesta) {
 
 /**
  * Hace una petición a la API. El cuerpo va como JSON, salvo un FormData, que el navegador envía
- * como multipart/form-data. Devuelve null en 204 y lanza ApiError si la respuesta no es ok.
+ * como multipart/form-data. Devuelve null en 204, un Blob con `binario` y lanza ApiError si la
+ * respuesta no es ok.
  */
-export async function peticion(ruta, { metodo = 'GET', cuerpo, publica = false, senal } = {}) {
+export async function peticion(ruta, { metodo = 'GET', cuerpo, publica = false, senal, binario = false } = {}) {
   const esFormulario = cuerpo instanceof FormData
-  const cabeceras = { Accept: 'application/json' }
+  const cabeceras = { Accept: binario ? '*/*' : 'application/json' }
   if (cuerpo !== undefined && !esFormulario) cabeceras['Content-Type'] = 'application/json'
   const token = leerToken()
   if (token && !publica) cabeceras.Authorization = `Bearer ${token}`
@@ -74,6 +75,7 @@ export async function peticion(ruta, { metodo = 'GET', cuerpo, publica = false, 
   }
 
   if (respuesta.status === 204) return null
+  if (respuesta.ok && binario) return respuesta.blob()
 
   const datos = await leerCuerpo(respuesta)
   if (respuesta.ok) return datos
