@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react'
+import { act, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderizarConSesion } from '../../../pruebas/renderizarConSesion.jsx'
@@ -40,6 +40,14 @@ describe('Campana', () => {
     await userEvent.click(boton)
     await userEvent.click(boton)
     expect(await screen.findByText('No fue posible cargarlas.')).toBeInTheDocument()
+  })
+
+  it('actualiza el contador cuando cambia la bandeja', async () => {
+    renderizarConSesion(<Campana />)
+    await screen.findByRole('button', { name: 'Notificaciones: 3 sin leer' })
+    contarNoLeidas.mockResolvedValue({ noLeidas: 0 })
+    act(() => window.dispatchEvent(new Event('docentia:notificaciones')))
+    expect(await screen.findByRole('button', { name: 'Notificaciones' })).toBeInTheDocument()
   })
 
   it('no consulta con la pestaña oculta', async () => {

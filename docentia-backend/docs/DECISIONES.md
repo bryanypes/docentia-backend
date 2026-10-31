@@ -92,6 +92,8 @@ ambigüedad. La fuente de verdad es la resolución; el Excel v2 tiene errores (v
 - **Correlación.** El identificador lo genera el servidor; no se acepta del cliente.
 - **Exportación CSV.** No existe, así que la protección contra fórmulas no aplica.
 - **Swagger.** No está instalado; la API se documenta en `docs/` y Postman.
+- **Zona horaria.** La API corre en `America/Bogota`, igual que su reloj. La cola de correo compara con
+  el reloj de la base, para no depender de que ambos coincidan.
 - **Campana.** Va fija en el contenedor principal para que las páginas no dependan de ella.
 
 ## Estructura de repositorios

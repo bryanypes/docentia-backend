@@ -287,9 +287,9 @@ class NotificacionesTest extends PruebaIntegracion {
   @Test
   void unCorreoEnviadoNoSeReenvia() {
     notificaciones.notificar(alDocente("acta:1"));
-    adelantarCola();
 
     colaCorreo.procesarLote();
+    assertThat(correos(docente, "ENVIADO")).as("sale en la primera pasada").isEqualTo(1);
     adelantarCola();
     colaCorreo.procesarLote();
 
