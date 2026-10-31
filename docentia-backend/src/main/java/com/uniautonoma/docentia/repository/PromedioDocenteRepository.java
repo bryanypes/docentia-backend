@@ -1,6 +1,8 @@
 package com.uniautonoma.docentia.repository;
 
+import com.uniautonoma.docentia.dto.EstadoPromedio;
 import com.uniautonoma.docentia.dto.PromedioPonderadoResponse;
+import com.uniautonoma.docentia.entity.FuenteEvaluacion;
 import com.uniautonoma.docentia.entity.PromedioDocente;
 import java.math.BigDecimal;
 import java.util.List;
@@ -56,6 +58,23 @@ public interface PromedioDocenteRepository extends JpaRepository<PromedioDocente
       """)
   Optional<PromedioPonderadoResponse> leerPromedio(Long idDocente, Long idPeriodo);
 
+  /** Promedio de un docente, sin cargar la entidad. */
+  record PromedioDeDocente(
+      Long idDocente,
+      EstadoPromedio estado,
+      BigDecimal valor,
+      List<FuenteEvaluacion> fuentesPendientes) {}
+
+  /** Promedios guardados de un periodo, en una sola consulta. */
+  @Query(
+      """
+      select new com.uniautonoma.docentia.repository.PromedioDocenteRepository$PromedioDeDocente(
+          p.docente.idUsuario, p.estado, p.valor, p.fuentesPendientes)
+      from PromedioDocente p
+      where p.periodo.idPeriodo = :idPeriodo
+      """)
+  List<PromedioDeDocente> buscarDelPeriodo(Long idPeriodo);
+
   /**
    * Inserta o reemplaza el promedio de un docente en un periodo en una sola sentencia. Con la
    * restricción única por docente y periodo, dos recálculos simultáneos no pueden crear dos filas
@@ -77,7 +96,8 @@ public interface PromedioDocenteRepository extends JpaRepository<PromedioDocente
               estado = excluded.estado,
               categoria = excluded.categoria,
               fuentes_pendientes = excluded.fuentes_pendientes,
-              fecha_calculo = excluded.fecha_calculo
+              fecha_calculo = excluded.fecha_calculo,
+              version_bloqueo = promedios_docente.version_bloqueo + 1
           """,
       nativeQuery = true)
   void guardar(

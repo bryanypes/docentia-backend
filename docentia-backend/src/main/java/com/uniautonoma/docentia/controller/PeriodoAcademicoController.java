@@ -4,11 +4,15 @@ import com.uniautonoma.docentia.dto.CalendarioResponse;
 import com.uniautonoma.docentia.dto.PeriodoAcademicoRequest;
 import com.uniautonoma.docentia.dto.PeriodoAcademicoResponse;
 import com.uniautonoma.docentia.dto.VentanaEtapaResponse;
+import com.uniautonoma.docentia.entity.AccionAuditoria;
+import com.uniautonoma.docentia.security.UsuarioSesion;
+import com.uniautonoma.docentia.service.AuditoriaService;
 import com.uniautonoma.docentia.service.PeriodoAcademicoService;
 import jakarta.validation.Valid;
 import java.util.List;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,8 +29,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class PeriodoAcademicoController {
 
   private final PeriodoAcademicoService periodoService;
+  private final AuditoriaService auditoria;
 
-  public PeriodoAcademicoController(PeriodoAcademicoService periodoService) {
+  public PeriodoAcademicoController(
+      PeriodoAcademicoService periodoService, AuditoriaService auditoria) {
+    this.auditoria = auditoria;
     this.periodoService = periodoService;
   }
 
@@ -100,8 +107,12 @@ public class PeriodoAcademicoController {
   @PreAuthorize("hasRole('VICERRECTOR')")
   @PutMapping("/{idPeriodo}")
   public PeriodoAcademicoResponse actualizarPeriodo(
-      @PathVariable Long idPeriodo, @Valid @RequestBody PeriodoAcademicoRequest solicitud) {
-    return periodoService.actualizarPeriodo(idPeriodo, solicitud);
+      @PathVariable Long idPeriodo,
+      @Valid @RequestBody PeriodoAcademicoRequest solicitud,
+      @AuthenticationPrincipal UsuarioSesion sesion) {
+    PeriodoAcademicoResponse periodo = periodoService.actualizarPeriodo(idPeriodo, solicitud);
+    auditoria.registrar(AccionAuditoria.CAMBIO_VENTANA, "PERIODO", idPeriodo, sesion);
+    return periodo;
   }
 
   /**

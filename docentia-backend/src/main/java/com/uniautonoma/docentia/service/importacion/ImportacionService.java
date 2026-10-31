@@ -10,6 +10,7 @@ import com.uniautonoma.docentia.entity.Importacion;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.ResultadoImportacion;
 import com.uniautonoma.docentia.entity.TipoEtapa;
+import com.uniautonoma.docentia.entity.TipoNotificacion;
 import com.uniautonoma.docentia.entity.Usuario;
 import com.uniautonoma.docentia.exception.ArchivoDemasiadoGrandeException;
 import com.uniautonoma.docentia.exception.EtapaCerradaException;
@@ -24,6 +25,7 @@ import com.uniautonoma.docentia.service.PeriodoAcademicoService;
 import com.uniautonoma.docentia.service.VentanaEtapaService;
 import com.uniautonoma.docentia.service.importacion.ValidadorEvaluacionEstudiantes.DatosDocente;
 import com.uniautonoma.docentia.service.importacion.ValidadorEvaluacionEstudiantes.ResultadoValidacion;
+import com.uniautonoma.docentia.service.notificacion.EventoNotificacion;
 import java.io.IOException;
 import java.io.UncheckedIOException;
 import java.nio.file.Paths;
@@ -39,6 +41,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
@@ -51,6 +54,8 @@ import org.springframework.web.multipart.MultipartFile;
 @Service
 @Transactional
 public class ImportacionService {
+
+  private final ApplicationEventPublisher eventos;
 
   static final int ERRORES_MAXIMOS_EN_REPORTE = 500;
 
@@ -76,7 +81,9 @@ public class ImportacionService {
       ComentarioEstudianteRepository comentarioRepository,
       CalificacionService calificacionService,
       PeriodoAcademicoService periodoService,
-      VentanaEtapaService ventanaEtapaService) {
+      VentanaEtapaService ventanaEtapaService,
+      ApplicationEventPublisher eventos) {
+    this.eventos = eventos;
     this.plantillaService = plantillaService;
     this.lectorCsv = lectorCsv;
     this.validador = validador;
@@ -151,6 +158,16 @@ public class ImportacionService {
     if (reporte.valido()) {
       guardarDatos(analisis.validacion.docentes(), periodo, importacion, sesion);
     }
+    eventos.publishEvent(
+        EventoNotificacion.aUsuario(
+            reporte.valido()
+                ? TipoNotificacion.IMPORTACION_EXITOSA
+                : TipoNotificacion.IMPORTACION_CON_ERRORES,
+            sesion.idUsuario(),
+            "/importaciones",
+            "IMPORTACION",
+            importacion.getIdImportacion(),
+            "importacion:" + importacion.getIdImportacion()));
     return new ResultadoImportacionResponse(ImportacionResponse.desde(importacion), reporte);
   }
 

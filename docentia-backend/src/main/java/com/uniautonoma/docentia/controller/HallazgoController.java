@@ -4,7 +4,9 @@ import com.uniautonoma.docentia.dto.DescarteHallazgoRequest;
 import com.uniautonoma.docentia.dto.EdicionHallazgoRequest;
 import com.uniautonoma.docentia.dto.SolicitudAnalisisResponse.HallazgoBorrador;
 import com.uniautonoma.docentia.dto.VersionHallazgoResponse;
+import com.uniautonoma.docentia.entity.AccionAuditoria;
 import com.uniautonoma.docentia.security.UsuarioSesion;
+import com.uniautonoma.docentia.service.AuditoriaService;
 import com.uniautonoma.docentia.service.analisis.ValidacionHallazgoService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -25,9 +27,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class HallazgoController {
 
   private final ValidacionHallazgoService validacionService;
+  private final AuditoriaService auditoria;
 
-  public HallazgoController(ValidacionHallazgoService validacionService) {
+  public HallazgoController(
+      ValidacionHallazgoService validacionService, AuditoriaService auditoria) {
     this.validacionService = validacionService;
+    this.auditoria = auditoria;
   }
 
   /**
@@ -52,7 +57,9 @@ public class HallazgoController {
       @PathVariable Long idHallazgo,
       @Valid @RequestBody DescarteHallazgoRequest solicitud,
       @AuthenticationPrincipal UsuarioSesion sesion) {
-    return validacionService.descartar(idHallazgo, solicitud.motivo(), sesion);
+    HallazgoBorrador hallazgo = validacionService.descartar(idHallazgo, solicitud.motivo(), sesion);
+    auditoria.registrar(AccionAuditoria.DESCARTE_HALLAZGO, "HALLAZGO", idHallazgo, sesion);
+    return hallazgo;
   }
 
   /**

@@ -8,3 +8,4 @@ dist
 .env.*
 design
 docs
+e2e

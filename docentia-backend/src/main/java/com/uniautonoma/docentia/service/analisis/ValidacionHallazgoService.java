@@ -12,6 +12,7 @@ import com.uniautonoma.docentia.entity.Hallazgo;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.SolicitudAnalisis;
 import com.uniautonoma.docentia.entity.TipoEtapa;
+import com.uniautonoma.docentia.entity.TipoNotificacion;
 import com.uniautonoma.docentia.entity.Usuario;
 import com.uniautonoma.docentia.entity.VersionHallazgo;
 import com.uniautonoma.docentia.entity.VersionHallazgo.Accion;
@@ -27,8 +28,10 @@ import com.uniautonoma.docentia.security.UsuarioSesion;
 import com.uniautonoma.docentia.service.DocenteService;
 import com.uniautonoma.docentia.service.PeriodoAcademicoService;
 import com.uniautonoma.docentia.service.VentanaEtapaService;
+import com.uniautonoma.docentia.service.notificacion.EventoNotificacion;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -40,6 +43,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 public class ValidacionHallazgoService {
+
+  private final ApplicationEventPublisher eventos;
 
   private final HallazgoRepository hallazgoRepository;
   private final VersionHallazgoRepository versionRepository;
@@ -56,7 +61,9 @@ public class ValidacionHallazgoService {
       UsuarioRepository usuarioRepository,
       DocenteService docenteService,
       PeriodoAcademicoService periodoService,
-      VentanaEtapaService ventanaEtapaService) {
+      VentanaEtapaService ventanaEtapaService,
+      ApplicationEventPublisher eventos) {
+    this.eventos = eventos;
     this.hallazgoRepository = hallazgoRepository;
     this.versionRepository = versionRepository;
     this.solicitudRepository = solicitudRepository;
@@ -131,10 +138,13 @@ public class ValidacionHallazgoService {
   public SolicitudAnalisisResponse publicar(Long idSolicitud, UsuarioSesion sesion) {
     SolicitudAnalisis solicitud =
         solicitudRepository
-            .findById(idSolicitud)
+            .bloquear(idSolicitud)
             .orElseThrow(() -> new RecursoNoEncontradoException("Solicitud no encontrada"));
     exigirAlcance(solicitud, sesion, "Solicitud no encontrada");
     ventanaEtapaService.exigirEtapaAbierta(solicitud.getPeriodo(), TipoEtapa.REVISION_HALLAZGOS);
+    if ("VALIDADO".equals(solicitud.getEstadoBorrador())) {
+      throw new ReglaNegocioException("La revisión ya se publicó");
+    }
     if (solicitud.getEstado() != EstadoSolicitudAnalisis.COMPLETADO) {
       throw new ReglaNegocioException("La solicitud no tiene un borrador para publicar");
     }
@@ -152,7 +162,16 @@ public class ValidacionHallazgoService {
       throw new ReglaNegocioException("Incluye al menos un hallazgo antes de publicar");
     }
     solicitud.publicarBorrador();
-    return SolicitudAnalisisResponse.desde(solicitudRepository.saveAndFlush(solicitud));
+    SolicitudAnalisis guardada = solicitudRepository.saveAndFlush(solicitud);
+    eventos.publishEvent(
+        EventoNotificacion.aUsuario(
+            TipoNotificacion.HALLAZGOS_PUBLICADOS,
+            guardada.getDocente().getIdUsuario(),
+            "/mi-evaluacion",
+            "SOLICITUD_ANALISIS",
+            guardada.getIdSolicitud(),
+            "solicitud:" + guardada.getIdSolicitud()));
+    return SolicitudAnalisisResponse.desde(guardada);
   }
 
   /** Hallazgos incluidos de la última revisión publicada del docente en el periodo activo. */

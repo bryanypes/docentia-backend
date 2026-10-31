@@ -14,6 +14,8 @@ import com.uniautonoma.docentia.security.ProveedorTokenJwt;
 import com.uniautonoma.docentia.security.UsuarioSesion;
 import com.uniautonoma.docentia.security.VerificadorTokenGoogle;
 import java.util.Locale;
+import java.util.Optional;
+import java.util.UUID;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -32,6 +34,7 @@ public class AutenticacionService {
   private final ProveedorTokenJwt proveedorTokenJwt;
   private final VerificadorTokenGoogle verificadorTokenGoogle;
   private final GoogleProperties googleProperties;
+  private final String hashSinUsuario;
 
   public AutenticacionService(
       UsuarioRepository usuarioRepository,
@@ -44,6 +47,7 @@ public class AutenticacionService {
     this.proveedorTokenJwt = proveedorTokenJwt;
     this.verificadorTokenGoogle = verificadorTokenGoogle;
     this.googleProperties = googleProperties;
+    this.hashSinUsuario = passwordEncoder.encode(UUID.randomUUID().toString());
   }
 
   /**
@@ -56,14 +60,13 @@ public class AutenticacionService {
    */
   @Transactional(readOnly = true)
   public SesionResponse iniciarSesion(InicioSesionRequest solicitud) {
-    Usuario usuario =
-        usuarioRepository
-            .findByCorreoIgnoreCaseAndEsActivoTrue(solicitud.correo().trim())
-            .filter(
-                encontrado ->
-                    passwordEncoder.matches(solicitud.contrasena(), encontrado.getContrasenaHash()))
-            .orElseThrow(CredencialesInvalidasException::new);
-    return abrirSesion(usuario);
+    Optional<Usuario> encontrado =
+        usuarioRepository.findByCorreoIgnoreCaseAndEsActivoTrue(solicitud.correo().trim());
+    // Siempre se compara un hash: el tiempo no revela si el correo existe.
+    String hash = encontrado.map(Usuario::getContrasenaHash).orElse(hashSinUsuario);
+    boolean coincide = passwordEncoder.matches(solicitud.contrasena(), hash);
+    return abrirSesion(
+        encontrado.filter(usuario -> coincide).orElseThrow(CredencialesInvalidasException::new));
   }
 
   /**
