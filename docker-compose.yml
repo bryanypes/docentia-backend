@@ -40,6 +40,7 @@ services:
       DOCENTIA_DB_USUARIO: ${POSTGRES_USER:-docentia}
       DOCENTIA_DB_CONTRASENA: ${POSTGRES_PASSWORD:-docentia}
       DOCENTIA_JWT_SECRETO: ${DOCENTIA_JWT_SECRETO:-secreto-de-desarrollo-local-no-usar-en-produccion}
+      DOCENTIA_GOOGLE_CLIENT_ID: ${DOCENTIA_GOOGLE_CLIENT_ID:-}
       DOCENTIA_IA_HABILITADO: ${DOCENTIA_IA_HABILITADO:-true}
       DOCENTIA_IA_PROVEEDOR: ${DOCENTIA_IA_PROVEEDOR:-simulado}
       DOCENTIA_IA_URL_BASE: ${DOCENTIA_IA_URL_BASE:-}
@@ -66,6 +67,7 @@ services:
       network: host
       args:
         VITE_API_URL: /api
+        VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
     restart: unless-stopped
     ports:
       - "${WEB_PORT:-5173}:80"

@@ -1,3 +1,4 @@
+import { GoogleOAuthProvider } from '@react-oauth/google'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import CambiarContrasena from '../features/auth/pages/CambiarContrasena.jsx'
 import Login from '../features/auth/pages/Login.jsx'
@@ -26,13 +27,15 @@ import { RUTA_CAMBIO_CONTRASENA, rutaInicioDelRol } from './rutasPorRol.js'
 
 const GESTION = [ROLES.COORDINADOR, ROLES.VICERRECTOR]
 
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim() ?? ''
+
 function RedirigirAlInicio() {
   const { usuario, validando } = useSesion()
   if (validando) return null
   return <Navigate to={usuario ? rutaInicioDelRol(usuario.rol) : '/login'} replace />
 }
 
-export function AppRouter() {
+function RutasDocentia() {
   return (
     <BrowserRouter>
       <SesionProvider>
@@ -82,4 +85,15 @@ export function AppRouter() {
       </SesionProvider>
     </BrowserRouter>
   )
+}
+
+export function AppRouter() {
+  if (googleClientId) {
+    return (
+      <GoogleOAuthProvider clientId={googleClientId}>
+        <RutasDocentia />
+      </GoogleOAuthProvider>
+    )
+  }
+  return <RutasDocentia />
 }

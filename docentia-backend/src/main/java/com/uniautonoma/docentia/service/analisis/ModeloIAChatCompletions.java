@@ -94,8 +94,9 @@ public class ModeloIAChatCompletions implements ModeloIA {
   }
 
   /**
-   * Claude rechaza {@code json_object} en su capa compatible con chat/completions. {@code json_schema}
-   * con {@code strict} lo acepta y también los proveedores que hablan el mismo formato.
+   * Claude rechaza {@code json_object} en su capa compatible con chat/completions. {@code
+   * json_schema} con {@code strict} lo acepta y también los proveedores que hablan el mismo
+   * formato.
    */
   private ObjectNode formatoJson() {
     ObjectNode cita = objectMapper.createObjectNode();

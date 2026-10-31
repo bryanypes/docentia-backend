@@ -163,6 +163,36 @@
   transform: translateX(3px);
 }
 
+.login__separador {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 0;
+  color: var(--color-texto-tenue);
+  font-size: 13px;
+}
+
+.login__separador::before,
+.login__separador::after {
+  flex: 1;
+  height: 1px;
+  background: var(--color-borde-suave);
+  content: '';
+}
+
+.login__google {
+  display: flex;
+  justify-content: center;
+}
+
+.login__google-ayuda {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.45;
+  text-align: center;
+  color: var(--color-texto-tenue);
+}
+
 .login__olvido {
   padding-top: var(--separacion);
   text-align: center;
