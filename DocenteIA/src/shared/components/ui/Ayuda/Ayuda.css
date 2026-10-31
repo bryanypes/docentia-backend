@@ -1,0 +1,54 @@
+.ayuda {
+  position: relative;
+  display: inline-flex;
+}
+
+.ayuda__boton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--color-texto-tenue);
+  cursor: help;
+}
+
+.ayuda__boton:hover {
+  background: var(--color-superficie-suave);
+  color: var(--color-azul);
+}
+
+.ayuda__texto {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: -6px;
+  z-index: 20;
+  width: max-content;
+  max-width: 240px;
+  padding: 9px 11px;
+  border-radius: var(--radio-md);
+  background: var(--color-texto);
+  color: var(--color-superficie);
+  font-size: 12.5px;
+  font-weight: var(--peso-normal);
+  line-height: 1.45;
+  letter-spacing: 0;
+  text-transform: none;
+  box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.45);
+  opacity: 0;
+  pointer-events: none;
+  transform: translateY(-4px);
+  transition:
+    opacity 0.12s ease,
+    transform 0.12s ease;
+}
+
+.ayuda:hover .ayuda__texto,
+.ayuda__boton:focus-visible + .ayuda__texto {
+  opacity: 1;
+  transform: none;
+}

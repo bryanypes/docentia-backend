@@ -1,0 +1,153 @@
+.usuarios__filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-xl);
+}
+
+.usuarios__buscador {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--espacio-2);
+  min-width: 220px;
+  padding: 8px 11px;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde-control);
+  border-radius: var(--radio-md);
+}
+
+.usuarios__buscador > svg {
+  flex: 0 0 auto;
+  color: var(--color-texto-tenue);
+}
+
+.usuarios__buscador input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-size: 13.5px;
+  font-weight: var(--peso-normal);
+  color: var(--color-texto);
+}
+
+.usuarios__buscador:focus-within {
+  outline: 2px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+.usuarios__selector {
+  width: auto;
+}
+
+.usuarios__conteo {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: var(--peso-semi);
+  color: var(--color-texto-tenue);
+}
+
+.usuarios__tabla {
+  min-width: 820px;
+}
+
+.usuarios__persona {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.usuarios__avatar {
+  display: flex;
+  flex: 0 0 30px;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--color-azul-suave);
+  color: var(--color-azul);
+  font-size: 11px;
+  font-weight: var(--peso-semi);
+}
+
+
+/* El rótulo del filtro queda visible: con un valor elegido, el select solo no dice qué filtra */
+.usuarios__filtro {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.usuarios__filtro-etiqueta {
+  font-size: 13px;
+  font-weight: var(--peso-semi);
+  color: var(--color-texto-secundario);
+}
+
+.usuarios__tu {
+  font-weight: var(--peso-normal);
+  color: var(--color-texto-tenue);
+}
+
+.usuarios__estado {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.usuarios__fila--inactiva td {
+  background: var(--color-superficie-suave);
+}
+
+.usuarios__acciones {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.usuarios__accion {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 0 10px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-sm);
+  background: var(--color-superficie);
+  color: var(--color-azul);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: var(--peso-semi);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.usuarios__accion:hover {
+  background: var(--color-azul-suave);
+  text-decoration: none;
+}
+
+.usuarios__accion--peligro {
+  color: var(--color-error);
+}
+
+.usuarios__accion--peligro:hover {
+  background: var(--color-error-fondo);
+}
+
+.usuarios__accion:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.usuarios__filtro,
+.usuarios__selector {
+  max-width: 100%;
+}

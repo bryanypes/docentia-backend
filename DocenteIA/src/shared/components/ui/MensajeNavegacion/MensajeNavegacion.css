@@ -1,0 +1,28 @@
+.mensaje-navegacion {
+  position: relative;
+}
+
+.mensaje-navegacion .aviso {
+  padding-right: 52px;
+}
+
+.mensaje-navegacion__cerrar {
+  position: absolute;
+  top: 50%;
+  right: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--alto-tactil);
+  height: var(--alto-tactil);
+  border: 0;
+  border-radius: var(--radio-sm);
+  background: transparent;
+  color: var(--color-exito-texto);
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.mensaje-navegacion__cerrar:hover {
+  background: rgba(27, 94, 50, 0.08);
+}

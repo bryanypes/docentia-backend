@@ -1,0 +1,246 @@
+.sidebar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  flex: 0 0 var(--ancho-sidebar);
+  flex-direction: column;
+  width: var(--ancho-sidebar);
+  height: 100vh;
+  background: var(--color-azul);
+  color: var(--color-crema);
+}
+
+/* Sobre el azul el foco azul no se ve: aquí el anillo es amarillo */
+.sidebar :focus-visible {
+  outline-color: var(--color-foco-sobre-azul);
+}
+
+.sidebar__marca {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 22px 20px 18px;
+  border-bottom: 1px solid rgba(254, 251, 244, 0.16);
+}
+
+.sidebar__logo {
+  display: flex;
+  flex: 0 0 34px;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 9px;
+  background: var(--color-amarillo);
+  color: var(--color-azul-oscuro);
+}
+
+.sidebar__nombre {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  line-height: 1;
+}
+
+.sidebar__nombre strong {
+  font-size: 16px;
+  font-weight: var(--peso-fuerte);
+  letter-spacing: -0.3px;
+}
+
+.sidebar__nombre span {
+  font-size: 11.5px;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.sidebar__nav {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  padding: 16px 12px;
+  overflow: auto;
+}
+
+.sidebar__seccion {
+  padding: 4px 8px 8px;
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  opacity: 0.72;
+}
+
+.sidebar__enlace {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 40px;
+  padding: 9px 10px;
+  border-radius: var(--radio-md);
+  color: rgba(254, 251, 244, 0.78);
+  font-size: 13.5px;
+  letter-spacing: -0.1px;
+}
+
+.sidebar__enlace:hover {
+  color: var(--color-crema);
+  text-decoration: none;
+  background: rgba(254, 251, 244, 0.08);
+}
+
+.sidebar__enlace.active {
+  background: rgba(254, 251, 244, 0.16);
+  color: var(--color-crema);
+}
+
+.sidebar__icono {
+  flex: 0 0 auto;
+  opacity: 0.8;
+}
+
+.sidebar__enlace.active .sidebar__icono {
+  color: var(--color-amarillo);
+  opacity: 1;
+}
+
+/* Dos filas: avatar y datos arriba (el nombre no se corta), acciones abajo */
+.sidebar__usuario {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 9px;
+  padding: 14px 20px;
+  border-top: 1px solid rgba(254, 251, 244, 0.16);
+}
+
+.sidebar__avatar {
+  display: flex;
+  flex: 0 0 28px;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(254, 251, 244, 0.18);
+  font-size: 11px;
+  font-weight: var(--peso-semi);
+}
+
+.sidebar__datos {
+  display: flex;
+  flex: 1 1 160px;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.sidebar__usuario-nombre,
+.sidebar__usuario-meta {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar__usuario-nombre {
+  font-size: 12px;
+}
+
+.sidebar__usuario-meta {
+  font-size: 11.5px;
+  opacity: 0.65;
+}
+
+.sidebar__salir {
+  display: inline-flex;
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--alto-tactil);
+  padding: 0 12px;
+  border: 1px solid rgba(254, 251, 244, 0.22);
+  border-radius: var(--radio-sm);
+  background: rgba(254, 251, 244, 0.08);
+  color: var(--color-crema);
+  font-size: 11.5px;
+  font-weight: var(--peso-semi);
+  cursor: pointer;
+}
+
+.sidebar__icono-boton {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+  width: var(--alto-tactil);
+  height: var(--alto-tactil);
+  border: 1px solid rgba(254, 251, 244, 0.22);
+  border-radius: var(--radio-sm);
+  background: rgba(254, 251, 244, 0.08);
+  color: var(--color-crema);
+}
+
+.sidebar__icono-boton:hover {
+  background: rgba(254, 251, 244, 0.16);
+  color: var(--color-crema);
+}
+
+.sidebar__salir:hover {
+  background: rgba(254, 251, 244, 0.16);
+}
+
+@media (max-width: 900px) {
+  .sidebar {
+    position: static;
+    flex: none;
+    flex-flow: row wrap;
+    align-items: center;
+    width: 100%;
+    height: auto;
+  }
+
+  .sidebar__marca {
+    padding: 14px 16px;
+    border-bottom: 0;
+  }
+
+  /* flex-basis 100% (no solo width): con el flex: 1 de escritorio la fila no salta y el menú queda
+     comprimido junto al usuario */
+  .sidebar__nav {
+    flex: 0 0 100%;
+    flex-direction: row;
+    order: 3;
+    padding: 0 12px 10px;
+    overflow-x: auto;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(254, 251, 244, 0.35) transparent;
+  }
+
+  .sidebar__enlace {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .sidebar__seccion {
+    display: none;
+  }
+
+  .sidebar__usuario {
+    margin-left: auto;
+    padding: 10px 16px;
+    border-top: 0;
+  }
+
+  .sidebar__datos {
+    display: none;
+  }
+
+  .sidebar__usuario {
+    flex-wrap: nowrap;
+  }
+
+  .sidebar__salir {
+    flex: 0 0 auto;
+  }
+}

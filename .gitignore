@@ -1,17 +1,8 @@
-# Maven
-target/
-*.class
-*.log
-
-# Entorno local
 .env
-.env.local
-application-local.yml
+.cursor/
+AGENTS.md
 
-# Editores y herramientas
-.idea/
-*.iml
-.vscode/
-.github/modernize/
-.DS_Store
-Thumbs.db
+# Compilados
+target/
+node_modules/
+dist/
