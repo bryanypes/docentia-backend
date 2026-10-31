@@ -1,0 +1,77 @@
+# Arranque local de DOCENTIA, mismo esquema que Unilab:
+#   docker compose up --build
+# Web:  http://localhost:5173
+# API:  http://localhost:8080/api
+# El perfil dev carga usuarios de ejemplo y un modelo de IA simulado.
+# No uses ese perfil fuera de esta máquina.
+# network: host en el build: en este Docker Desktop el DNS de la red bridge no resuelve.
+
+name: docentia
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-docentia}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-docentia}
+      POSTGRES_DB: ${POSTGRES_DB:-docentia}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "${POSTGRES_PORT:-5433}:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 10s
+
+  api:
+    image: docentia-api
+    build:
+      context: ./docentia-backend
+      dockerfile: Dockerfile
+      network: host
+    restart: unless-stopped
+    environment:
+      SPRING_PROFILES_ACTIVE: ${SPRING_PROFILES_ACTIVE:-dev}
+      DOCENTIA_DB_URL: jdbc:postgresql://db:5432/${POSTGRES_DB:-docentia}
+      DOCENTIA_DB_USUARIO: ${POSTGRES_USER:-docentia}
+      DOCENTIA_DB_CONTRASENA: ${POSTGRES_PASSWORD:-docentia}
+      DOCENTIA_JWT_SECRETO: ${DOCENTIA_JWT_SECRETO:-secreto-de-desarrollo-local-no-usar-en-produccion}
+      DOCENTIA_IA_HABILITADO: ${DOCENTIA_IA_HABILITADO:-true}
+      DOCENTIA_IA_PROVEEDOR: ${DOCENTIA_IA_PROVEEDOR:-simulado}
+      DOCENTIA_IA_URL_BASE: ${DOCENTIA_IA_URL_BASE:-}
+      DOCENTIA_IA_MODELO: ${DOCENTIA_IA_MODELO:-}
+      DOCENTIA_IA_CLAVE: ${DOCENTIA_IA_CLAVE:-}
+    ports:
+      - "${API_PORT:-8080}:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -S -O /dev/null http://127.0.0.1:8080/api/sesiones/actual 2>&1 | grep -q 401"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+    stop_grace_period: 30s
+
+  web:
+    image: docentia-web
+    build:
+      context: ./DocenteIA
+      dockerfile: Dockerfile
+      network: host
+      args:
+        VITE_API_URL: /api
+    restart: unless-stopped
+    ports:
+      - "${WEB_PORT:-5173}:80"
+    depends_on:
+      api:
+        condition: service_healthy
+
+volumes:
+  postgres_data:

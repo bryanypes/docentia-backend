@@ -1,0 +1,39 @@
+.etiqueta-nivel {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: var(--radio-pildora);
+  font-size: 11.5px;
+  font-weight: var(--peso-semi);
+  white-space: nowrap;
+}
+
+.etiqueta-nivel--excelente {
+  background: var(--color-exito-fondo);
+  color: var(--color-exito-texto);
+}
+
+.etiqueta-nivel--bueno {
+  background: var(--color-azul-suave);
+  color: var(--color-azul);
+}
+
+.etiqueta-nivel--aceptable {
+  background: var(--color-alerta-fondo);
+  color: var(--color-alerta-texto);
+}
+
+.etiqueta-nivel--bajo {
+  background: var(--color-error-fondo);
+  color: var(--color-error);
+}
+
+.etiqueta-nivel--pendiente {
+  background: var(--color-alerta-fondo);
+  color: var(--color-alerta-texto);
+  white-space: normal;
+}
+
+.etiqueta-nivel--neutro {
+  background: var(--color-borde-suave);
+  color: var(--color-texto-apagado);
+}

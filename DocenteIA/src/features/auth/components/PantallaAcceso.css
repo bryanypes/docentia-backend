@@ -1,0 +1,102 @@
+/* Todo se escala con la altura de la pantalla para que la tarjeta quepa sin desplazarse,
+   desde portátiles de 720 px de alto hasta monitores grandes. */
+.acceso {
+  --avatar: clamp(96px, 17vh, 164px);
+  --separacion: clamp(10px, 2.1vh, 20px);
+  position: relative;
+  isolation: isolate;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: calc(var(--avatar) / 2 + clamp(12px, 3vh, 32px)) var(--espacio-4) clamp(12px, 3vh, 40px);
+  background:
+    radial-gradient(rgba(5, 54, 134, 0.08) 1px, transparent 1.4px) 0 0 / 22px 22px,
+    var(--color-fondo);
+}
+
+.acceso__tarjeta {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: var(--separacion);
+  width: 100%;
+  max-width: 440px;
+  padding: calc(var(--avatar) / 2 + var(--separacion)) 34px clamp(18px, 3.2vh, 32px);
+  background: var(--color-superficie);
+  border-radius: 24px;
+  border: 1px solid var(--color-borde);
+  box-shadow: 0 24px 50px -30px rgba(5, 54, 134, 0.35);
+  animation: acceso-entrar 0.35s ease-out both;
+}
+
+/* El avatar sobresale de la tarjeta: es el protagonista */
+.acceso__avatar {
+  position: absolute;
+  top: calc(var(--avatar) / -2);
+  left: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--avatar);
+  height: var(--avatar);
+  border: clamp(3px, 0.6vh, 5px) solid var(--color-amarillo);
+  border-radius: 50%;
+  background: var(--color-crema);
+  box-shadow: 0 12px 28px -16px rgba(5, 54, 134, 0.45);
+  transform: translateX(-50%);
+}
+
+.acceso__avatar img {
+  width: 72%;
+  height: auto;
+  animation: acceso-aparecer 0.25s ease-out both;
+}
+
+.acceso__marca {
+  text-align: center;
+}
+
+.acceso__nombre {
+  font-size: clamp(26px, 4.2vh, 34px);
+  font-weight: var(--peso-fuerte);
+  letter-spacing: 0.04em;
+  line-height: 1;
+  color: var(--color-azul);
+}
+
+.acceso__institucion {
+  margin-top: clamp(4px, 0.8vh, 8px);
+  font-size: 14px;
+  color: var(--color-texto-tenue);
+}
+
+@keyframes acceso-entrar {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes acceso-aparecer {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@media (max-width: 560px) {
+  .acceso__tarjeta {
+    padding-right: 20px;
+    padding-left: 20px;
+    border-radius: 20px;
+  }
+}

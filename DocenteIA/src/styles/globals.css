@@ -1,0 +1,328 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-fondo);
+  color: var(--color-texto);
+  font-family: var(--fuente-base);
+  font-weight: var(--peso-normal);
+  -webkit-font-smoothing: antialiased;
+}
+
+h1,
+h2,
+h3,
+p {
+  margin: 0;
+}
+
+a {
+  color: var(--color-azul);
+  text-decoration: none;
+}
+
+a:hover {
+  color: var(--color-azul-oscuro);
+  text-decoration: underline;
+}
+
+input,
+select,
+button,
+textarea {
+  font-family: inherit;
+}
+
+::selection {
+  background: var(--color-amarillo);
+  color: var(--color-texto);
+}
+
+:focus-visible {
+  outline: 2px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+.solo-lectores {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Enlace "Saltar al contenido": invisible hasta recibir el foco con el teclado */
+.saltar-contenido {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  z-index: 100;
+  padding: 10px 16px;
+  background: var(--color-azul);
+  color: var(--color-crema);
+  border-radius: var(--radio-md);
+  font-size: 13.5px;
+  font-weight: var(--peso-semi);
+  transform: translateY(-160%);
+}
+
+.saltar-contenido:focus-visible {
+  transform: none;
+  outline-color: var(--color-foco-sobre-azul);
+}
+
+.saltar-contenido:hover {
+  color: var(--color-crema);
+}
+
+/* Etiqueta pequeña en mayúsculas para metadatos (dt, encabezados de sección) */
+.rotulo {
+  font-size: 11.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: var(--peso-semi);
+  color: var(--color-texto-tenue);
+}
+
+/* En un formulario la etiqueta se lee antes de escribir: tipo oración y tamaño de lectura */
+label.rotulo,
+legend.rotulo,
+.rotulo--campo {
+  font-size: 13.5px;
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--color-texto-secundario);
+}
+
+@keyframes latido {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes crecer {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: scaleX(1);
+  }
+}
+
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}
+
+/* Sirve en <a> y en <button> (cuando volver debe confirmar cambios sin guardar) */
+.enlace-volver {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  align-self: flex-start;
+  color: var(--color-azul);
+  font-family: inherit;
+  cursor: pointer;
+  min-height: var(--alto-tactil);
+  padding: 8px 14px;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  font-size: 12.5px;
+  font-weight: var(--peso-semi);
+}
+
+.enlace-volver:hover {
+  text-decoration: none;
+  background: var(--color-superficie-suave);
+}
+
+/* Campos de formulario: rótulo, control, ayuda y error */
+.campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.campo__control {
+  width: 100%;
+  min-height: var(--alto-tactil);
+  padding: 10px 11px;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde-control);
+  border-radius: var(--radio-md);
+  font-size: 13.5px;
+  color: var(--color-texto);
+}
+
+select.campo__control {
+  cursor: pointer;
+}
+
+textarea.campo__control {
+  min-height: 78px;
+  line-height: 1.6;
+  resize: vertical;
+}
+
+.campo__control[aria-invalid='true'] {
+  border-color: var(--color-error);
+}
+
+.campo__control:disabled {
+  background: var(--color-superficie-suave);
+  color: var(--color-texto-tenue);
+  cursor: not-allowed;
+}
+
+.campo__ayuda {
+  font-size: 11.5px;
+  font-weight: var(--peso-normal);
+  line-height: 1.5;
+  color: var(--color-texto-tenue);
+}
+
+.campo__error {
+  font-size: 12px;
+  color: var(--color-error);
+}
+
+/* Tabla de datos del maquetado */
+.tabla-contenedor {
+  overflow-x: auto;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-xl);
+}
+
+.tabla {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.tabla th {
+  padding: 11px 14px;
+  text-align: left;
+  white-space: nowrap;
+  font-size: 11.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: var(--peso-semi);
+  color: var(--color-texto-apagado);
+  background: var(--color-superficie-suave);
+  border-bottom: 2px solid var(--color-borde);
+}
+
+.tabla td {
+  padding: 11px 14px;
+  font-size: 13px;
+  font-weight: var(--peso-normal);
+  vertical-align: top;
+  border-bottom: 1px solid var(--color-borde-suave);
+}
+
+.tabla tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.tabla__numero {
+  text-align: right;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.tabla__fuerte {
+  font-weight: var(--peso-semi);
+}
+
+.tabla__tenue {
+  display: block;
+  font-size: 11.5px;
+  color: var(--color-texto-tenue);
+}
+
+/* Píldora de estado con texto (nunca solo color) */
+.pildora {
+  display: inline-block;
+  padding: 3px 9px;
+  border-radius: var(--radio-pildora);
+  font-size: 11.5px;
+  font-weight: var(--peso-semi);
+  white-space: nowrap;
+}
+
+.pildora--con-icono {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.pildora--exito {
+  background: var(--color-exito-fondo);
+  color: var(--color-exito-texto);
+}
+
+.pildora--alerta {
+  background: var(--color-alerta-fondo);
+  color: var(--color-alerta-texto);
+}
+
+.pildora--error {
+  background: var(--color-error-fondo);
+  color: var(--color-error);
+}
+
+.pildora--info {
+  background: var(--color-azul-suave);
+  color: var(--color-azul);
+}
+
+.pildora--neutro {
+  background: var(--color-borde-suave);
+  color: var(--color-texto-apagado);
+}
+
+/* Formularios cortos en línea y acciones de una fila */
+.formulario-simple {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+.formulario-simple .campo {
+  flex: 1 1 200px;
+}
+.formulario-simple .aviso {
+  flex-basis: 100%;
+}
+.acciones-fila {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+/* Pantalla pequeña: los textos ocultos no se salen del recuadro con desplazamiento */
+.tabla-contenedor,
+.docentes__desplazable {
+  position: relative;
+}
