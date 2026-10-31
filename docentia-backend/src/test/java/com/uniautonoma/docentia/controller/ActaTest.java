@@ -156,6 +156,24 @@ class ActaTest extends PruebaIntegracion {
   }
 
   @Test
+  void elDocenteNoVeLaNotaParcialDeUnBorrador() throws Exception {
+    escenario.registrarCalificacion(docente, periodo, FuenteEvaluacion.COORDINACION, "2.0");
+    Long acta = crearActa();
+
+    mockMvc
+        .perform(get("/actas/{id}", acta).with(como(docente)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.promedio").value(org.hamcrest.Matchers.nullValue()))
+        .andExpect(jsonPath("$.categoria").value(org.hamcrest.Matchers.nullValue()));
+    mockMvc
+        .perform(get("/actas").with(como(docente)))
+        .andExpect(jsonPath("$[0].promedio").value(org.hamcrest.Matchers.nullValue()));
+    mockMvc
+        .perform(get("/actas/{id}", acta).with(como(coordinador)))
+        .andExpect(jsonPath("$.promedio").value(2.0));
+  }
+
+  @Test
   void fueraDeLaVentanaDeFirmaResponde409ConLaEtapa() throws Exception {
     calificarTodo("4.5");
     agendarCita();

@@ -124,13 +124,14 @@ public class ActaService {
     return actaRepository
         .findByDocenteIdUsuarioOrderByPeriodoFechaInicioDescVersionDesc(id)
         .stream()
-        .map(ActaResponse::desde)
+        .map(acta -> sesion.esDocente() ? ActaResponse.paraDocente(acta) : ActaResponse.desde(acta))
         .toList();
   }
 
   @Transactional(readOnly = true)
   public ActaResponse obtener(Long idActa, UsuarioSesion sesion) {
-    return ActaResponse.desde(buscarVisible(idActa, sesion));
+    Acta acta = buscarVisible(idActa, sesion);
+    return sesion.esDocente() ? ActaResponse.paraDocente(acta) : ActaResponse.desde(acta);
   }
 
   /**
