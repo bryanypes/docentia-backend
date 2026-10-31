@@ -17,30 +17,33 @@ public class CalculadoraPromedioPonderado {
   private static final int DECIMALES_PROMEDIO = 2;
 
   /**
-   * Calcula el promedio ponderado de un docente.
+   * Calcula el promedio ponderado de un docente: estudiantes 50 %, coordinación 30 % y
+   * autoevaluación 20 %, salvo que la vicerrectoría configure otros pesos.
    *
-   * @param notasPorFuente nota de cada fuente que ya calificó; las fuentes ausentes se consideran
-   *     pendientes
+   * @param notasPorFuente nota de cada fuente que ya calificó
    * @param pesos porcentaje de cada fuente, que debe sumar 100
-   * @return el promedio redondeado a dos decimales, o un resultado incompleto con las fuentes que
-   *     faltan si no están las tres
+   * @return el promedio redondeado a dos decimales; si faltan fuentes los pesos se renormalizan
+   *     entre las disponibles y queda PARCIAL; sin ninguna fuente, SIN_NOTA
    */
   public PromedioPonderadoResponse calcularPromedio(
       Map<FuenteEvaluacion, BigDecimal> notasPorFuente, PesosFuentes pesos) {
-    List<FuenteEvaluacion> fuentesPendientes =
+    List<FuenteEvaluacion> pendientes =
         Arrays.stream(FuenteEvaluacion.values())
             .filter(fuente -> !notasPorFuente.containsKey(fuente))
             .toList();
-    if (!fuentesPendientes.isEmpty()) {
-      return PromedioPonderadoResponse.incompleto(fuentesPendientes);
-    }
-
     BigDecimal sumaPonderada = BigDecimal.ZERO;
-    for (FuenteEvaluacion fuente : FuenteEvaluacion.values()) {
-      sumaPonderada = sumaPonderada.add(notasPorFuente.get(fuente).multiply(pesos.pesoDe(fuente)));
+    BigDecimal sumaPesos = BigDecimal.ZERO;
+    for (Map.Entry<FuenteEvaluacion, BigDecimal> nota : notasPorFuente.entrySet()) {
+      BigDecimal peso = pesos.pesoDe(nota.getKey());
+      sumaPonderada = sumaPonderada.add(nota.getValue().multiply(peso));
+      sumaPesos = sumaPesos.add(peso);
     }
-    return PromedioPonderadoResponse.completo(
-        sumaPonderada.divide(
-            PesosFuentes.TOTAL_PORCENTAJE, DECIMALES_PROMEDIO, RoundingMode.HALF_UP));
+    if (sumaPesos.signum() == 0) {
+      return PromedioPonderadoResponse.sinNota();
+    }
+    BigDecimal valor = sumaPonderada.divide(sumaPesos, DECIMALES_PROMEDIO, RoundingMode.HALF_UP);
+    return pendientes.isEmpty()
+        ? PromedioPonderadoResponse.completo(valor)
+        : PromedioPonderadoResponse.parcial(valor, pendientes);
   }
 }

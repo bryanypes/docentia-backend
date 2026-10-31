@@ -49,7 +49,7 @@ class KpiTest extends PruebaIntegracion {
     // 4.0*50% + 4.0*30% + 4.4*20% = 4.08
     escenario.registrarCalificacion(diana, activo, FuenteEvaluacion.ESTUDIANTES, "4.0");
     escenario.registrarCalificacion(diana, activo, FuenteEvaluacion.COORDINACION, "4.0");
-    escenario.registrarCalificacion(diana, activo, FuenteEvaluacion.VICERRECTORIA, "4.4");
+    escenario.registrarCalificacion(diana, activo, FuenteEvaluacion.AUTOEVALUACION, "4.4");
     calificarIgual(luisa, activo, "3.0");
   }
 

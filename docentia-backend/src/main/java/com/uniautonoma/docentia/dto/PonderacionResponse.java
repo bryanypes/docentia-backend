@@ -8,7 +8,7 @@ public record PonderacionResponse(
     PeriodoResumenResponse periodo,
     BigDecimal pesoEstudiantes,
     BigDecimal pesoCoordinacion,
-    BigDecimal pesoVicerrectoria,
+    BigDecimal pesoAutoevaluacion,
     boolean esPredeterminada) {
 
   public static PonderacionResponse desde(
@@ -17,7 +17,7 @@ public record PonderacionResponse(
         PeriodoResumenResponse.desde(periodo),
         pesos.pesoEstudiantes(),
         pesos.pesoCoordinacion(),
-        pesos.pesoVicerrectoria(),
+        pesos.pesoAutoevaluacion(),
         esPredeterminada);
   }
 }

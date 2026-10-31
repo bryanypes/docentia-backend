@@ -21,7 +21,7 @@ class ExpedientePropioTest extends PruebaIntegracion {
 
   // Valores poco comunes a propósito: si alguno aparece en la respuesta es porque se filtró.
   private static final String NOTA_COORDINACION = "4.7";
-  private static final String NOTA_VICERRECTORIA = "2.3";
+  private static final String NOTA_AUTOEVALUACION = "2.3";
 
   @Autowired private EscenarioPrueba escenario;
 
@@ -42,7 +42,7 @@ class ExpedientePropioTest extends PruebaIntegracion {
     escenario.registrarCalificacion(
         docente, periodo, FuenteEvaluacion.COORDINACION, NOTA_COORDINACION);
     escenario.registrarCalificacion(
-        docente, periodo, FuenteEvaluacion.VICERRECTORIA, NOTA_VICERRECTORIA);
+        docente, periodo, FuenteEvaluacion.AUTOEVALUACION, NOTA_AUTOEVALUACION);
 
     String respuesta =
         mockMvc
@@ -50,7 +50,7 @@ class ExpedientePropioTest extends PruebaIntegracion {
             .andExpect(status().isOk())
             .andExpect(jsonPath("$.docente.nombreCompleto").value("Julian Hoyos"))
             .andExpect(jsonPath("$.periodo.nombre").value("2026-2"))
-            .andExpect(jsonPath("$.promedio.estado").value("INCOMPLETO"))
+            .andExpect(jsonPath("$.promedio.estado").value("PARCIAL"))
             .andExpect(jsonPath("$.promedio.valor").doesNotExist())
             .andExpect(jsonPath("$.promedio.fuentesPendientes", contains("ESTUDIANTES")))
             .andReturn()
@@ -58,19 +58,29 @@ class ExpedientePropioTest extends PruebaIntegracion {
             .getContentAsString();
 
     assertThat(respuesta)
-        .doesNotContain(NOTA_COORDINACION, NOTA_VICERRECTORIA)
+        .doesNotContain(NOTA_COORDINACION, NOTA_AUTOEVALUACION)
         .doesNotContain("Observación reservada", "observacion")
         .doesNotContain("dominioDisciplinar", "notasPorFuente", "notaCoordinacion", "evaluador");
+  }
+
+  @Test
+  void elDocenteNoVeUnPromedioParcialPorqueRevelariaLaNotaDeUnaFuente() throws Exception {
+    PeriodoAcademico periodo = escenario.crearPeriodoActivo("2026-2");
+    escenario.registrarCalificacion(docente, periodo, FuenteEvaluacion.COORDINACION, "3.2");
+
+    mockMvc
+        .perform(get("/expedientes/propio").with(como(docente)))
+        .andExpect(jsonPath("$.promedio.estado").value("PARCIAL"))
+        .andExpect(jsonPath("$.promedio.valor").doesNotExist())
+        .andExpect(jsonPath("$.promedio.categoria").doesNotExist())
+        .andExpect(jsonPath("$.dimensiones[0].resultado").doesNotExist());
   }
 
   @Test
   void elDocenteNoPuedeLeerLasCalificacionesPorLosEndpointsDeCadaFuente() throws Exception {
     escenario.crearPeriodoActivo("2026-2");
     List<String> rutasReservadas =
-        List.of(
-            "/docentes/{id}/calificaciones/coordinacion",
-            "/docentes/{id}/calificaciones/vicerrectoria",
-            "/docentes/{id}");
+        List.of("/docentes/{id}/calificaciones/coordinacion", "/docentes/{id}");
 
     for (String ruta : rutasReservadas) {
       mockMvc

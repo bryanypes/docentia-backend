@@ -44,13 +44,13 @@ class ResumenDocenteTest extends PruebaIntegracion {
   @Test
   void sinNotaDeEstudiantesTodasLasDimensionesQuedanIncompletas() throws Exception {
     escenario.registrarCalificacion(docente, periodo, FuenteEvaluacion.COORDINACION, "4.7");
-    escenario.registrarCalificacion(docente, periodo, FuenteEvaluacion.VICERRECTORIA, "2.3");
+    escenario.registrarCalificacion(docente, periodo, FuenteEvaluacion.AUTOEVALUACION, "2.3");
 
     mockMvc
         .perform(get("/expedientes/propio").with(como(docente)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.dimensiones", hasSize(5)))
-        .andExpect(jsonPath("$.dimensiones[*].estado", everyItem(is("INCOMPLETO"))))
+        .andExpect(jsonPath("$.dimensiones[*].estado", everyItem(is("PARCIAL"))))
         .andExpect(jsonPath("$.dimensiones[0].nombre").value("Dominio disciplinar"))
         .andExpect(jsonPath("$.dimensiones[0].resultado").doesNotExist());
   }
@@ -68,7 +68,7 @@ class ResumenDocenteTest extends PruebaIntegracion {
             new BigDecimal("4.7"),
             new BigDecimal("4.7"),
             new BigDecimal("4.7")));
-    escenario.registrarCalificacion(docente, periodo, FuenteEvaluacion.VICERRECTORIA, "2.3");
+    escenario.registrarCalificacion(docente, periodo, FuenteEvaluacion.AUTOEVALUACION, "2.3");
 
     // Planeación académica: 4.0 * 0.5 + 3.0 * 0.3 + 2.3 * 0.2 = 3.36
     String respuesta =
@@ -85,7 +85,7 @@ class ResumenDocenteTest extends PruebaIntegracion {
     assertThat(respuesta)
         .doesNotContain("4.7", "2.3")
         .doesNotContain(
-            "notaCoordinacion", "notaVicerrectoria", "notaEstudiantes", "notasPorFuente");
+            "notaCoordinacion", "notaAutoevaluacion", "notaEstudiantes", "notasPorFuente");
   }
 
   @Test

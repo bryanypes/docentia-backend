@@ -106,18 +106,21 @@ public class ExpedienteService {
         periodoActivo.map(PeriodoResumenResponse::desde).orElse(null),
         periodoActivo
             .map(periodo -> promedioService.obtenerPromedio(docente.getIdUsuario(), periodo))
+            .map(PromedioPonderadoResponse::sinValorSiEsParcial)
             .orElse(null),
-        evaluacion.map(this::listarResultadosPorDimension).orElse(List.of()),
+        evaluacion.map(this::listarResultadosPropios).orElse(List.of()),
         listarCompromisosVigentes(docente.getIdUsuario()));
   }
 
-  private List<ResultadoDimensionResponse> listarResultadosPorDimension(
-      EvaluacionPeriodo evaluacion) {
+  private List<ResultadoDimensionResponse> listarResultadosPropios(EvaluacionPeriodo evaluacion) {
     return Arrays.stream(Dimension.values())
         .map(
             dimension ->
                 ResultadoDimensionResponse.desde(
-                    dimension, promedioService.calcularResultadoDimension(evaluacion, dimension)))
+                    dimension,
+                    promedioService
+                        .calcularResultadoDimension(evaluacion, dimension)
+                        .sinValorSiEsParcial()))
         .toList();
   }
 
@@ -144,7 +147,7 @@ public class ExpedienteService {
                   dimension.getNombre(),
                   notas.get(FuenteEvaluacion.ESTUDIANTES),
                   notas.get(FuenteEvaluacion.COORDINACION),
-                  notas.get(FuenteEvaluacion.VICERRECTORIA),
+                  notas.get(FuenteEvaluacion.AUTOEVALUACION),
                   resultado.estado(),
                   resultado.valor());
             })

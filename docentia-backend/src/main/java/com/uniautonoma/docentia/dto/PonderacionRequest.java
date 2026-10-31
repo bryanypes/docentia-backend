@@ -6,9 +6,9 @@ import java.math.BigDecimal;
 public record PonderacionRequest(
     @PorcentajePeso BigDecimal pesoEstudiantes,
     @PorcentajePeso BigDecimal pesoCoordinacion,
-    @PorcentajePeso BigDecimal pesoVicerrectoria) {
+    @PorcentajePeso BigDecimal pesoAutoevaluacion) {
 
   public PesosFuentes aPesosFuentes() {
-    return new PesosFuentes(pesoEstudiantes, pesoCoordinacion, pesoVicerrectoria);
+    return new PesosFuentes(pesoEstudiantes, pesoCoordinacion, pesoAutoevaluacion);
   }
 }

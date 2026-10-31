@@ -50,7 +50,7 @@ class ExpedienteDocenteTest extends PruebaIntegracion {
         periodoActivo,
         FuenteEvaluacion.COORDINACION,
         notas("4.0", "3.0", "5.0", "4.0", "4.5"));
-    escenario.registrarCalificacion(docente, periodoActivo, FuenteEvaluacion.VICERRECTORIA, "3.0");
+    escenario.registrarCalificacion(docente, periodoActivo, FuenteEvaluacion.AUTOEVALUACION, "3.0");
 
     consultarComoCoordinador()
         .andExpect(status().isOk())
@@ -62,7 +62,7 @@ class ExpedienteDocenteTest extends PruebaIntegracion {
         .andExpect(jsonPath("$.notasPorFuente[1].fuente").value("COORDINACION"))
         .andExpect(jsonPath("$.notasPorFuente[1].nota").value(4.1))
         .andExpect(jsonPath("$.notasPorFuente[2].nota").value(3.0))
-        .andExpect(jsonPath("$.promedio.estado").value("INCOMPLETO"))
+        .andExpect(jsonPath("$.promedio.estado").value("PARCIAL"))
         .andExpect(jsonPath("$.promedio.fuentesPendientes", contains("ESTUDIANTES")));
   }
 
@@ -73,7 +73,7 @@ class ExpedienteDocenteTest extends PruebaIntegracion {
         periodoActivo,
         FuenteEvaluacion.COORDINACION,
         notas("4.0", "3.0", "5.0", "4.0", "4.5"));
-    escenario.registrarCalificacion(docente, periodoActivo, FuenteEvaluacion.VICERRECTORIA, "3.0");
+    escenario.registrarCalificacion(docente, periodoActivo, FuenteEvaluacion.AUTOEVALUACION, "3.0");
 
     consultarComoCoordinador()
         .andExpect(jsonPath("$.dimensiones", hasSize(5)))
@@ -81,9 +81,9 @@ class ExpedienteDocenteTest extends PruebaIntegracion {
         .andExpect(jsonPath("$.dimensiones[0].nombre").value("Dominio disciplinar"))
         .andExpect(jsonPath("$.dimensiones[0].notaEstudiantes").doesNotExist())
         .andExpect(jsonPath("$.dimensiones[0].notaCoordinacion").value(4.0))
-        .andExpect(jsonPath("$.dimensiones[0].notaVicerrectoria").value(3.0))
-        .andExpect(jsonPath("$.dimensiones[0].estado").value("INCOMPLETO"))
-        .andExpect(jsonPath("$.dimensiones[0].resultado").doesNotExist())
+        .andExpect(jsonPath("$.dimensiones[0].notaAutoevaluacion").value(3.0))
+        .andExpect(jsonPath("$.dimensiones[0].estado").value("PARCIAL"))
+        .andExpect(jsonPath("$.dimensiones[0].resultado").value(3.6))
         .andExpect(jsonPath("$.dimensiones[2].notaCoordinacion").value(5.0));
   }
 
@@ -95,7 +95,7 @@ class ExpedienteDocenteTest extends PruebaIntegracion {
         periodoActivo,
         FuenteEvaluacion.COORDINACION,
         notas("4.0", "3.0", "5.0", "4.0", "4.5"));
-    escenario.registrarCalificacion(docente, periodoActivo, FuenteEvaluacion.VICERRECTORIA, "3.0");
+    escenario.registrarCalificacion(docente, periodoActivo, FuenteEvaluacion.AUTOEVALUACION, "3.0");
 
     // Planeación académica: 4.0 * 0.5 + 3.0 * 0.3 + 3.0 * 0.2 = 3.5
     consultarComoCoordinador()
@@ -114,7 +114,8 @@ class ExpedienteDocenteTest extends PruebaIntegracion {
         escenario.crearPeriodoCerrado("2025-2", LocalDate.of(2025, 8, 4));
     escenario.registrarCalificacion(docente, primerSemestre, FuenteEvaluacion.ESTUDIANTES, "4.0");
     escenario.registrarCalificacion(docente, primerSemestre, FuenteEvaluacion.COORDINACION, "3.0");
-    escenario.registrarCalificacion(docente, primerSemestre, FuenteEvaluacion.VICERRECTORIA, "5.0");
+    escenario.registrarCalificacion(
+        docente, primerSemestre, FuenteEvaluacion.AUTOEVALUACION, "5.0");
     escenario.registrarCalificacion(docente, anioAnterior, FuenteEvaluacion.COORDINACION, "4.0");
     escenario.registrarCalificacion(docente, periodoActivo, FuenteEvaluacion.COORDINACION, "4.0");
 
@@ -122,7 +123,7 @@ class ExpedienteDocenteTest extends PruebaIntegracion {
         .andExpect(jsonPath("$.historico[*].periodo.nombre", contains("2026-1", "2025-2")))
         .andExpect(jsonPath("$.historico[0].promedio.estado").value("COMPLETO"))
         .andExpect(jsonPath("$.historico[0].promedio.valor").value(3.9))
-        .andExpect(jsonPath("$.historico[1].promedio.estado").value("INCOMPLETO"));
+        .andExpect(jsonPath("$.historico[1].promedio.estado").value("PARCIAL"));
   }
 
   @Test
