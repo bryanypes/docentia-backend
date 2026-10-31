@@ -1,3 +1,8 @@
 .env
 .cursor/
 AGENTS.md
+
+# Compilados
+target/
+node_modules/
+dist/
