@@ -3,10 +3,9 @@ import {
   Building2,
   ChartBarStacked,
   CircleCheck,
-  ClipboardCheck,
   GraduationCap,
   HeartHandshake,
-  Landmark,
+  ClipboardCheck,
   Users,
 } from 'lucide-react'
 import { useState } from 'react'
@@ -16,11 +15,11 @@ import { EtiquetaNivel } from '../../../shared/components/ui/EtiquetaNivel/Etiqu
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
 import { ETIQUETA_FUENTE } from '../../../shared/constants/dominio.js'
 import { formatearNota, iniciales } from '../../../shared/utils/formatters.js'
-import { FUENTES, UMBRAL_ATENCION } from '../seguimiento.js'
+import { FUENTES } from '../seguimiento.js'
 import './PanelesSeguimiento.css'
 
 const MAXIMO_ATENCION = 5
-const ICONO_FUENTE = { ESTUDIANTES: GraduationCap, COORDINACION: Users, VICERRECTORIA: Landmark }
+const ICONO_FUENTE = { ESTUDIANTES: GraduationCap, COORDINACION: Users, AUTOEVALUACION: ClipboardCheck }
 
 const porcentaje = (parte, total) => (total ? Math.round((parte / total) * 100) : 0)
 const docentesTexto = (n) => (n === 1 ? '1 docente' : `${n} docentes`)
@@ -162,7 +161,7 @@ export function PanelDistribucion({ analisis }) {
   )
 }
 
-/** Docentes con promedio por debajo de "Bueno", del más bajo al más alto. */
+/** Docentes con promedio por debajo del umbral de compromisos, del más bajo al más alto. */
 export function PanelAtencion({ analisis }) {
   const { atencion, completos } = analisis
   const visibles = atencion.slice(0, MAXIMO_ATENCION)
@@ -170,7 +169,7 @@ export function PanelAtencion({ analisis }) {
     <Panel
       icono={HeartHandshake}
       titulo="Requieren seguimiento"
-      descripcion={`Promedio menor a ${formatearNota(UMBRAL_ATENCION)}: primeros candidatos a un compromiso de mejora.`}
+      descripcion={`Promedio menor a ${formatearNota(analisis.umbral)}: primeros candidatos a un compromiso de mejora.`}
     >
       {completos === 0 ? (
         <p className="paneles__vacio">Aparecerán cuando haya docentes con las tres calificaciones.</p>
@@ -178,7 +177,7 @@ export function PanelAtencion({ analisis }) {
         <p className="atencion__vacio">
           <CircleCheck size={18} aria-hidden="true" />
           <span>
-            <strong>Todo en orden.</strong> Ningún docente evaluado está por debajo de {formatearNota(UMBRAL_ATENCION)}.
+            <strong>Todo en orden.</strong> Ningún docente evaluado está por debajo de {formatearNota(analisis.umbral)}.
           </span>
         </p>
       ) : (

@@ -6,9 +6,11 @@ import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
-import { ETAPAS, FUENTE_DEL_ROL } from '../../../shared/constants/dominio.js'
+import { ETAPAS, FUENTE_DEL_ROL, ROLES } from '../../../shared/constants/dominio.js'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { iniciales } from '../../../shared/utils/formatters.js'
+import { PanelActa } from '../../actas/components/PanelActa.jsx'
+import { PanelSeguimientoPlan } from '../../actas/components/PanelSeguimientoPlan.jsx'
 import { useSesion } from '../../auth/sesionContext.js'
 import { PanelCorrecciones } from '../../calificaciones/components/PanelCorrecciones.jsx'
 import { AvisoEtapaCerrada } from '../../periodos/components/AvisoEtapaCerrada.jsx'
@@ -107,20 +109,24 @@ export default function ExpedienteDocente() {
           <PanelFuentes
             notasPorFuente={notasPorFuente}
             promedio={promedio}
-            descripcion="Estudiantes llega sincronizada; coordinación y vicerrectoría se registran aquí."
+            descripcion="Estudiantes llega sincronizada, coordinación se registra aquí y el docente registra su autoevaluación."
           >
-            <Boton
-              bloque
-              className="expediente__calificar"
-              icono={PenLine}
-              disabled={!periodo || Boolean(recoleccion && !recoleccion.abierta)}
-              onClick={() => navegar(`/docentes/${docente.idDocente}/calificar`)}
-            >
-              {yaCalifique ? 'Editar mi calificación' : 'Registrar mi calificación'}
-            </Boton>
-            <div className="expediente__etapa">
-              <AvisoEtapaCerrada ventana={recoleccion} accion="Calificar" />
-            </div>
+            {miFuente && (
+              <>
+                <Boton
+                  bloque
+                  className="expediente__calificar"
+                  icono={PenLine}
+                  disabled={!periodo || Boolean(recoleccion && !recoleccion.abierta)}
+                  onClick={() => navegar(`/docentes/${docente.idDocente}/calificar`)}
+                >
+                  {yaCalifique ? 'Editar mi calificación' : 'Registrar mi calificación'}
+                </Boton>
+                <div className="expediente__etapa">
+                  <AvisoEtapaCerrada ventana={recoleccion} accion="Calificar" />
+                </div>
+              </>
+            )}
           </PanelFuentes>
 
           <PanelDimensiones dimensiones={dimensiones} />
@@ -131,6 +137,8 @@ export default function ExpedienteDocente() {
           <PanelCompromisos compromisos={compromisosVigentes} />
         </div>
 
+        <PanelActa idDocente={docente.idDocente} />
+        <PanelSeguimientoPlan idDocente={docente.idDocente} puedeMarcar={usuario.rol === ROLES.COORDINADOR} />
         <PanelCorrecciones idDocente={docente.idDocente} />
       </div>
     </>

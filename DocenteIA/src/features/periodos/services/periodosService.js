@@ -28,6 +28,16 @@ export async function obtenerVentanasActivas() {
   }
 }
 
+/** Etapa vigente y línea de tiempo del periodo activo; null si no hay uno (409). */
+export async function obtenerCalendario() {
+  try {
+    return await api.get('/periodos-academicos/activo/calendario')
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 409) return null
+    throw error
+  }
+}
+
 export function crearPeriodo(periodo) {
   return api.post('/periodos-academicos', periodo)
 }

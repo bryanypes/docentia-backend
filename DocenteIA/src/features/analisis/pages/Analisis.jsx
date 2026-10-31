@@ -26,8 +26,11 @@ import {
 } from '../estados.js'
 import { useSeguimientoSolicitud } from '../hooks/useSeguimientoSolicitud.js'
 import {
+  descartarHallazgo,
+  editarHallazgo,
   listarComentariosFiltrados,
   listarSolicitudes,
+  publicarRevision,
   solicitarAnalisis,
   validarHallazgo,
 } from '../services/analisisService.js'
@@ -111,22 +114,41 @@ function ComentariosFiltrados({ idSolicitud, cantidad }) {
 function Borrador({ solicitud, puedeValidar, onValidado }) {
   const [validando, setValidando] = useState(null)
   const [errores, setErrores] = useState({})
+  const [publicando, setPublicando] = useState(false)
+  const [errorPublicar, setErrorPublicar] = useState(null)
   const { borrador } = solicitud
 
-  async function validar(hallazgo) {
+  async function aplicar(hallazgo, accion) {
     setValidando(hallazgo.idHallazgo)
     setErrores((actuales) => ({ ...actuales, [hallazgo.idHallazgo]: null }))
     try {
-      await validarHallazgo(hallazgo.idHallazgo)
+      await accion()
       onValidado()
+      return true
     } catch (error) {
       setErrores((actuales) => ({ ...actuales, [hallazgo.idHallazgo]: error }))
+      return false
     } finally {
       setValidando(null)
     }
   }
 
+  async function publicar() {
+    setPublicando(true)
+    setErrorPublicar(null)
+    try {
+      await publicarRevision(solicitud.idSolicitud)
+      onValidado()
+    } catch (error) {
+      setErrorPublicar(error)
+    } finally {
+      setPublicando(false)
+    }
+  }
+
   const validados = borrador.hallazgos.filter((hallazgo) => hallazgo.estado === 'VALIDADO').length
+  const publicada = borrador.estado === 'VALIDADO'
+  const editable = puedeValidar && !publicada
 
   return (
     <>
@@ -139,8 +161,18 @@ function Borrador({ solicitud, puedeValidar, onValidado }) {
           <strong>
             {validados} de {borrador.hallazgos.length} hallazgos validados.
           </strong>{' '}
-          El docente no ve este borrador: solo verá lo que la coordinación valide.
+          El docente no ve este borrador: solo verá lo que la coordinación valide y publique.
         </p>
+        {publicada && <Aviso tipo="exito" titulo="Revisión publicada">El docente ya ve los hallazgos incluidos.</Aviso>}
+        {editable && (
+          <div className="analisis__acciones">
+            <Boton onClick={publicar} disabled={publicando}>
+              {publicando ? 'Publicando…' : 'Publicar revisión'}
+            </Boton>
+            <span className="campo__ayuda">Incluye o descarta cada hallazgo antes de publicar.</span>
+          </div>
+        )}
+        <ErrorApi error={errorPublicar} />
       </Panel>
       {TIPOS_HALLAZGO.map(({ tipo, nombre }) => {
         const hallazgos = borrador.hallazgos.filter((hallazgo) => hallazgo.tipo === tipo)
@@ -151,10 +183,12 @@ function Borrador({ solicitud, puedeValidar, onValidado }) {
               <HallazgoBorrador
                 key={hallazgo.idHallazgo}
                 hallazgo={hallazgo}
-                puedeValidar={puedeValidar}
+                puedeValidar={editable}
                 validando={validando === hallazgo.idHallazgo}
                 error={errores[hallazgo.idHallazgo]}
-                onValidar={validar}
+                onValidar={(h) => aplicar(h, () => validarHallazgo(h.idHallazgo))}
+                onDescartar={(h, motivo) => aplicar(h, () => descartarHallazgo(h.idHallazgo, motivo))}
+                onEditar={(h, texto) => aplicar(h, () => editarHallazgo(h.idHallazgo, texto))}
               />
             ))}
           </Panel>

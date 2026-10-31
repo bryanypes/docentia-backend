@@ -1,11 +1,9 @@
 # DOCENTIA — frontend
 
-Para levantar toda la aplicación con Docker, ver el README de la raíz del repositorio.
-
 Sistema de evaluación docente de la Corporación Universitaria Autónoma del Cauca.
 
-Esta carpeta es la aplicación web. La API REST está en
-la carpeta `docentia-backend/` de este repositorio.
+Este repositorio es la aplicación web. La API REST está en
+[docentia-backend](https://github.com/bryanypes/docentia-backend).
 
 Stack: React 19, Vite 8, JavaScript y CSS convencional.
 
@@ -39,6 +37,11 @@ $env:DOCENTIA_API_URL="http://localhost:8081"; npm run dev    # Windows PowerShe
 El recorrido de demo está en [docs/checklist-demo-sprint3.md](docs/checklist-demo-sprint3.md).
 
 Los usuarios de prueba son los del perfil `dev` del backend.
+
+Además, según la Resolución 074: el docente registra su autoevaluación, firma su acta y ve el
+seguimiento de su plan; coordinación genera y firma actas, revisa hallazgos y consulta acciones
+sugeridas y panel por programa; vicerrectoría consulta lo mismo y corrige actas firmadas. La página
+`/verificar-acta/:codigo` es pública.
 
 ## Comprobaciones
 

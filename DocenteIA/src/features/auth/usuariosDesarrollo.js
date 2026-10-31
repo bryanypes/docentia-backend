@@ -10,4 +10,5 @@ export const USUARIOS_DESARROLLO = [
   { rol: 'Coordinación', nombre: 'Facultad de Derecho', correo: 'coordinacion.derecho@uniautonoma.edu.co' },
   { rol: 'Docente', nombre: 'Julián Hoyos', correo: 'julian.hoyos@uniautonoma.edu.co' },
   { rol: 'Docente', nombre: 'Luisa Mosquera', correo: 'luisa.mosquera@uniautonoma.edu.co' },
+  { rol: 'Docente', nombre: 'Nora Muñoz (nota 2,85)', correo: 'nora.munoz@uniautonoma.edu.co' },
 ]
