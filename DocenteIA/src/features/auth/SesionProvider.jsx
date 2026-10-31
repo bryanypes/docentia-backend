@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { alCerrarSesionPorExpiracion, guardarToken, leerToken } from '../../services/api.js'
-import { iniciarSesion, obtenerSesionActual } from './services/authService.js'
+import { iniciarSesion, iniciarSesionConGoogle, obtenerSesionActual } from './services/authService.js'
 import { MOTIVO_CIERRE, SesionContext } from './sesionContext.js'
 
 export function SesionProvider({ children }) {
@@ -38,6 +38,14 @@ export function SesionProvider({ children }) {
     return sesion
   }, [])
 
+  const entrarConGoogle = useCallback(async (idToken) => {
+    const { token, usuario: sesion } = await iniciarSesionConGoogle(idToken)
+    guardarToken(token)
+    setMotivoCierre(null)
+    setUsuario(sesion)
+    return sesion
+  }, [])
+
   /** Cambia a la sesión nueva que devuelve el backend, por ejemplo tras cambiar la contraseña. */
   const reemplazarSesion = useCallback(({ token, usuario: sesion }) => {
     guardarToken(token)
@@ -45,8 +53,8 @@ export function SesionProvider({ children }) {
   }, [])
 
   const valor = useMemo(
-    () => ({ usuario, validando, motivoCierre, entrar, cerrarSesion, reemplazarSesion }),
-    [usuario, validando, motivoCierre, entrar, cerrarSesion, reemplazarSesion],
+    () => ({ usuario, validando, motivoCierre, entrar, entrarConGoogle, cerrarSesion, reemplazarSesion }),
+    [usuario, validando, motivoCierre, entrar, entrarConGoogle, cerrarSesion, reemplazarSesion],
   )
 
   return <SesionContext.Provider value={valor}>{children}</SesionContext.Provider>
