@@ -3,6 +3,7 @@ package com.uniautonoma.docentia.security;
 import com.uniautonoma.docentia.config.JwtProperties;
 import com.uniautonoma.docentia.entity.Rol;
 import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
@@ -56,7 +57,7 @@ public class ProveedorTokenJwt {
         .claim(CLAIM_CONTRASENA_TEMPORAL, sesion.debeCambiarContrasena())
         .issuedAt(Date.from(ahora))
         .expiration(Date.from(ahora.plus(vigencia)))
-        .signWith(llaveFirma)
+        .signWith(llaveFirma, Jwts.SIG.HS256)
         .compact();
   }
 
@@ -65,8 +66,11 @@ public class ProveedorTokenJwt {
    */
   public Optional<UsuarioSesion> leerSesion(String token) {
     try {
-      Claims claims =
-          Jwts.parser().verifyWith(llaveFirma).build().parseSignedClaims(token).getPayload();
+      Jws<Claims> firmado = Jwts.parser().verifyWith(llaveFirma).build().parseSignedClaims(token);
+      if (!Jwts.SIG.HS256.getId().equals(firmado.getHeader().getAlgorithm())) {
+        return Optional.empty();
+      }
+      Claims claims = firmado.getPayload();
       return Optional.of(
           new UsuarioSesion(
               leerIdentificador(claims, CLAIM_ID_USUARIO),

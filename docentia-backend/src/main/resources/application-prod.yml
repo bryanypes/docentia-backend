@@ -1,0 +1,5 @@
+# Producción: logs en JSON con correlationId. El secreto y los orígenes llegan por entorno.
+logging:
+  structured:
+    format:
+      console: ecs

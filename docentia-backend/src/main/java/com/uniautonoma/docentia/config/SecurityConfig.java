@@ -1,7 +1,7 @@
 package com.uniautonoma.docentia.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.uniautonoma.docentia.dto.ErrorResponse;
+import com.uniautonoma.docentia.exception.Problemas;
 import com.uniautonoma.docentia.security.FiltroAutenticacionJwt;
 import com.uniautonoma.docentia.security.ProveedorTokenJwt;
 import com.uniautonoma.docentia.security.UsuarioSesion;
@@ -9,6 +9,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Supplier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
@@ -30,6 +31,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.intercept.RequestAuthorizationContext;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.header.writers.ReferrerPolicyHeaderWriter;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -51,11 +53,20 @@ public class SecurityConfig {
       throws Exception {
     return http.csrf(AbstractHttpConfigurer::disable)
         .cors(cors -> cors.configurationSource(fuenteCors(corsProperties)))
+        .headers(
+            cabeceras ->
+                cabeceras
+                    .contentSecurityPolicy(csp -> csp.policyDirectives("default-src 'none'"))
+                    .referrerPolicy(
+                        politica ->
+                            politica.policy(ReferrerPolicyHeaderWriter.ReferrerPolicy.NO_REFERRER)))
         .sessionManagement(sesion -> sesion.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
         .authorizeHttpRequests(
             peticiones ->
                 peticiones
                     .requestMatchers(HttpMethod.POST, "/sesiones")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.GET, "/actuator/health/**", "/actuator/info")
                     .permitAll()
                     .requestMatchers(HttpMethod.GET, "/verificacion-actas/*")
                     .permitAll()
@@ -138,8 +149,10 @@ public class SecurityConfig {
   private void escribirError(HttpServletResponse response, HttpStatus estado, String mensaje)
       throws IOException {
     response.setStatus(estado.value());
-    response.setContentType(MediaType.APPLICATION_JSON_VALUE);
+    response.setContentType(MediaType.APPLICATION_PROBLEM_JSON_VALUE);
     response.setCharacterEncoding(StandardCharsets.UTF_8.name());
-    objectMapper.writeValue(response.getWriter(), new ErrorResponse(mensaje));
+    objectMapper.writeValue(
+        response.getWriter(),
+        Problemas.crear(estado, Map.of("mensaje", mensaje, "errores", Map.of())));
   }
 }
