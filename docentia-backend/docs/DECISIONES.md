@@ -78,6 +78,22 @@ ambigüedad. La fuente de verdad es la resolución; el Excel v2 tiene errores (v
 - **PostgreSQL en CI.** Las pruebas usan `embedded-postgres`, un PostgreSQL 16 real, así que no hace
   falta un servicio aparte.
 
+## Endurecimiento
+
+- **Numeración.** V22 notificaciones, V23 auditoría y V24 bloqueo optimista con índices.
+- **Campo de bloqueo.** Se llama `version_bloqueo`, porque `version` ya es la versión del acta.
+- **Promedios.** Se escriben con un upsert atómico; `version_bloqueo` sube en cada recálculo.
+- **Rechazo por validación.** Bean Validation corre antes que `@PreAuthorize`: un rol sin permiso con un
+  cuerpo inválido recibe 400 o 415 en lugar de 403. No expone datos. La matriz acepta los tres.
+- **RFC 7807 compatible.** Se conservan `mensaje` y `errores`, que lee el frontend.
+- **Tope de listados.** La respuesta se corta en 1000 filas de forma central, sin romper el contrato. Es
+  un tope de respuesta, no paginación en base de datos.
+- **429 en el login.** Se cuenta igual si el correo no existe, por eso no revela usuarios.
+- **Correlación.** El identificador lo genera el servidor; no se acepta del cliente.
+- **Exportación CSV.** No existe, así que la protección contra fórmulas no aplica.
+- **Swagger.** No está instalado; la API se documenta en `docs/` y Postman.
+- **Campana.** Va fija en el contenedor principal para que las páginas no dependan de ella.
+
 ## Estructura de repositorios
 
 - El backend se trabaja en `docentia-backend`, carpeta `docentia-backend/`.

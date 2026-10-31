@@ -41,6 +41,10 @@ docker compose down -v       # apagar y borrar los datos; al subir vuelve el see
 Si algún puerto está ocupado, copia `.env.example` como `.env` y cambia `POSTGRES_PORT`, `API_PORT`
 o `WEB_PORT`. El archivo `.env` no se sube al repositorio.
 
+Los correos de desarrollo se ven en <http://localhost:8025>. La operación completa está en
+`docentia-backend/docs/OPERACION.md`; la arquitectura en `ARQUITECTURA.md`, la API en `API.md`, la
+seguridad en `SEGURIDAD.md`, las notificaciones en `NOTIFICACIONES.md` y los límites en `LIMITACIONES.md`.
+
 El recorrido de demo está en `DocenteIA/docs/checklist-demo-sprint3.md` y el contrato de la API en
 `docentia-backend/docs/`. Las decisiones y la trazabilidad con la Resolución 074 están en
 `docentia-backend/docs/DECISIONES.md` y `docentia-backend/docs/RES074-TRAZABILIDAD.md`.
