@@ -85,7 +85,8 @@ public class VentanaEtapaService {
                   etapa.getNombre(),
                   programada.map(EtapaPeriodo::getFechaApertura).orElse(null),
                   programada.map(EtapaPeriodo::getFechaCierre).orElse(null),
-                  programada.map(ventana -> estaDentro(ventana, hoy)).orElse(false));
+                  programada.map(ventana -> estaDentro(ventana, hoy)).orElse(false),
+                  etapa.getSemanasResolucion());
             })
         .toList();
   }
