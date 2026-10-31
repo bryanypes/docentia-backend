@@ -1,0 +1,39 @@
+.agenda__filtros {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.agenda__dia + .agenda__dia {
+  margin-top: 14px;
+}
+.agenda__fecha {
+  margin: 12px 0 8px;
+  font-size: 14px;
+  font-weight: var(--peso-semi);
+}
+.agenda__franjas {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.agenda__franjas li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--color-borde-suave);
+}
+.agenda__franjas li:last-child {
+  border-bottom: 0;
+}
+.agenda__cita {
+  margin: 0;
+  font-size: 20px;
+  font-weight: var(--peso-fuerte);
+  color: var(--color-azul);
+}

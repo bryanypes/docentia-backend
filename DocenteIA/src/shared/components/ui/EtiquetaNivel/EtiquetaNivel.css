@@ -1,0 +1,46 @@
+.etiqueta-nivel {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: var(--radio-pildora);
+  font-size: 11.5px;
+  font-weight: var(--peso-semi);
+  white-space: nowrap;
+}
+
+/* Paleta institucional. Contraste AA en las cinco; el texto siempre nombra la categoría. */
+.etiqueta-nivel--muy-alto {
+  background: #053686;
+  color: #fff;
+}
+
+.etiqueta-nivel--alto {
+  background: var(--color-azul-suave);
+  color: #053686;
+}
+
+.etiqueta-nivel--aceptable {
+  background: #fffdf5;
+  color: #053686;
+  box-shadow: inset 0 0 0 1.5px #e3c924;
+}
+
+.etiqueta-nivel--bajo {
+  background: #e3c924;
+  color: #3a3000;
+}
+
+.etiqueta-nivel--muy-bajo {
+  background: var(--color-error);
+  color: #fff;
+}
+
+.etiqueta-nivel--pendiente {
+  background: var(--color-alerta-fondo);
+  color: var(--color-alerta-texto);
+  white-space: normal;
+}
+
+.etiqueta-nivel--neutro {
+  background: var(--color-borde-suave);
+  color: var(--color-texto-apagado);
+}

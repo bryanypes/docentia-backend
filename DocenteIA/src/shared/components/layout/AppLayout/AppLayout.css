@@ -1,0 +1,43 @@
+.app-layout {
+  display: flex;
+  align-items: stretch;
+  min-height: 100vh;
+}
+
+.app-layout__principal {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* Recibe el foco al navegar (tabIndex -1); no es un control, así que no se dibuja el anillo */
+.app-layout__principal:focus {
+  outline: none;
+}
+
+/* Contenido de cada página, debajo del encabezado */
+.pagina {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: var(--espacio-4);
+  padding: var(--espacio-6) var(--espacio-7) 48px;
+}
+
+.rejilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: var(--espacio-4);
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .app-layout {
+    flex-direction: column;
+  }
+
+  .pagina {
+    padding: var(--espacio-4) var(--espacio-4) 40px;
+  }
+}

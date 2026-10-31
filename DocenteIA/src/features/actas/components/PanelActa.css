@@ -1,0 +1,102 @@
+.acta {
+  display: grid;
+  gap: 14px;
+}
+
+.acta__resumen {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.acta__subtitulo {
+  margin: 0 0 6px;
+  font-size: 14px;
+  color: var(--color-azul);
+}
+
+.acta__accion {
+  margin: 0;
+  font-size: 13.5px;
+}
+
+.acta__compromisos,
+.acta__firmas {
+  display: grid;
+  gap: 6px;
+  margin: 0 0 8px;
+  padding: 0;
+  list-style: none;
+  font-size: 13.5px;
+}
+
+.acta__compromisos li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.acta__formulario {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+}
+
+.acta__formulario .campo {
+  width: 100%;
+}
+
+.acta__firmar {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  font-size: 13.5px;
+}
+
+.acta__sello {
+  margin: 0;
+  font-family: monospace;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.acta__historial {
+  margin-top: 14px;
+}
+
+.acta__historial .acta {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-borde-suave);
+}
+
+.plan__lista {
+  display: grid;
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.plan__fila {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.plan__meta {
+  font-size: 12.5px;
+  color: var(--color-texto-apagado);
+}
+
+.acciones__nota {
+  margin: 0;
+  max-width: 70ch;
+}
+
+.acciones__tabla {
+  overflow-x: auto;
+}

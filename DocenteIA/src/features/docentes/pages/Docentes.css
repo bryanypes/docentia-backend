@@ -1,0 +1,231 @@
+.docentes__filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 14px;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-xl);
+}
+
+.docentes__buscador {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  gap: var(--espacio-2);
+  min-width: 220px;
+  padding: 8px 11px;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde-control);
+  border-radius: var(--radio-md);
+}
+
+.docentes__buscador > svg {
+  flex: 0 0 auto;
+  color: var(--color-texto-tenue);
+}
+
+.docentes__buscador input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font-size: 13.5px;
+  font-weight: var(--peso-normal);
+  color: var(--color-texto);
+}
+
+.docentes__buscador:focus-within {
+  outline: 2px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+/* Rótulo visible: con un valor elegido, el select solo no dice qué filtra */
+.docentes__selector {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.docentes__etiqueta {
+  font-size: 13px;
+  font-weight: var(--peso-semi);
+  color: var(--color-texto-secundario);
+}
+
+.docentes__selector select {
+  min-height: 40px;
+  max-width: 100%;
+  padding: 9px 11px;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde-control);
+  border-radius: var(--radio-md);
+  font-size: 13px;
+  color: var(--color-texto);
+  cursor: pointer;
+}
+
+.docentes__conteo {
+  margin-left: auto;
+  font-size: 12px;
+  font-weight: var(--peso-semi);
+  color: var(--color-texto-tenue);
+}
+
+.docentes__alcance {
+  align-self: flex-start;
+  padding: 4px 10px;
+  border-radius: var(--radio-pildora);
+  background: var(--color-azul-suave);
+  color: var(--color-azul);
+  font-size: 11.5px;
+  font-weight: var(--peso-semi);
+}
+
+.docentes__tabla-contenedor {
+  overflow: hidden;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-xl);
+}
+
+.docentes__tabla-contenedor .estado-vista {
+  border: 0;
+}
+
+.docentes__desplazable {
+  overflow-x: auto;
+}
+
+.docentes__tabla {
+  width: 100%;
+  min-width: 760px;
+  border-collapse: collapse;
+}
+
+.docentes__tabla th {
+  padding: 11px 14px;
+  text-align: left;
+  white-space: nowrap;
+  font-size: 11.5px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  font-weight: var(--peso-semi);
+  color: var(--color-texto-apagado);
+  background: var(--color-superficie-suave);
+  border-bottom: 2px solid var(--color-borde);
+}
+
+.docentes__tabla td {
+  padding: 11px 14px;
+  font-size: 13px;
+  font-weight: var(--peso-normal);
+  white-space: nowrap;
+  border-bottom: 1px solid var(--color-borde-suave);
+}
+
+.docentes__tabla tbody tr {
+  cursor: pointer;
+}
+
+.docentes__tabla tbody tr:hover {
+  background: var(--color-superficie-suave);
+}
+
+.docentes__persona {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.docentes__avatar {
+  display: flex;
+  flex: 0 0 30px;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background: var(--color-azul-suave);
+  color: var(--color-azul);
+  font-size: 11px;
+  font-weight: var(--peso-semi);
+}
+
+.docentes__nombre {
+  display: block;
+  font-size: 13.5px;
+  font-weight: var(--peso-semi);
+  letter-spacing: -0.2px;
+  color: var(--color-texto);
+}
+
+.docentes__correo {
+  display: block;
+  font-size: 11.5px;
+  color: var(--color-texto-tenue);
+}
+
+.docentes__facultad {
+  color: var(--color-texto-apagado);
+}
+
+.docentes__flecha {
+  text-align: right;
+  color: var(--color-texto-tenue);
+}
+
+.docentes__evaluacion {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.docentes__promedio {
+  font-weight: var(--peso-semi);
+}
+
+.docentes__pendientes {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 16px;
+  padding: 12px 18px 12px 12px;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-left: 4px solid var(--color-amarillo);
+  border-radius: var(--radio-xl);
+  box-shadow: var(--sombra-tarjeta);
+  font-size: 14px;
+  color: var(--color-texto-secundario);
+}
+
+.docentes__pendientes strong {
+  color: var(--color-texto);
+}
+
+.docentes__pendientes-robot {
+  flex: 0 0 auto;
+  width: 64px;
+  height: 64px;
+  padding: 6px;
+  border: 3px solid var(--color-amarillo);
+  border-radius: 50%;
+  background: var(--color-crema);
+}
+
+.docentes__pendientes-texto {
+  flex: 1 1 260px;
+}
+
+.docentes__selector {
+  max-width: 100%;
+}
+
+.docentes__selector select {
+  max-width: 100%;
+  min-width: 0;
+}

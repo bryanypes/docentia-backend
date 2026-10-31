@@ -1,0 +1,43 @@
+.expediente__perfil {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.expediente__avatar {
+  display: flex;
+  flex: 0 0 60px;
+  align-items: center;
+  justify-content: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--color-azul);
+  color: var(--color-crema);
+  font-size: 20px;
+  font-weight: var(--peso-fuerte);
+}
+
+.expediente__nombre {
+  font-size: 20px;
+  font-weight: var(--peso-fuerte);
+  letter-spacing: -0.6px;
+  line-height: 1.15;
+}
+
+.expediente__correo {
+  margin-top: 3px;
+  font-size: 13px;
+  font-weight: var(--peso-normal);
+  color: var(--color-texto-apagado);
+  overflow-wrap: anywhere;
+}
+
+.expediente__calificar {
+  margin-top: var(--espacio-4);
+}
+
+.expediente__etapa:not(:empty) {
+  margin-top: var(--espacio-3);
+}

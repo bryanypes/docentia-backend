@@ -1,0 +1,58 @@
+.periodos__formulario {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.periodos__datos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr));
+  gap: 12px;
+}
+.periodos__etapas {
+  margin: 0;
+  padding: 12px 14px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+}
+.periodos__etapa {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) repeat(2, minmax(0, 170px));
+  gap: 10px;
+  align-items: center;
+  padding: 8px 0;
+}
+.periodos__etapa strong {
+  display: block;
+}
+.periodos__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.periodos__lista-etapas {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr));
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.periodos__lista-etapas li {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  padding: 8px 10px;
+  background: var(--color-azul-fondo);
+  border-radius: var(--radio-md);
+  font-size: 13px;
+}
+@media (max-width: 640px) {
+  .periodos__etapa {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  }
+  .periodos__etapa > div {
+    grid-column: 1 / -1;
+  }
+}
