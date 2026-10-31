@@ -57,6 +57,27 @@ ambigüedad. La fuente de verdad es la resolución; el Excel v2 tiene errores (v
 - **Última franja del día.** 23:00–23:30. La de 23:30–00:00 cruza de día y antes terminaba en un
   409 genérico; ahora recibe un mensaje claro.
 
+## Notificaciones
+
+- **Textos fijos por tipo.** La privacidad queda garantizada por diseño y no por revisar cada envío.
+- **Alerta Muy bajo.** Solo con promedio COMPLETO, para no alarmar con un resultado provisional. El
+  texto no nombra al docente ni la categoría, porque el correo no puede llevarla.
+- **Cancelación de citas.** No hay endpoint para cancelar (F3 no se implementó) y este alcance no
+  agrega funciones. Se cubre el cambio de cita, que libera la anterior.
+- **Acta lista para firma.** Se avisa cuando se puede firmar: al crearla, o al agregar el compromiso
+  si la nota lo exige.
+- **Compromisos de actas en borrador.** No generan recordatorios hasta que el acta esté firmada.
+- **Columnas de V22.** Siguen los nombres pedidos (`usuario_id`), no la convención `id_usuario`.
+
+## Publicación
+
+- **Gate de autores.** `git shortlog` muestra a Daniel Aranda y a Vero, colaboradores reales con
+  commits ya públicos. Quitarlos exigiría reescribir historial, y eso está prohibido. Tus dos correos
+  se unifican con `.mailmap`.
+- **Repositorio `docentia-docker`.** Su commit local quedó absorbido por el monorepo y no se sube.
+- **PostgreSQL en CI.** Las pruebas usan `embedded-postgres`, un PostgreSQL 16 real, así que no hace
+  falta un servicio aparte.
+
 ## Estructura de repositorios
 
 - El backend se trabaja en `docentia-backend`, carpeta `docentia-backend/`.
