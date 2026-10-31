@@ -19,6 +19,7 @@ import com.uniautonoma.docentia.repository.PromedioDocenteRepository;
 import com.uniautonoma.docentia.service.notificacion.EventoNotificacion;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -88,6 +89,17 @@ public class PromedioService {
     return promedioRepository
         .leerPromedio(idDocente, idPeriodo)
         .orElseGet(PromedioPonderadoResponse::sinNota);
+  }
+
+  /** Promedios guardados de todos los docentes de un periodo, por docente. */
+  public Map<Long, PromedioPonderadoResponse> obtenerPromedios(Long idPeriodo) {
+    return promedioRepository.buscarDelPeriodo(idPeriodo).stream()
+        .collect(
+            Collectors.toMap(
+                PromedioDocenteRepository.PromedioDeDocente::idDocente,
+                fila ->
+                    new PromedioPonderadoResponse(
+                        fila.estado(), fila.valor(), fila.fuentesPendientes())));
   }
 
   /**

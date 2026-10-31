@@ -1,10 +1,12 @@
 package com.uniautonoma.docentia.service;
 
 import com.uniautonoma.docentia.dto.PeriodoResumenResponse;
+import com.uniautonoma.docentia.dto.PromedioPonderadoResponse;
 import com.uniautonoma.docentia.dto.SeguimientoDocentesResponse;
 import com.uniautonoma.docentia.dto.SeguimientoDocentesResponse.DocenteConPromedio;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.security.UsuarioSesion;
+import java.util.Map;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +39,10 @@ public class SeguimientoDocentesService {
    */
   public SeguimientoDocentesResponse listar(Long idFacultad, UsuarioSesion sesion) {
     Optional<PeriodoAcademico> periodo = periodoService.buscarPeriodoActivo();
+    Map<Long, PromedioPonderadoResponse> promedios =
+        periodo
+            .map(activo -> promedioService.obtenerPromedios(activo.getIdPeriodo()))
+            .orElse(Map.of());
     return new SeguimientoDocentesResponse(
         periodo.map(PeriodoResumenResponse::desde).orElse(null),
         docenteService.listarDocentes(idFacultad, sesion).stream()
@@ -44,11 +50,10 @@ public class SeguimientoDocentesService {
                 docente ->
                     new DocenteConPromedio(
                         docente,
-                        periodo
-                            .map(
-                                activo ->
-                                    promedioService.obtenerPromedio(docente.idDocente(), activo))
-                            .orElse(null)))
+                        periodo.isEmpty()
+                            ? null
+                            : promedios.getOrDefault(
+                                docente.idDocente(), PromedioPonderadoResponse.sinNota())))
             .toList());
   }
 }

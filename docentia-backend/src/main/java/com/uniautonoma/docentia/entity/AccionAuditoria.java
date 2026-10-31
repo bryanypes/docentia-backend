@@ -1,0 +1,14 @@
+package com.uniautonoma.docentia.entity;
+
+/** Acciones que quedan en el registro de auditoría. */
+public enum AccionAuditoria {
+  LOGIN,
+  FIRMA_ACTA,
+  CORRECCION_ACTA,
+  LECTURA_ACTA_FIRMADA,
+  CAMBIO_PESOS,
+  IMPORTACION_CSV,
+  PUBLICACION_HALLAZGOS,
+  DESCARTE_HALLAZGO,
+  CAMBIO_VENTANA
+}
