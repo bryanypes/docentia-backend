@@ -14,6 +14,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -23,6 +24,10 @@ import java.util.List;
 @Entity
 @Table(name = "hallazgos_analisis")
 public class Hallazgo {
+
+  @Version
+  @Column(name = "version_bloqueo", nullable = false)
+  private long versionBloqueo;
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

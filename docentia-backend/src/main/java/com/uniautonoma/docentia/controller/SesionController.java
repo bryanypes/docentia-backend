@@ -4,10 +4,12 @@ import com.uniautonoma.docentia.dto.CambioContrasenaRequest;
 import com.uniautonoma.docentia.dto.InicioSesionGoogleRequest;
 import com.uniautonoma.docentia.dto.InicioSesionRequest;
 import com.uniautonoma.docentia.dto.SesionResponse;
+import com.uniautonoma.docentia.entity.AccionAuditoria;
 import com.uniautonoma.docentia.exception.CredencialesInvalidasException;
 import com.uniautonoma.docentia.security.DireccionCliente;
 import com.uniautonoma.docentia.security.LimitadorIntentos;
 import com.uniautonoma.docentia.security.UsuarioSesion;
+import com.uniautonoma.docentia.service.AuditoriaService;
 import com.uniautonoma.docentia.service.AutenticacionService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
@@ -28,8 +30,13 @@ public class SesionController {
 
   private final AutenticacionService autenticacionService;
   private final LimitadorIntentos limitador;
+  private final AuditoriaService auditoria;
 
-  public SesionController(AutenticacionService autenticacionService, LimitadorIntentos limitador) {
+  public SesionController(
+      AutenticacionService autenticacionService,
+      LimitadorIntentos limitador,
+      AuditoriaService auditoria) {
+    this.auditoria = auditoria;
     this.autenticacionService = autenticacionService;
     this.limitador = limitador;
   }
@@ -49,9 +56,25 @@ public class SesionController {
     try {
       SesionResponse sesion = autenticacionService.iniciarSesion(solicitud);
       limitador.registrarExito(solicitud.correo());
+      auditoria.registrar(
+          AccionAuditoria.LOGIN,
+          "USUARIO",
+          null,
+          null,
+          solicitud.correo(),
+          null,
+          AuditoriaService.EXITO);
       return sesion;
     } catch (CredencialesInvalidasException rechazo) {
       limitador.registrarFallo(solicitud.correo(), ip);
+      auditoria.registrar(
+          AccionAuditoria.LOGIN,
+          "USUARIO",
+          null,
+          null,
+          solicitud.correo(),
+          null,
+          AuditoriaService.FALLO);
       throw rechazo;
     }
   }

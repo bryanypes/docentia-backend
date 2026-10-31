@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.uniautonoma.docentia.dto.ErrorResponse;
 import com.uniautonoma.docentia.dto.EtapaCerradaResponse;
+import java.util.List;
 import java.util.Map;
 import org.springframework.core.MethodParameter;
 import org.springframework.http.HttpStatus;
@@ -15,9 +16,12 @@ import org.springframework.http.server.ServletServerHttpResponse;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.servlet.mvc.method.annotation.ResponseBodyAdvice;
 
-/** Convierte toda respuesta de error en un ProblemDetail, en un solo lugar. */
+/** Convierte los errores en ProblemDetail y aplica el tope de los listados, en un solo lugar. */
 @RestControllerAdvice
 public class AsesorProblemas implements ResponseBodyAdvice<Object> {
+
+  /** Ningún listado devuelve más filas; las bandejas grandes usan paginación real. */
+  static final int TOPE_LISTADOS = 1000;
 
   private final ObjectMapper objectMapper;
 
@@ -39,6 +43,10 @@ public class AsesorProblemas implements ResponseBodyAdvice<Object> {
       Class<? extends HttpMessageConverter<?>> convertidor,
       ServerHttpRequest peticion,
       ServerHttpResponse respuesta) {
+    if (cuerpo instanceof List<?> lista && lista.size() > TOPE_LISTADOS) {
+      respuesta.getHeaders().set("X-Total-Count", String.valueOf(lista.size()));
+      return lista.subList(0, TOPE_LISTADOS);
+    }
     if (!(cuerpo instanceof ErrorResponse) && !(cuerpo instanceof EtapaCerradaResponse)) {
       return cuerpo;
     }

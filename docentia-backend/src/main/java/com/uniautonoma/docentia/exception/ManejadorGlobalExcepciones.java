@@ -11,6 +11,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.FieldError;
@@ -54,6 +55,13 @@ public class ManejadorGlobalExcepciones {
   @ResponseStatus(HttpStatus.SERVICE_UNAVAILABLE)
   public ErrorResponse manejarServicioDeshabilitado(ServicioDeshabilitadoException excepcion) {
     return new ErrorResponse(excepcion.getMessage());
+  }
+
+  @ExceptionHandler(ObjectOptimisticLockingFailureException.class)
+  @ResponseStatus(HttpStatus.CONFLICT)
+  public ErrorResponse manejarConflictoDeVersion(
+      ObjectOptimisticLockingFailureException excepcion) {
+    return new ErrorResponse("Otra persona cambió este registro; recarga e intenta de nuevo");
   }
 
   @ExceptionHandler(DemasiadosIntentosException.class)

@@ -2,7 +2,9 @@ package com.uniautonoma.docentia.controller;
 
 import com.uniautonoma.docentia.dto.ResultadoAnalisisPropioResponse;
 import com.uniautonoma.docentia.dto.SolicitudAnalisisResponse;
+import com.uniautonoma.docentia.entity.AccionAuditoria;
 import com.uniautonoma.docentia.security.UsuarioSesion;
+import com.uniautonoma.docentia.service.AuditoriaService;
 import com.uniautonoma.docentia.service.analisis.ValidacionHallazgoService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -18,9 +20,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class ResultadoAnalisisController {
 
   private final ValidacionHallazgoService validacionService;
+  private final AuditoriaService auditoria;
 
-  public ResultadoAnalisisController(ValidacionHallazgoService validacionService) {
+  public ResultadoAnalisisController(
+      ValidacionHallazgoService validacionService, AuditoriaService auditoria) {
     this.validacionService = validacionService;
+    this.auditoria = auditoria;
   }
 
   /**
@@ -32,7 +37,10 @@ public class ResultadoAnalisisController {
   @PreAuthorize("hasRole('COORDINADOR')")
   public SolicitudAnalisisResponse publicar(
       @PathVariable Long idSolicitud, @AuthenticationPrincipal UsuarioSesion sesion) {
-    return validacionService.publicar(idSolicitud, sesion);
+    SolicitudAnalisisResponse publicada = validacionService.publicar(idSolicitud, sesion);
+    auditoria.registrar(
+        AccionAuditoria.PUBLICACION_HALLAZGOS, "SOLICITUD_ANALISIS", idSolicitud, sesion);
+    return publicada;
   }
 
   /** Hallazgos incluidos en la última revisión publicada del docente autenticado. */

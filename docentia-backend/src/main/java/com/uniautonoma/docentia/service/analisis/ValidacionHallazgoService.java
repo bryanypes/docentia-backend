@@ -138,10 +138,13 @@ public class ValidacionHallazgoService {
   public SolicitudAnalisisResponse publicar(Long idSolicitud, UsuarioSesion sesion) {
     SolicitudAnalisis solicitud =
         solicitudRepository
-            .findById(idSolicitud)
+            .bloquear(idSolicitud)
             .orElseThrow(() -> new RecursoNoEncontradoException("Solicitud no encontrada"));
     exigirAlcance(solicitud, sesion, "Solicitud no encontrada");
     ventanaEtapaService.exigirEtapaAbierta(solicitud.getPeriodo(), TipoEtapa.REVISION_HALLAZGOS);
+    if ("VALIDADO".equals(solicitud.getEstadoBorrador())) {
+      throw new ReglaNegocioException("La revisión ya se publicó");
+    }
     if (solicitud.getEstado() != EstadoSolicitudAnalisis.COMPLETADO) {
       throw new ReglaNegocioException("La solicitud no tiene un borrador para publicar");
     }

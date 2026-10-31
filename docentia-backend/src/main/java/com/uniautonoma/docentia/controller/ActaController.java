@@ -5,10 +5,13 @@ import com.uniautonoma.docentia.dto.CompromisoActaRequest;
 import com.uniautonoma.docentia.dto.CorreccionActaRequest;
 import com.uniautonoma.docentia.dto.FirmaActaRequest;
 import com.uniautonoma.docentia.dto.NuevaActaRequest;
+import com.uniautonoma.docentia.entity.AccionAuditoria;
+import com.uniautonoma.docentia.entity.EstadoActa;
 import com.uniautonoma.docentia.security.DireccionCliente;
 import com.uniautonoma.docentia.security.UsuarioSesion;
 import com.uniautonoma.docentia.service.ActaService;
 import com.uniautonoma.docentia.service.ActaService.PdfActa;
+import com.uniautonoma.docentia.service.AuditoriaService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -35,9 +38,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class ActaController {
 
   private final ActaService actaService;
+  private final AuditoriaService auditoria;
 
-  public ActaController(ActaService actaService) {
+  public ActaController(ActaService actaService, AuditoriaService auditoria) {
     this.actaService = actaService;
+    this.auditoria = auditoria;
   }
 
   @PostMapping
@@ -59,7 +64,9 @@ public class ActaController {
   @GetMapping("/{idActa}")
   public ActaResponse obtener(
       @PathVariable Long idActa, @AuthenticationPrincipal UsuarioSesion sesion) {
-    return actaService.obtener(idActa, sesion);
+    ActaResponse acta = actaService.obtener(idActa, sesion);
+    auditarLectura(acta, sesion);
+    return acta;
   }
 
   @PostMapping("/{idActa}/compromisos")
@@ -89,8 +96,10 @@ public class ActaController {
       @RequestBody FirmaActaRequest solicitud,
       HttpServletRequest peticion,
       @AuthenticationPrincipal UsuarioSesion sesion) {
-    return actaService.firmar(
-        idActa, solicitud.confirmacion(), DireccionCliente.de(peticion), sesion);
+    ActaResponse acta =
+        actaService.firmar(idActa, solicitud.confirmacion(), DireccionCliente.de(peticion), sesion);
+    auditoria.registrar(AccionAuditoria.FIRMA_ACTA, "ACTA", idActa, sesion);
+    return acta;
   }
 
   @PostMapping("/{idActa}/correcciones")
@@ -99,18 +108,29 @@ public class ActaController {
       @PathVariable Long idActa,
       @Valid @RequestBody CorreccionActaRequest solicitud,
       @AuthenticationPrincipal UsuarioSesion sesion) {
-    return actaService.corregir(idActa, solicitud.motivo(), sesion);
+    ActaResponse acta = actaService.corregir(idActa, solicitud.motivo(), sesion);
+    auditoria.registrar(AccionAuditoria.CORRECCION_ACTA, "ACTA", idActa, sesion);
+    return acta;
   }
 
   @GetMapping("/{idActa}/pdf")
   public ResponseEntity<byte[]> descargarPdf(
       @PathVariable Long idActa, @AuthenticationPrincipal UsuarioSesion sesion) {
     PdfActa pdf = actaService.descargarPdf(idActa, sesion);
+    if (!sesion.esDocente()) {
+      auditoria.registrar(AccionAuditoria.LECTURA_ACTA_FIRMADA, "ACTA", idActa, sesion);
+    }
     return ResponseEntity.ok()
         .contentType(MediaType.APPLICATION_PDF)
         .header(
             HttpHeaders.CONTENT_DISPOSITION,
             ContentDisposition.attachment().filename(pdf.nombre()).build().toString())
         .body(pdf.contenido());
+  }
+
+  private void auditarLectura(ActaResponse acta, UsuarioSesion sesion) {
+    if (acta.estado() == EstadoActa.FIRMADA && !sesion.esDocente()) {
+      auditoria.registrar(AccionAuditoria.LECTURA_ACTA_FIRMADA, "ACTA", acta.idActa(), sesion);
+    }
   }
 }
