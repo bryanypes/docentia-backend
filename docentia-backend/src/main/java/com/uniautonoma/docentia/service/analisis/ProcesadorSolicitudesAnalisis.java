@@ -5,17 +5,20 @@ import com.uniautonoma.docentia.entity.CitaHallazgo;
 import com.uniautonoma.docentia.entity.EstadoSolicitudAnalisis;
 import com.uniautonoma.docentia.entity.Hallazgo;
 import com.uniautonoma.docentia.entity.SolicitudAnalisis;
+import com.uniautonoma.docentia.entity.TipoNotificacion;
 import com.uniautonoma.docentia.repository.SolicitudAnalisisRepository;
 import com.uniautonoma.docentia.service.analisis.LectorRespuestaAnalisis.HallazgoPropuesto;
 import com.uniautonoma.docentia.service.analisis.LectorRespuestaAnalisis.RespuestaInvalidaException;
 import com.uniautonoma.docentia.service.analisis.ModeloIA.ModeloIAException;
 import com.uniautonoma.docentia.service.analisis.ModeloIA.PeticionAnalisis;
 import com.uniautonoma.docentia.service.analisis.ModeloIA.RespuestaModelo;
+import com.uniautonoma.docentia.service.notificacion.EventoNotificacion;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
@@ -35,6 +38,8 @@ import org.springframework.transaction.support.TransactionTemplate;
  */
 @Component
 public class ProcesadorSolicitudesAnalisis {
+
+  private final ApplicationEventPublisher eventos;
 
   static final String MENSAJE_ERROR =
       "No fue posible generar el análisis en este momento. Puedes volver a solicitarlo más tarde.";
@@ -60,7 +65,9 @@ public class ProcesadorSolicitudesAnalisis {
       LectorRespuestaAnalisis lector,
       IaProperties propiedades,
       TransactionTemplate transaccion,
-      JdbcTemplate jdbcTemplate) {
+      JdbcTemplate jdbcTemplate,
+      ApplicationEventPublisher eventos) {
+    this.eventos = eventos;
     this.solicitudRepository = solicitudRepository;
     this.proveedorComentarios = proveedorComentarios;
     this.preparador = preparador;
@@ -142,6 +149,7 @@ public class ProcesadorSolicitudesAnalisis {
               + " de "
               + propiedades.minimoEncuestas()
               + " requeridas)");
+      avisar(solicitud, TipoNotificacion.ANALISIS_INSUFICIENTE);
       return Optional.empty();
     }
     PreparadorComentarios.Preparados preparados = preparador.preparar(solicitud);
@@ -149,6 +157,7 @@ public class ProcesadorSolicitudesAnalisis {
     if (preparados.enviados().isEmpty()) {
       solicitud.marcarInsuficiente(
           encuestas, "evidencia insuficiente: el filtro excluyó todos los comentarios");
+      avisar(solicitud, TipoNotificacion.ANALISIS_INSUFICIENTE);
       return Optional.empty();
     }
     return Optional.of(new PeticionAnalisis(instruccion.texto(), preparados.enviados()));
@@ -206,6 +215,22 @@ public class ProcesadorSolicitudesAnalisis {
         peticion.comentarios().size(),
         generado.modelo(),
         instruccion.version());
+    avisar(solicitud, TipoNotificacion.ANALISIS_TERMINADO);
+  }
+
+  /** Avisa a quien pidió el análisis, que por construcción está en la facultad del docente. */
+  private void avisar(SolicitudAnalisis solicitud, TipoNotificacion tipo) {
+    eventos.publishEvent(
+        EventoNotificacion.aUsuario(
+            tipo,
+            solicitud.getSolicitante().getIdUsuario(),
+            "/analisis?docente="
+                + solicitud.getDocente().getIdUsuario()
+                + "&periodo="
+                + solicitud.getPeriodo().getIdPeriodo(),
+            "SOLICITUD_ANALISIS",
+            solicitud.getIdSolicitud(),
+            "solicitud:" + solicitud.getIdSolicitud()));
   }
 
   private void marcarError(Long idSolicitud) {
@@ -214,7 +239,11 @@ public class ProcesadorSolicitudesAnalisis {
             solicitudRepository
                 .findById(idSolicitud)
                 .filter(solicitud -> solicitud.getEstado() == EstadoSolicitudAnalisis.EN_PROCESO)
-                .ifPresent(solicitud -> solicitud.marcarError(MENSAJE_ERROR)));
+                .ifPresent(
+                    solicitud -> {
+                      solicitud.marcarError(MENSAJE_ERROR);
+                      avisar(solicitud, TipoNotificacion.ANALISIS_ERROR);
+                    }));
   }
 
   private record Generado(List<HallazgoPropuesto> hallazgos, String modelo) {}

@@ -1,14 +1,25 @@
 spring:
   application:
     name: docentia
+  lifecycle:
+    timeout-per-shutdown-phase: 20s
   datasource:
     url: ${DOCENTIA_DB_URL:jdbc:postgresql://localhost:5432/docentia}
     username: ${DOCENTIA_DB_USUARIO:docentia}
     password: ${DOCENTIA_DB_CONTRASENA:docentia}
+    hikari:
+      maximum-pool-size: ${DOCENTIA_DB_POOL_MAXIMO:15}
+      minimum-idle: 2
+      connection-timeout: 10000
   jpa:
     hibernate:
       ddl-auto: validate
     open-in-view: false
+  task:
+    scheduling:
+      # El análisis puede tardar un minuto y no debe frenar el correo.
+      pool:
+        size: 3
   flyway:
     enabled: true
     locations: classpath:db/migration
@@ -21,8 +32,23 @@ spring:
 
 server:
   port: 8080
+  shutdown: graceful
   servlet:
     context-path: /api
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      probes:
+        enabled: true
+      show-details: never
+  health:
+    mail:
+      enabled: false
 
 docentia:
   jwt:
@@ -46,6 +72,18 @@ docentia:
   # Rol que puede corregir un acta firmada (VICERRECTOR o COORDINADOR).
   actas:
     rol-corrector: ${DOCENTIA_ACTAS_ROL_CORRECTOR:VICERRECTOR}
+  # Avisos dentro de la app y correo. Sin DOCENTIA_MAIL_HOST los correos solo se registran.
+  notificaciones:
+    url-aplicacion: ${DOCENTIA_APP_URL:http://localhost:5173}
+    retencion-dias: ${DOCENTIA_NOTIFICACIONES_RETENCION_DIAS:90}
+    lote-correo: 20
+    correo:
+      host: ${DOCENTIA_MAIL_HOST:}
+      puerto: ${DOCENTIA_MAIL_PORT:587}
+      usuario: ${DOCENTIA_MAIL_USER:}
+      contrasena: ${DOCENTIA_MAIL_PASS:}
+      remitente: ${DOCENTIA_MAIL_FROM:no-responder@uniautonoma.edu.co}
+      tls: ${DOCENTIA_MAIL_TLS:true}
   # Análisis de comentarios con IA (E1). Apagado por defecto: enviar comentarios a un proveedor
   # externo exige revisar la política de tratamiento de datos de la universidad (Ley 1581 de 2012).
   ia:

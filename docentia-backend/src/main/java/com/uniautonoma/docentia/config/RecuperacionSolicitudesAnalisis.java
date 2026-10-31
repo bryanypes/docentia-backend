@@ -19,6 +19,8 @@ public class RecuperacionSolicitudesAnalisis implements ApplicationRunner {
 
   private static final Logger LOG = LoggerFactory.getLogger(RecuperacionSolicitudesAnalisis.class);
 
+  private static final int MAXIMO_INTENTOS = 3;
+
   private final SolicitudAnalisisRepository solicitudRepository;
 
   public RecuperacionSolicitudesAnalisis(SolicitudAnalisisRepository solicitudRepository) {
@@ -28,6 +30,12 @@ public class RecuperacionSolicitudesAnalisis implements ApplicationRunner {
   @Override
   @Transactional
   public void run(ApplicationArguments args) {
+    int abandonadas =
+        solicitudRepository.marcarErrorHuerfanas(
+            MAXIMO_INTENTOS, "El análisis no pudo terminar; puedes volver a solicitarlo.");
+    if (abandonadas > 0) {
+      LOG.warn("Se marcaron {} solicitudes huérfanas con error", abandonadas);
+    }
     int devueltas = solicitudRepository.devolverEnProcesoACola();
     if (devueltas > 0) {
       LOG.info("Se devolvieron {} solicitudes de análisis a la cola", devueltas);

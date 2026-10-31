@@ -2,10 +2,12 @@ package com.uniautonoma.docentia.repository;
 
 import com.uniautonoma.docentia.entity.EstadoSolicitudAnalisis;
 import com.uniautonoma.docentia.entity.SolicitudAnalisis;
+import jakarta.persistence.LockModeType;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 
@@ -34,4 +36,20 @@ public interface SolicitudAnalisisRepository extends JpaRepository<SolicitudAnal
   Optional<SolicitudAnalisis>
       findFirstByDocenteIdUsuarioAndPeriodoIdPeriodoAndEstadoBorradorOrderByIdSolicitudDesc(
           Long idDocente, Long idPeriodo, String estadoBorrador);
+
+  /** Toma la solicitud con bloqueo de fila: dos publicaciones simultáneas van en fila. */
+  @Lock(LockModeType.PESSIMISTIC_WRITE)
+  @Query("select s from SolicitudAnalisis s where s.idSolicitud = :idSolicitud")
+  Optional<SolicitudAnalisis> bloquear(Long idSolicitud);
+
+  /** Una solicitud que tumbó el proceso varias veces no vuelve a la cola. */
+  @Modifying
+  @Query(
+      "update SolicitudAnalisis s set s.estado ="
+          + " com.uniautonoma.docentia.entity.EstadoSolicitudAnalisis.ERROR, s.mensaje = :mensaje"
+          + " where s.estado = com.uniautonoma.docentia.entity.EstadoSolicitudAnalisis.EN_PROCESO"
+          + " and s.intentos >= :maximo")
+  int marcarErrorHuerfanas(int maximo, String mensaje);
+
+  long countByEstado(EstadoSolicitudAnalisis estado);
 }

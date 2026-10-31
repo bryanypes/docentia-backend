@@ -16,6 +16,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.OrderBy;
 import jakarta.persistence.Table;
+import jakarta.persistence.Version;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -30,6 +31,10 @@ import org.hibernate.annotations.CreationTimestamp;
 @Entity
 @Table(name = "actas")
 public class Acta {
+
+  @Version
+  @Column(name = "version_bloqueo", nullable = false)
+  private long versionBloqueo;
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)

@@ -1,7 +1,9 @@
 package com.uniautonoma.docentia.service;
 
+import com.uniautonoma.docentia.dto.EstadoPromedio;
 import com.uniautonoma.docentia.dto.PromedioPonderadoResponse;
 import com.uniautonoma.docentia.entity.Calificacion;
+import com.uniautonoma.docentia.entity.CategoriaDesempeno;
 import com.uniautonoma.docentia.entity.Dimension;
 import com.uniautonoma.docentia.entity.FuenteEvaluacion;
 import com.uniautonoma.docentia.entity.FuentesPendientesConverter;
@@ -9,12 +11,16 @@ import com.uniautonoma.docentia.entity.NotasAspectos;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.PesosFuentes;
 import com.uniautonoma.docentia.entity.Ponderacion;
+import com.uniautonoma.docentia.entity.TipoNotificacion;
 import com.uniautonoma.docentia.repository.CalificacionRepository;
 import com.uniautonoma.docentia.repository.DocentePeriodo;
 import com.uniautonoma.docentia.repository.PonderacionRepository;
 import com.uniautonoma.docentia.repository.PromedioDocenteRepository;
+import com.uniautonoma.docentia.service.notificacion.EventoNotificacion;
 import java.util.EnumMap;
 import java.util.Map;
+import java.util.stream.Collectors;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +31,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional(readOnly = true)
 public class PromedioService {
+
+  private final ApplicationEventPublisher eventos;
 
   private static final FuentesPendientesConverter CONVERTIDOR_FUENTES =
       new FuentesPendientesConverter();
@@ -38,7 +46,9 @@ public class PromedioService {
       CalificacionRepository calificacionRepository,
       PonderacionRepository ponderacionRepository,
       PromedioDocenteRepository promedioRepository,
-      CalculadoraPromedioPonderado calculadora) {
+      CalculadoraPromedioPonderado calculadora,
+      ApplicationEventPublisher eventos) {
+    this.eventos = eventos;
     this.calificacionRepository = calificacionRepository;
     this.ponderacionRepository = ponderacionRepository;
     this.promedioRepository = promedioRepository;
@@ -81,6 +91,17 @@ public class PromedioService {
         .orElseGet(PromedioPonderadoResponse::sinNota);
   }
 
+  /** Promedios guardados de todos los docentes de un periodo, por docente. */
+  public Map<Long, PromedioPonderadoResponse> obtenerPromedios(Long idPeriodo) {
+    return promedioRepository.buscarDelPeriodo(idPeriodo).stream()
+        .collect(
+            Collectors.toMap(
+                PromedioDocenteRepository.PromedioDeDocente::idDocente,
+                fila ->
+                    new PromedioPonderadoResponse(
+                        fila.estado(), fila.valor(), fila.fuentesPendientes())));
+  }
+
   /**
    * Calcula el resultado ponderado de una sola dimensión. No se guarda: se deriva de las notas en
    * cada consulta.
@@ -114,6 +135,17 @@ public class PromedioService {
         resultado.estado().name(),
         resultado.categoria() == null ? null : resultado.categoria().codigo().name(),
         CONVERTIDOR_FUENTES.convertToDatabaseColumn(resultado.fuentesPendientes()));
+    if (resultado.estado() == EstadoPromedio.COMPLETO
+        && resultado.categoria().codigo() == CategoriaDesempeno.MUY_BAJO) {
+      // Solo a Vicerrectoría, solo con el resultado definitivo y sin decirle nada al docente.
+      eventos.publishEvent(
+          EventoNotificacion.aVicerrectores(
+              TipoNotificacion.ALERTA_INFORMATIVA,
+              "/acciones-sugeridas",
+              "PERIODO",
+              idPeriodo,
+              "docente:" + idDocente + ":periodo:" + idPeriodo));
+    }
     return resultado;
   }
 
