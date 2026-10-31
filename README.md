@@ -1,5 +1,7 @@
 # DOCENTIA
 
+[![CI](https://github.com/bryanypes/docentia-backend/actions/workflows/ci.yml/badge.svg)](https://github.com/bryanypes/docentia-backend/actions/workflows/ci.yml)
+
 Sistema de evaluación docente de la Corporación Universitaria Autónoma del Cauca.
 
 | Carpeta             | Contenido                                   |
