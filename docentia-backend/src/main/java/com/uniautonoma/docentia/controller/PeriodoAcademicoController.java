@@ -1,5 +1,6 @@
 package com.uniautonoma.docentia.controller;
 
+import com.uniautonoma.docentia.dto.CalendarioResponse;
 import com.uniautonoma.docentia.dto.PeriodoAcademicoRequest;
 import com.uniautonoma.docentia.dto.PeriodoAcademicoResponse;
 import com.uniautonoma.docentia.dto.VentanaEtapaResponse;
@@ -54,6 +55,11 @@ public class PeriodoAcademicoController {
    *
    * @return las cuatro etapas con sus fechas y si están abiertas
    */
+  @GetMapping("/activo/calendario")
+  public CalendarioResponse obtenerCalendario() {
+    return periodoService.describirCalendario();
+  }
+
   @GetMapping("/activo/ventanas")
   public List<VentanaEtapaResponse> listarVentanasActivas() {
     return periodoService.describirVentanasActivas();

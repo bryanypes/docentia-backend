@@ -29,4 +29,9 @@ public interface SolicitudAnalisisRepository extends JpaRepository<SolicitudAnal
       "update SolicitudAnalisis s set s.estado = com.uniautonoma.docentia.entity.EstadoSolicitudAnalisis.EN_COLA"
           + " where s.estado = com.uniautonoma.docentia.entity.EstadoSolicitudAnalisis.EN_PROCESO")
   int devolverEnProcesoACola();
+
+  /** Última revisión publicada de un docente en un periodo. */
+  Optional<SolicitudAnalisis>
+      findFirstByDocenteIdUsuarioAndPeriodoIdPeriodoAndEstadoBorradorOrderByIdSolicitudDesc(
+          Long idDocente, Long idPeriodo, String estadoBorrador);
 }

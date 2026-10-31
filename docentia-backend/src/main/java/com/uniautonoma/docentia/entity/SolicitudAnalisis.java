@@ -185,6 +185,11 @@ public class SolicitudAnalisis {
     return estadoBorrador;
   }
 
+  /** Cierra la revisión: desde aquí el docente ve los hallazgos incluidos. */
+  public void publicarBorrador() {
+    this.estadoBorrador = "VALIDADO";
+  }
+
   /**
    * Regla de visibilidad: el docente solo puede ver el borrador cuando coordinación lo validó
    * completo (E4). Cualquier endpoint futuro para el docente debe consultar esto.

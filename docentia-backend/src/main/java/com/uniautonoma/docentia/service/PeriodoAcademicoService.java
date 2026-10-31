@@ -1,8 +1,10 @@
 package com.uniautonoma.docentia.service;
 
+import com.uniautonoma.docentia.dto.CalendarioResponse;
 import com.uniautonoma.docentia.dto.EtapaPeriodoRequest;
 import com.uniautonoma.docentia.dto.PeriodoAcademicoRequest;
 import com.uniautonoma.docentia.dto.PeriodoAcademicoResponse;
+import com.uniautonoma.docentia.dto.PeriodoResumenResponse;
 import com.uniautonoma.docentia.dto.VentanaEtapaResponse;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.TipoEtapa;
@@ -41,6 +43,21 @@ public class PeriodoAcademicoService {
   @Transactional(readOnly = true)
   public List<VentanaEtapaResponse> describirVentanasActivas() {
     return ventanaEtapaService.describirVentanas(exigirPeriodoActivo());
+  }
+
+  /** Etapa vigente y línea de tiempo del periodo activo. */
+  @Transactional(readOnly = true)
+  public CalendarioResponse describirCalendario() {
+    PeriodoAcademico periodo = exigirPeriodoActivo();
+    List<VentanaEtapaResponse> etapas = ventanaEtapaService.describirVentanas(periodo);
+    VentanaEtapaResponse vigente =
+        etapas.stream().filter(VentanaEtapaResponse::abierta).reduce((a, b) -> b).orElse(null);
+    return new CalendarioResponse(
+        PeriodoResumenResponse.desde(periodo),
+        ventanaEtapaService.hoy(),
+        vigente,
+        etapas,
+        "Seguimiento del plan: período siguiente");
   }
 
   /**
