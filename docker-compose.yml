@@ -68,7 +68,7 @@ services:
       db:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -S -O /dev/null http://127.0.0.1:8080/api/sesiones/actual 2>&1 | grep -q 401"]
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1:8080/api/actuator/health/readiness"]
       interval: 10s
       timeout: 5s
       retries: 12

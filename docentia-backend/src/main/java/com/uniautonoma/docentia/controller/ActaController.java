@@ -5,6 +5,7 @@ import com.uniautonoma.docentia.dto.CompromisoActaRequest;
 import com.uniautonoma.docentia.dto.CorreccionActaRequest;
 import com.uniautonoma.docentia.dto.FirmaActaRequest;
 import com.uniautonoma.docentia.dto.NuevaActaRequest;
+import com.uniautonoma.docentia.security.DireccionCliente;
 import com.uniautonoma.docentia.security.UsuarioSesion;
 import com.uniautonoma.docentia.service.ActaService;
 import com.uniautonoma.docentia.service.ActaService.PdfActa;
@@ -88,7 +89,8 @@ public class ActaController {
       @RequestBody FirmaActaRequest solicitud,
       HttpServletRequest peticion,
       @AuthenticationPrincipal UsuarioSesion sesion) {
-    return actaService.firmar(idActa, solicitud.confirmacion(), ipDe(peticion), sesion);
+    return actaService.firmar(
+        idActa, solicitud.confirmacion(), DireccionCliente.de(peticion), sesion);
   }
 
   @PostMapping("/{idActa}/correcciones")
@@ -110,14 +112,5 @@ public class ActaController {
             HttpHeaders.CONTENT_DISPOSITION,
             ContentDisposition.attachment().filename(pdf.nombre()).build().toString())
         .body(pdf.contenido());
-  }
-
-  private String ipDe(HttpServletRequest peticion) {
-    String reenviada = peticion.getHeader("X-Forwarded-For");
-    if (reenviada == null || reenviada.isBlank()) {
-      return peticion.getRemoteAddr();
-    }
-    String[] saltos = reenviada.split(",");
-    return saltos[saltos.length - 1].trim();
   }
 }

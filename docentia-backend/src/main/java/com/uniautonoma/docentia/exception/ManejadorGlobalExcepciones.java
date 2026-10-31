@@ -56,6 +56,12 @@ public class ManejadorGlobalExcepciones {
     return new ErrorResponse(excepcion.getMessage());
   }
 
+  @ExceptionHandler(DemasiadosIntentosException.class)
+  @ResponseStatus(HttpStatus.TOO_MANY_REQUESTS)
+  public ErrorResponse manejarDemasiadosIntentos(DemasiadosIntentosException excepcion) {
+    return new ErrorResponse(excepcion.getMessage());
+  }
+
   /**
    * Una restricción de la base rechazó la escritura, casi siempre porque otra persona guardó el
    * mismo dato al mismo tiempo. El detalle de la base no se envía al cliente.
@@ -63,7 +69,8 @@ public class ManejadorGlobalExcepciones {
   @ExceptionHandler(DataIntegrityViolationException.class)
   @ResponseStatus(HttpStatus.CONFLICT)
   public ErrorResponse manejarConflictoDeDatos(DataIntegrityViolationException excepcion) {
-    LOG.warn("Escritura rechazada por la base: {}", excepcion.getMostSpecificCause().getMessage());
+    // Solo el tipo: el mensaje de la base puede incluir los valores de la fila.
+    LOG.warn("Escritura rechazada por la base: {}", excepcion.getMostSpecificCause().getClass());
     return new ErrorResponse(
         "Otra persona modificó estos datos al mismo tiempo; vuelve a intentarlo");
   }
