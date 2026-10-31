@@ -21,6 +21,11 @@ export function formatearPeso(peso) {
   return `${Number(peso).toLocaleString('es-CO')} %`
 }
 
+/** "50 % estudiantes · 30 % coordinación · 20 % autoevaluación" */
+export function textoFormula({ pesoEstudiantes, pesoCoordinacion, pesoAutoevaluacion }) {
+  return `${formatearPeso(pesoEstudiantes)} estudiantes · ${formatearPeso(pesoCoordinacion)} coordinación · ${formatearPeso(pesoAutoevaluacion)} autoevaluación`
+}
+
 /** "2026-11-30" → "30 nov 2026", sin desfases de zona horaria. */
 export function formatearFecha(fechaIso) {
   if (!fechaIso) return ''
@@ -69,7 +74,7 @@ export function porcentajeNota(valor) {
   return `${Math.max(0, Math.min(100, (Number(valor) / 5) * 100))}%`
 }
 
-/** ["COORDINACION", "VICERRECTORIA"] → "Coordinación y Vicerrectoría" */
+/** ["COORDINACION", "AUTOEVALUACION"] → "Coordinación y Autoevaluación" */
 export function listarFuentes(fuentes = []) {
   const nombres = fuentes.map((fuente) => ETIQUETA_FUENTE[fuente] ?? fuente)
   if (nombres.length <= 1) return nombres.join('')

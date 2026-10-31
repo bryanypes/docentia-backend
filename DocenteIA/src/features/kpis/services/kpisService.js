@@ -11,3 +11,12 @@ export function obtenerKpis({ periodoId, facultadId } = {}) {
   const consulta = parametros.toString()
   return api.get(`/kpis${consulta ? `?${consulta}` : ''}`)
 }
+
+/** Panel agregado por programa (I11). Sin datos individuales. */
+export function obtenerPanelProgramas({ periodoId, facultadId }) {
+  const consulta = new URLSearchParams()
+  if (periodoId) consulta.set('periodoId', periodoId)
+  if (facultadId) consulta.set('facultadId', facultadId)
+  const texto = consulta.toString()
+  return api.get(`/kpis/panel${texto ? `?${texto}` : ''}`)
+}

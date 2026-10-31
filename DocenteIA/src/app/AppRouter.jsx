@@ -4,6 +4,11 @@ import CambiarContrasena from '../features/auth/pages/CambiarContrasena.jsx'
 import Login from '../features/auth/pages/Login.jsx'
 import { SesionProvider } from '../features/auth/SesionProvider.jsx'
 import { useSesion } from '../features/auth/sesionContext.js'
+import AccionesSugeridas from '../features/actas/pages/AccionesSugeridas.jsx'
+import VerificarActa from '../features/actas/pages/VerificarActa.jsx'
+import MiActa from '../features/actas/pages/MiActa.jsx'
+import MiAutoevaluacion from '../features/calificaciones/pages/MiAutoevaluacion.jsx'
+import PanelProgramas from '../features/kpis/pages/PanelProgramas.jsx'
 import CalificarDocente from '../features/calificaciones/pages/CalificarDocente.jsx'
 import Agenda from '../features/agenda/pages/Agenda.jsx'
 import MiCita from '../features/agenda/pages/MiCita.jsx'
@@ -42,6 +47,7 @@ function RutasDocentia() {
         <Routes>
           <Route path="/" element={<RedirigirAlInicio />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/verificar-acta/:codigo" element={<VerificarActa />} />
 
           <Route element={<ProtectedRoute />}>
             {/* Fuera del layout: con la contraseña temporal el resto de la API responde 403. */}
@@ -51,6 +57,8 @@ function RutasDocentia() {
               <Route element={<ProtectedRoute rolesPermitidos={[ROLES.DOCENTE]} />}>
                 <Route path="/mi-evaluacion" element={<MiEvaluacion />} />
                 <Route path="/mi-cita" element={<MiCita />} />
+                <Route path="/mi-autoevaluacion" element={<MiAutoevaluacion />} />
+                <Route path="/mi-acta" element={<MiActa />} />
               </Route>
 
               <Route element={<ProtectedRoute rolesPermitidos={GESTION} />}>
@@ -59,11 +67,13 @@ function RutasDocentia() {
                 <Route path="/analisis" element={<Analisis />} />
                 <Route path="/docentes" element={<Docentes />} />
                 <Route path="/docentes/:idDocente" element={<ExpedienteDocente />} />
-                <Route path="/docentes/:idDocente/calificar" element={<CalificarDocente />} />
+                <Route path="/acciones-sugeridas" element={<AccionesSugeridas />} />
+                <Route path="/panel-programas" element={<PanelProgramas />} />
               </Route>
 
               <Route element={<ProtectedRoute rolesPermitidos={[ROLES.COORDINADOR]} />}>
                 <Route path="/agenda" element={<Agenda />} />
+                <Route path="/docentes/:idDocente/calificar" element={<CalificarDocente />} />
               </Route>
 
               <Route element={<ProtectedRoute rolesPermitidos={[ROLES.VICERRECTOR]} />}>

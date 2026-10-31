@@ -22,3 +22,25 @@ export function listarComentariosFiltrados(idSolicitud) {
 export function validarHallazgo(idHallazgo) {
   return api.post(`/analisis-ia/hallazgos/${encodeURIComponent(idHallazgo)}/validacion`)
 }
+
+export function descartarHallazgo(idHallazgo, motivo) {
+  return api.post(`/analisis-ia/hallazgos/${encodeURIComponent(idHallazgo)}/descarte`, { motivo: motivo || null })
+}
+
+export function editarHallazgo(idHallazgo, texto) {
+  return api.put(`/analisis-ia/hallazgos/${encodeURIComponent(idHallazgo)}`, { texto })
+}
+
+export function listarVersionesHallazgo(idHallazgo) {
+  return api.get(`/analisis-ia/hallazgos/${encodeURIComponent(idHallazgo)}/versiones`)
+}
+
+/** Cierra la revisión: desde aquí el docente ve los hallazgos incluidos. */
+export function publicarRevision(idSolicitud) {
+  return api.post(`/analisis-ia/solicitudes/${encodeURIComponent(idSolicitud)}/publicacion`)
+}
+
+/** Hallazgos publicados del docente autenticado. */
+export function obtenerResultadoPropio() {
+  return api.get('/analisis-ia/resultados/propio')
+}

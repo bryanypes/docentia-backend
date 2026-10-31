@@ -27,8 +27,8 @@ function cumpleEstado(promedio, estado, miFuente) {
   if (!estado) return true
   if (!promedio) return false
   if (estado === ESTADOS.COMPLETOS) return promedio.estado === 'COMPLETO'
-  if (estado === ESTADOS.INCOMPLETOS) return promedio.estado === 'INCOMPLETO'
-  return promedio.fuentesPendientes.includes(miFuente)
+  if (estado === ESTADOS.INCOMPLETOS) return promedio.estado !== 'COMPLETO'
+  return Boolean(miFuente) && promedio.fuentesPendientes.includes(miFuente)
 }
 
 /**
@@ -111,7 +111,7 @@ export default function Docentes() {
               <strong>
                 {faltanMias === 1 ? '1 docente espera' : `${faltanMias} docentes esperan`} tu calificación
               </strong>{' '}
-              de {ETIQUETA_FUENTE[miFuente].toLowerCase()} en {periodo.nombre}.
+              de {ETIQUETA_FUENTE[miFuente]?.toLowerCase()} en {periodo.nombre}.
             </span>
             <Boton variante="contorno" onClick={() => setEstado(ESTADOS.FALTA_MI_NOTA)}>
               Ver solo esos

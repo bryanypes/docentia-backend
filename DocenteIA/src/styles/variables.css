@@ -63,18 +63,20 @@
   --color-error-fondo: #fbede9;
   --color-error-borde: #e5b4a6;
 
-  /* Niveles de desempeño (con texto: Excelente, Bueno, Aceptable, Bajo) */
-  --color-nivel-excelente: var(--color-exito);
-  --color-nivel-bueno: var(--color-azul);
+  /* Niveles de desempeño de la Resolución 074 (siempre con su texto) */
+  --color-nivel-muy-alto: var(--color-exito);
+  --color-nivel-alto: var(--color-azul);
   --color-nivel-aceptable: #7f9bce;
-  --color-nivel-bajo: var(--color-error);
+  --color-nivel-bajo: #b7791f;
+  --color-nivel-muy-bajo: var(--color-error);
 
   /* Gráficas: niveles de desempeño. Validados con dataviz/validate_palette.js (CVD y visión normal);
      el amarillo tiene poco contraste con el blanco, así que siempre va con su etiqueta y su valor. */
-  --grafico-excelente: #1b7f43;
-  --grafico-bueno: #2f6fd6;
+  --grafico-muy-alto: #1b7f43;
+  --grafico-alto: #2f6fd6;
   --grafico-aceptable: #d4a90f;
-  --grafico-bajo: #c0392b;
+  --grafico-bajo: #d9742b;
+  --grafico-muy-bajo: #a33116;
 
   /* Tipografía */
   --fuente-base: 'Nunito', system-ui, sans-serif;

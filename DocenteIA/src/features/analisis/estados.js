@@ -22,6 +22,14 @@ export const ESTADOS_HALLAZGO = {
   PENDIENTE_VALIDACION: { etiqueta: 'Pendiente de validar', clase: 'info' },
   SIN_CITA_VERIFICADA: { etiqueta: 'Sin cita verificada', clase: 'error' },
   VALIDADO: { etiqueta: 'Validado', clase: 'exito' },
+  DESCARTADO: { etiqueta: 'Descartado', clase: 'neutro' },
+}
+
+export const ETIQUETA_VERSION = {
+  GENERADO: 'Generado por el modelo',
+  INCLUIDO: 'Incluido',
+  DESCARTADO: 'Descartado',
+  EDITADO: 'Texto editado',
 }
 
 export const TIPOS_HALLAZGO = [

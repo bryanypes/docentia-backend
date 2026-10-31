@@ -96,3 +96,24 @@
   font-size: 12.5px;
   font-weight: var(--peso-semi);
 }
+
+.analisis__edicion {
+  display: grid;
+  gap: 8px;
+  justify-items: start;
+  margin-top: 8px;
+}
+
+.analisis__edicion .campo {
+  width: 100%;
+}
+
+.analisis__versiones {
+  margin: 8px 0 0;
+  padding-left: 18px;
+  font-size: 13px;
+}
+
+.analisis__versiones p {
+  margin: 2px 0 0;
+}

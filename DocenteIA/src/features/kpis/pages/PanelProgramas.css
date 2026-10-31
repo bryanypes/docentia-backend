@@ -1,0 +1,19 @@
+.panel-programas__filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.panel-programas__datos {
+  margin: 0 0 8px;
+  font-size: 14px;
+}
+
+.panel-programas__conteos {
+  display: grid;
+  gap: 2px;
+  margin: 8px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 13px;
+}

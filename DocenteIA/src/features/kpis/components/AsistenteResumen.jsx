@@ -6,7 +6,6 @@ import robotSaludo from '../../../assets/ilustraciones/robot-saludo.svg'
 import robotSenala from '../../../assets/ilustraciones/robot-senala.svg'
 import { ETIQUETA_FUENTE } from '../../../shared/constants/dominio.js'
 import { formatearFecha, formatearNota } from '../../../shared/utils/formatters.js'
-import { UMBRAL_ATENCION } from '../seguimiento.js'
 import './AsistenteResumen.css'
 
 const MS_POR_DIA = 24 * 60 * 60 * 1000
@@ -51,10 +50,10 @@ function armarResumen({ analisis, miFuente, recoleccion }) {
   if (atencion.length > 0) {
     mensajes.push({
       Icono: HeartHandshake,
-      texto: `${atencion.length === 1 ? '1 docente tiene' : `${atencion.length} docentes tienen`} promedio menor a ${formatearNota(UMBRAL_ATENCION)}: buen momento para acordar un compromiso de mejora.`,
+      texto: `${atencion.length === 1 ? '1 docente tiene' : `${atencion.length} docentes tienen`} promedio menor a ${formatearNota(analisis.umbral)}: buen momento para acordar un compromiso de mejora.`,
     })
   } else if (completos > 0) {
-    mensajes.push({ Icono: HeartHandshake, texto: `Ningún docente evaluado está por debajo de ${formatearNota(UMBRAL_ATENCION)}.` })
+    mensajes.push({ Icono: HeartHandshake, texto: `Ningún docente evaluado está por debajo de ${formatearNota(analisis.umbral)}.` })
   }
 
   if (recoleccion?.fechaCierre) {
