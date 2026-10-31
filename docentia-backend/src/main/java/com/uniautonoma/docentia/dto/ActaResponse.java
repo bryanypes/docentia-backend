@@ -33,6 +33,15 @@ public record ActaResponse(
     String motivoCorreccion) {
 
   public static ActaResponse desde(Acta acta) {
+    return desde(acta, false);
+  }
+
+  /** Vista del docente: una nota parcial no se le muestra (A4). */
+  public static ActaResponse paraDocente(Acta acta) {
+    return desde(acta, acta.getEstadoPromedio() != EstadoPromedio.COMPLETO);
+  }
+
+  private static ActaResponse desde(Acta acta, boolean ocultarNota) {
     return new ActaResponse(
         acta.getIdActa(),
         acta.getDocente().getIdUsuario(),
@@ -40,9 +49,9 @@ public record ActaResponse(
         PeriodoResumenResponse.desde(acta.getPeriodo()),
         acta.getVersion(),
         acta.getEstado(),
-        acta.getPromedio(),
+        ocultarNota ? null : acta.getPromedio(),
         acta.getEstadoPromedio(),
-        CategoriaResponse.desde(acta.getCategoria()),
+        ocultarNota ? null : CategoriaResponse.desde(acta.getCategoria()),
         acta.getUmbralCompromisos(),
         acta.requiereCompromisos(),
         acta.getCompromisos().stream().map(CompromisoActa::desde).toList(),
