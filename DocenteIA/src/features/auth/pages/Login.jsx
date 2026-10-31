@@ -1,4 +1,5 @@
 import { ArrowRight, CircleAlert, Eye, EyeOff, Info, Lock, Mail } from 'lucide-react'
+import { GoogleLogin } from '@react-oauth/google'
 import { useRef, useState } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
 import robotError from '../../../assets/ilustraciones/robot-error.svg'
@@ -15,10 +16,12 @@ import './Login.css'
 
 const CAMPOS = ['correo', 'contrasena']
 
+const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim() ?? ''
+
 
 export default function Login() {
   useTituloDocumento('Iniciar sesión')
-  const { usuario, validando, motivoCierre, entrar } = useSesion()
+  const { usuario, validando, motivoCierre, entrar, entrarConGoogle } = useSesion()
   const ubicacion = useLocation()
 
   const [formulario, setFormulario] = useState({ correo: '', contrasena: '' })
@@ -54,6 +57,27 @@ export default function Login() {
   function enfocar(campo) {
     const ref = campo === 'correo' ? refCorreo : refContrasena
     ref.current?.focus()
+  }
+
+  async function manejarGoogle(credentialResponse) {
+    const idToken = credentialResponse?.credential
+    if (!idToken) {
+      setErrorEnvio({ message: 'No se pudo completar el inicio de sesión con Google.' })
+      return
+    }
+    setEnviando(true)
+    setErrorEnvio(null)
+    try {
+      await entrarConGoogle(idToken)
+    } catch (fallo) {
+      setErrorEnvio(fallo)
+      setEnviando(false)
+    }
+  }
+
+  function manejarErrorGoogle() {
+    setErrorEnvio({ message: 'No se pudo iniciar sesión con Google. Inténtalo de nuevo.' })
+    setEnviando(false)
   }
 
   async function manejarEnvio(evento) {
@@ -190,6 +214,26 @@ export default function Login() {
           {enviando ? 'Ingresando…' : 'Ingresar'}
           {!enviando && <ArrowRight size={18} strokeWidth={2.25} aria-hidden="true" className="login__flecha" />}
         </Boton>
+
+        {googleClientId && (
+          <>
+            <p className="login__separador" role="presentation">
+              <span>o</span>
+            </p>
+            <div className="login__google" aria-busy={enviando}>
+              <GoogleLogin
+                onSuccess={manejarGoogle}
+                onError={manejarErrorGoogle}
+                text="continue_with"
+                locale="es"
+                width="100%"
+              />
+            </div>
+            <p className="login__google-ayuda">
+              Solo cuentas <strong>@uniautonoma.edu.co</strong> registradas en DOCENTIA.
+            </p>
+          </>
+        )}
 
         <p className="login__olvido">
           <strong>¿Olvidaste tu contraseña?</strong> Pide una nueva a la Vicerrectoría académica.

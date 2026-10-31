@@ -36,7 +36,7 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 @Configuration
 @EnableMethodSecurity
-@EnableConfigurationProperties({JwtProperties.class, CorsProperties.class})
+@EnableConfigurationProperties({JwtProperties.class, CorsProperties.class, GoogleProperties.class})
 public class SecurityConfig {
 
   private final ObjectMapper objectMapper;
@@ -56,6 +56,8 @@ public class SecurityConfig {
             peticiones ->
                 peticiones
                     .requestMatchers(HttpMethod.POST, "/sesiones")
+                    .permitAll()
+                    .requestMatchers(HttpMethod.POST, "/sesiones/google")
                     .permitAll()
                     // Lo único que puede hacer una sesión con la contraseña temporal.
                     .requestMatchers(HttpMethod.GET, "/sesiones/actual")

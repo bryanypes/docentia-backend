@@ -1,6 +1,7 @@
 package com.uniautonoma.docentia.controller;
 
 import com.uniautonoma.docentia.dto.CambioContrasenaRequest;
+import com.uniautonoma.docentia.dto.InicioSesionGoogleRequest;
 import com.uniautonoma.docentia.dto.InicioSesionRequest;
 import com.uniautonoma.docentia.dto.SesionResponse;
 import com.uniautonoma.docentia.security.UsuarioSesion;
@@ -37,6 +38,20 @@ public class SesionController {
   @ResponseStatus(HttpStatus.CREATED)
   public SesionResponse iniciarSesion(@Valid @RequestBody InicioSesionRequest solicitud) {
     return autenticacionService.iniciarSesion(solicitud);
+  }
+
+  /**
+   * Abre una sesión con Google. El correo del token debe ser {@code @uniautonoma.edu.co} y existir
+   * en DOCENTIA.
+   *
+   * @param solicitud ID token de Google
+   * @return token JWT y datos del usuario con su alcance
+   */
+  @PostMapping("/google")
+  @ResponseStatus(HttpStatus.CREATED)
+  public SesionResponse iniciarSesionConGoogle(
+      @Valid @RequestBody InicioSesionGoogleRequest solicitud) {
+    return autenticacionService.iniciarSesionConGoogle(solicitud);
   }
 
   /**
