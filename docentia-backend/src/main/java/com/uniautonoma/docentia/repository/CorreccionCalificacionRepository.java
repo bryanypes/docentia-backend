@@ -2,6 +2,7 @@ package com.uniautonoma.docentia.repository;
 
 import com.uniautonoma.docentia.entity.CorreccionCalificacion;
 import java.util.List;
+import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -26,4 +27,8 @@ public interface CorreccionCalificacionRepository
       order by c.fechaCorreccion desc, c.idCorreccion desc
       """)
   List<CorreccionCalificacion> buscarPorDocente(Long idDocente, Long idPeriodo);
+
+  Optional<CorreccionCalificacion>
+      findFirstByDocenteIdUsuarioAndPeriodoIdPeriodoOrderByIdCorreccionDesc(
+          Long idDocente, Long idPeriodo);
 }
