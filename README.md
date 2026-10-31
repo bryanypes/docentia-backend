@@ -21,7 +21,14 @@ docker compose up --build -d
 | API        | <http://localhost:8080/api>   |
 | PostgreSQL | `localhost:5433`              |
 
-Los usuarios de demo están en `docentia-backend/README.md`; su contraseña es `Docentia2026*`.
+Los usuarios de demo están en `docentia-backend/README.md`; su contraseña es `Docentia2026*`. Para
+el flujo de actas, entra con `coordinacion.ingenieria@uniautonoma.edu.co` y `nora.munoz@uniautonoma.edu.co`,
+y para correcciones con `vicerrectoria@uniautonoma.edu.co`.
+
+En desarrollo sin Docker, el frontend apunta al backend con `DOCENTIA_API_URL`
+(`DOCENTIA_API_URL=http://localhost:8081 npm run dev`). El backend usa el perfil `dev` para cargar
+los datos de ejemplo. `DOCENTIA_COMPROMISOS_UMBRAL` y `DOCENTIA_ACTAS_ROL_CORRECTOR` configuran las
+reglas de la Resolución 074.
 
 ```bash
 docker compose logs -f api   # ver el arranque del backend
@@ -32,8 +39,9 @@ docker compose down -v       # apagar y borrar los datos; al subir vuelve el see
 Si algún puerto está ocupado, copia `.env.example` como `.env` y cambia `POSTGRES_PORT`, `API_PORT`
 o `WEB_PORT`. El archivo `.env` no se sube al repositorio.
 
-El recorrido de demo está en `DocenteIA/docs/checklist-demo-sprint3.md`, y el contrato de la API en
-`docentia-backend/docs/`.
+El recorrido de demo está en `DocenteIA/docs/checklist-demo-sprint3.md` y el contrato de la API en
+`docentia-backend/docs/`. Las decisiones y la trazabilidad con la Resolución 074 están en
+`docentia-backend/docs/DECISIONES.md` y `docentia-backend/docs/RES074-TRAZABILIDAD.md`.
 
 ## Ramas
 
