@@ -1,0 +1,7 @@
+# Valores de ejemplo del entorno local, sin uso fuera de una máquina de desarrollo.
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Valores de desarrollo documentados"
+regexes = ['''secreto-de-desarrollo-local[-a-z0-9]*''', '''Docentia2026\*''']

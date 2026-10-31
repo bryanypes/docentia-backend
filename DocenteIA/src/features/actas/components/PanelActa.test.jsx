@@ -55,6 +55,18 @@ describe('PanelActa', () => {
     expect(firmarActa).toHaveBeenCalledWith(7)
   })
 
+  it('un doble clic en firmar envía una sola vez', async () => {
+    listarActas.mockResolvedValue([ACTA])
+    let terminar
+    firmarActa.mockReturnValue(new Promise((resolver) => (terminar = resolver)))
+    renderizarConSesion(<PanelActa idDocente={3} />)
+    await userEvent.click(await screen.findByRole('checkbox'))
+    const boton = screen.getByRole('button', { name: 'Firmar acta' })
+    await userEvent.dblClick(boton)
+    expect(firmarActa).toHaveBeenCalledTimes(1)
+    terminar(ACTA)
+  })
+
   it('muestra el 409 de firma sin cita', async () => {
     listarActas.mockResolvedValue([ACTA])
     firmarActa.mockRejectedValue(new ApiError(409, 'El docente no tiene una cita agendada'))

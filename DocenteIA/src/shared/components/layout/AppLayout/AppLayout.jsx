@@ -1,3 +1,4 @@
+import { Campana } from '../../../../features/notificaciones/components/Campana.jsx'
 import { useEffect, useMemo, useRef } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
 import {
@@ -54,6 +55,7 @@ export function AppLayout() {
       <div className="app-layout">
         <Sidebar />
         <main id="contenido" ref={principal} tabIndex={-1} className="app-layout__principal">
+          <Campana />
           <Outlet />
         </main>
       </div>

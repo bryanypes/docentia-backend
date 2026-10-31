@@ -15,6 +15,7 @@ import {
   MessagesSquare,
   PenLine,
   Scale,
+  ScrollText,
   UserCog,
   Users,
 } from 'lucide-react'
@@ -54,6 +55,7 @@ const NAVEGACION = {
     { ruta: '/facultades', etiqueta: 'Facultades', Icono: Building2 },
     { ruta: '/programas', etiqueta: 'Programas', Icono: BookOpen },
     { ruta: '/usuarios', etiqueta: 'Usuarios', Icono: UserCog },
+    { ruta: '/auditoria', etiqueta: 'Auditoría', Icono: ScrollText },
   ],
 }
 

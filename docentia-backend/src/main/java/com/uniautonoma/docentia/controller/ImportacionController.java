@@ -3,7 +3,9 @@ package com.uniautonoma.docentia.controller;
 import com.uniautonoma.docentia.dto.ImportacionResponse;
 import com.uniautonoma.docentia.dto.ReporteImportacionResponse;
 import com.uniautonoma.docentia.dto.ResultadoImportacionResponse;
+import com.uniautonoma.docentia.entity.AccionAuditoria;
 import com.uniautonoma.docentia.security.UsuarioSesion;
+import com.uniautonoma.docentia.service.AuditoriaService;
 import com.uniautonoma.docentia.service.importacion.ImportacionService;
 import java.util.List;
 import org.springframework.http.HttpStatus;
@@ -25,8 +27,10 @@ import org.springframework.web.multipart.MultipartFile;
 public class ImportacionController {
 
   private final ImportacionService importacionService;
+  private final AuditoriaService auditoria;
 
-  public ImportacionController(ImportacionService importacionService) {
+  public ImportacionController(ImportacionService importacionService, AuditoriaService auditoria) {
+    this.auditoria = auditoria;
     this.importacionService = importacionService;
   }
 
@@ -67,6 +71,14 @@ public class ImportacionController {
       @AuthenticationPrincipal UsuarioSesion sesion) {
     ResultadoImportacionResponse resultado =
         importacionService.importar(archivo, mapeo, plantilla, sesion);
+    auditoria.registrar(
+        AccionAuditoria.IMPORTACION_CSV,
+        "IMPORTACION",
+        null,
+        sesion.idUsuario(),
+        sesion.correo(),
+        sesion.rol().name(),
+        resultado.fueExitosa() ? AuditoriaService.EXITO : AuditoriaService.FALLO);
     HttpStatus estado = resultado.fueExitosa() ? HttpStatus.OK : HttpStatus.UNPROCESSABLE_ENTITY;
     return ResponseEntity.status(estado).body(resultado);
   }

@@ -83,12 +83,16 @@ export async function peticion(ruta, { metodo = 'GET', cuerpo, publica = false, 
   if (respuesta.status === 401 && !publica) alExpirarSesion()
   // Un 5xx sin cuerpo JSON no viene de la API sino del proxy o del balanceador: el servidor no está arriba.
   const sinServidor = respuesta.status >= 500 && !datos
+  const mensaje =
+    datos?.mensaje ??
+    (sinServidor
+      ? 'El servidor de DOCENTIA no está disponible en este momento. Intenta de nuevo en unos minutos.'
+      : 'Ocurrió un error inesperado. Intenta de nuevo.')
+  // Con este código soporte encuentra la petición en los logs.
+  const codigo = respuesta.status >= 500 ? (datos?.correlationId ?? respuesta.headers?.get?.('X-Correlation-Id')) : null
   throw new ApiError(
     respuesta.status,
-    datos?.mensaje ??
-      (sinServidor
-        ? 'El servidor de DOCENTIA no está disponible en este momento. Intenta de nuevo en unos minutos.'
-        : 'Ocurrió un error inesperado. Intenta de nuevo.'),
+    codigo ? `${mensaje} Código de soporte: ${codigo}` : mensaje,
     datos?.errores ?? {},
     datos,
   )

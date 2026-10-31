@@ -1,5 +1,7 @@
 # DOCENTIA — frontend
 
+[![CI](https://github.com/vXro1/DocenteIA/actions/workflows/ci.yml/badge.svg)](https://github.com/vXro1/DocenteIA/actions/workflows/ci.yml)
+
 Sistema de evaluación docente de la Corporación Universitaria Autónoma del Cauca.
 
 Este repositorio es la aplicación web. La API REST está en
