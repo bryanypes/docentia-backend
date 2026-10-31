@@ -12,4 +12,5 @@ public record VentanaEtapaResponse(
     String nombreEtapa,
     LocalDate fechaApertura,
     LocalDate fechaCierre,
-    boolean abierta) {}
+    boolean abierta,
+    String semanasResolucion) {}

@@ -41,7 +41,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional
 public class FranjaService {
 
-  private static final LocalTime ULTIMO_INICIO = LocalTime.of(23, 30);
+  private static final LocalTime ULTIMO_INICIO = LocalTime.of(23, 0);
 
   private final FranjaHorariaRepository franjaRepository;
   private final CitaRepository citaRepository;
@@ -244,10 +244,12 @@ public class FranjaService {
       return Optional.of("La hora de inicio debe ser en minutos exactos");
     }
     if (!solicitud
-            .horaFin()
-            .equals(solicitud.horaInicio().plusMinutes(FranjaHoraria.DURACION_MINUTOS))
-        || solicitud.horaInicio().isAfter(ULTIMO_INICIO)) {
+        .horaFin()
+        .equals(solicitud.horaInicio().plusMinutes(FranjaHoraria.DURACION_MINUTOS))) {
       return Optional.of("La franja debe durar exactamente 30 minutos dentro del mismo día");
+    }
+    if (solicitud.horaInicio().isAfter(ULTIMO_INICIO)) {
+      return Optional.of("La última franja del día empieza a las 23:00 y termina a las 23:30");
     }
     if (solicitud.fecha().isBefore(ventanaEtapaService.hoy())) {
       return Optional.of("No se pueden abrir franjas en fechas pasadas");

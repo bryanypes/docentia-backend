@@ -77,7 +77,7 @@ public class Hallazgo {
 
   /** Deja el estado según las citas; un hallazgo sin citas también queda sin cita verificada. */
   public void actualizarEstadoSegunCitas() {
-    if (estado != EstadoHallazgo.VALIDADO) {
+    if (estado != EstadoHallazgo.VALIDADO && estado != EstadoHallazgo.DESCARTADO) {
       estado =
           tieneCitaVerificada()
               ? EstadoHallazgo.PENDIENTE_VALIDACION
@@ -103,6 +103,17 @@ public class Hallazgo {
       validador = quien;
       fechaValidacion = LocalDateTime.now();
     }
+  }
+
+  /** Lo excluye del resultado; se puede volver a incluir mientras no se publique. */
+  public void descartar() {
+    estado = EstadoHallazgo.DESCARTADO;
+    validador = null;
+    fechaValidacion = null;
+  }
+
+  public void editarTexto(String texto) {
+    this.texto = texto;
   }
 
   public Usuario getValidador() {

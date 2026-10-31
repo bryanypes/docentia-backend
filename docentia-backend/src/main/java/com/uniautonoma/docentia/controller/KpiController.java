@@ -1,6 +1,7 @@
 package com.uniautonoma.docentia.controller;
 
 import com.uniautonoma.docentia.dto.KpisResponse;
+import com.uniautonoma.docentia.dto.PanelIndicadoresResponse;
 import com.uniautonoma.docentia.security.UsuarioSesion;
 import com.uniautonoma.docentia.service.KpiService;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -36,5 +37,21 @@ public class KpiController {
       @RequestParam(required = false) Long facultadId,
       @AuthenticationPrincipal UsuarioSesion sesion) {
     return kpiService.calcular(periodoId, facultadId, sesion);
+  }
+
+  /**
+   * Panel agregado por programa, sin datos individuales.
+   *
+   * @param periodoId identificador del periodo, o el activo si se omite
+   * @param facultadId filtro del vicerrector; al coordinador se le aplica su facultad
+   * @param sesion usuario autenticado
+   * @return cobertura, promedio y distribución por programa y total
+   */
+  @GetMapping("/panel")
+  public PanelIndicadoresResponse obtenerPanel(
+      @RequestParam(required = false) Long periodoId,
+      @RequestParam(required = false) Long facultadId,
+      @AuthenticationPrincipal UsuarioSesion sesion) {
+    return kpiService.armarPanel(periodoId, facultadId, sesion);
   }
 }

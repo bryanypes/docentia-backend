@@ -81,4 +81,8 @@ public class PromedioDocente {
   public LocalDateTime getFechaCalculo() {
     return fechaCalculo;
   }
+
+  public Usuario getDocente() {
+    return docente;
+  }
 }
