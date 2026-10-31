@@ -1,0 +1,189 @@
+.asistente {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 26px;
+  padding: 22px 26px;
+  overflow: hidden;
+  border: 1px solid var(--color-borde-suave);
+  border-radius: 20px;
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-tarjeta);
+}
+
+/* El robot es el protagonista: grande, con aro amarillo y flotando */
+.asistente__robot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 150px;
+  height: 150px;
+  border: 5px solid var(--color-amarillo);
+  border-radius: 50%;
+  background: var(--color-crema);
+  box-shadow: 0 14px 30px -18px rgba(5, 54, 134, 0.45);
+  animation: asistente-flotar 5s ease-in-out infinite;
+}
+
+.asistente__robot img {
+  width: 108px;
+  height: auto;
+  animation: asistente-aparecer 0.4s ease-out both;
+}
+
+/* Globo de diálogo con su colita hacia el robot */
+.asistente__globo {
+  position: relative;
+  padding: 18px 20px;
+  border: 1px solid var(--color-borde);
+  border-radius: 16px;
+  background: var(--color-superficie);
+}
+
+.asistente__globo::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: -9px;
+  width: 16px;
+  height: 16px;
+  border-bottom: 1px solid var(--color-borde);
+  border-left: 1px solid var(--color-borde);
+  background: var(--color-superficie);
+  transform: translateY(-50%) rotate(45deg);
+}
+
+.asistente__etiqueta {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: var(--radio-pildora);
+  background: var(--color-alerta-fondo);
+  color: var(--color-alerta-texto);
+  font-size: 12px;
+  font-weight: var(--peso-semi);
+}
+
+.asistente__saludo {
+  margin-top: 8px;
+  font-size: 19px;
+  font-weight: var(--peso-fuerte);
+  letter-spacing: -0.01em;
+}
+
+.asistente__mensajes {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px 18px;
+  padding: 0;
+  margin: 12px 0 0;
+  list-style: none;
+}
+
+.asistente__mensajes li {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--color-texto-secundario);
+}
+
+.asistente__mensajes svg {
+  flex: 0 0 auto;
+  margin-top: 2px;
+  color: var(--color-azul);
+}
+
+.asistente__mensaje--destacado {
+  font-weight: var(--peso-semi);
+  color: var(--color-texto);
+}
+
+.asistente__mensaje--destacado svg {
+  color: var(--color-amarillo-oscuro);
+}
+
+.asistente__pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  margin-top: 14px;
+}
+
+.asistente__accion {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: 10px;
+  background: var(--color-azul);
+  color: var(--color-crema);
+  font-size: 14px;
+  font-weight: var(--peso-semi);
+}
+
+.asistente__accion:hover {
+  background: var(--color-azul-oscuro);
+  color: var(--color-crema);
+  text-decoration: none;
+}
+
+.asistente__nota {
+  font-size: 12px;
+  color: var(--color-texto-tenue);
+}
+
+@keyframes asistente-flotar {
+  0%,
+  100% {
+    translate: 0 0;
+  }
+  50% {
+    translate: 0 -6px;
+  }
+}
+
+@keyframes asistente-aparecer {
+  from {
+    opacity: 0;
+    transform: scale(0.85) rotate(-6deg);
+  }
+}
+
+@media (max-width: 900px) {
+  .asistente {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    padding: 20px 16px;
+  }
+
+  .asistente__robot {
+    width: 120px;
+    height: 120px;
+  }
+
+  .asistente__robot img {
+    width: 86px;
+  }
+
+  .asistente__globo {
+    justify-self: stretch;
+  }
+
+  /* En columna, la colita apunta hacia arriba, al robot */
+  .asistente__globo::before {
+    top: -9px;
+    left: 50%;
+    transform: translateX(-50%) rotate(135deg);
+  }
+
+  .asistente__mensajes {
+    grid-template-columns: 1fr;
+  }
+}

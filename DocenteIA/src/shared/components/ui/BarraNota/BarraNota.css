@@ -1,0 +1,41 @@
+.barra-nota {
+  position: relative;
+  overflow: hidden;
+  background: var(--color-borde-suave);
+  border-radius: 5px;
+}
+
+.barra-nota--fina {
+  height: 5px;
+}
+
+.barra-nota--media {
+  height: 9px;
+}
+
+.barra-nota--gruesa {
+  height: 12px;
+}
+
+.barra-nota__relleno {
+  height: 100%;
+  border-radius: inherit;
+  transform-origin: left;
+  animation: crecer 0.7s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+.barra-nota__relleno--excelente {
+  background: var(--color-nivel-excelente);
+}
+
+.barra-nota__relleno--bueno {
+  background: var(--color-nivel-bueno);
+}
+
+.barra-nota__relleno--aceptable {
+  background: var(--color-nivel-aceptable);
+}
+
+.barra-nota__relleno--bajo {
+  background: var(--color-nivel-bajo);
+}

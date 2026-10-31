@@ -1,0 +1,84 @@
+/* Encabezado de página: fondo blanco liso con un filete inferior. El color de marca va solo en la
+   ruta (azul) y en el periodo; nada de velos ni tramas. */
+.encabezado {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: var(--espacio-5);
+  padding: 26px var(--espacio-7) 22px;
+  color: var(--color-texto);
+  background: var(--color-superficie);
+  border-bottom: 1px solid var(--color-borde);
+}
+
+.encabezado__textos {
+  min-width: 0;
+}
+
+.encabezado__miga {
+  margin-bottom: 6px;
+  font-size: 11.5px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  font-weight: var(--peso-semi);
+  color: var(--color-azul);
+}
+
+.encabezado__titulo {
+  font-size: 30px;
+  font-weight: var(--peso-fuerte);
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+}
+
+.encabezado__subtitulo {
+  max-width: 62ch;
+  margin-top: 8px;
+  font-size: 14.5px;
+  line-height: 1.45;
+  color: var(--color-texto-tenue);
+  text-wrap: pretty;
+}
+
+.encabezado__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.encabezado__periodo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--alto-tactil);
+  padding: 0 14px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-pildora);
+  background: var(--color-superficie);
+  box-shadow: 0 1px 2px rgba(30, 30, 30, 0.04);
+}
+
+.encabezado__periodo span {
+  font-size: 11.5px;
+  font-weight: var(--peso-semi);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-texto-tenue);
+}
+
+.encabezado__periodo strong {
+  font-size: 14px;
+  font-weight: var(--peso-fuerte);
+}
+
+@media (max-width: 900px) {
+  .encabezado {
+    padding: 18px 16px;
+  }
+
+  .encabezado__titulo {
+    font-size: 24px;
+  }
+}
