@@ -44,6 +44,10 @@ public class PromedioDocente {
   @Column(nullable = false, length = 20)
   private EstadoPromedio estado;
 
+  @Enumerated(EnumType.STRING)
+  @Column(length = 20)
+  private CategoriaDesempeno categoria;
+
   @Convert(converter = FuentesPendientesConverter.class)
   @Column(length = 100)
   private List<FuenteEvaluacion> fuentesPendientes;
@@ -64,6 +68,10 @@ public class PromedioDocente {
 
   public EstadoPromedio getEstado() {
     return estado;
+  }
+
+  public CategoriaDesempeno getCategoria() {
+    return categoria;
   }
 
   public List<FuenteEvaluacion> getFuentesPendientes() {

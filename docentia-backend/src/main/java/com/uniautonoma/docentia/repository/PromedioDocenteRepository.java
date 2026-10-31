@@ -50,16 +50,23 @@ public interface PromedioDocenteRepository extends JpaRepository<PromedioDocente
       value =
           """
           insert into promedios_docente
-              (id_docente, id_periodo, valor, estado, fuentes_pendientes, fecha_calculo)
+              (id_docente, id_periodo, valor, estado, categoria, fuentes_pendientes, fecha_calculo)
           values (:idDocente, :idPeriodo, cast(:valor as numeric), :estado,
+                  cast(:categoria as varchar),
                   cast(:fuentesPendientes as varchar), clock_timestamp())
           on conflict (id_docente, id_periodo) do update set
               valor = excluded.valor,
               estado = excluded.estado,
+              categoria = excluded.categoria,
               fuentes_pendientes = excluded.fuentes_pendientes,
               fecha_calculo = excluded.fecha_calculo
           """,
       nativeQuery = true)
   void guardar(
-      Long idDocente, Long idPeriodo, BigDecimal valor, String estado, String fuentesPendientes);
+      Long idDocente,
+      Long idPeriodo,
+      BigDecimal valor,
+      String estado,
+      String categoria,
+      String fuentesPendientes);
 }

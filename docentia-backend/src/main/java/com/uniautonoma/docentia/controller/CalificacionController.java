@@ -66,38 +66,6 @@ public class CalificacionController {
   }
 
   /**
-   * Consulta la calificación que vicerrectoría ya registró para el docente.
-   *
-   * @param idDocente identificador del docente
-   * @param sesion vicerrector autenticado
-   * @return la calificación, o 204 si todavía no existe
-   */
-  @GetMapping("/vicerrectoria")
-  @PreAuthorize("hasRole('VICERRECTOR')")
-  public ResponseEntity<CalificacionResponse> obtenerCalificacionVicerrectoria(
-      @PathVariable Long idDocente, @AuthenticationPrincipal UsuarioSesion sesion) {
-    return responder(idDocente, FuenteEvaluacion.VICERRECTORIA, sesion);
-  }
-
-  /**
-   * Registra o reemplaza la calificación de vicerrectoría del docente, sin restricción de facultad.
-   *
-   * @param idDocente identificador del docente
-   * @param solicitud notas de los cinco aspectos y observación opcional
-   * @param sesion vicerrector autenticado
-   * @return la calificación guardada
-   */
-  @PutMapping("/vicerrectoria")
-  @PreAuthorize("hasRole('VICERRECTOR')")
-  public CalificacionResponse calificarComoVicerrectoria(
-      @PathVariable Long idDocente,
-      @Valid @RequestBody CalificacionRequest solicitud,
-      @AuthenticationPrincipal UsuarioSesion sesion) {
-    return calificacionService.calificarDocente(
-        idDocente, FuenteEvaluacion.VICERRECTORIA, solicitud, sesion);
-  }
-
-  /**
    * Lista las correcciones de notas del docente: qué cambió, quién, cuándo y cómo movió el
    * promedio.
    *

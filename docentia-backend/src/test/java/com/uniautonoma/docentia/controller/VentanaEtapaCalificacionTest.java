@@ -48,7 +48,7 @@ class VentanaEtapaCalificacionTest extends PruebaIntegracion {
     escenario.crearPeriodoActivoConRecoleccion("2026-2", HOY, HOY);
 
     calificar(coordinador, "coordinacion").andExpect(status().isOk());
-    calificar(vicerrector, "vicerrectoria").andExpect(status().isOk());
+    calificar(docente, "autoevaluacion").andExpect(status().isOk());
   }
 
   @Test
@@ -74,7 +74,7 @@ class VentanaEtapaCalificacionTest extends PruebaIntegracion {
   void despuesDeLaRecoleccionTampocoCalificaElVicerrector() throws Exception {
     escenario.crearPeriodoActivoConRecoleccion("2026-2", HOY.minusDays(10), HOY.minusDays(1));
 
-    calificar(vicerrector, "vicerrectoria").andExpect(status().isConflict());
+    calificar(docente, "autoevaluacion").andExpect(status().isConflict());
     assertThat(calificacionRepository.count()).isZero();
   }
 
@@ -112,7 +112,11 @@ class VentanaEtapaCalificacionTest extends PruebaIntegracion {
   private ResultActions calificar(Usuario evaluador, String fuente) throws Exception {
     BigDecimal nota = new BigDecimal("4.0");
     return mockMvc.perform(
-        put("/docentes/{id}/calificaciones/" + fuente, docente.getIdUsuario())
+        put(
+                "autoevaluacion".equals(fuente)
+                    ? "/autoevaluacion"
+                    : "/docentes/{id}/calificaciones/" + fuente,
+                docente.getIdUsuario())
             .with(como(evaluador))
             .contentType(MediaType.APPLICATION_JSON)
             .content(aJson(new CalificacionRequest(nota, nota, nota, nota, nota, null))));

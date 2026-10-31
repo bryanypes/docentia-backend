@@ -9,6 +9,6 @@ public record DimensionPorFuenteResponse(
     String nombre,
     BigDecimal notaEstudiantes,
     BigDecimal notaCoordinacion,
-    BigDecimal notaVicerrectoria,
+    BigDecimal notaAutoevaluacion,
     EstadoPromedio estado,
     BigDecimal resultado) {}

@@ -58,7 +58,7 @@ class CorreccionCalificacionTest extends PruebaIntegracion {
   @Test
   void corregirLaNotaDelCoordinadorGuardaNotasYPromediosAntesYDespues() throws Exception {
     calificacionService.registrarCalificacionEstudiantes(docente, periodo, notas("4.0"));
-    calificar(vicerrector, "vicerrectoria", "5.0", null).andExpect(status().isOk());
+    calificar(docente, "autoevaluacion", "5.0", null).andExpect(status().isOk());
     calificar(coordinador, "coordinacion", "3.0", null).andExpect(status().isOk());
     Timestamp calculoAnterior = fechaCalculo();
 
@@ -91,8 +91,8 @@ class CorreccionCalificacionTest extends PruebaIntegracion {
     mockMvc
         .perform(get(RUTA_HISTORIAL, docente.getIdUsuario()).with(comoVicerrector()))
         .andExpect(jsonPath("$", hasSize(1)))
-        .andExpect(jsonPath("$[0].promedioAnterior.estado").value("INCOMPLETO"))
-        .andExpect(jsonPath("$[0].promedioAnterior.valor").doesNotExist())
+        .andExpect(jsonPath("$[0].promedioAnterior.estado").value("PARCIAL"))
+        .andExpect(jsonPath("$[0].promedioAnterior.valor").value(3.0))
         .andExpect(jsonPath("$[0].motivo").doesNotExist());
   }
 
@@ -177,7 +177,11 @@ class CorreccionCalificacionTest extends PruebaIntegracion {
       throws Exception {
     BigDecimal valor = new BigDecimal(nota);
     return mockMvc.perform(
-        put("/docentes/{id}/calificaciones/" + fuente, docente.getIdUsuario())
+        put(
+                "autoevaluacion".equals(fuente)
+                    ? "/autoevaluacion"
+                    : "/docentes/{id}/calificaciones/" + fuente,
+                docente.getIdUsuario())
             .with(como(evaluador))
             .contentType(MediaType.APPLICATION_JSON)
             .content(
