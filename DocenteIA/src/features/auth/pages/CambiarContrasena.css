@@ -1,0 +1,112 @@
+/* El layout (fondo, tarjeta y avatar) lo pone PantallaAcceso; aquí solo el formulario. */
+.cambio-contrasena__formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--separacion);
+}
+
+.cambio-contrasena__encabezado {
+  padding-top: var(--espacio-4);
+  border-top: 1px solid var(--color-borde-suave);
+  text-align: center;
+}
+
+.cambio-contrasena__encabezado h1 {
+  font-size: 20px;
+  font-weight: var(--peso-fuerte);
+  letter-spacing: -0.02em;
+}
+
+.cambio-contrasena__encabezado p {
+  margin-top: 6px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-texto-tenue);
+}
+
+.cambio-contrasena__campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.cambio-contrasena__campo label {
+  font-size: 14px;
+  font-weight: var(--peso-semi);
+  color: var(--color-texto-secundario);
+}
+
+.cambio-contrasena__campo input {
+  min-height: clamp(42px, 6vh, 48px);
+  padding: 9px 12px;
+  border: 1px solid var(--color-borde-control);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie);
+  font-size: 16px;
+  color: var(--color-texto);
+}
+
+.cambio-contrasena__campo input[aria-invalid='true'] {
+  border: 2px solid var(--color-error);
+}
+
+.cambio-contrasena__error-campo {
+  font-size: 13px;
+  color: var(--color-error);
+}
+
+.cambio-contrasena__error {
+  padding: 12px 14px;
+  border: 1px solid var(--color-error-borde);
+  border-radius: var(--radio-md);
+  background: var(--color-error-fondo);
+  color: var(--color-error);
+  font-size: 14px;
+}
+
+.cambio-contrasena__requisitos {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  margin: 0;
+  list-style: none;
+  background: var(--color-superficie-suave);
+  border-radius: var(--radio-md);
+  font-size: 13.5px;
+  color: var(--color-texto-tenue);
+}
+
+.cambio-contrasena__requisitos li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.cambio-contrasena__requisitos li.cumple {
+  color: var(--color-exito-texto);
+  font-weight: var(--peso-semi);
+}
+
+.cambio-contrasena__ver {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--alto-tactil);
+  font-size: 14px;
+  color: var(--color-texto-secundario);
+  cursor: pointer;
+}
+
+.cambio-contrasena__ver input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-azul);
+}
+
+.cambio-contrasena__botones {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+

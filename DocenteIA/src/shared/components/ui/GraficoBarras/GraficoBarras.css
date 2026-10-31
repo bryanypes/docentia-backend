@@ -1,0 +1,98 @@
+.grafico-barras {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+/* La fila entera es el área de hover: más grande que la barra */
+.grafico-barras__fila {
+  position: relative;
+  display: grid;
+  /* etiqueta | riel | valor: el valor tiene su propia columna y nunca se sale de la tarjeta */
+  grid-template-columns: minmax(90px, 30%) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 7px 8px;
+  border-radius: var(--radio-md);
+  outline-offset: 0;
+}
+
+.grafico-barras__fila:hover,
+.grafico-barras__fila:focus-visible {
+  background: var(--color-superficie-suave);
+}
+
+.grafico-barras__etiqueta {
+  overflow: hidden;
+  font-size: 13.5px;
+  color: var(--color-texto-secundario);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Riel: un paso más claro del mismo azul, para leer cuánto falta hasta el máximo */
+.grafico-barras__riel {
+  display: flex;
+  align-items: center;
+  min-width: 0;
+  height: 14px;
+  border-radius: 4px;
+  background: var(--color-azul-fondo);
+}
+
+/* Barra delgada (≤ 24px), extremo de datos redondeado y base recta */
+.grafico-barras__barra {
+  flex: 0 0 auto;
+  min-width: 3px;
+  height: 100%;
+  border-radius: 0 4px 4px 0;
+  background: var(--color-azul);
+  transform-origin: left;
+  animation: crecer 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+
+/* Énfasis: la barra que cuenta la historia; el resto queda en el mismo tono */
+.grafico-barras__barra--destacada {
+  background: var(--color-error);
+}
+
+.grafico-barras__valor {
+  min-width: 64px;
+  text-align: right;
+  font-size: 13.5px;
+  font-weight: var(--peso-semi);
+  color: var(--color-texto);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.grafico-barras__detalle {
+  position: absolute;
+  bottom: calc(100% + 4px);
+  left: 50%;
+  z-index: 10;
+  width: max-content;
+  max-width: 280px;
+  padding: 8px 10px;
+  border-radius: var(--radio-md);
+  background: var(--color-texto);
+  color: var(--color-superficie);
+  font-size: 12.5px;
+  line-height: 1.4;
+  box-shadow: 0 8px 20px -8px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  pointer-events: none;
+  transform: translate(-50%, 4px);
+  transition:
+    opacity 0.12s ease,
+    transform 0.12s ease;
+}
+
+.grafico-barras__fila:hover .grafico-barras__detalle,
+.grafico-barras__fila:focus-visible .grafico-barras__detalle {
+  opacity: 1;
+  transform: translate(-50%, 0);
+}

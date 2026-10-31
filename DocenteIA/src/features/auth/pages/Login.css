@@ -1,0 +1,224 @@
+/* El layout (fondo, tarjeta y avatar) lo pone PantallaAcceso; aquí solo el formulario. */
+.login__formulario {
+  display: flex;
+  flex-direction: column;
+  gap: var(--separacion);
+}
+
+.login__formulario-titulo {
+  padding-top: var(--separacion);
+  border-top: 1px solid var(--color-borde-suave);
+  font-size: 20px;
+  font-weight: var(--peso-fuerte);
+  letter-spacing: -0.02em;
+  text-align: center;
+}
+
+.login__aviso {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid;
+  border-radius: var(--radio-md);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.login__aviso svg {
+  flex: 0 0 auto;
+  margin-top: 1px;
+}
+
+.login__aviso--info {
+  background: var(--color-azul-fondo);
+  border-color: var(--color-azul-claro);
+  color: var(--color-azul);
+}
+
+.login__aviso--error {
+  background: var(--color-error-fondo);
+  border-color: var(--color-error-borde);
+  color: var(--color-error);
+}
+
+.login__campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.login__campo label {
+  font-size: 14px;
+  font-weight: var(--peso-semi);
+  color: var(--color-texto-secundario);
+}
+
+.login__control {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.login__icono-campo {
+  position: absolute;
+  left: 14px;
+  color: var(--color-texto-tenue);
+  pointer-events: none;
+  transition: color 0.15s ease;
+}
+
+.login__control:focus-within .login__icono-campo {
+  color: var(--color-azul);
+}
+
+.login__campo input {
+  width: 100%;
+  min-height: clamp(44px, 6.4vh, 52px);
+  padding: 10px 12px 10px 44px;
+  border: 1px solid var(--color-borde-control);
+  border-radius: 10px;
+  background: var(--color-superficie);
+  /* 16px evita que iOS haga zoom al enfocar el campo */
+  font-size: 16px;
+  color: var(--color-texto);
+  transition:
+    border-color 0.15s ease,
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.login__campo input:hover {
+  border-color: var(--color-texto-tenue);
+}
+
+.login__campo input:focus {
+  background: var(--color-superficie);
+  border-color: var(--color-azul);
+  box-shadow: 0 0 0 4px var(--color-azul-suave);
+}
+
+.login__campo input#contrasena {
+  padding-right: 52px;
+}
+
+.login__campo input::placeholder {
+  color: var(--color-texto-apagado);
+}
+
+.login__campo input[aria-invalid='true'] {
+  border: 2px solid var(--color-error);
+}
+
+.login__ver {
+  position: absolute;
+  right: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--alto-tactil);
+  height: var(--alto-tactil);
+  padding: 0;
+  border: 0;
+  border-radius: var(--radio-sm);
+  background: transparent;
+  color: var(--color-texto-tenue);
+  cursor: pointer;
+}
+
+.login__ver:hover,
+.login__ver[aria-pressed='true'] {
+  color: var(--color-azul);
+}
+
+.login__error-campo {
+  font-size: 13px;
+  color: var(--color-error);
+}
+
+.login__ayuda-campo {
+  font-size: 13px;
+  color: var(--color-alerta-texto);
+}
+
+.login__ingresar {
+  min-height: clamp(44px, 6.4vh, 52px);
+  font-size: 15.5px;
+  transition:
+    background-color 0.15s ease,
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.login__ingresar:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px -12px rgba(5, 54, 134, 0.7);
+}
+
+.login__flecha {
+  transition: transform 0.15s ease;
+}
+
+.login__ingresar:hover:not(:disabled) .login__flecha {
+  transform: translateX(3px);
+}
+
+.login__olvido {
+  padding-top: var(--separacion);
+  text-align: center;
+  border-top: 1px solid var(--color-borde-suave);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--color-texto-tenue);
+}
+
+.login__olvido strong {
+  color: var(--color-texto-secundario);
+}
+
+/* Atajo de desarrollo: no se incluye en producción */
+.login__prueba {
+  padding: 10px 12px;
+  border: 1px dashed var(--color-borde-punteado);
+  border-radius: var(--radio-md);
+  font-size: 13px;
+}
+
+.login__prueba summary {
+  min-height: 28px;
+  font-weight: var(--peso-semi);
+  color: var(--color-texto-tenue);
+  cursor: pointer;
+}
+
+.login__prueba ul {
+  display: grid;
+  gap: 6px;
+  padding: 0;
+  margin: 10px 0 0;
+  list-style: none;
+}
+
+.login__prueba button {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  min-height: 40px;
+  padding: 8px 10px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-sm);
+  background: var(--color-superficie);
+  font-size: 13px;
+  text-align: left;
+  color: var(--color-texto);
+  cursor: pointer;
+}
+
+.login__prueba button:hover {
+  background: var(--color-azul-fondo);
+}
+
+.login__prueba button span {
+  color: var(--color-texto-tenue);
+}
