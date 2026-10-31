@@ -1,9 +1,11 @@
 # DOCENTIA — frontend
 
+Para levantar toda la aplicación con Docker, ver el README de la raíz del repositorio.
+
 Sistema de evaluación docente de la Corporación Universitaria Autónoma del Cauca.
 
-Este repositorio es la aplicación web. La API REST está en
-[docentia-backend](https://github.com/bryanypes/docentia-backend).
+Esta carpeta es la aplicación web. La API REST está en
+la carpeta `docentia-backend/` de este repositorio.
 
 Stack: React 19, Vite 8, JavaScript y CSS convencional.
 

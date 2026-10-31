@@ -1,7 +1,7 @@
 # API DOCENTIA — contrato con el frontend
 
 Endpoints agregados el 30 de octubre porque la aplicación web
-([DocenteIA](https://github.com/vXro1/DocenteIA)) los necesita. Las convenciones son las de
+(carpeta `DocenteIA/`) los necesita. Las convenciones son las de
 `docs/api-sprint3-semana1.md`.
 
 Inicio de sesión con Google: ver `docs/api-sesiones-google.md`.

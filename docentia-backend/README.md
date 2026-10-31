@@ -1,9 +1,11 @@
 # DOCENTIA — backend
 
+Para levantar toda la aplicación con Docker, ver el README de la raíz del repositorio.
+
 Sistema de evaluación docente de la Corporación Universitaria Autónoma del Cauca.
 
-Este repositorio es la API REST. La aplicación web está en
-[DocenteIA](https://github.com/vXro1/DocenteIA).
+Esta carpeta es la API REST. La aplicación web está en
+la carpeta `DocenteIA/` de este repositorio.
 
 Stack: Spring Boot, Java 21, PostgreSQL, Flyway y Maven (incluido como Maven Wrapper).
 
@@ -65,7 +67,7 @@ Stack: Spring Boot, Java 21, PostgreSQL, Flyway y Maven (incluido como Maven Wra
 
    Debe devolver `201` con un `token`.
 
-4. Levantar el [frontend](https://github.com/vXro1/DocenteIA) (`npm install` y
+4. Levantar el frontend, en la carpeta `DocenteIA/` (`npm install` y
    `npm run dev`); Vite reenvía `/api` a este backend.
 
 ### Usuarios de desarrollo
