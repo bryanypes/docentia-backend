@@ -9,6 +9,7 @@ import { ETIQUETA_ROL, NIVELES, ROLES } from '../../../shared/constants/dominio.
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { formatearNota } from '../../../shared/utils/formatters.js'
 import { useSesion } from '../../auth/sesionContext.js'
+import { obtenerPendientesCoevaluacion } from '../../formularios/services/formulariosService.js'
 import { listarFacultades } from '../../facultades/services/facultadesService.js'
 import { listarPeriodos } from '../../periodos/services/periodosService.js'
 import { obtenerPanelProgramas } from '../services/kpisService.js'
@@ -57,6 +58,41 @@ function Fila({ fila }) {
       </p>
       <Distribucion fila={fila} />
     </>
+  )
+}
+
+function Participacion() {
+  const { datos } = useFetch(obtenerPendientesCoevaluacion)
+  if (!datos?.programas.length) return null
+  return (
+    <Panel titulo="Participación en formularios" descripcion="Solo conteos, sin puntajes.">
+      <div className="acciones__tabla">
+        <table className="tabla">
+          <thead>
+            <tr>
+              <th scope="col">Programa</th>
+              <th scope="col">Docentes</th>
+              <th scope="col">Coevaluaciones enviadas</th>
+              <th scope="col">En borrador</th>
+              <th scope="col">Sin iniciar</th>
+              <th scope="col">Autoevaluaciones enviadas</th>
+            </tr>
+          </thead>
+          <tbody>
+            {datos.programas.map((p) => (
+              <tr key={p.programa}>
+                <td>{p.programa}</td>
+                <td>{p.docentes}</td>
+                <td>{p.enviadas}</td>
+                <td>{p.borrador}</td>
+                <td>{p.sinIniciar}</td>
+                <td>{p.autoevaluacionesEnviadas}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </Panel>
   )
 }
 
@@ -138,6 +174,7 @@ export default function PanelProgramas() {
                 </Panel>
               ))}
             </div>
+            {esVicerrector && <Participacion />}
           </>
         )}
       </div>

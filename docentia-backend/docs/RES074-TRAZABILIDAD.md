@@ -4,20 +4,24 @@ Historias del Excel v2 frente a lo construido. Si difieren, manda la resolución
 
 | Historia | Estado | Evidencia |
 |----------|--------|-----------|
-| HU-01 Formulario de estudiantes | Alcance futuro | La captura vive en Campus/NOVA; DOCENTIA importa el CSV (`ImportacionTest`) |
-| HU-02 Formulario de coordinación (14 descriptores) | Alcance futuro | Se registran cinco aspectos en `PUT /docentes/{id}/calificaciones/coordinacion` |
-| HU-03 Formulario de autoevaluación (14 descriptores) | Alcance futuro | Se registran cinco aspectos en `PUT /autoevaluacion` (`AutoevaluacionTest`) |
+| HU-01 Formulario de estudiantes | Por CSV; formulario futuro | DOCENTIA importa la heteroevaluación (`ImportacionCsvTest`); no hay rol de estudiante ni matrículas |
+| HU-02 Formulario de coevaluación (6 ítems) | Implementado | `/formularios/coevaluacion`, `FormulariosTest`, E2E |
+| HU-03 Formulario de autoevaluación (14 ítems) | Implementado | `/formularios/autoevaluacion`, `FormulariosTest`, E2E |
 | HU-04 Cálculo de la nota final | Implementado | `CalculadoraPromedioPonderado`, `ClasificadorDesempenoTest`, `AutoevaluacionTest` |
 | HU-05 Clasificación y acción institucional | Implementado | `ClasificadorDesempeno`, `GET /acciones-sugeridas`, `AccionesYPanelTest` |
 | HU-06 Análisis de comentarios | Implementado | `RevisionHallazgosTest`, `AnalisisIaTest`, `CitasVerificablesTest` |
 | HU-07 Retroalimentación y plan de mejoramiento | Vía acta | `ActaTest`, `PlanSeguimientoTest` |
 | HU-08 Reportes | Vía I5 e I11 | `GET /kpis`, `GET /kpis/panel`, `AccionesYPanelTest` |
-| HU-09 Evidencias complementarias | Futuro u opcional | No implementado; recortado por el orden de corte |
+| HU-09 Evidencias complementarias | Futuro | No implementado |
+
+ESC-09.2 se cumple sin HU-09: D12, sobre metodologías, herramientas y tecnologías, es un ítem
+obligatorio de la autoevaluación y de la coevaluación.
 
 ## Reglas de la resolución
 
 | Regla | Dónde se cumple |
 |-------|-----------------|
+| Anexo 1: 6 criterios y 14 descriptores (AUTO 14, HETERO 11, COEVAL 6) | V25, `FormulariosTest` |
 | Ponderación 50/30/20 | V19, `PesosFuentes`, `GET /configuracion/evaluacion` |
 | Escala de cinco categorías | `ClasificadorDesempeno` y sus pruebas de límites |
 | Ciclo de semanas 11 a 16 | `TipoEtapa`, `GET /periodos-academicos/activo/calendario` |
