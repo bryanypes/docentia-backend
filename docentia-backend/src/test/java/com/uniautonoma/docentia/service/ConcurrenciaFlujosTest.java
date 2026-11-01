@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.uniautonoma.docentia.BaseDatosPruebaConfig;
 import com.uniautonoma.docentia.EscenarioPrueba;
 import com.uniautonoma.docentia.PruebaIntegracion;
+import com.uniautonoma.docentia.dto.FormularioRequest;
 import com.uniautonoma.docentia.dto.SolicitudAnalisisResponse;
 import com.uniautonoma.docentia.entity.Cita;
 import com.uniautonoma.docentia.entity.CitaHallazgo;
@@ -22,11 +23,15 @@ import com.uniautonoma.docentia.repository.FranjaHorariaRepository;
 import com.uniautonoma.docentia.repository.SolicitudAnalisisRepository;
 import com.uniautonoma.docentia.security.UsuarioSesion;
 import com.uniautonoma.docentia.service.analisis.ValidacionHallazgoService;
+import com.uniautonoma.docentia.service.formulario.FormularioService;
 import com.uniautonoma.docentia.service.importacion.ImportacionService;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.ExecutorService;
@@ -55,6 +60,7 @@ class ConcurrenciaFlujosTest extends PruebaIntegracion {
   @Autowired private ActaService actaService;
   @Autowired private ValidacionHallazgoService validacionService;
   @Autowired private ImportacionService importacionService;
+  @Autowired private FormularioService formularioService;
   @Autowired private SolicitudAnalisisRepository solicitudRepository;
   @Autowired private FranjaHorariaRepository franjaRepository;
   @Autowired private CitaRepository citaRepository;
@@ -100,6 +106,11 @@ class ConcurrenciaFlujosTest extends PruebaIntegracion {
             + " solicitudes_analisis"
             + enPeriodo
             + "))");
+    jdbcTemplate.update(
+        "delete from evaluaciones_formulario where periodo_id in"
+            + " (select id_periodo from periodos_academicos where nombre = '"
+            + PERIODO
+            + "')");
     jdbcTemplate.update("delete from compromisos" + enPeriodo);
     jdbcTemplate.update("delete from actas" + enPeriodo);
     jdbcTemplate.update("delete from solicitudes_analisis" + enPeriodo);
@@ -173,6 +184,20 @@ class ConcurrenciaFlujosTest extends PruebaIntegracion {
             jdbcTemplate.queryForObject(
                 "select count(*) from firmas_acta where id_acta = ?", Integer.class, idActa))
         .isEqualTo(1);
+  }
+
+  @Test
+  void dobleEnvioDelFormularioSoloGanaUno() throws Exception {
+    UsuarioSesion sesion = UsuarioSesion.desde(docente);
+    Map<String, BigDecimal> respuestas = new HashMap<>();
+    for (int i = 1; i <= 14; i++) {
+      respuestas.put(String.format("D%02d", i), BigDecimal.valueOf(4));
+    }
+    formularioService.guardarAutoevaluacion(null, new FormularioRequest(respuestas, null), sesion);
+
+    int exitos = enParalelo(() -> formularioService.enviarAutoevaluacion(null, sesion));
+
+    assertThat(exitos).isEqualTo(1);
   }
 
   @Test
