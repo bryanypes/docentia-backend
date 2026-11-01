@@ -203,14 +203,18 @@ test('los formularios cambian la nota y el docente no ve la coevaluación', asyn
 
   const coordinacion = await entrar(COORDINACION)
   await abrirExpediente(coordinacion, 'Ramiro')
-  await coordinacion.getByText('Muy bajo desempeño').first().waitFor()
+  // 1,90 en estudiantes y coevaluación con 5,00 en autoevaluación: 2,52.
+  await coordinacion.getByText('2,52').first().waitFor()
+  await coordinacion.getByText('Bajo desempeño', { exact: true }).first().waitFor()
   await coordinacion.click('a[href="/coevaluaciones"]')
   await coordinacion.getByRole('link', { name: /Ramiro/ }).click()
-  await coordinacion.getByRole('group', { name: /Sensibilidad/ }).waitFor({ state: 'detached', timeout: 2000 }).catch(() => {})
+  await coordinacion.getByText('Coevaluación de Ramiro Antonio Paz').waitFor()
   assert.equal(await responderTodo(coordinacion, 5), 6)
   await enviarFormulario(coordinacion)
   await abrirExpediente(coordinacion, 'Ramiro')
-  await coordinacion.getByText('Muy bajo desempeño').first().waitFor({ state: 'detached' })
+  // Con la coevaluación en 5,00 sube a 3,45.
+  await coordinacion.getByText('3,45').first().waitFor()
+  await coordinacion.getByText('Desempeño aceptable').first().waitFor()
   await coordinacion.context().close()
 
   const otraVez = await entrar('ramiro.paz')
