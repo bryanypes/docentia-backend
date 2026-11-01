@@ -12,5 +12,5 @@ BASE_URL=http://localhost:5173 npm test
 ```
 
 Cubren login por rol, expediente con categoría, cita, firma con PDF, rechazo de editar un acta
-firmada, corrección, revisión de hallazgos, panel por programa y notificaciones. Modifican datos: cada
+firmada, corrección, revisión de hallazgos, panel por programa, notificaciones y los formularios de evaluación. Modifican datos: cada
 corrida necesita un seed nuevo.

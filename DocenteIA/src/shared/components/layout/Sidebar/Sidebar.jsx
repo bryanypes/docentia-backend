@@ -5,6 +5,7 @@ import {
   CalendarRange,
   ChartColumn,
   ClipboardCheck,
+  ClipboardList,
   FileSignature,
   FileUp,
   GraduationCap,
@@ -23,6 +24,9 @@ import { useEffect, useRef } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { RUTA_CAMBIO_CONTRASENA } from '../../../../app/rutasPorRol.js'
 import { useSesion } from '../../../../features/auth/sesionContext.js'
+import '../../../../features/formularios/components/FormularioInstrumento.css'
+import { obtenerPendientesCoevaluacion } from '../../../../features/formularios/services/formulariosService.js'
+import { useFetch } from '../../../hooks/useFetch.js'
 import { ETIQUETA_ROL, ROLES } from '../../../constants/dominio.js'
 import { iniciales } from '../../../utils/formatters.js'
 import './Sidebar.css'
@@ -37,6 +41,7 @@ const NAVEGACION = {
   [ROLES.COORDINADOR]: [
     { ruta: '/inicio', etiqueta: 'Inicio', Icono: LayoutDashboard },
     { ruta: '/docentes', etiqueta: 'Docentes', Icono: Users },
+    { ruta: '/coevaluaciones', etiqueta: 'Coevaluaciones', Icono: ClipboardList },
     { ruta: '/importaciones', etiqueta: 'Evaluación de estudiantes', Icono: FileUp },
     { ruta: '/analisis', etiqueta: 'Análisis de comentarios', Icono: MessagesSquare },
     { ruta: '/agenda', etiqueta: 'Agenda de citas', Icono: CalendarDays },
@@ -57,6 +62,17 @@ const NAVEGACION = {
     { ruta: '/usuarios', etiqueta: 'Usuarios', Icono: UserCog },
     { ruta: '/auditoria', etiqueta: 'Auditoría', Icono: ScrollText },
   ],
+}
+
+function ContadorCoevaluaciones() {
+  const { datos } = useFetch(obtenerPendientesCoevaluacion)
+  if (!datos?.pendientes) return null
+  return (
+    <span className="menu__contador">
+      {datos.pendientes}
+      <span className="solo-lectores"> pendientes</span>
+    </span>
+  )
 }
 
 export function Sidebar() {
@@ -91,6 +107,7 @@ export function Sidebar() {
           <NavLink key={ruta} to={ruta} className="sidebar__enlace">
             <Icono size={18} strokeWidth={1.75} aria-hidden="true" className="sidebar__icono" />
             {etiqueta}
+            {ruta === '/coevaluaciones' && <ContadorCoevaluaciones />}
           </NavLink>
         ))}
       </nav>
