@@ -99,6 +99,30 @@ ambigüedad. La fuente de verdad es la resolución; el Excel v2 tiene errores (v
 - **Seed silencioso.** Lo que crea el seed no notifica a nadie.
 - **Campana.** Va fija en el contenedor principal para que las páginas no dependan de ella.
 
+## Formularios del Anexo 1
+
+- **Criterios de D05 a D08.** La asignación es ambigua en el PDF, por una celda combinada, y el Excel
+  la reagrupa. Se asigna por la definición de cada criterio: ejecutar incluye acompañamiento; evaluar
+  incluye procesos evaluativos y retroalimentación. La media de la fuente usa todos los descriptores,
+  así que esto solo afecta el desglose visual.
+- **Escala de 1 a 5.** La resolución no la define. Sus etiquetas están en configuración
+  (`docentia.formularios.etiquetas-escala`) y quedan pendientes de confirmar con Vicerrectoría.
+- **Precedencia.** La media del formulario prevalece sobre la nota previa de AUTO y COEVAL, sea manual o
+  de CSV. HETERO sigue por CSV. El reemplazo queda en el historial de correcciones.
+- **Origen.** `calificaciones.origen` admite MANUAL, CSV y FORMULARIO. Se agregó MANUAL porque los datos
+  existentes y las notas registradas por pantalla no son ninguno de los otros dos.
+- **Notas por aspecto.** El instrumento no tiene los cinco aspectos anteriores. Al enviar, los cinco
+  toman la media redondeada a 2 decimales para no romper el esquema, y `nota_fuente` guarda los 4
+  decimales que usa el promedio.
+- **Formulario anterior.** Las pantallas de calificar por aspectos se retiraron. Sus endpoints siguen
+  para datos ya cargados y responden 409 si la fuente ya viene de un formulario.
+- **Prueba de 4,41.** Catorce enteros no pueden promediar 4,8 exacto. Se usa 67/14 = 4,7857, que con
+  4,5 y 4,0 da 4,41.
+- **Dos coordinadores en una facultad.** La coevaluación es de quien la empezó; el otro recibe 404.
+- **Auditoría.** `entidad_id` guarda el docente evaluado, y el periodo se deduce de la fecha.
+- **Desglose del docente.** Mi evaluación muestra solo su autoevaluación por criterio. `GET
+  /expedientes/propio` conserva `dimensiones`, valores ya ponderados que no revelan una fuente.
+
 ## Estructura de repositorios
 
 - El backend se trabaja en `docentia-backend`, carpeta `docentia-backend/`.

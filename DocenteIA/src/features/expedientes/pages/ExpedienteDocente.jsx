@@ -109,7 +109,7 @@ export default function ExpedienteDocente() {
           <PanelFuentes
             notasPorFuente={notasPorFuente}
             promedio={promedio}
-            descripcion="Estudiantes llega sincronizada, coordinación se registra aquí y el docente registra su autoevaluación."
+            descripcion="Estudiantes llega por CSV; coevaluación y autoevaluación, por sus formularios."
           >
             {miFuente && (
               <>
@@ -118,9 +118,9 @@ export default function ExpedienteDocente() {
                   className="expediente__calificar"
                   icono={PenLine}
                   disabled={!periodo || Boolean(recoleccion && !recoleccion.abierta)}
-                  onClick={() => navegar(`/docentes/${docente.idDocente}/calificar`)}
+                  onClick={() => navegar(`/coevaluaciones/${docente.idDocente}`)}
                 >
-                  {yaCalifique ? 'Editar mi calificación' : 'Registrar mi calificación'}
+                  {yaCalifique ? 'Ver mi coevaluación' : 'Responder coevaluación'}
                 </Boton>
                 <div className="expediente__etapa">
                   <AvisoEtapaCerrada ventana={recoleccion} accion="Calificar" />

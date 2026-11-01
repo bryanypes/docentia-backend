@@ -95,6 +95,12 @@ class NotificacionesTest extends PruebaIntegracion {
                   TipoEtapa.AGENDA_CITAS,
                   BaseDatosPruebaConfig.HOY.minusDays(1),
                   BaseDatosPruebaConfig.HOY.plusDays(2));
+          periodo =
+              escenario.abrirEtapa(
+                  periodo,
+                  TipoEtapa.RECOLECCION_CALIFICACIONES,
+                  BaseDatosPruebaConfig.HOY.minusDays(1),
+                  BaseDatosPruebaConfig.HOY.plusDays(2));
         });
   }
 
@@ -334,6 +340,23 @@ class NotificacionesTest extends PruebaIntegracion {
         .doesNotContainPattern("(?i)desempeño|muy bajo|muy alto|desvincul|fortaleza|comentario de")
         .doesNotContain("<img", "http://cdn");
     assertThat(correo).contains("Corporación Universitaria Autónoma del Cauca");
+  }
+
+  @Test
+  void losFormulariosPendientesSeRecuerdanSinPuntajesNiDuplicados() {
+    recordatorios.generar();
+    recordatorios.generar();
+
+    assertThat(tiposDe(docente).stream().filter("AUTOEVALUACION_PENDIENTE"::equals)).hasSize(1);
+    assertThat(tiposDe(coordinador).stream().filter("COEVALUACIONES_PENDIENTES"::equals))
+        .hasSize(1);
+    String cuerpo =
+        jdbcTemplate.queryForObject(
+            "select c.cuerpo from cola_correo c join notificaciones n on n.id = c.notificacion_id"
+                + " where n.usuario_id = ? and n.tipo = 'COEVALUACIONES_PENDIENTES'",
+            String.class,
+            coordinador.getIdUsuario());
+    assertThat(cuerpo).contains("Pendientes: 1.").doesNotContain("Docente " + MARCA);
   }
 
   @Test

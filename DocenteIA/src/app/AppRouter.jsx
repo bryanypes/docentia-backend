@@ -7,11 +7,12 @@ import { useSesion } from '../features/auth/sesionContext.js'
 import AccionesSugeridas from '../features/actas/pages/AccionesSugeridas.jsx'
 import VerificarActa from '../features/actas/pages/VerificarActa.jsx'
 import MiActa from '../features/actas/pages/MiActa.jsx'
-import MiAutoevaluacion from '../features/calificaciones/pages/MiAutoevaluacion.jsx'
+import CoevaluacionDocente from '../features/formularios/pages/CoevaluacionDocente.jsx'
+import Coevaluaciones from '../features/formularios/pages/Coevaluaciones.jsx'
+import MiAutoevaluacion from '../features/formularios/pages/MiAutoevaluacion.jsx'
 import Auditoria from '../features/auditoria/pages/Auditoria.jsx'
 import Notificaciones from '../features/notificaciones/pages/Notificaciones.jsx'
 import PanelProgramas from '../features/kpis/pages/PanelProgramas.jsx'
-import CalificarDocente from '../features/calificaciones/pages/CalificarDocente.jsx'
 import Agenda from '../features/agenda/pages/Agenda.jsx'
 import MiCita from '../features/agenda/pages/MiCita.jsx'
 import Analisis from '../features/analisis/pages/Analisis.jsx'
@@ -76,7 +77,8 @@ function RutasDocentia() {
 
               <Route element={<ProtectedRoute rolesPermitidos={[ROLES.COORDINADOR]} />}>
                 <Route path="/agenda" element={<Agenda />} />
-                <Route path="/docentes/:idDocente/calificar" element={<CalificarDocente />} />
+                <Route path="/coevaluaciones" element={<Coevaluaciones />} />
+                <Route path="/coevaluaciones/:idDocente" element={<CoevaluacionDocente />} />
               </Route>
 
               <Route element={<ProtectedRoute rolesPermitidos={[ROLES.VICERRECTOR]} />}>

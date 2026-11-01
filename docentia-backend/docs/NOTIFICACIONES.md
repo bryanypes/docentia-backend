@@ -50,6 +50,9 @@ flowchart LR
 | Compromiso vencido | Coordinación de la facultad | App y correo | `COMPROMISO_VENCIDO_FACULTAD` |
 | CSV terminado | Quien lo importó | App y correo | `IMPORTACION_EXITOSA`, `IMPORTACION_CON_ERRORES` |
 | Etapa cierra en 3 días | Coordinaciones | App y correo | `VENTANA_POR_CERRAR` |
+| Autoevaluación sin enviar, 3 días y 1 día antes del cierre | Docente | App y correo | `AUTOEVALUACION_PENDIENTE` |
+| Coevaluaciones sin enviar, 3 días y 1 día antes del cierre | Coordinación de la facultad, con la cantidad | App y correo | `COEVALUACIONES_PENDIENTES` |
+| Un docente envía su autoevaluación | Coordinación de la facultad | App y correo | `AUTOEVALUACION_ENVIADA` |
 | Docente con resultado definitivo Muy bajo | Vicerrectoría | App y correo | `ALERTA_INFORMATIVA` |
 | Etapa cerrada | Vicerrectoría | App y correo | `VENTANA_CERRADA` |
 | Etapa abierta, hasta 3 días después de abrir | Coordinaciones; docentes si participan | App y correo | `VENTANA_ABIERTA` |
