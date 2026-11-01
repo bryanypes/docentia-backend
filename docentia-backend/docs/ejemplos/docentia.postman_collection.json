@@ -1,6 +1,6 @@
 {
   "info": {
-    "name": "DOCENTIA 0.3.1",
+    "name": "DOCENTIA 0.3.2",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -754,6 +754,136 @@
               "path": [
                 "facultades",
                 ":id"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "formularios",
+      "item": [
+        {
+          "name": "GET /formularios/autoevaluacion",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/formularios/autoevaluacion",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "formularios",
+                "autoevaluacion"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PUT /formularios/autoevaluacion",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/formularios/autoevaluacion",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "formularios",
+                "autoevaluacion"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /formularios/autoevaluacion/enviar",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/formularios/autoevaluacion/enviar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "formularios",
+                "autoevaluacion",
+                "enviar"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /formularios/coevaluacion/pendientes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/formularios/coevaluacion/pendientes",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "formularios",
+                "coevaluacion",
+                "pendientes"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /formularios/coevaluacion/:id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/formularios/coevaluacion/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "formularios",
+                "coevaluacion",
+                ":id"
+              ]
+            }
+          }
+        },
+        {
+          "name": "PUT /formularios/coevaluacion/:id",
+          "request": {
+            "method": "PUT",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/formularios/coevaluacion/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "formularios",
+                "coevaluacion",
+                ":id"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /formularios/coevaluacion/:id/enviar",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/formularios/coevaluacion/:id/enviar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "formularios",
+                "coevaluacion",
+                ":id",
+                "enviar"
               ]
             }
           }

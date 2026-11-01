@@ -17,6 +17,7 @@ import com.uniautonoma.docentia.repository.DocentePeriodo;
 import com.uniautonoma.docentia.repository.PonderacionRepository;
 import com.uniautonoma.docentia.repository.PromedioDocenteRepository;
 import com.uniautonoma.docentia.service.notificacion.EventoNotificacion;
+import java.math.BigDecimal;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -180,11 +181,15 @@ public class PromedioService {
 
   private EvaluacionPeriodo cargarEvaluacion(Long idDocente, Long idPeriodo) {
     Map<FuenteEvaluacion, NotasAspectos> notasPorFuente = new EnumMap<>(FuenteEvaluacion.class);
+    Map<FuenteEvaluacion, BigDecimal> notasDeFormulario = new EnumMap<>(FuenteEvaluacion.class);
     for (Calificacion calificacion :
         calificacionRepository.findByDocenteIdUsuarioAndPeriodoIdPeriodo(idDocente, idPeriodo)) {
       notasPorFuente.put(calificacion.getFuente(), calificacion.getNotas());
+      if (calificacion.getNotaFuente() != null) {
+        notasDeFormulario.put(calificacion.getFuente(), calificacion.getNotaFuente());
+      }
     }
-    return new EvaluacionPeriodo(notasPorFuente, buscarPesos(idPeriodo));
+    return new EvaluacionPeriodo(notasPorFuente, notasDeFormulario, buscarPesos(idPeriodo));
   }
 
   private PesosFuentes buscarPesos(Long idPeriodo) {

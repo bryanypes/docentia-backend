@@ -9,9 +9,10 @@ import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { formatearNota, listarFuentes, textoFormula } from '../../../shared/utils/formatters.js'
 import { PanelSeguimientoPlan } from '../../actas/components/PanelSeguimientoPlan.jsx'
 import { PanelHallazgosPropios } from '../../analisis/components/PanelHallazgosPropios.jsx'
+import { PanelMiAutoevaluacion } from '../../formularios/components/PanelMiAutoevaluacion.jsx'
 import { obtenerConfiguracionEvaluacion } from '../../kpis/services/configuracionService.js'
 import { LineaTiempo } from '../../periodos/components/LineaTiempo.jsx'
-import { PanelCompromisos, PanelDimensiones } from '../components/PanelesExpediente.jsx'
+import { PanelCompromisos } from '../components/PanelesExpediente.jsx'
 import { obtenerExpedientePropio } from '../services/expedientesService.js'
 import './MiEvaluacion.css'
 
@@ -56,7 +57,7 @@ export default function MiEvaluacion() {
     )
   }
 
-  const { periodo, promedio, dimensiones, compromisosVigentes } = expediente.datos
+  const { periodo, promedio, compromisosVigentes } = expediente.datos
   const completo = promedio?.estado === 'COMPLETO'
 
   return (
@@ -109,7 +110,7 @@ export default function MiEvaluacion() {
               </div>
             </section>
 
-            <PanelDimensiones titulo="Mis dimensiones" dimensiones={dimensiones} />
+            <PanelMiAutoevaluacion />
             <PanelCompromisos titulo="Mis compromisos" compromisos={compromisosVigentes} />
             <PanelHallazgosPropios />
           </div>

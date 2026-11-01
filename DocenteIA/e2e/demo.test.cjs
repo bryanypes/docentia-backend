@@ -178,3 +178,51 @@ test('las notificaciones llegan a la campana y se leen', async () => {
   await pagina.getByRole('button', { name: 'Notificaciones', exact: true }).waitFor()
   await pagina.context().close()
 })
+
+async function responderTodo(pagina, valor) {
+  const opciones = pagina.locator(`input[type=radio][value="${valor}"]`)
+  const cantidad = await opciones.count()
+  for (let i = 0; i < cantidad; i += 1) await opciones.nth(i).check()
+  return cantidad
+}
+
+async function enviarFormulario(pagina) {
+  await pagina.getByRole('checkbox').check()
+  await pagina.getByRole('button', { name: 'Enviar formulario' }).click()
+  await pagina.getByText('Formulario enviado').waitFor()
+}
+
+test('los formularios cambian la nota y el docente no ve la coevaluación', async () => {
+  const docente = await entrar('ramiro.paz')
+  await docente.click('a[href="/mi-autoevaluacion"]')
+  await docente.getByRole('group', { name: 'Sensibilidad social' }).waitFor()
+  assert.equal(await responderTodo(docente, 5), 14)
+  await docente.getByText('14 de 14 ítems respondidos').waitFor()
+  await enviarFormulario(docente)
+  await docente.context().close()
+
+  const coordinacion = await entrar(COORDINACION)
+  await abrirExpediente(coordinacion, 'Ramiro')
+  // 1,90 en estudiantes y coevaluación con 5,00 en autoevaluación: 2,52.
+  await coordinacion.getByText('2,52').first().waitFor()
+  await coordinacion.getByText('Bajo desempeño', { exact: true }).first().waitFor()
+  await coordinacion.click('a[href="/coevaluaciones"]')
+  await coordinacion.getByRole('link', { name: /Ramiro/ }).click()
+  await coordinacion.getByText('Coevaluación de Ramiro Antonio Paz').waitFor()
+  assert.equal(await responderTodo(coordinacion, 5), 6)
+  await enviarFormulario(coordinacion)
+  await abrirExpediente(coordinacion, 'Ramiro')
+  // Con la coevaluación en 5,00 sube a 3,45.
+  await coordinacion.getByText('3,45').first().waitFor()
+  await coordinacion.getByText('Desempeño aceptable').first().waitFor()
+  await coordinacion.context().close()
+
+  const otraVez = await entrar('ramiro.paz')
+  const propio = await llamar(otraVez, 'GET', '/expedientes/propio')
+  assert.equal(propio.datos.notasPorFuente, undefined)
+  const sesion = await llamar(otraVez, 'GET', '/sesiones/actual')
+  const ajeno = await llamar(otraVez, 'GET', `/formularios/coevaluacion/${sesion.datos.idUsuario}`)
+  assert.equal(ajeno.estado, 403)
+  await otraVez.getByRole('heading', { name: 'Mi autoevaluación por criterio' }).waitFor()
+  await otraVez.context().close()
+})
