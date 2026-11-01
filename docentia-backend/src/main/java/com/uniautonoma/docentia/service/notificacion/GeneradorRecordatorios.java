@@ -2,22 +2,30 @@ package com.uniautonoma.docentia.service.notificacion;
 
 import com.uniautonoma.docentia.entity.Compromiso;
 import com.uniautonoma.docentia.entity.EstadoCita;
+import com.uniautonoma.docentia.entity.EstadoFormulario;
 import com.uniautonoma.docentia.entity.EtapaPeriodo;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.Rol;
 import com.uniautonoma.docentia.entity.TipoEtapa;
+import com.uniautonoma.docentia.entity.TipoFormulario;
 import com.uniautonoma.docentia.entity.TipoNotificacion;
 import com.uniautonoma.docentia.entity.Usuario;
 import com.uniautonoma.docentia.repository.CitaRepository;
 import com.uniautonoma.docentia.repository.CompromisoRepository;
+import com.uniautonoma.docentia.repository.EvaluacionFormularioRepository;
+import com.uniautonoma.docentia.repository.EvaluacionFormularioRepository.AvanceFormulario;
 import com.uniautonoma.docentia.repository.FacultadRepository;
 import com.uniautonoma.docentia.repository.PeriodoAcademicoRepository;
 import com.uniautonoma.docentia.repository.UsuarioRepository;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -39,6 +47,7 @@ public class GeneradorRecordatorios {
   private final PeriodoAcademicoRepository periodoRepository;
   private final UsuarioRepository usuarioRepository;
   private final FacultadRepository facultadRepository;
+  private final EvaluacionFormularioRepository formularioRepository;
   private final Clock reloj;
 
   public GeneradorRecordatorios(
@@ -48,7 +57,9 @@ public class GeneradorRecordatorios {
       PeriodoAcademicoRepository periodoRepository,
       UsuarioRepository usuarioRepository,
       FacultadRepository facultadRepository,
+      EvaluacionFormularioRepository formularioRepository,
       Clock reloj) {
+    this.formularioRepository = formularioRepository;
     this.notificaciones = notificaciones;
     this.citaRepository = citaRepository;
     this.compromisoRepository = compromisoRepository;
@@ -149,10 +160,63 @@ public class GeneradorRecordatorios {
       if (!hoy.isAfter(etapa.getFechaApertura().plusDays(DIAS_AVISO_APERTURA))) {
         avisarApertura(etapa, clave, idPeriodo);
       }
+      if (etapa.getTipoEtapa() == TipoEtapa.RECOLECCION_CALIFICACIONES) {
+        recordarFormularios(periodo, etapa, hoy);
+      }
       if (!hoy.isBefore(etapa.getFechaCierre().minusDays(3))) {
         avisarAFacultades(TipoNotificacion.VENTANA_POR_CERRAR, etapa, clave, idPeriodo);
       }
     }
+  }
+
+  /** A 3 días y a 1 día del cierre, a quien aún no envía su formulario. */
+  private void recordarFormularios(PeriodoAcademico periodo, EtapaPeriodo etapa, LocalDate hoy) {
+    long dias = ChronoUnit.DAYS.between(hoy, etapa.getFechaCierre());
+    if (dias > 3) {
+      return;
+    }
+    String plazo = dias <= 1 ? "1d" : "3d";
+    Long idPeriodo = periodo.getIdPeriodo();
+    List<AvanceFormulario> avance = formularioRepository.leerAvance(idPeriodo);
+    Set<Long> conAutoevaluacion = enviadas(avance, TipoFormulario.AUTO);
+    Set<Long> conCoevaluacion = enviadas(avance, TipoFormulario.COEVAL);
+    Map<Long, Long> coevaluacionesPorFacultad = new HashMap<>();
+    for (Usuario docente :
+        usuarioRepository.findByRolAndEsActivoTrueOrderByNombreCompletoAsc(Rol.DOCENTE)) {
+      if (!conAutoevaluacion.contains(docente.getIdUsuario())) {
+        notificaciones.notificar(
+            EventoNotificacion.aUsuario(
+                TipoNotificacion.AUTOEVALUACION_PENDIENTE,
+                docente.getIdUsuario(),
+                "/mi-autoevaluacion",
+                "PERIODO",
+                idPeriodo,
+                "autoevaluacion:" + idPeriodo + ":" + plazo));
+      }
+      if (!conCoevaluacion.contains(docente.getIdUsuario())) {
+        coevaluacionesPorFacultad.merge(
+            docente.getPrograma().getFacultad().getIdFacultad(), 1L, Long::sum);
+      }
+    }
+    coevaluacionesPorFacultad.forEach(
+        (idFacultad, cantidad) ->
+            notificaciones.notificar(
+                new EventoNotificacion(
+                    TipoNotificacion.COEVALUACIONES_PENDIENTES,
+                    EventoNotificacion.Destino.COORDINADORES_FACULTAD,
+                    idFacultad,
+                    "/coevaluaciones",
+                    "PERIODO",
+                    idPeriodo,
+                    "coevaluacion:" + idPeriodo + ":" + plazo,
+                    "Pendientes: " + cantidad + ".")));
+  }
+
+  private static Set<Long> enviadas(List<AvanceFormulario> avance, TipoFormulario tipo) {
+    return avance.stream()
+        .filter(fila -> fila.tipo() == tipo && fila.estado() == EstadoFormulario.ENVIADA)
+        .map(AvanceFormulario::idDocente)
+        .collect(Collectors.toSet());
   }
 
   private void avisarApertura(EtapaPeriodo etapa, String clave, Long idPeriodo) {

@@ -12,6 +12,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
@@ -51,6 +52,14 @@ public class Calificacion {
   @JoinColumn(name = "id_importacion")
   private Importacion importacion;
 
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false, length = 20)
+  private OrigenCalificacion origen = OrigenCalificacion.MANUAL;
+
+  /** Nota exacta de la fuente; solo si vino de un formulario. */
+  @Column(name = "nota_fuente", precision = 6, scale = 4)
+  private BigDecimal notaFuente;
+
   @CreationTimestamp
   @Column(nullable = false, updatable = false)
   private LocalDateTime fechaRegistro;
@@ -77,6 +86,22 @@ public class Calificacion {
     this.observacion = observacion;
     this.evaluador = evaluador;
     this.importacion = importacion;
+    this.origen = importacion == null ? OrigenCalificacion.MANUAL : OrigenCalificacion.CSV;
+    this.notaFuente = null;
+  }
+
+  /** Fija la nota de la fuente con la media de un formulario enviado. */
+  public void fijarDesdeFormulario(BigDecimal media) {
+    this.origen = OrigenCalificacion.FORMULARIO;
+    this.notaFuente = media;
+  }
+
+  public OrigenCalificacion getOrigen() {
+    return origen;
+  }
+
+  public BigDecimal getNotaFuente() {
+    return notaFuente;
   }
 
   public Importacion getImportacion() {

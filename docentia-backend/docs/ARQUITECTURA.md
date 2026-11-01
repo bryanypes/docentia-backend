@@ -15,6 +15,22 @@ flowchart TB
   M --> SMTP[SMTP o Mailpit]
 ```
 
+## Modelo del instrumento
+
+```mermaid
+erDiagram
+  CRITERIOS_EVALUACION ||--o{ DESCRIPTORES_EVALUACION : agrupa
+  DESCRIPTORES_EVALUACION ||--o{ DESCRIPTOR_ACTOR : "lo responde"
+  EVALUACIONES_FORMULARIO ||--o{ RESPUESTAS_DESCRIPTOR : contiene
+  EVALUACIONES_FORMULARIO ||--o{ COMENTARIOS_CRITERIO : contiene
+  EVALUACIONES_FORMULARIO }o--|| CALIFICACIONES : "al enviar alimenta"
+  CALIFICACIONES }o--|| PROMEDIOS_DOCENTE : recalcula
+```
+
+El catálogo es dato de migración, marcado con `RES074-2026-ANEXO1`. Al enviar un formulario, la media
+de sus descriptores se vuelve la nota de la fuente en `calificaciones` y corre el mismo recálculo que
+cualquier otra nota: pesos, categoría, avisos y actas no cambian.
+
 ## Decisiones importantes
 
 **Capas.** Los controladores solo traducen HTTP, los servicios tienen las reglas y los repositorios el

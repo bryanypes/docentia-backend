@@ -4,7 +4,9 @@ Lo que el sistema no hace hoy y por qué.
 
 | Qué no hace | Por qué |
 |-------------|---------|
-| Formularios de encuesta de la Res. 074 con 14 descriptores | La captura vive en Campus/NOVA y DOCENTIA importa por CSV |
+| Formulario de estudiantes | No hay rol de estudiante ni matrículas; la heteroevaluación llega por CSV |
+| Escala de 1 a 5 confirmada | La resolución no la define; queda pendiente de Vicerrectoría |
+| Reabrir un formulario enviado | Queda fijo al enviarse |
 | HU-09, evidencias complementarias | Quedó fuera por el orden de corte |
 | Etiquetas de los seis criterios en los hallazgos | Quedó fuera por el orden de corte |
 | Integración con la API de Campus/NOVA | No se usa en este alcance; el intercambio es por CSV |

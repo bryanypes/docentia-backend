@@ -14,10 +14,15 @@ import java.util.function.Function;
  * fuentes que no han calificado simplemente no están en el mapa.
  */
 public record EvaluacionPeriodo(
-    Map<FuenteEvaluacion, NotasAspectos> notasPorFuente, PesosFuentes pesos) {
+    Map<FuenteEvaluacion, NotasAspectos> notasPorFuente,
+    Map<FuenteEvaluacion, BigDecimal> notasDeFormulario,
+    PesosFuentes pesos) {
 
+  /** Nota de cada fuente; la de un formulario enviado prevalece y conserva sus 4 decimales. */
   public Map<FuenteEvaluacion, BigDecimal> notasDeFuentes() {
-    return leerNotas(NotasAspectos::promedio);
+    Map<FuenteEvaluacion, BigDecimal> notas = leerNotas(NotasAspectos::promedio);
+    notas.putAll(notasDeFormulario);
+    return notas;
   }
 
   public Map<FuenteEvaluacion, BigDecimal> notasDeDimension(Dimension dimension) {

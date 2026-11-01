@@ -10,6 +10,7 @@ import PanelProgramas from './PanelProgramas.jsx'
 vi.mock('../services/kpisService.js')
 vi.mock('../../periodos/services/periodosService.js')
 vi.mock('../../facultades/services/facultadesService.js')
+vi.mock('../../formularios/services/formulariosService.js')
 
 const FILA = {
   idPrograma: 1,

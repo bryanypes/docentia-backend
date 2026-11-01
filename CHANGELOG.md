@@ -1,5 +1,20 @@
 # Cambios
 
+## 0.3.2
+
+### Agregado
+
+- Catálogo del Anexo 1 de la Resolución 074: 6 criterios y 14 descriptores.
+- Formularios de autoevaluación (14 ítems) y coevaluación (6 ítems), con borrador y envío irreversible.
+- La media de cada formulario alimenta el promedio ponderado y la categoría.
+- Avance de coevaluaciones para coordinación y conteos por programa para Vicerrectoría.
+- Recordatorios de formularios pendientes, aviso de autoevaluación enviada y auditoría del envío.
+
+### Cambiado
+
+- Las pantallas de calificar por aspectos dan paso a los formularios.
+- Mi evaluación muestra solo la autoevaluación propia por criterio.
+
 ## 0.3.1
 
 ### Agregado
