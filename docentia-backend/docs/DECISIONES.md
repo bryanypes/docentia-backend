@@ -74,7 +74,8 @@ ambigüedad. La fuente de verdad es la resolución; el Excel v2 tiene errores (v
 - **Gate de autores.** `git shortlog` muestra a Daniel Aranda y a Vero, colaboradores reales con
   commits ya públicos. Quitarlos exigiría reescribir historial, y eso está prohibido. Tus dos correos
   se unifican con `.mailmap`.
-- **Repositorio `docentia-docker`.** Su commit local quedó absorbido por el monorepo y no se sube.
+- **Repositorio `docentia-docker`.** Recibe una copia de cada versión publicada, con `backend/` y
+  `frontend/`. El desarrollo sigue en `docentia-backend` y `DocenteIA`.
 - **PostgreSQL en CI.** Las pruebas usan `embedded-postgres`, un PostgreSQL 16 real, así que no hace
   falta un servicio aparte.
 
