@@ -1,0 +1,144 @@
+.instrumento {
+  display: grid;
+  gap: var(--espacio-5);
+}
+
+.instrumento__progreso {
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  display: grid;
+  gap: 4px;
+  padding: 10px 12px;
+  font-weight: var(--peso-semi);
+  color: var(--color-azul);
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+}
+
+.instrumento__progreso progress {
+  width: 100%;
+  height: 10px;
+  accent-color: #053686;
+}
+
+.instrumento__escala {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin: 0;
+  font-size: 13px;
+}
+
+.instrumento__escala div {
+  display: flex;
+  gap: 6px;
+}
+
+.instrumento__escala dt {
+  font-weight: var(--peso-fuerte);
+  color: var(--color-azul);
+}
+
+.instrumento__escala dd {
+  margin: 0;
+}
+
+.instrumento__criterio {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  margin: 0;
+  padding: 14px;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-lg);
+}
+
+.instrumento__criterio > legend {
+  padding: 0 6px;
+  font-weight: var(--peso-fuerte);
+  color: var(--color-azul);
+}
+
+.instrumento__item {
+  min-width: 0;
+  margin: 0;
+  padding: 0 0 10px;
+  border: 0;
+  border-bottom: 1px solid var(--color-borde-suave);
+}
+
+.instrumento__item legend {
+  padding: 0;
+  margin-bottom: 8px;
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.instrumento__opciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.instrumento__opcion {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-width: 52px;
+  min-height: 40px;
+  padding: 6px 10px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  cursor: pointer;
+}
+
+.instrumento__opcion:has(input:checked) {
+  font-weight: var(--peso-fuerte);
+  color: #053686;
+  background: var(--color-azul-suave);
+  border-color: #053686;
+}
+
+.instrumento__opcion:has(input:focus-visible) {
+  outline: 2px solid #053686;
+  outline-offset: 2px;
+}
+
+.instrumento__opcion:has(input:disabled) {
+  cursor: default;
+}
+
+.instrumento__comentario {
+  display: grid;
+  gap: 4px;
+  font-size: 13px;
+}
+
+.instrumento__acciones {
+  display: grid;
+  gap: 10px;
+  justify-items: start;
+}
+
+.instrumento__confirmacion {
+  font-size: 14px;
+}
+
+.coevaluaciones__tabla {
+  overflow-x: auto;
+}
+
+.menu__contador {
+  min-width: 20px;
+  margin-left: auto;
+  padding: 1px 6px;
+  font-size: 11px;
+  font-weight: var(--peso-semi);
+  text-align: center;
+  color: #053686;
+  background: #e3c924;
+  border-radius: var(--radio-pildora);
+}

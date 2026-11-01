@@ -178,3 +178,47 @@ test('las notificaciones llegan a la campana y se leen', async () => {
   await pagina.getByRole('button', { name: 'Notificaciones', exact: true }).waitFor()
   await pagina.context().close()
 })
+
+async function responderTodo(pagina, valor) {
+  const opciones = pagina.locator(`input[type=radio][value="${valor}"]`)
+  const cantidad = await opciones.count()
+  for (let i = 0; i < cantidad; i += 1) await opciones.nth(i).check()
+  return cantidad
+}
+
+async function enviarFormulario(pagina) {
+  await pagina.getByRole('checkbox').check()
+  await pagina.getByRole('button', { name: 'Enviar formulario' }).click()
+  await pagina.getByText('Formulario enviado').waitFor()
+}
+
+test('los formularios cambian la nota y el docente no ve la coevaluación', async () => {
+  const docente = await entrar('ramiro.paz')
+  await docente.click('a[href="/mi-autoevaluacion"]')
+  await docente.getByRole('group', { name: 'Sensibilidad social' }).waitFor()
+  assert.equal(await responderTodo(docente, 5), 14)
+  await docente.getByText('14 de 14 ítems respondidos').waitFor()
+  await enviarFormulario(docente)
+  await docente.context().close()
+
+  const coordinacion = await entrar(COORDINACION)
+  await abrirExpediente(coordinacion, 'Ramiro')
+  await coordinacion.getByText('Muy bajo desempeño').first().waitFor()
+  await coordinacion.click('a[href="/coevaluaciones"]')
+  await coordinacion.getByRole('link', { name: /Ramiro/ }).click()
+  await coordinacion.getByRole('group', { name: /Sensibilidad/ }).waitFor({ state: 'detached', timeout: 2000 }).catch(() => {})
+  assert.equal(await responderTodo(coordinacion, 5), 6)
+  await enviarFormulario(coordinacion)
+  await abrirExpediente(coordinacion, 'Ramiro')
+  await coordinacion.getByText('Muy bajo desempeño').first().waitFor({ state: 'detached' })
+  await coordinacion.context().close()
+
+  const otraVez = await entrar('ramiro.paz')
+  const propio = await llamar(otraVez, 'GET', '/expedientes/propio')
+  assert.equal(propio.datos.notasPorFuente, undefined)
+  const sesion = await llamar(otraVez, 'GET', '/sesiones/actual')
+  const ajeno = await llamar(otraVez, 'GET', `/formularios/coevaluacion/${sesion.datos.idUsuario}`)
+  assert.equal(ajeno.estado, 403)
+  await otraVez.getByRole('heading', { name: 'Mi autoevaluación por criterio' }).waitFor()
+  await otraVez.context().close()
+})
