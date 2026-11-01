@@ -9,6 +9,7 @@ import com.uniautonoma.docentia.entity.CorreccionCalificacion;
 import com.uniautonoma.docentia.entity.FuenteEvaluacion;
 import com.uniautonoma.docentia.entity.Importacion;
 import com.uniautonoma.docentia.entity.NotasAspectos;
+import com.uniautonoma.docentia.entity.OrigenCalificacion;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.Rol;
 import com.uniautonoma.docentia.entity.TipoEtapa;
@@ -21,6 +22,7 @@ import com.uniautonoma.docentia.repository.CorreccionCalificacionRepository;
 import com.uniautonoma.docentia.repository.UsuarioRepository;
 import com.uniautonoma.docentia.security.UsuarioSesion;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.stereotype.Service;
@@ -74,6 +76,43 @@ public class CalificacionService {
    * @throws ReglaNegocioException si no hay un periodo académico activo
    * @throws EtapaCerradaException si hoy no está abierta la recolección de calificaciones
    */
+  /**
+   * Vuelve la media de un formulario enviado la nota de la fuente en el periodo y recalcula el
+   * promedio. Las cinco notas por aspecto toman esa media, redondeada, porque el instrumento no
+   * tiene esos aspectos.
+   */
+  public void registrarDesdeFormulario(
+      Usuario docente,
+      PeriodoAcademico periodo,
+      FuenteEvaluacion fuente,
+      BigDecimal media,
+      Usuario evaluador) {
+    BigDecimal nota = media.setScale(2, RoundingMode.HALF_UP);
+    guardar(
+        docente,
+        periodo,
+        fuente,
+        new NotasAspectos(nota, nota, nota, nota, nota),
+        null,
+        evaluador,
+        evaluador,
+        "Reemplazada por el formulario enviado",
+        null,
+        media);
+  }
+
+  private void exigirSinFormulario(
+      Usuario docente, PeriodoAcademico periodo, FuenteEvaluacion fuente) {
+    calificacionRepository
+        .findByDocenteIdUsuarioAndPeriodoIdPeriodoAndFuente(
+            docente.getIdUsuario(), periodo.getIdPeriodo(), fuente)
+        .filter(calificacion -> calificacion.getOrigen() == OrigenCalificacion.FORMULARIO)
+        .ifPresent(
+            calificacion -> {
+              throw new ReglaNegocioException("Esta nota viene de un formulario ya enviado");
+            });
+  }
+
   public CalificacionResponse calificarDocente(
       Long idDocente,
       FuenteEvaluacion fuente,
@@ -82,6 +121,7 @@ public class CalificacionService {
     Usuario docente = docenteService.buscarDocenteVisible(idDocente, sesion);
     PeriodoAcademico periodo = periodoService.exigirPeriodoActivo();
     ventanaEtapaService.exigirEtapaAbierta(periodo, TipoEtapa.RECOLECCION_CALIFICACIONES);
+    exigirSinFormulario(docente, periodo, fuente);
     Usuario evaluador = usuarioRepository.getReferenceById(sesion.idUsuario());
     Calificacion calificacion =
         guardar(
@@ -112,6 +152,7 @@ public class CalificacionService {
     Usuario docente = buscarDocentePropio(sesion);
     PeriodoAcademico periodo = periodoService.exigirPeriodoActivo();
     ventanaEtapaService.exigirEtapaAbierta(periodo, TipoEtapa.RECOLECCION_CALIFICACIONES);
+    exigirSinFormulario(docente, periodo, FuenteEvaluacion.AUTOEVALUACION);
     return CalificacionResponse.desde(
         guardar(
             docente,
@@ -253,6 +294,30 @@ public class CalificacionService {
       Usuario responsable,
       String motivo,
       Importacion importacion) {
+    return guardar(
+        docente,
+        periodo,
+        fuente,
+        notas,
+        observacion,
+        evaluador,
+        responsable,
+        motivo,
+        importacion,
+        null);
+  }
+
+  private Calificacion guardar(
+      Usuario docente,
+      PeriodoAcademico periodo,
+      FuenteEvaluacion fuente,
+      NotasAspectos notas,
+      String observacion,
+      Usuario evaluador,
+      Usuario responsable,
+      String motivo,
+      Importacion importacion,
+      BigDecimal notaFormulario) {
     Calificacion calificacion =
         calificacionRepository
             .findByDocenteIdUsuarioAndPeriodoIdPeriodoAndFuente(
@@ -267,6 +332,9 @@ public class CalificacionService {
             : null;
 
     calificacion.registrar(notas, observacion, evaluador, importacion);
+    if (notaFormulario != null) {
+      calificacion.fijarDesdeFormulario(notaFormulario);
+    }
     Calificacion guardada = calificacionRepository.saveAndFlush(calificacion);
     PromedioPonderadoResponse promedioNuevo =
         promedioService.recalcular(docente.getIdUsuario(), periodo.getIdPeriodo());

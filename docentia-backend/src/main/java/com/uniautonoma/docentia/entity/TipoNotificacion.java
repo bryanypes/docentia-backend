@@ -27,6 +27,12 @@ public enum TipoNotificacion {
       "Compromiso vencido en tu facultad", "Un compromiso de tu facultad está vencido."),
   IMPORTACION_EXITOSA("Importación terminada", "Tu carga de CSV terminó correctamente."),
   IMPORTACION_CON_ERRORES("Importación con errores", "Tu carga de CSV fue rechazada por errores."),
+  AUTOEVALUACION_PENDIENTE(
+      "Autoevaluación pendiente", "Tu autoevaluación sigue pendiente y la etapa está por cerrar."),
+  COEVALUACIONES_PENDIENTES(
+      "Coevaluaciones pendientes", "Tienes coevaluaciones pendientes y la etapa está por cerrar."),
+  AUTOEVALUACION_ENVIADA(
+      "Autoevaluación enviada", "Un docente de tu facultad envió su autoevaluación."),
   VENTANA_POR_CERRAR(
       "Etapa próxima a cerrar",
       "Una etapa del periodo cierra en 3 días. Revisa los pendientes de tu facultad."),
