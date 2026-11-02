@@ -20,7 +20,7 @@ import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
-/** Formulario de un docente en un periodo. Al enviarse queda fijo. HETERO lleva la clase. */
+/** Formulario de un docente en un periodo. Al enviarse queda fijo. */
 @Entity
 @Table(name = "evaluaciones_formulario")
 public class EvaluacionFormulario {
@@ -40,10 +40,6 @@ public class EvaluacionFormulario {
   @ManyToOne(fetch = FetchType.LAZY, optional = false)
   @JoinColumn(name = "evaluador_usuario_id", nullable = false, updatable = false)
   private Usuario evaluador;
-
-  @ManyToOne(fetch = FetchType.LAZY)
-  @JoinColumn(name = "clase_id", updatable = false)
-  private Clase clase;
 
   @Enumerated(EnumType.STRING)
   @Column(nullable = false, length = 10, updatable = false)
@@ -88,22 +84,11 @@ public class EvaluacionFormulario {
       Usuario evaluador,
       TipoFormulario tipo,
       String instrumentoVersion) {
-    this(periodo, docente, evaluador, tipo, instrumentoVersion, null);
-  }
-
-  public EvaluacionFormulario(
-      PeriodoAcademico periodo,
-      Usuario docente,
-      Usuario evaluador,
-      TipoFormulario tipo,
-      String instrumentoVersion,
-      Clase clase) {
     this.periodo = periodo;
     this.docente = docente;
     this.evaluador = evaluador;
     this.tipo = tipo;
     this.instrumentoVersion = instrumentoVersion;
-    this.clase = clase;
   }
 
   public void reemplazar(Map<Long, Short> nuevasRespuestas, Map<Long, String> nuevosComentarios) {
@@ -137,14 +122,6 @@ public class EvaluacionFormulario {
 
   public Usuario getEvaluador() {
     return evaluador;
-  }
-
-  public Clase getClase() {
-    return clase;
-  }
-
-  public BigDecimal getValor() {
-    return valor;
   }
 
   public TipoFormulario getTipo() {

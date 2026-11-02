@@ -228,7 +228,10 @@ public class CalificacionService {
     Optional<Calificacion> anterior =
         calificacionRepository.findByDocenteIdUsuarioAndPeriodoIdPeriodoAndFuente(
             docente.getIdUsuario(), periodo.getIdPeriodo(), FuenteEvaluacion.ESTUDIANTES);
-    if (anterior.isPresent() && anterior.get().getNotas().mismasNotas(notas)) {
+    if (anterior.isPresent()
+        && (anterior.get().getNotas().mismasNotas(notas)
+            || anterior.get().getOrigen() == OrigenCalificacion.FORMULARIO)) {
+      // El formulario de los estudiantes, con el mínimo de respuestas, prevalece sobre el CSV.
       return ResultadoRegistro.SIN_CAMBIOS;
     }
     guardar(
