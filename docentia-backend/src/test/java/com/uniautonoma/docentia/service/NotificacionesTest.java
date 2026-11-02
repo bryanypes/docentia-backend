@@ -360,6 +360,65 @@ class NotificacionesTest extends PruebaIntegracion {
   }
 
   @Test
+  void elEstudianteConPendientesRecibeUnAvisoGenericoYElCoordinadorLaCoberturaBaja() {
+    Usuario estudiante =
+        transaccion.execute(
+            estado -> {
+              var curso =
+                  escenario.crearCurso(
+                      "NT-101", "Curso " + MARCA, escenario.recargar(docente).getPrograma());
+              var clase = escenario.crearClase(periodo, curso, "A", escenario.recargar(docente));
+              Usuario nuevo = escenario.crearEstudiante("Alumno " + MARCA, curso.getPrograma());
+              escenario.matricular(clase, nuevo);
+              return nuevo;
+            });
+
+    recordatorios.generar();
+    recordatorios.generar();
+
+    assertThat(tiposDe(estudiante).stream().filter("HETEROEVALUACION_PENDIENTE"::equals))
+        .hasSize(1);
+    assertThat(tiposDe(coordinador)).contains("COBERTURA_BAJA");
+    String cuerpo =
+        jdbcTemplate.queryForObject(
+            "select c.cuerpo from cola_correo c join notificaciones n on n.id = c.notificacion_id"
+                + " where n.usuario_id = ? and n.tipo = 'HETEROEVALUACION_PENDIENTE'",
+            String.class,
+            estudiante.getIdUsuario());
+    assertThat(cuerpo).doesNotContain("Docente " + MARCA).doesNotContain("NT-101");
+    jdbcTemplate.update(
+        "delete from matriculas where estudiante_id = ?", estudiante.getIdUsuario());
+    jdbcTemplate.update("delete from clases_docente where docente_id = ?", docente.getIdUsuario());
+    jdbcTemplate.update(
+        "delete from clases where id_curso in (select id from cursos where codigo = 'NT-101')");
+    jdbcTemplate.update("delete from cursos where codigo = 'NT-101'");
+  }
+
+  @Test
+  void dosMilCorreosSeEnvianPorLotesSinBloquearOtroProcesador() throws Exception {
+    jdbcTemplate.update(
+        "insert into cola_correo (destinatario, asunto, cuerpo, proximo_intento)"
+            + " select 'carga' || g || '@uniautonoma.edu.co', 'DOCENTIA: Carga', 'Aviso',"
+            + " '2000-01-01' from generate_series(1, 2000) g");
+    java.util.concurrent.ExecutorService hilos =
+        java.util.concurrent.Executors.newFixedThreadPool(2);
+    var uno = hilos.submit(() -> colaCorreo.procesarLote());
+    var dos = hilos.submit(() -> colaCorreo.procesarLote());
+    int primero = uno.get(30, java.util.concurrent.TimeUnit.SECONDS);
+    int segundo = dos.get(30, java.util.concurrent.TimeUnit.SECONDS);
+    hilos.shutdown();
+
+    assertThat(primero).isPositive().isLessThanOrEqualTo(20);
+    assertThat(segundo).isPositive().isLessThanOrEqualTo(20);
+    assertThat(
+            jdbcTemplate.queryForObject(
+                "select count(*) from cola_correo where destinatario like 'carga%' and estado = 'ENVIADO'",
+                Integer.class))
+        .isEqualTo(primero + segundo);
+    jdbcTemplate.update("delete from cola_correo where destinatario like 'carga%'");
+  }
+
+  @Test
   void laAperturaSeAvisaAlAbrirYNoDiasDespues() {
     recordatorios.generar();
     assertThat(tiposDe(docente)).contains("VENTANA_ABIERTA");

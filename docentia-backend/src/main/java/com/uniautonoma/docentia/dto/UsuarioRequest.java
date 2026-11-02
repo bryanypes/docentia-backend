@@ -8,7 +8,7 @@ import jakarta.validation.constraints.Size;
 
 /**
  * Datos para crear o editar un usuario. El vínculo depende del rol: el coordinador lleva
- * idFacultad, el docente idPrograma y el vicerrector ninguno de los dos.
+ * idFacultad, el docente y el estudiante idPrograma y el vicerrector ninguno de los dos.
  *
  * @param contrasena obligatoria al crear; al editar, si llega vacía se conserva la actual
  */

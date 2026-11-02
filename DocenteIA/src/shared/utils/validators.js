@@ -45,6 +45,9 @@ export function validarUsuario(formulario, { contrasenaObligatoria }) {
   if (!formulario.rol) errores.rol = 'Elige un rol'
   if (formulario.rol === 'COORDINADOR' && !formulario.idFacultad) errores.idFacultad = 'Elige la facultad que coordina'
   if (formulario.rol === 'DOCENTE' && !formulario.idPrograma) errores.idPrograma = 'Elige el programa del docente'
+  if (formulario.rol === 'ESTUDIANTE' && !formulario.idPrograma) {
+    errores.idPrograma = 'Elige el programa (carrera) del estudiante'
+  }
   const { contrasena } = formulario
   if (!contrasena && contrasenaObligatoria) errores.contrasena = 'La contraseña es obligatoria'
   else if (contrasena && (contrasena.length < 8 || contrasena.length > 72)) {

@@ -74,7 +74,8 @@ ambigüedad. La fuente de verdad es la resolución; el Excel v2 tiene errores (v
 - **Gate de autores.** `git shortlog` muestra a Daniel Aranda y a Vero, colaboradores reales con
   commits ya públicos. Quitarlos exigiría reescribir historial, y eso está prohibido. Tus dos correos
   se unifican con `.mailmap`.
-- **Repositorio `docentia-docker`.** Su commit local quedó absorbido por el monorepo y no se sube.
+- **Repositorio `docentia-docker`.** Recibe una copia de cada versión publicada, con `backend/` y
+  `frontend/`. El desarrollo sigue en `docentia-backend` y `DocenteIA`.
 - **PostgreSQL en CI.** Las pruebas usan `embedded-postgres`, un PostgreSQL 16 real, así que no hace
   falta un servicio aparte.
 
@@ -107,8 +108,13 @@ ambigüedad. La fuente de verdad es la resolución; el Excel v2 tiene errores (v
   así que esto solo afecta el desglose visual.
 - **Escala de 1 a 5.** La resolución no la define. Sus etiquetas están en configuración
   (`docentia.formularios.etiquetas-escala`) y quedan pendientes de confirmar con Vicerrectoría.
-- **Precedencia.** La media del formulario prevalece sobre la nota previa de AUTO y COEVAL, sea manual o
-  de CSV. HETERO sigue por CSV. El reemplazo queda en el historial de correcciones.
+- **Precedencia.** La media del formulario prevalece sobre la nota previa de AUTO, COEVAL y HETERO.
+  HU-01 corta el CSV de notas: la fuente `ESTUDIANTES` sale de formularios HETERO agregados.
+  El reemplazo queda en el historial de correcciones.
+- **Unidad HETERO.** Un formulario por (estudiante, clase, docente). Clase = curso + grupo + jornada
+  del JSON de Campus. El detalle de HU-01 está en
+  [DECISIONES-HETEROEVALUACION.md](DECISIONES-HETEROEVALUACION.md) y el contrato en
+  [api-heteroevaluacion.md](api-heteroevaluacion.md).
 - **Origen.** `calificaciones.origen` admite MANUAL, CSV y FORMULARIO. Se agregó MANUAL porque los datos
   existentes y las notas registradas por pantalla no son ninguno de los otros dos.
 - **Notas por aspecto.** El instrumento no tiene los cinco aspectos anteriores. Al enviar, los cinco
@@ -122,6 +128,39 @@ ambigüedad. La fuente de verdad es la resolución; el Excel v2 tiene errores (v
 - **Auditoría.** `entidad_id` guarda el docente evaluado, y el periodo se deduce de la fecha.
 - **Desglose del docente.** Mi evaluación muestra solo su autoevaluación por criterio. `GET
   /expedientes/propio` conserva `dimensiones`, valores ya ponderados que no revelan una fuente.
+
+## Heteroevaluación (HU-01)
+
+- **Base de Daniel.** Se conservan el rol `ESTUDIANTE`, cursos, clases, matrículas y el seed de Campus
+  (V26). Su esquema de respuestas (V27) guardaba al estudiante junto a sus puntajes; V28 lo reemplaza
+  por tablas anónimas y borra esas filas, que solo existían en desarrollo.
+- **Asignación.** Es una fila de `clases_docente`, que recibió un id. Una matrícula RETIRADA es
+  `es_activa = false`.
+- **Anonimato.** `participaciones_heteroevaluacion` dice quién ya respondió; `respuestas_heteroevaluacion`
+  dice qué se respondió, con id UUID aleatorio y sin estudiante, fecha ni secuencia. Ninguna consulta,
+  log ni registro de auditoría las une.
+- **Sin borrador.** El estudiante envía una sola vez; no se guardan respuestas parciales.
+- **Mínimo de respuestas.** 5 por defecto (`docentia.heteroevaluacion.minimo-respuestas`). Por debajo,
+  el formulario no reemplaza al CSV y no se muestra ningún agregado.
+- **Nota de la fuente.** Media de todas las respuestas del docente en el periodo de la media simple de
+  sus 11 descriptores, con 4 decimales.
+- **Precedencia.** Con el mínimo, el formulario prevalece y un CSV posterior no lo pisa. Por debajo, manda
+  el CSV; si no hay CSV, la fuente queda faltante y el promedio PARCIAL.
+- **CSV restaurado.** El PR #4 había desactivado la carga CSV de estudiantes y borrado su prueba de
+  concurrencia. Ambas vuelven, porque el CSV es el respaldo por debajo del mínimo.
+- **Autenticación del estudiante.** El login con Google acepta cualquier correo institucional que exista,
+  y la matrícula crea al estudiante. Fuera de desarrollo, el estudiante importado no recibe una
+  contraseña utilizable. En desarrollo usa la contraseña de demo.
+- **Matrícula por CSV.** El curso queda en el programa del docente; la clase se crea como grupo
+  `UNICO`, porque el CSV no trae grupo ni jornada. Una columna opcional `estado` admite RETIRADA.
+- **Cobertura.** Cuenta participación, nunca puntajes. Un estudiante cuenta una vez por cada asignación,
+  y un retirado no cuenta.
+- **Comentarios hacia el análisis de IA: recortado.** Para usarlos habría que copiarlos a
+  `comentarios_estudiantes`, que tiene fecha y secuencia: un comentario copiado al llegar un envío
+  quedaría ligado en el tiempo a la participación de ese estudiante. Se guardan anónimos en la
+  respuesta y no van al análisis ni a ninguna pantalla.
+- **Profe David Melo.** No había cambios suyos en los repositorios; los cambios de usuarios y roles
+  venían del PR #4.
 
 ## Estructura de repositorios
 

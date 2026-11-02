@@ -226,3 +226,56 @@ test('los formularios cambian la nota y el docente no ve la coevaluación', asyn
   await otraVez.getByRole('heading', { name: 'Mi autoevaluación por criterio' }).waitFor()
   await otraVez.context().close()
 })
+
+test('el estudiante evalúa de forma anónima y la nota cambia al llegar al mínimo', async () => {
+  const coordinacion = await entrar(COORDINACION)
+  await abrirExpediente(coordinacion, 'Laura Demo')
+  await coordinacion.getByText('3,50').first().waitFor()
+  await coordinacion.click('a[href="/matricula"]')
+  const csv =
+    'correo_estudiante;nombre_estudiante;programa;codigo_curso;nombre_curso;correo_docente\n' +
+    'estudiante.e2e@uniautonoma.edu.co;Estudiante E2E;Ingeniería de Software;DEMO-101;Programación web;' +
+    'laura.demo@uniautonoma.edu.co\n'
+  await coordinacion.setInputFiles('#archivoMatricula', {
+    name: 'matricula.csv',
+    mimeType: 'text/csv',
+    buffer: Buffer.from(csv, 'utf8'),
+  })
+  await coordinacion.getByRole('button', { name: 'Importar' }).click()
+  await coordinacion.getByText('Matrícula importada').waitFor()
+  await coordinacion.context().close()
+
+  const estudiante = await entrar('estudiante.e2e')
+  await estudiante.getByRole('heading', { name: 'Mis evaluaciones' }).waitFor()
+  await estudiante.getByRole('link', { name: 'Evaluar a Laura Demo Estudiantes' }).click()
+  await estudiante.getByText('0 de 11 ítems respondidos').waitFor()
+  await estudiante.getByRole('heading', { name: 'Tus respuestas son anónimas' }).or(estudiante.getByText('Tus respuestas son anónimas', { exact: true })).first().waitFor()
+  assert.equal(await responderTodo(estudiante, 5), 11)
+  await estudiante.getByText('11 de 11 ítems respondidos').waitFor()
+  await estudiante.getByRole('checkbox').check()
+  await estudiante.getByRole('button', { name: 'Enviar evaluación' }).click()
+  await estudiante.getByText('¡Gracias por tu evaluación!').waitFor()
+  const lista = await llamar(estudiante, 'GET', '/estudiante/evaluaciones')
+  const asignacion = lista.datos.evaluaciones[0].idAsignacion
+  const respuestas = Object.fromEntries(
+    ['D02', 'D03', 'D04', 'D05', 'D06', 'D07', 'D08', 'D09', 'D10', 'D11', 'D12'].map((c) => [c, 5]),
+  )
+  const doble = await llamar(estudiante, 'POST', `/estudiante/evaluaciones/${asignacion}/enviar`, { respuestas })
+  assert.equal(doble.estado, 409)
+  assert.equal(lista.datos.evaluaciones[0].estado, 'ENVIADA')
+  await estudiante.context().close()
+
+  const otraVez = await entrar(COORDINACION)
+  await abrirExpediente(otraVez, 'Laura Demo')
+  // Con el quinto envío los estudiantes pasan de 3,00 por CSV a 5,00 por formulario: 4,50.
+  await otraVez.getByText('4,50').first().waitFor()
+  await otraVez.getByText('Alto desempeño').first().waitFor()
+  await otraVez.context().close()
+
+  const docente = await entrar('laura.demo')
+  assert.equal((await llamar(docente, 'GET', '/cobertura-heteroevaluacion')).estado, 403)
+  assert.equal((await llamar(docente, 'GET', '/estudiante/evaluaciones')).estado, 403)
+  const propio = await llamar(docente, 'GET', '/expedientes/propio')
+  assert.equal(propio.datos.notasPorFuente, undefined)
+  await docente.context().close()
+})

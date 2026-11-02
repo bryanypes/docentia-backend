@@ -8,6 +8,7 @@ La matriz completa de rol por endpoint es ejecutable y está en `MatrizAutorizac
 | Tema | Documento |
 |------|-----------|
 | Resolución 074: actas, acciones, panel, hallazgos | [api-res074.md](api-res074.md) |
+| Heteroevaluación (estudiante → docente), contrato Campus | [api-heteroevaluacion.md](api-heteroevaluacion.md) |
 | Contrato general para el frontend | [api-contrato-frontend.md](api-contrato-frontend.md) |
 | Sesiones con Google | [api-sesiones-google.md](api-sesiones-google.md) |
 | Periodos, calificaciones, importación | [api-sprint3-semana1.md](api-sprint3-semana1.md) |
@@ -39,6 +40,17 @@ Todas aceptan `?periodo=`; sin él usan el periodo activo.
 | `GET /formularios/coevaluacion/pendientes` | Coordinador, vicerrector | Estado y conteos, sin puntajes |
 | `GET` y `PUT /formularios/coevaluacion/{idDocente}` | Coordinador | 404 fuera de alcance |
 | `POST /formularios/coevaluacion/{idDocente}/enviar` | Coordinador | Igual que la autoevaluación |
+
+## Nuevo en 0.3.3
+
+| Método y ruta | Roles | Respuesta |
+|---------------|-------|-----------|
+| `GET /estudiante/evaluaciones?periodo=` | Estudiante | Asignaciones con estado PENDIENTE o ENVIADA |
+| `GET /estudiante/evaluaciones/{idAsignacion}` | Estudiante | 11 ítems por criterio y estado; 404 si no es suya o está retirado |
+| `POST /estudiante/evaluaciones/{idAsignacion}/enviar` | Estudiante | `{respuestas, comentario}`; 422 incompleto, 409 ventana cerrada o ya enviada, 429 por tope |
+| `GET /cobertura-heteroevaluacion?periodo=&page=&size=` | Coordinador, vicerrector | Matriculados y respondieron por docente y programa |
+| `POST /matriculas/csv` | Coordinador, vicerrector | Todo o nada; 422 con errores por fila |
+| `GET /matriculas/plantilla` | Coordinador, vicerrector | CSV de ejemplo |
 
 ## Errores
 

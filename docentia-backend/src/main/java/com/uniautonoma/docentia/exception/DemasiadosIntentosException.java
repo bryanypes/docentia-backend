@@ -6,4 +6,8 @@ public class DemasiadosIntentosException extends RuntimeException {
   public DemasiadosIntentosException() {
     super("Demasiados intentos. Espera unos minutos y vuelve a intentarlo");
   }
+
+  public DemasiadosIntentosException(String mensaje) {
+    super(mensaje);
+  }
 }

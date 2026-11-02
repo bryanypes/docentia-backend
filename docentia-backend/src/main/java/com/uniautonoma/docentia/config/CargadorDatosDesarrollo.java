@@ -23,6 +23,7 @@ import com.uniautonoma.docentia.repository.ProgramaRepository;
 import com.uniautonoma.docentia.repository.UsuarioRepository;
 import com.uniautonoma.docentia.service.CalificacionService;
 import com.uniautonoma.docentia.service.PromedioService;
+import com.uniautonoma.docentia.service.campus.CargadorClasesCampus;
 import com.uniautonoma.docentia.service.importacion.ValidadorEvaluacionEstudiantes;
 import com.uniautonoma.docentia.service.notificacion.SilencioNotificaciones;
 import java.math.BigDecimal;
@@ -60,6 +61,8 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
   private final ImportacionRepository importacionRepository;
   private final ComentarioEstudianteRepository comentarioRepository;
   private final FranjaHorariaRepository franjaRepository;
+  private final CargadorClasesCampus cargadorClasesCampus;
+  private final SemillaHeteroevaluacion semillaHeteroevaluacion;
 
   public CargadorDatosDesarrollo(
       FranjaHorariaRepository franjaRepository,
@@ -75,7 +78,10 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
       PromedioService promedioService,
       PasswordEncoder passwordEncoder,
       @Value("${docentia.desarrollo.contrasena-inicial}") String contrasenaInicial,
-      TransactionTemplate transaccion) {
+      TransactionTemplate transaccion,
+      CargadorClasesCampus cargadorClasesCampus,
+      SemillaHeteroevaluacion semillaHeteroevaluacion) {
+    this.semillaHeteroevaluacion = semillaHeteroevaluacion;
     this.transaccion = transaccion;
     this.importacionRepository = importacionRepository;
     this.comentarioRepository = comentarioRepository;
@@ -90,6 +96,7 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
     this.promedioService = promedioService;
     this.passwordEncoder = passwordEncoder;
     this.contrasenaInicial = contrasenaInicial;
+    this.cargadorClasesCampus = cargadorClasesCampus;
   }
 
   /**
@@ -107,10 +114,20 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
   }
 
   private void cargar() {
-    if (usuarioRepository.count() > 0) {
-      return;
-    }
     String hash = passwordEncoder.encode(contrasenaInicial);
+    if (usuarioRepository.count() == 0) {
+      sembrarCatalogoLocal(hash);
+    }
+    // El recorte Campus es idempotente: tiene que correr también si la base ya tenía el seed
+    // de Ingeniería/Derecho (si no, Karen no existe y el login responde 401).
+    periodoRepository
+        .findByEsActivoTrue()
+        .ifPresent(periodo -> cargadorClasesCampus.cargarDemo(periodo, hash));
+    // Igual que Campus: corre también sobre una base que ya tenía el seed.
+    semillaHeteroevaluacion.cargarSiFalta(hash);
+  }
+
+  private void sembrarCatalogoLocal(String hash) {
 
     Facultad ingenieria = facultadRepository.save(new Facultad("Facultad de Ingeniería"));
     Facultad derecho =

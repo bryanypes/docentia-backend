@@ -17,6 +17,7 @@ import com.uniautonoma.docentia.repository.EvaluacionFormularioRepository.Avance
 import com.uniautonoma.docentia.repository.FacultadRepository;
 import com.uniautonoma.docentia.repository.PeriodoAcademicoRepository;
 import com.uniautonoma.docentia.repository.UsuarioRepository;
+import com.uniautonoma.docentia.service.heteroevaluacion.CoberturaService;
 import java.time.Clock;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -26,6 +27,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,6 +50,8 @@ public class GeneradorRecordatorios {
   private final UsuarioRepository usuarioRepository;
   private final FacultadRepository facultadRepository;
   private final EvaluacionFormularioRepository formularioRepository;
+  private final JdbcTemplate jdbcTemplate;
+  private final CoberturaService cobertura;
   private final Clock reloj;
 
   public GeneradorRecordatorios(
@@ -58,7 +62,11 @@ public class GeneradorRecordatorios {
       UsuarioRepository usuarioRepository,
       FacultadRepository facultadRepository,
       EvaluacionFormularioRepository formularioRepository,
+      JdbcTemplate jdbcTemplate,
+      CoberturaService cobertura,
       Clock reloj) {
+    this.jdbcTemplate = jdbcTemplate;
+    this.cobertura = cobertura;
     this.formularioRepository = formularioRepository;
     this.notificaciones = notificaciones;
     this.citaRepository = citaRepository;
@@ -162,6 +170,7 @@ public class GeneradorRecordatorios {
       }
       if (etapa.getTipoEtapa() == TipoEtapa.RECOLECCION_CALIFICACIONES) {
         recordarFormularios(periodo, etapa, hoy);
+        recordarHeteroevaluacion(periodo, etapa, hoy);
       }
       if (!hoy.isBefore(etapa.getFechaCierre().minusDays(3))) {
         avisarAFacultades(TipoNotificacion.VENTANA_POR_CERRAR, etapa, clave, idPeriodo);
@@ -210,6 +219,64 @@ public class GeneradorRecordatorios {
                     idPeriodo,
                     "coevaluacion:" + idPeriodo + ":" + plazo,
                     "Pendientes: " + cantidad + ".")));
+  }
+
+  /** Estudiantes con evaluaciones pendientes: al abrir, y a 3 días y a 1 día del cierre. */
+  private void recordarHeteroevaluacion(
+      PeriodoAcademico periodo, EtapaPeriodo etapa, LocalDate hoy) {
+    long dias = ChronoUnit.DAYS.between(hoy, etapa.getFechaCierre());
+    boolean apertura = !hoy.isAfter(etapa.getFechaApertura().plusDays(DIAS_AVISO_APERTURA));
+    if (!apertura && dias > 3) {
+      return;
+    }
+    String momento = dias <= 1 ? "1d" : dias <= 3 ? "3d" : "apertura";
+    Long idPeriodo = periodo.getIdPeriodo();
+    jdbcTemplate
+        .queryForList(
+            """
+            select distinct m.estudiante_id
+            from matriculas m
+            join clases c on c.id = m.clase_id and c.id_periodo = ?
+            join clases_docente cd on cd.clase_id = c.id
+            where m.es_activa and not exists (
+                select 1 from participaciones_heteroevaluacion pa
+                where pa.asignacion_id = cd.id and pa.estudiante_id = m.estudiante_id)
+            """,
+            Long.class,
+            idPeriodo)
+        .forEach(
+            idEstudiante ->
+                notificaciones.notificar(
+                    EventoNotificacion.aUsuario(
+                        TipoNotificacion.HETEROEVALUACION_PENDIENTE,
+                        idEstudiante,
+                        "/evaluacion-profesores",
+                        "PERIODO",
+                        idPeriodo,
+                        "heteroevaluacion:" + idPeriodo + ":" + momento)));
+    if (dias <= 3 && dias > 1) {
+      facultadRepository
+          .findAll()
+          .forEach(
+              facultad -> {
+                if (cobertura.tieneMatriculados(idPeriodo, facultad.getIdFacultad())
+                    && cobertura
+                            .porcentajeFacultad(idPeriodo, facultad.getIdFacultad())
+                            .compareTo(java.math.BigDecimal.valueOf(50))
+                        < 0) {
+                  notificaciones.notificar(
+                      new EventoNotificacion(
+                          TipoNotificacion.COBERTURA_BAJA,
+                          EventoNotificacion.Destino.COORDINADORES_FACULTAD,
+                          facultad.getIdFacultad(),
+                          "/matricula",
+                          "PERIODO",
+                          idPeriodo,
+                          "cobertura:" + idPeriodo,
+                          null));
+                }
+              });
+    }
   }
 
   private static Set<Long> enviadas(List<AvanceFormulario> avance, TipoFormulario tipo) {
