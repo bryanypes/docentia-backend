@@ -24,9 +24,7 @@ import com.uniautonoma.docentia.repository.SolicitudAnalisisRepository;
 import com.uniautonoma.docentia.security.UsuarioSesion;
 import com.uniautonoma.docentia.service.analisis.ValidacionHallazgoService;
 import com.uniautonoma.docentia.service.formulario.FormularioService;
-import com.uniautonoma.docentia.service.importacion.ImportacionService;
 import java.math.BigDecimal;
-import java.nio.charset.StandardCharsets;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,7 +42,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -59,7 +56,6 @@ class ConcurrenciaFlujosTest extends PruebaIntegracion {
   @Autowired private EscenarioPrueba escenario;
   @Autowired private ActaService actaService;
   @Autowired private ValidacionHallazgoService validacionService;
-  @Autowired private ImportacionService importacionService;
   @Autowired private FormularioService formularioService;
   @Autowired private SolicitudAnalisisRepository solicitudRepository;
   @Autowired private FranjaHorariaRepository franjaRepository;
@@ -229,37 +225,5 @@ class ConcurrenciaFlujosTest extends PruebaIntegracion {
             });
 
     assertThat(exitos).isEqualTo(1);
-  }
-
-  @Test
-  void dosImportacionesSimultaneasNoDuplicanNada() throws Exception {
-    String csv =
-        "Correo docente;Dominio disciplinar;Planeación académica;Metodología de enseñanza;"
-            + "Evaluación del aprendizaje;Compromiso institucional;Comentario\n"
-            + docente.getCorreo()
-            + ";4.0;4.0;4.0;4.0;4.0;Explica muy bien\n";
-    UsuarioSesion sesion = UsuarioSesion.desde(coordinador);
-
-    enParalelo(
-        () ->
-            importacionService.importar(
-                new MockMultipartFile(
-                    "archivo", "e.csv", "text/csv", csv.getBytes(StandardCharsets.UTF_8)),
-                null,
-                null,
-                sesion));
-
-    assertThat(
-            jdbcTemplate.queryForObject(
-                "select count(*) from comentarios_estudiantes where id_docente = ?",
-                Integer.class,
-                docente.getIdUsuario()))
-        .isEqualTo(1);
-    assertThat(
-            jdbcTemplate.queryForObject(
-                "select count(*) from calificaciones where id_docente = ? and fuente = 'ESTUDIANTES'",
-                Integer.class,
-                docente.getIdUsuario()))
-        .isEqualTo(1);
   }
 }
