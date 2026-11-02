@@ -1,6 +1,6 @@
 {
   "info": {
-    "name": "DOCENTIA 0.3.2",
+    "name": "DOCENTIA 0.3.3",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "auth": {
@@ -459,6 +459,27 @@
       ]
     },
     {
+      "name": "cobertura-heteroevaluacion",
+      "item": [
+        {
+          "name": "GET /cobertura-heteroevaluacion",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/cobertura-heteroevaluacion",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "cobertura-heteroevaluacion"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "compromisos",
       "item": [
         {
@@ -627,6 +648,65 @@
                 "docentes",
                 ":id",
                 "plan-seguimiento"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "estudiante",
+      "item": [
+        {
+          "name": "GET /estudiante/evaluaciones",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/estudiante/evaluaciones",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estudiante",
+                "evaluaciones"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /estudiante/evaluaciones/:id",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/estudiante/evaluaciones/:id",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estudiante",
+                "evaluaciones",
+                ":id"
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /estudiante/evaluaciones/:id/enviar",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/estudiante/evaluaciones/:id/enviar",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "estudiante",
+                "evaluaciones",
+                ":id",
+                "enviar"
               ]
             }
           }
@@ -1154,6 +1234,45 @@
               "path": [
                 "kpis",
                 "panel"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "matriculas",
+      "item": [
+        {
+          "name": "POST /matriculas/csv",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/matriculas/csv",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "matriculas",
+                "csv"
+              ]
+            }
+          }
+        },
+        {
+          "name": "GET /matriculas/plantilla",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/matriculas/plantilla",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "matriculas",
+                "plantilla"
               ]
             }
           }
