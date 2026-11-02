@@ -12,6 +12,7 @@ import { PanelHallazgosPropios } from '../../analisis/components/PanelHallazgosP
 import { PanelMiAutoevaluacion } from '../../formularios/components/PanelMiAutoevaluacion.jsx'
 import { obtenerConfiguracionEvaluacion } from '../../kpis/services/configuracionService.js'
 import { LineaTiempo } from '../../periodos/components/LineaTiempo.jsx'
+import { PanelProcesoPropio } from '../../proceso/components/PanelProcesoPropio.jsx'
 import { PanelCompromisos } from '../components/PanelesExpediente.jsx'
 import { obtenerExpedientePropio } from '../services/expedientesService.js'
 import './MiEvaluacion.css'
@@ -58,7 +59,10 @@ export default function MiEvaluacion() {
   }
 
   const { periodo, promedio, compromisosVigentes } = expediente.datos
-  const completo = promedio?.estado === 'COMPLETO'
+  // Sin el campo (backend anterior) se comporta como antes.
+  const habilitado = expediente.datos.resultadoHabilitado !== false
+  const completo = promedio?.estado === 'COMPLETO' && habilitado
+  const esperaReunion = promedio?.estado === 'COMPLETO' && !habilitado
 
   return (
     <>
@@ -73,6 +77,7 @@ export default function MiEvaluacion() {
         ) : (
           <>
           <LineaTiempo />
+          <PanelProcesoPropio />
           <div className="rejilla">
             <section className="mi-evaluacion__resumen">
               <div className="mi-evaluacion__cabecera">
@@ -82,12 +87,16 @@ export default function MiEvaluacion() {
                 <div>
                   <div className="mi-evaluacion__rotulo">Tu promedio {periodo.nombre}</div>
                   <strong className="mi-evaluacion__valor">
-                    {completo ? formatearNota(promedio.valor) : 'Pendiente'}
+                    {completo ? formatearNota(promedio.valor) : esperaReunion ? 'En tu cita' : 'Pendiente'}
                   </strong>
                 </div>
               </div>
 
-              <EtiquetaNivel promedio={promedio} />
+              {esperaReunion ? (
+                <span className="pildora pildora--turquesa">Lista para tu reunión</span>
+              ) : (
+                <EtiquetaNivel promedio={promedio} />
+              )}
 
               {completo && promedio.categoria && (
                 <p className="mi-evaluacion__texto">
@@ -96,7 +105,9 @@ export default function MiEvaluacion() {
               )}
 
               <p className="mi-evaluacion__texto">
-                {completo
+                {esperaReunion
+                  ? 'Tus tres evaluaciones están completas. Tu nota, tus compromisos y el acta se te muestran en la reunión de retroalimentación, cuando la coordinación registre tu asistencia.'
+                  : completo
                   ? 'Promedio ponderado del periodo. Incluye la evaluación de tus estudiantes y las evaluaciones institucionales, que se reportan únicamente dentro de este promedio.'
                   : `Tu promedio estará disponible cuando se registre la calificación de ${listarFuentes(promedio.fuentesPendientes)}.`}
               </p>

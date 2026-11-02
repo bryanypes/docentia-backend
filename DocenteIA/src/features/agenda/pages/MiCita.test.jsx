@@ -3,10 +3,12 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderizarConSesion } from '../../../pruebas/renderizarConSesion.jsx'
 import { ApiError } from '../../../services/api.js'
+import * as procesoService from '../../proceso/services/procesoService.js'
 import * as agendaService from '../services/agendaService.js'
 import MiCita from './MiCita.jsx'
 
 vi.mock('../services/agendaService.js')
+vi.mock('../../proceso/services/procesoService.js')
 
 const DISPONIBLES = [
   { idFranja: 1, fecha: '2026-11-09', horaInicio: '08:00:00', horaFin: '08:30:00', nombreCoordinador: 'Andrés Ordóñez' },
@@ -23,6 +25,7 @@ describe('MiCita', () => {
   beforeEach(() => {
     vi.resetAllMocks()
     agendaService.listarFranjasDisponibles.mockResolvedValue(DISPONIBLES)
+    procesoService.obtenerProcesoPropio.mockResolvedValue({ estado: 'EVALUACIONES_EN_CURSO', paso: 1, hitos: [] })
   })
 
   afterEach(() => {
@@ -66,5 +69,21 @@ describe('MiCita', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('La franja ya fue reservada por otro docente')
     expect(screen.getByText(/La lista de franjas se actualizó/)).toBeInTheDocument()
     expect(agendaService.listarFranjasDisponibles).toHaveBeenCalledTimes(2)
+  })
+
+  it('confirma la asistencia y la declinación pide confirmación antes de liberar la cita', async () => {
+    agendaService.obtenerMiCita.mockResolvedValue({ ...CITA, confirmacion: null, asistencia: null })
+    procesoService.responderCita.mockResolvedValue({ ...CITA, confirmacion: 'CONFIRMADA' })
+    const confirmar = vi.spyOn(window, 'confirm').mockReturnValue(false)
+    renderizar()
+
+    expect(await screen.findByText('Falta confirmar tu asistencia')).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Confirmar asistencia' }))
+    expect(procesoService.responderCita).toHaveBeenCalledWith(true)
+    expect(await screen.findByText(/Confirmaste tu asistencia/)).toBeInTheDocument()
+
+    await userEvent.click(screen.getByRole('button', { name: 'No podré asistir' }))
+    expect(confirmar.mock.calls.at(-1)[0]).toContain('franja queda para otro docente')
+    expect(procesoService.responderCita).toHaveBeenCalledTimes(1)
   })
 })

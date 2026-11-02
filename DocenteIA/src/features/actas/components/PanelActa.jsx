@@ -12,8 +12,10 @@ import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { formatearFecha, formatearFechaHora, formatearNota } from '../../../shared/utils/formatters.js'
 import { useSesion } from '../../auth/sesionContext.js'
 import { obtenerConfiguracionEvaluacion } from '../../kpis/services/configuracionService.js'
+import { ETIQUETA_TIPO_ACTA } from '../../proceso/estados.js'
 import {
   agregarCompromiso,
+  cambiarTipoActa,
   corregirActa,
   crearActa,
   descargarPdfActa,
@@ -177,6 +179,25 @@ function Correccion({ acta, ejecutar, ocupado }) {
   )
 }
 
+/** Selector del tipo de acta para la coordinación, mientras nadie haya firmado. */
+function TipoActa({ acta, ejecutar, ocupado }) {
+  const id = `tipo-acta-${acta.idActa}`
+  return (
+    <Campo id={id} etiqueta="Tipo de acta" ayuda="Con una nota bajo el umbral solo cabe el acta de compromiso.">
+      <select
+        id={id}
+        className="campo__control"
+        value={acta.tipo}
+        disabled={ocupado}
+        onChange={(e) => ejecutar(() => cambiarTipoActa(acta.idActa, e.target.value))}
+      >
+        <option value="RETROALIMENTACION">{ETIQUETA_TIPO_ACTA.RETROALIMENTACION}</option>
+        <option value="COMPROMISO">{ETIQUETA_TIPO_ACTA.COMPROMISO}</option>
+      </select>
+    </Campo>
+  )
+}
+
 function DetalleActa({ acta, usuario, rolCorrector, ejecutar, ocupado, onDescargar }) {
   const estado = ESTADO_ACTA[acta.estado]
   const editable = acta.estado === 'BORRADOR' && usuario.rol === ROLES.COORDINADOR && acta.firmas.length === 0
@@ -186,9 +207,14 @@ function DetalleActa({ acta, usuario, rolCorrector, ejecutar, ocupado, onDescarg
     <div className="acta">
       <div className="acta__resumen">
         <strong>
-          Periodo {acta.periodo.nombre} · versión {acta.version}
+          {acta.tipo ? `${ETIQUETA_TIPO_ACTA[acta.tipo]} · ` : ''}Periodo {acta.periodo.nombre} · versión {acta.version}
         </strong>
         <span className={`pildora pildora--${estado.clase}`}>{estado.etiqueta}</span>
+        {acta.tipo && (
+          <span className={`pildora pildora--${acta.tipo === 'COMPROMISO' ? 'rosa' : 'turquesa'}`}>
+            {acta.tipo === 'COMPROMISO' ? 'Con compromisos' : 'Retroalimentación recibida'}
+          </span>
+        )}
         {acta.categoria ? (
           <>
             <span>Nota {formatearNota(acta.promedio)}</span>
@@ -200,11 +226,21 @@ function DetalleActa({ acta, usuario, rolCorrector, ejecutar, ocupado, onDescarg
       </div>
       {acta.categoria && <p className="acta__accion">Acción institucional: {acta.categoria.accionInstitucional}</p>}
       {acta.motivoCorreccion && <p className="acta__accion">Motivo de la corrección: {acta.motivoCorreccion}</p>}
+      {editable && acta.tipo && <TipoActa acta={acta} ejecutar={ejecutar} ocupado={ocupado} />}
       {acta.estado === 'BORRADOR' && acta.categoria && (
-        <Aviso tipo="info" titulo={acta.requiereCompromisos ? `Nota menor a ${umbral}` : `Nota de ${umbral} o más`}>
+        <Aviso
+          tipo="info"
+          titulo={
+            acta.requiereCompromisos
+              ? Number(acta.promedio) < Number(acta.umbralCompromisos)
+                ? `Nota menor a ${umbral}`
+                : 'Acta de compromiso'
+              : `Nota de ${umbral} o más`
+          }
+        >
           {acta.requiereCompromisos
             ? 'El acta necesita al menos un compromiso con plazo antes de firmarse.'
-            : 'Basta con la confirmación de lectura; los compromisos son opcionales.'}
+            : 'Es la constancia de que el docente recibió la retroalimentación: basta con la confirmación de lectura.'}
         </Aviso>
       )}
       <Compromisos acta={acta} editable={editable} ejecutar={ejecutar} ocupado={ocupado} />
@@ -268,13 +304,14 @@ export function PanelActa({ idDocente }) {
     }
   }
 
+  const [tipoNueva, setTipoNueva] = useState('')
   const lista = actas.datos ?? []
   const [vigente, ...anteriores] = lista
   const rolCorrector = configuracion.datos?.rolCorrectorActas
   const propsDetalle = { usuario, rolCorrector, ejecutar, ocupado, onDescargar: descargar }
 
   return (
-    <Panel titulo="Acta de retroalimentación" icono={FileSignature}>
+    <Panel titulo="Acta de la reunión" descripcion="Acta de compromiso o de retroalimentación; se firma en la reunión." icono={FileSignature} tono="rosa">
       {actas.cargando && !actas.datos && <Cargando texto="Cargando el acta" bloques={1} />}
       {actas.error && (
         <EstadoVista tipo="error" titulo="No fue posible cargar el acta" mensaje={actas.error.message}>
@@ -284,11 +321,32 @@ export function PanelActa({ idDocente }) {
       <ErrorApi error={error} />
       {actas.datos && lista.length === 0 && (
         <>
-          <p className="campo__ayuda">Todavía no hay un acta en este periodo.</p>
+          <p className="campo__ayuda">
+            {usuario.rol === ROLES.DOCENTE
+              ? 'Tu acta aparece en la reunión de retroalimentación, cuando la coordinación registra tu asistencia. Ahí mismo la firmas.'
+              : 'Todavía no hay un acta en este periodo.'}
+          </p>
           {usuario.rol === ROLES.COORDINADOR && (
-            <Boton disabled={ocupado} onClick={() => ejecutar(() => crearActa(idDocente))}>
-              Generar acta
-            </Boton>
+            <div className="formulario-simple">
+              <Campo id={`tipo-nueva-${idDocente}`} etiqueta="Tipo de acta">
+                <select
+                  id={`tipo-nueva-${idDocente}`}
+                  className="campo__control"
+                  value={tipoNueva}
+                  onChange={(e) => setTipoNueva(e.target.value)}
+                >
+                  <option value="">Según la nota</option>
+                  <option value="RETROALIMENTACION">{ETIQUETA_TIPO_ACTA.RETROALIMENTACION}</option>
+                  <option value="COMPROMISO">{ETIQUETA_TIPO_ACTA.COMPROMISO}</option>
+                </select>
+              </Campo>
+              <Boton
+                disabled={ocupado}
+                onClick={() => ejecutar(() => (tipoNueva ? crearActa(idDocente, tipoNueva) : crearActa(idDocente)))}
+              >
+                Generar acta
+              </Boton>
+            </div>
           )}
         </>
       )}

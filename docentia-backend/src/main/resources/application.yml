@@ -78,6 +78,10 @@ docentia:
   # Rol que puede corregir un acta firmada (VICERRECTOR o COORDINADOR).
   actas:
     rol-corrector: ${DOCENTIA_ACTAS_ROL_CORRECTOR:VICERRECTOR}
+  # El docente ve su nota, compromisos y acta solo cuando la coordinación registra su asistencia a la
+  # cita, y el acta se firma en esa reunión.
+  proceso:
+    exigir-asistencia: ${DOCENTIA_PROCESO_EXIGIR_ASISTENCIA:true}
   # Avisos dentro de la app y correo. Sin DOCENTIA_MAIL_HOST los correos solo se registran.
   notificaciones:
     url-aplicacion: ${DOCENTIA_APP_URL:http://localhost:5173}

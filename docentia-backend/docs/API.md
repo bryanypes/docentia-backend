@@ -9,6 +9,7 @@ La matriz completa de rol por endpoint es ejecutable y está en `MatrizAutorizac
 |------|-----------|
 | Resolución 074: actas, acciones, panel, hallazgos | [api-res074.md](api-res074.md) |
 | Heteroevaluación (estudiante → docente), contrato Campus | [api-heteroevaluacion.md](api-heteroevaluacion.md) |
+| Estado del proceso, confirmación y asistencia a la cita | [api-proceso-evaluacion.md](api-proceso-evaluacion.md) |
 | Contrato general para el frontend | [api-contrato-frontend.md](api-contrato-frontend.md) |
 | Sesiones con Google | [api-sesiones-google.md](api-sesiones-google.md) |
 | Periodos, calificaciones, importación | [api-sprint3-semana1.md](api-sprint3-semana1.md) |
