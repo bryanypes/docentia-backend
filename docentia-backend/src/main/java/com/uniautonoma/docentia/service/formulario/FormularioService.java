@@ -6,12 +6,17 @@ import com.uniautonoma.docentia.dto.FormularioResponse;
 import com.uniautonoma.docentia.dto.FormularioResponse.CriterioFormulario;
 import com.uniautonoma.docentia.dto.FormularioResponse.DescriptorFormulario;
 import com.uniautonoma.docentia.dto.FormularioResponse.OpcionEscala;
+import com.uniautonoma.docentia.dto.HeteroevaluacionListaResponse;
+import com.uniautonoma.docentia.dto.HeteroevaluacionListaResponse.ClaseDocenteAvance;
 import com.uniautonoma.docentia.dto.PendientesFormularioResponse;
 import com.uniautonoma.docentia.dto.PendientesFormularioResponse.DocenteAvance;
 import com.uniautonoma.docentia.dto.PendientesFormularioResponse.ProgramaAvance;
 import com.uniautonoma.docentia.dto.PeriodoResumenResponse;
+import com.uniautonoma.docentia.entity.Clase;
 import com.uniautonoma.docentia.entity.EstadoFormulario;
 import com.uniautonoma.docentia.entity.EvaluacionFormulario;
+import com.uniautonoma.docentia.entity.FuenteEvaluacion;
+import com.uniautonoma.docentia.entity.Matricula;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.TipoEtapa;
 import com.uniautonoma.docentia.entity.TipoFormulario;
@@ -20,8 +25,10 @@ import com.uniautonoma.docentia.entity.Usuario;
 import com.uniautonoma.docentia.exception.NoProcesableException;
 import com.uniautonoma.docentia.exception.RecursoNoEncontradoException;
 import com.uniautonoma.docentia.exception.ReglaNegocioException;
+import com.uniautonoma.docentia.repository.ComentarioEstudianteRepository;
 import com.uniautonoma.docentia.repository.EvaluacionFormularioRepository;
 import com.uniautonoma.docentia.repository.EvaluacionFormularioRepository.AvanceFormulario;
+import com.uniautonoma.docentia.repository.MatriculaRepository;
 import com.uniautonoma.docentia.repository.PeriodoAcademicoRepository;
 import com.uniautonoma.docentia.repository.UsuarioRepository;
 import com.uniautonoma.docentia.security.UsuarioSesion;
@@ -29,6 +36,7 @@ import com.uniautonoma.docentia.service.CalificacionService;
 import com.uniautonoma.docentia.service.DocenteService;
 import com.uniautonoma.docentia.service.PeriodoAcademicoService;
 import com.uniautonoma.docentia.service.VentanaEtapaService;
+import com.uniautonoma.docentia.service.importacion.ValidadorEvaluacionEstudiantes;
 import com.uniautonoma.docentia.service.notificacion.EventoNotificacion;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -49,8 +57,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Autoevaluación y coevaluación del Anexo 1. Se editan solo en el periodo activo y con la
- * recolección abierta. Al enviarse, la media de los descriptores se vuelve la nota de la fuente.
+ * Autoevaluación, coevaluación y heteroevaluación del Anexo 1. Se editan solo en el periodo activo
+ * y con la recolección abierta. Al enviarse, la media de los descriptores se vuelve la nota de la
+ * fuente (en HETERO, la media de todos los formularios enviados del docente).
  */
 @Service
 @Transactional
@@ -63,6 +72,8 @@ public class FormularioService {
   private final EvaluacionFormularioRepository formularioRepository;
   private final PeriodoAcademicoRepository periodoRepository;
   private final UsuarioRepository usuarioRepository;
+  private final MatriculaRepository matriculaRepository;
+  private final ComentarioEstudianteRepository comentarioRepository;
   private final PeriodoAcademicoService periodoService;
   private final DocenteService docenteService;
   private final VentanaEtapaService ventanaEtapaService;
@@ -76,6 +87,8 @@ public class FormularioService {
       EvaluacionFormularioRepository formularioRepository,
       PeriodoAcademicoRepository periodoRepository,
       UsuarioRepository usuarioRepository,
+      MatriculaRepository matriculaRepository,
+      ComentarioEstudianteRepository comentarioRepository,
       PeriodoAcademicoService periodoService,
       DocenteService docenteService,
       VentanaEtapaService ventanaEtapaService,
@@ -87,6 +100,8 @@ public class FormularioService {
     this.formularioRepository = formularioRepository;
     this.periodoRepository = periodoRepository;
     this.usuarioRepository = usuarioRepository;
+    this.matriculaRepository = matriculaRepository;
+    this.comentarioRepository = comentarioRepository;
     this.periodoService = periodoService;
     this.docenteService = docenteService;
     this.ventanaEtapaService = ventanaEtapaService;
@@ -137,6 +152,121 @@ public class FormularioService {
     Usuario docente = docenteService.buscarDocenteVisible(idDocente, sesion);
     buscarCoevaluacion(periodo, docente, sesion);
     return enviar(periodo, docente, TipoFormulario.COEVAL, sesion);
+  }
+
+  @Transactional(readOnly = true)
+  public HeteroevaluacionListaResponse listarHeteroevaluacion(
+      Long idPeriodo, UsuarioSesion sesion) {
+    PeriodoAcademico periodo = resolverPeriodo(idPeriodo);
+    Map<String, EvaluacionFormulario> propios =
+        formularioRepository
+            .findByPeriodoIdPeriodoAndEvaluadorIdUsuarioAndTipo(
+                periodo.getIdPeriodo(), sesion.idUsuario(), TipoFormulario.HETERO)
+            .stream()
+            .collect(
+                Collectors.toMap(
+                    formulario ->
+                        claveHetero(
+                            formulario.getClase().getId(), formulario.getDocente().getIdUsuario()),
+                    Function.identity()));
+    List<ClaseDocenteAvance> clases = new ArrayList<>();
+    for (Matricula matricula :
+        matriculaRepository.findByEstudianteIdUsuarioAndEsActivaTrue(sesion.idUsuario())) {
+      Clase clase = matricula.getClase();
+      if (!clase.getPeriodo().getIdPeriodo().equals(periodo.getIdPeriodo())) {
+        continue;
+      }
+      for (Usuario docente : clase.getDocentes()) {
+        EvaluacionFormulario formulario =
+            propios.get(claveHetero(clase.getId(), docente.getIdUsuario()));
+        clases.add(
+            new ClaseDocenteAvance(
+                clase.getId(),
+                docente.getIdUsuario(),
+                docente.getNombreCompleto(),
+                clase.getCurso().getNombre(),
+                clase.getGrupo(),
+                clase.getJornada(),
+                clase.getCurso().getPrograma().getNombre(),
+                formulario == null ? "SIN_INICIAR" : formulario.getEstado().name(),
+                formulario == null ? 0 : formulario.getRespuestas().size()));
+      }
+    }
+    long pendientes = clases.stream().filter(fila -> !"ENVIADA".equals(fila.estado())).count();
+    return new HeteroevaluacionListaResponse(
+        PeriodoResumenResponse.desde(periodo),
+        total(catalogo.de(TipoFormulario.HETERO)),
+        pendientes,
+        clases);
+  }
+
+  @Transactional(readOnly = true)
+  public FormularioResponse leerHeteroevaluacion(
+      Long idPeriodo, Long idClase, Long idDocente, UsuarioSesion sesion) {
+    PeriodoAcademico periodo = resolverPeriodo(idPeriodo);
+    Usuario docente = docenteDeLaClase(idClase, idDocente, sesion, periodo);
+    return responder(
+        periodo,
+        docente,
+        TipoFormulario.HETERO,
+        buscarHetero(idClase, idDocente, sesion),
+        docenteDeMatricula(idClase, sesion).getClase());
+  }
+
+  public FormularioResponse guardarHeteroevaluacion(
+      Long idPeriodo,
+      Long idClase,
+      Long idDocente,
+      FormularioRequest solicitud,
+      UsuarioSesion sesion) {
+    PeriodoAcademico periodo = resolverPeriodo(idPeriodo);
+    Usuario docente = docenteDeLaClase(idClase, idDocente, sesion, periodo);
+    exigirEditable(periodo);
+    List<CatalogoInstrumento.Criterio> criterios = catalogo.de(TipoFormulario.HETERO);
+    Map<Long, Short> respuestas = validarRespuestas(solicitud.respuestas(), criterios);
+    Map<Long, String> comentarios = validarComentarios(solicitud.comentarios(), criterios);
+    Clase clase = docenteDeMatricula(idClase, sesion).getClase();
+    EvaluacionFormulario formulario =
+        buscarHetero(idClase, idDocente, sesion)
+            .orElseGet(
+                () ->
+                    new EvaluacionFormulario(
+                        periodo,
+                        docente,
+                        usuarioRepository.getReferenceById(sesion.idUsuario()),
+                        TipoFormulario.HETERO,
+                        CatalogoInstrumento.VERSION,
+                        clase));
+    exigirBorrador(formulario);
+    formulario.reemplazar(respuestas, comentarios);
+    EvaluacionFormulario guardado = formularioRepository.saveAndFlush(formulario);
+    return responder(periodo, docente, TipoFormulario.HETERO, Optional.of(guardado), clase);
+  }
+
+  public FormularioResponse enviarHeteroevaluacion(
+      Long idPeriodo, Long idClase, Long idDocente, UsuarioSesion sesion) {
+    PeriodoAcademico periodo = resolverPeriodo(idPeriodo);
+    Usuario docente = docenteDeLaClase(idClase, idDocente, sesion, periodo);
+    exigirEditable(periodo);
+    int total = total(catalogo.de(TipoFormulario.HETERO));
+    EvaluacionFormulario formulario =
+        buscarHetero(idClase, idDocente, sesion)
+            .orElseThrow(
+                () ->
+                    new NoProcesableException("Responde los " + total + " ítems antes de enviar"));
+    exigirBorrador(formulario);
+    int respondidos = formulario.getRespuestas().size();
+    if (respondidos < total) {
+      throw new NoProcesableException(
+          "Faltan " + (total - respondidos) + " de " + total + " ítems por responder");
+    }
+    BigDecimal media = media(formulario.getRespuestas());
+    formulario.enviar(media, LocalDateTime.now(reloj));
+    EvaluacionFormulario enviado = formularioRepository.saveAndFlush(formulario);
+    publicarComentarios(enviado);
+    agregarFuenteEstudiantes(docente, periodo);
+    return responder(
+        periodo, docente, TipoFormulario.HETERO, Optional.of(enviado), enviado.getClase());
   }
 
   /**
@@ -399,6 +529,15 @@ public class FormularioService {
       Usuario docente,
       TipoFormulario tipo,
       Optional<EvaluacionFormulario> formulario) {
+    return responder(periodo, docente, tipo, formulario, null);
+  }
+
+  private FormularioResponse responder(
+      PeriodoAcademico periodo,
+      Usuario docente,
+      TipoFormulario tipo,
+      Optional<EvaluacionFormulario> formulario,
+      Clase clase) {
     List<CatalogoInstrumento.Criterio> criterios = catalogo.de(tipo);
     Map<Long, Short> respuestas =
         formulario.map(EvaluacionFormulario::getRespuestas).orElse(Map.of());
@@ -436,7 +575,71 @@ public class FormularioService {
         IntStream.range(0, etiquetasEscala.size())
             .mapToObj(i -> new OpcionEscala(i + 1, etiquetasEscala.get(i)))
             .toList(),
-        lista);
+        lista,
+        clase == null ? null : clase.getId(),
+        clase == null ? null : clase.getCurso().getNombre(),
+        clase == null ? null : clase.getGrupo(),
+        clase == null ? null : clase.getJornada(),
+        clase == null ? null : clase.getCurso().getPrograma().getNombre());
+  }
+
+  private Optional<EvaluacionFormulario> buscarHetero(
+      Long idClase, Long idDocente, UsuarioSesion sesion) {
+    return formularioRepository.findByClaseIdAndDocenteIdUsuarioAndEvaluadorIdUsuarioAndTipo(
+        idClase, idDocente, sesion.idUsuario(), TipoFormulario.HETERO);
+  }
+
+  private Usuario docenteDeLaClase(
+      Long idClase, Long idDocente, UsuarioSesion sesion, PeriodoAcademico periodo) {
+    Clase clase = docenteDeMatricula(idClase, sesion).getClase();
+    if (!clase.getPeriodo().getIdPeriodo().equals(periodo.getIdPeriodo())) {
+      throw new RecursoNoEncontradoException(NO_ENCONTRADO);
+    }
+    return clase.getDocentes().stream()
+        .filter(docente -> docente.getIdUsuario().equals(idDocente))
+        .findFirst()
+        .orElseThrow(() -> new RecursoNoEncontradoException(NO_ENCONTRADO));
+  }
+
+  private Matricula docenteDeMatricula(Long idClase, UsuarioSesion sesion) {
+    return matriculaRepository
+        .findConClaseByClaseIdAndEstudianteIdUsuarioAndEsActivaTrue(idClase, sesion.idUsuario())
+        .orElseThrow(() -> new RecursoNoEncontradoException(NO_ENCONTRADO));
+  }
+
+  private void agregarFuenteEstudiantes(Usuario docente, PeriodoAcademico periodo) {
+    List<EvaluacionFormulario> enviadas =
+        formularioRepository.findByPeriodoIdPeriodoAndDocenteIdUsuarioAndTipoAndEstado(
+            periodo.getIdPeriodo(),
+            docente.getIdUsuario(),
+            TipoFormulario.HETERO,
+            EstadoFormulario.ENVIADA);
+    BigDecimal suma =
+        enviadas.stream()
+            .map(EvaluacionFormulario::getValor)
+            .reduce(BigDecimal.ZERO, BigDecimal::add);
+    BigDecimal media =
+        suma.divide(BigDecimal.valueOf(enviadas.size()), DECIMALES_FUENTE, RoundingMode.HALF_UP);
+    calificacionService.registrarDesdeFormulario(
+        docente, periodo, FuenteEvaluacion.ESTUDIANTES, media, null);
+  }
+
+  private void publicarComentarios(EvaluacionFormulario formulario) {
+    int aparicion = 1;
+    for (String texto : formulario.getComentarios().values()) {
+      comentarioRepository.insertarSiNoExiste(
+          formulario.getDocente().getIdUsuario(),
+          formulario.getPeriodo().getIdPeriodo(),
+          texto,
+          ValidadorEvaluacionEstudiantes.huellaComentario(
+              texto, Math.toIntExact(formulario.getId() % 1_000_000) * 10 + aparicion),
+          null);
+      aparicion++;
+    }
+  }
+
+  private static String claveHetero(Long idClase, Long idDocente) {
+    return idClase + ":" + idDocente;
   }
 
   private boolean recoleccionAbierta(PeriodoAcademico periodo) {

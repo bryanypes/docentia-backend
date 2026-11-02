@@ -30,6 +30,16 @@ class UsuarioTest {
   }
 
   @Test
+  void elEstudianteSeVinculaComoElDocente() {
+    assertThat(crear(Rol.ESTUDIANTE, null, programa).getPrograma()).isSameAs(programa);
+    assertThatThrownBy(() -> crear(Rol.ESTUDIANTE, null, null))
+        .isInstanceOf(DatosInvalidosException.class)
+        .hasMessage("El estudiante debe estar vinculado a un programa");
+    assertThatThrownBy(() -> crear(Rol.ESTUDIANTE, facultad, programa))
+        .isInstanceOf(DatosInvalidosException.class);
+  }
+
+  @Test
   void elDocenteExigeProgramaYNoAceptaFacultadDirecta() {
     assertThatThrownBy(() -> crear(Rol.DOCENTE, null, null))
         .isInstanceOf(DatosInvalidosException.class)

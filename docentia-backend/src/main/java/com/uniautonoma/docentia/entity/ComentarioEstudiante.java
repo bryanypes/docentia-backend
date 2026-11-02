@@ -38,8 +38,8 @@ public class ComentarioEstudiante {
   @Column(nullable = false, length = 64, updatable = false)
   private String hashTexto;
 
-  @ManyToOne(fetch = FetchType.LAZY, optional = false)
-  @JoinColumn(name = "id_importacion", nullable = false, updatable = false)
+  @ManyToOne(fetch = FetchType.LAZY)
+  @JoinColumn(name = "id_importacion", updatable = false)
   private Importacion importacion;
 
   @Column(nullable = false, updatable = false)

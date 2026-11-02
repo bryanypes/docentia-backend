@@ -9,6 +9,8 @@ import VerificarActa from '../features/actas/pages/VerificarActa.jsx'
 import MiActa from '../features/actas/pages/MiActa.jsx'
 import CoevaluacionDocente from '../features/formularios/pages/CoevaluacionDocente.jsx'
 import Coevaluaciones from '../features/formularios/pages/Coevaluaciones.jsx'
+import EvaluacionProfesores from '../features/formularios/pages/EvaluacionProfesores.jsx'
+import HeteroevaluacionClase from '../features/formularios/pages/HeteroevaluacionClase.jsx'
 import MiAutoevaluacion from '../features/formularios/pages/MiAutoevaluacion.jsx'
 import Auditoria from '../features/auditoria/pages/Auditoria.jsx'
 import Notificaciones from '../features/notificaciones/pages/Notificaciones.jsx'
@@ -58,6 +60,14 @@ function RutasDocentia() {
 
             <Route element={<AppLayout />}>
               <Route path="/notificaciones" element={<Notificaciones />} />
+              <Route element={<ProtectedRoute rolesPermitidos={[ROLES.ESTUDIANTE]} />}>
+                <Route path="/evaluacion-profesores" element={<EvaluacionProfesores />} />
+                <Route
+                  path="/evaluacion-profesores/:idClase/:idDocente"
+                  element={<HeteroevaluacionClase />}
+                />
+              </Route>
+
               <Route element={<ProtectedRoute rolesPermitidos={[ROLES.DOCENTE]} />}>
                 <Route path="/mi-evaluacion" element={<MiEvaluacion />} />
                 <Route path="/mi-cita" element={<MiCita />} />

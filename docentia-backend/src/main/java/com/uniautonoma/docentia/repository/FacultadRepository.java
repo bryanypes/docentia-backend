@@ -30,4 +30,6 @@ public interface FacultadRepository extends JpaRepository<Facultad, Long> {
    * @return la facultad que ya usa ese nombre, si la hay
    */
   Optional<Facultad> findByNombreIgnoreCaseAndEsActivaTrue(String nombre);
+
+  Optional<Facultad> findByCodigoIgnoreCaseAndEsActivaTrue(String codigo);
 }

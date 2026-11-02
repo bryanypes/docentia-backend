@@ -304,7 +304,10 @@ class FormulariosTest extends PruebaIntegracion {
                     new org.springframework.mock.web.MockMultipartFile(
                         "archivo", "e.csv", "text/csv", csv))
                 .with(como(coordinador)))
-        .andExpect(status().isOk());
+        .andExpect(status().isConflict())
+        .andExpect(
+            jsonPath("$.mensaje")
+                .value("La evaluación de estudiantes se responde en el formulario"));
 
     var coevaluacion =
         calificacionRepository

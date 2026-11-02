@@ -1,0 +1,234 @@
+{
+  "facultades": [
+    {
+      "codFacultad": "FC001",
+      "facultad": "Ciencias Administrativas, Contables y Económicas",
+      "codCoordinacion": "FC001-11",
+      "coordinacion": "COORDINACION FINANZAS",
+      "coordinador": {
+        "nombre": "Coordinación Finanzas (demo)",
+        "correo": "coordinacion.finanzas@uniautonoma.edu.co"
+      },
+      "sinCoordinadorReal": false,
+      "programas": [
+        {
+          "codPrograma": "CU027",
+          "programa": "ADMINISTRACION DE EMPRESAS PROFESIONAL"
+        },
+        {
+          "codPrograma": "CU012",
+          "programa": "FINANZAS Y NEGOCIOS INTERNACIONALES"
+        }
+      ]
+    }
+  ],
+  "personas": [
+    {
+      "correo": "zulema.leon@uniautonoma.edu.co",
+      "nombres": "Zulema Yidney",
+      "apellidos": "León Escobar",
+      "programa": "CU027",
+      "roles": [
+        {
+          "rol": "Docente",
+          "codigo": "D-17090",
+          "es_facultad": false,
+          "clases": [
+            {
+              "relacion": "Dicta",
+              "cod_curso": "12190626",
+              "curso": "DESARROLLO DE APLICACIONES MÓVILES",
+              "tipo_curso": "S001",
+              "grupo": "A",
+              "jornada": "S001",
+              "docentes": [
+                {
+                  "codigo": "D-17090",
+                  "correo": "zulema.leon@uniautonoma.edu.co",
+                  "nombres": "Zulema Yidney",
+                  "apellidos": "León Escobar"
+                }
+              ],
+              "num_estudiantes": 1
+            },
+            {
+              "relacion": "Dicta",
+              "cod_curso": "12190626",
+              "curso": "DESARROLLO DE APLICACIONES MÓVILES",
+              "tipo_curso": "S001",
+              "grupo": "B",
+              "jornada": "S001",
+              "docentes": [
+                {
+                  "codigo": "D-17090",
+                  "correo": "zulema.leon@uniautonoma.edu.co",
+                  "nombres": "Zulema Yidney",
+                  "apellidos": "León Escobar"
+                }
+              ],
+              "num_estudiantes": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "correo": "martin.valencia@uniautonoma.edu.co",
+      "nombres": "Martín José",
+      "apellidos": "Valencia Gutiérrez",
+      "programa": "CU027",
+      "roles": [
+        {
+          "rol": "Docente",
+          "codigo": "D-0355",
+          "es_facultad": false,
+          "clases": [
+            {
+              "relacion": "Dicta",
+              "cod_curso": "19072209",
+              "curso": "CREATIVIDAD E INNOVACIÓN EMPRENDIMIENTO",
+              "tipo_curso": "S001",
+              "grupo": "E",
+              "jornada": "S001",
+              "docentes": [
+                {
+                  "codigo": "D-0355",
+                  "correo": "martin.valencia@uniautonoma.edu.co",
+                  "nombres": "Martín José",
+                  "apellidos": "Valencia Gutiérrez"
+                }
+              ],
+              "num_estudiantes": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "correo": "francisco.ramirez@uniautonoma.edu.co",
+      "nombres": "Francisco Javier",
+      "apellidos": "Ramírez Ante",
+      "programa": "CU027",
+      "roles": [
+        {
+          "rol": "Docente",
+          "codigo": "D-1501",
+          "es_facultad": false,
+          "clases": [
+            {
+              "relacion": "Dicta",
+              "cod_curso": "12190835",
+              "curso": "ELECTIVA I (Optativa)",
+              "tipo_curso": "S001",
+              "grupo": "A",
+              "jornada": "S001",
+              "docentes": [
+                {
+                  "codigo": "D-1501",
+                  "correo": "francisco.ramirez@uniautonoma.edu.co",
+                  "nombres": "Francisco Javier",
+                  "apellidos": "Ramírez Ante"
+                }
+              ],
+              "num_estudiantes": 1
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "correo": "karen.mancilla@uniautonoma.edu.co",
+      "nombres": "Karen Verónica",
+      "apellidos": "Mancilla Solarte",
+      "programa": "CU027",
+      "roles": [
+        {
+          "rol": "Estudiante",
+          "codigo": "E-18764",
+          "es_facultad": false,
+          "clases": [
+            {
+              "relacion": "Matriculado",
+              "cod_curso": "19072209",
+              "curso": "CREATIVIDAD E INNOVACIÓN EMPRENDIMIENTO",
+              "tipo_curso": "S001",
+              "grupo": "E",
+              "jornada": "S001",
+              "docentes": [
+                {
+                  "codigo": "D-0355",
+                  "correo": "martin.valencia@uniautonoma.edu.co",
+                  "nombres": "Martín José",
+                  "apellidos": "Valencia Gutiérrez"
+                }
+              ]
+            },
+            {
+              "relacion": "Matriculado",
+              "cod_curso": "12190626",
+              "curso": "DESARROLLO DE APLICACIONES MÓVILES",
+              "tipo_curso": "S001",
+              "grupo": "A",
+              "jornada": "S001",
+              "docentes": [
+                {
+                  "codigo": "D-17090",
+                  "correo": "zulema.leon@uniautonoma.edu.co",
+                  "nombres": "Zulema Yidney",
+                  "apellidos": "León Escobar"
+                }
+              ]
+            },
+            {
+              "relacion": "Matriculado",
+              "cod_curso": "12190835",
+              "curso": "ELECTIVA I (Optativa)",
+              "tipo_curso": "S001",
+              "grupo": "A",
+              "jornada": "S001",
+              "docentes": [
+                {
+                  "codigo": "D-1501",
+                  "correo": "francisco.ramirez@uniautonoma.edu.co",
+                  "nombres": "Francisco Javier",
+                  "apellidos": "Ramírez Ante"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "correo": "andrea.nieto@uniautonoma.edu.co",
+      "nombres": "Andrea",
+      "apellidos": "Nieto",
+      "programa": "CU027",
+      "roles": [
+        {
+          "rol": "Estudiante",
+          "codigo": "E-18765",
+          "es_facultad": false,
+          "clases": [
+            {
+              "relacion": "Matriculado",
+              "cod_curso": "12190626",
+              "curso": "DESARROLLO DE APLICACIONES MÓVILES",
+              "tipo_curso": "S001",
+              "grupo": "B",
+              "jornada": "S001",
+              "docentes": [
+                {
+                  "codigo": "D-17090",
+                  "correo": "zulema.leon@uniautonoma.edu.co",
+                  "nombres": "Zulema Yidney",
+                  "apellidos": "León Escobar"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

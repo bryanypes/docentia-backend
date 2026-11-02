@@ -2,6 +2,7 @@ package com.uniautonoma.docentia.controller;
 
 import com.uniautonoma.docentia.dto.FormularioRequest;
 import com.uniautonoma.docentia.dto.FormularioResponse;
+import com.uniautonoma.docentia.dto.HeteroevaluacionListaResponse;
 import com.uniautonoma.docentia.dto.PendientesFormularioResponse;
 import com.uniautonoma.docentia.entity.AccionAuditoria;
 import com.uniautonoma.docentia.entity.TipoFormulario;
@@ -20,7 +21,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Formularios de autoevaluación y coevaluación del Anexo 1. */
+/** Formularios de autoevaluación, coevaluación y heteroevaluación del Anexo 1. */
 @RestController
 @RequestMapping("/formularios")
 public class FormularioController {
@@ -93,6 +94,48 @@ public class FormularioController {
         TipoFormulario.COEVAL,
         sesion,
         () -> formularioService.enviarCoevaluacion(periodo, idDocente, sesion));
+  }
+
+  @GetMapping("/heteroevaluacion")
+  @PreAuthorize("hasRole('ESTUDIANTE')")
+  public HeteroevaluacionListaResponse listarHeteroevaluacion(
+      @RequestParam(required = false) Long periodo, @AuthenticationPrincipal UsuarioSesion sesion) {
+    return formularioService.listarHeteroevaluacion(periodo, sesion);
+  }
+
+  @GetMapping("/heteroevaluacion/{idClase}/{idDocente}")
+  @PreAuthorize("hasRole('ESTUDIANTE')")
+  public FormularioResponse leerHeteroevaluacion(
+      @PathVariable Long idClase,
+      @PathVariable Long idDocente,
+      @RequestParam(required = false) Long periodo,
+      @AuthenticationPrincipal UsuarioSesion sesion) {
+    return formularioService.leerHeteroevaluacion(periodo, idClase, idDocente, sesion);
+  }
+
+  @PutMapping("/heteroevaluacion/{idClase}/{idDocente}")
+  @PreAuthorize("hasRole('ESTUDIANTE')")
+  public FormularioResponse guardarHeteroevaluacion(
+      @PathVariable Long idClase,
+      @PathVariable Long idDocente,
+      @RequestParam(required = false) Long periodo,
+      @RequestBody FormularioRequest solicitud,
+      @AuthenticationPrincipal UsuarioSesion sesion) {
+    return formularioService.guardarHeteroevaluacion(
+        periodo, idClase, idDocente, solicitud, sesion);
+  }
+
+  @PostMapping("/heteroevaluacion/{idClase}/{idDocente}/enviar")
+  @PreAuthorize("hasRole('ESTUDIANTE')")
+  public FormularioResponse enviarHeteroevaluacion(
+      @PathVariable Long idClase,
+      @PathVariable Long idDocente,
+      @RequestParam(required = false) Long periodo,
+      @AuthenticationPrincipal UsuarioSesion sesion) {
+    return auditar(
+        TipoFormulario.HETERO,
+        sesion,
+        () -> formularioService.enviarHeteroevaluacion(periodo, idClase, idDocente, sesion));
   }
 
   /** Deja rastro del envío, también si falla. Nunca lleva puntajes. */
