@@ -31,6 +31,22 @@ El catálogo es dato de migración, marcado con `RES074-2026-ANEXO1`. Al enviar 
 de sus descriptores se vuelve la nota de la fuente en `calificaciones` y corre el mismo recálculo que
 cualquier otra nota: pesos, categoría, avisos y actas no cambian.
 
+## Anonimato de la heteroevaluación
+
+```mermaid
+flowchart LR
+  E[Estudiante] -- envía --> S[HeteroevaluacionService]
+  S -- quién ya respondió --> P[(participaciones_heteroevaluacion<br/>asignación, estudiante, fecha)]
+  S -- qué respondió --> R[(respuestas_heteroevaluacion<br/>UUID, asignación, docente, periodo)]
+  R --> V[(respuestas_descriptor_hetero)]
+  R -- media con 5 o más respuestas --> C[(calificaciones: ESTUDIANTES)]
+  P -- conteos --> K[Cobertura]
+```
+
+Las dos tablas se escriben en la misma transacción, pero ninguna columna las une. La participación solo
+impide el doble envío y mide la cobertura; la respuesta solo alimenta la nota del docente cuando hay al
+menos 5.
+
 ## Decisiones importantes
 
 **Capas.** Los controladores solo traducen HTTP, los servicios tienen las reglas y los repositorios el

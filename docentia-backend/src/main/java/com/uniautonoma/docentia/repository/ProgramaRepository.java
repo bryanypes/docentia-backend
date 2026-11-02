@@ -54,4 +54,6 @@ public interface ProgramaRepository extends JpaRepository<Programa, Long> {
       Long idFacultad, String nombre);
 
   Optional<Programa> findByCodigoIgnoreCaseAndEsActivoTrue(String codigo);
+
+  Optional<Programa> findFirstByNombreIgnoreCaseAndEsActivoTrue(String nombre);
 }

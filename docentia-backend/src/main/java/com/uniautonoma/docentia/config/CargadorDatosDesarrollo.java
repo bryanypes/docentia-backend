@@ -62,6 +62,7 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
   private final ComentarioEstudianteRepository comentarioRepository;
   private final FranjaHorariaRepository franjaRepository;
   private final CargadorClasesCampus cargadorClasesCampus;
+  private final SemillaHeteroevaluacion semillaHeteroevaluacion;
 
   public CargadorDatosDesarrollo(
       FranjaHorariaRepository franjaRepository,
@@ -78,7 +79,9 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
       PasswordEncoder passwordEncoder,
       @Value("${docentia.desarrollo.contrasena-inicial}") String contrasenaInicial,
       TransactionTemplate transaccion,
-      CargadorClasesCampus cargadorClasesCampus) {
+      CargadorClasesCampus cargadorClasesCampus,
+      SemillaHeteroevaluacion semillaHeteroevaluacion) {
+    this.semillaHeteroevaluacion = semillaHeteroevaluacion;
     this.transaccion = transaccion;
     this.importacionRepository = importacionRepository;
     this.comentarioRepository = comentarioRepository;
@@ -120,6 +123,8 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
     periodoRepository
         .findByEsActivoTrue()
         .ifPresent(periodo -> cargadorClasesCampus.cargarDemo(periodo, hash));
+    // Igual que Campus: corre también sobre una base que ya tenía el seed.
+    semillaHeteroevaluacion.cargarSiFalta(hash);
   }
 
   private void sembrarCatalogoLocal(String hash) {

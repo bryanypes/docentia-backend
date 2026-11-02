@@ -41,6 +41,17 @@ Todas aceptan `?periodo=`; sin él usan el periodo activo.
 | `GET` y `PUT /formularios/coevaluacion/{idDocente}` | Coordinador | 404 fuera de alcance |
 | `POST /formularios/coevaluacion/{idDocente}/enviar` | Coordinador | Igual que la autoevaluación |
 
+## Nuevo en 0.3.3
+
+| Método y ruta | Roles | Respuesta |
+|---------------|-------|-----------|
+| `GET /estudiante/evaluaciones?periodo=` | Estudiante | Asignaciones con estado PENDIENTE o ENVIADA |
+| `GET /estudiante/evaluaciones/{idAsignacion}` | Estudiante | 11 ítems por criterio y estado; 404 si no es suya o está retirado |
+| `POST /estudiante/evaluaciones/{idAsignacion}/enviar` | Estudiante | `{respuestas, comentario}`; 422 incompleto, 409 ventana cerrada o ya enviada, 429 por tope |
+| `GET /cobertura-heteroevaluacion?periodo=&page=&size=` | Coordinador, vicerrector | Matriculados y respondieron por docente y programa |
+| `POST /matriculas/csv` | Coordinador, vicerrector | Todo o nada; 422 con errores por fila |
+| `GET /matriculas/plantilla` | Coordinador, vicerrector | CSV de ejemplo |
+
 ## Errores
 
 ```json

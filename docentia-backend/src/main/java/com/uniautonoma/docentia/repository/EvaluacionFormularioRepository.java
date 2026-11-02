@@ -18,15 +18,6 @@ public interface EvaluacionFormularioRepository extends JpaRepository<Evaluacion
   Optional<EvaluacionFormulario> findByPeriodoIdPeriodoAndDocenteIdUsuarioAndTipo(
       Long idPeriodo, Long idDocente, TipoFormulario tipo);
 
-  Optional<EvaluacionFormulario> findByClaseIdAndDocenteIdUsuarioAndEvaluadorIdUsuarioAndTipo(
-      Long idClase, Long idDocente, Long idEvaluador, TipoFormulario tipo);
-
-  List<EvaluacionFormulario> findByPeriodoIdPeriodoAndEvaluadorIdUsuarioAndTipo(
-      Long idPeriodo, Long idEvaluador, TipoFormulario tipo);
-
-  List<EvaluacionFormulario> findByPeriodoIdPeriodoAndDocenteIdUsuarioAndTipoAndEstado(
-      Long idPeriodo, Long idDocente, TipoFormulario tipo, EstadoFormulario estado);
-
   @Query(
       """
       select new com.uniautonoma.docentia.repository.EvaluacionFormularioRepository$AvanceFormulario(

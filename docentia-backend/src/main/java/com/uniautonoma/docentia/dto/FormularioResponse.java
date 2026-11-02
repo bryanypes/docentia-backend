@@ -10,7 +10,6 @@ import java.util.List;
  *
  * @param estado nulo si aún no se ha guardado nada
  * @param ventanaAbierta si hoy se puede editar y enviar
- * @param idClase clase Campus del HETERO; nulo en AUTO y COEVAL
  */
 public record FormularioResponse(
     PeriodoResumenResponse periodo,
@@ -24,12 +23,7 @@ public record FormularioResponse(
     int respondidos,
     int total,
     List<OpcionEscala> escala,
-    List<CriterioFormulario> criterios,
-    Long idClase,
-    String nombreCurso,
-    String grupo,
-    String jornada,
-    String nombrePrograma) {
+    List<CriterioFormulario> criterios) {
 
   public record OpcionEscala(int valor, String etiqueta) {}
 
