@@ -10,6 +10,8 @@ import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { formatearNota } from '../../../shared/utils/formatters.js'
 import { useSesion } from '../../auth/sesionContext.js'
 import { obtenerPendientesCoevaluacion } from '../../formularios/services/formulariosService.js'
+import { TablaCobertura } from '../../heteroevaluacion/pages/Matricula.jsx'
+import { obtenerCobertura } from '../../heteroevaluacion/services/matriculaService.js'
 import { listarFacultades } from '../../facultades/services/facultadesService.js'
 import { listarPeriodos } from '../../periodos/services/periodosService.js'
 import { obtenerPanelProgramas } from '../services/kpisService.js'
@@ -96,6 +98,19 @@ function Participacion() {
   )
 }
 
+function CoberturaEstudiantes() {
+  const { datos } = useFetch(() => obtenerCobertura(0))
+  if (!datos?.programas.length) return null
+  return (
+    <Panel
+      titulo="Cobertura de la evaluación de estudiantes"
+      descripcion={`${datos.total.respondieron} de ${datos.total.matriculados} matriculados respondieron.`}
+    >
+      <TablaCobertura filas={datos.programas} primeraColumna="Programa" />
+    </Panel>
+  )
+}
+
 /** Panel I11: solo agregados. A propósito no enlaza a ningún expediente individual. */
 export default function PanelProgramas() {
   const { usuario } = useSesion()
@@ -175,6 +190,7 @@ export default function PanelProgramas() {
               ))}
             </div>
             {esVicerrector && <Participacion />}
+            {esVicerrector && <CoberturaEstudiantes />}
           </>
         )}
       </div>

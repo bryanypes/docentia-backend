@@ -1,85 +1,93 @@
 import { screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
+import { render } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { renderizarConSesion } from '../../../pruebas/renderizarConSesion.jsx'
+import { SesionContext } from '../../auth/sesionContext.js'
 import { ApiError } from '../../../services/api.js'
-import { obtenerHeteroevaluacion } from '../services/formulariosService.js'
+import { enviarEvaluacion, obtenerEvaluacion } from '../../estudiante/services/estudianteService.js'
 import HeteroevaluacionClase from './HeteroevaluacionClase.jsx'
 
-const params = vi.hoisted(() => ({ idClase: '11', idDocente: '4' }))
-
-vi.mock('../services/formulariosService.js')
-vi.mock('react-router-dom', () => ({
-  Link: ({ to, children }) => <a href={to}>{children}</a>,
-  MemoryRouter: ({ children }) => children,
-  useParams: () => ({ idClase: params.idClase, idDocente: params.idDocente }),
-}))
+vi.mock('../../estudiante/services/estudianteService.js')
 
 const FORMULARIO = {
-  periodo: { nombre: '2026-2' },
-  tipo: 'HETERO',
-  idDocente: 4,
-  nombreDocente: 'Zulema León',
-  estado: null,
-  enviadaEn: null,
-  ventanaAbierta: true,
-  respondidos: 0,
-  total: 11,
-  idClase: 11,
-  nombreCurso: 'DESARROLLO DE APLICACIONES MÓVILES',
+  idAsignacion: 7,
+  curso: 'Programación web',
   grupo: 'A',
-  jornada: 'S001',
-  nombrePrograma: 'ADMINISTRACION DE EMPRESAS PROFESIONAL',
+  docente: 'Laura',
+  estado: 'PENDIENTE',
+  ventanaAbierta: true,
+  total: 2,
+  aviso: 'Tus respuestas son anónimas y se usan para la evaluación de la enseñanza.',
   escala: [1, 2, 3, 4, 5].map((valor) => ({ valor, etiqueta: `Nivel ${valor}` })),
   criterios: [
     {
       codigo: 'C2',
-      nombre: 'Capacidad para establecer un clima propicio',
-      comentario: null,
-      descriptores: [{ codigo: 'D02', texto: 'Genera un ambiente de respeto', valor: null }],
+      nombre: 'Capacidad para ejecutar',
+      descriptores: [
+        { codigo: 'D02', texto: 'Socializa resultados' },
+        { codigo: 'D05', texto: 'Expresa con claridad' },
+      ],
     },
   ],
 }
 
-beforeEach(() => {
-  vi.clearAllMocks()
-  params.idClase = '11'
-  params.idDocente = '4'
-})
+function abrir() {
+  const usuario = { idUsuario: 1, nombreCompleto: 'Est', rol: 'ESTUDIANTE' }
+  render(
+    <MemoryRouter initialEntries={['/evaluacion-profesores/7']}>
+      <SesionContext.Provider value={{ usuario, validando: false }}>
+        <Routes>
+          <Route path="/evaluacion-profesores/:idAsignacion" element={<HeteroevaluacionClase />} />
+        </Routes>
+      </SesionContext.Provider>
+    </MemoryRouter>,
+  )
+}
+
+beforeEach(() => vi.clearAllMocks())
 
 describe('HeteroevaluacionClase', () => {
-  it('carga el instrumento HETERO de la clase', async () => {
-    obtenerHeteroevaluacion.mockResolvedValue(FORMULARIO)
-    renderizarConSesion(<HeteroevaluacionClase />, { rol: 'ESTUDIANTE' })
-    expect(await screen.findByRole('heading', { name: 'Evaluación de Zulema León' })).toBeInTheDocument()
-    expect(screen.getByText(/DESARROLLO DE APLICACIONES MÓVILES/)).toBeInTheDocument()
-    expect(screen.getByText(/Grupo A/)).toBeInTheDocument()
-    expect(screen.getByText('0 de 11 ítems respondidos')).toBeInTheDocument()
-    expect(screen.getByRole('group', { name: 'Genera un ambiente de respeto' })).toBeInTheDocument()
-    expect(obtenerHeteroevaluacion).toHaveBeenCalledWith('11', '4')
+  it('avisa el anonimato, exige todo y la confirmación, y agradece', async () => {
+    obtenerEvaluacion.mockResolvedValue(FORMULARIO)
+    let terminar
+    enviarEvaluacion.mockReturnValue(new Promise((resolver) => (terminar = resolver)))
+    abrir()
+    expect(await screen.findByText('Tus respuestas son anónimas')).toBeInTheDocument()
+    expect(screen.getByText(/No incluyas datos personales/)).toBeInTheDocument()
+    const boton = screen.getByRole('button', { name: 'Enviar evaluación' })
+    await userEvent.click(screen.getAllByRole('radio', { name: 'Nivel 4' })[0])
+    expect(screen.getByText('1 de 2 ítems respondidos')).toBeInTheDocument()
+    await userEvent.click(screen.getAllByRole('radio', { name: 'Nivel 5' })[1])
+    expect(boton).toBeDisabled()
+    await userEvent.click(screen.getByRole('checkbox'))
+    await userEvent.dblClick(boton)
+    expect(enviarEvaluacion).toHaveBeenCalledTimes(1)
+    expect(enviarEvaluacion).toHaveBeenCalledWith('7', { respuestas: { D02: 4, D05: 5 }, comentario: null })
+    terminar({ estado: 'ENVIADA' })
+    expect(await screen.findByText('¡Gracias por tu evaluación!')).toBeInTheDocument()
   })
 
-  it('avisa si la recolección está cerrada y no ofrece enviar', async () => {
-    obtenerHeteroevaluacion.mockResolvedValue({ ...FORMULARIO, ventanaAbierta: false })
-    renderizarConSesion(<HeteroevaluacionClase />, { rol: 'ESTUDIANTE' })
-    expect(await screen.findByText('La recolección está cerrada')).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Enviar formulario' })).not.toBeInTheDocument()
+  it('muestra el 409 del doble envío', async () => {
+    obtenerEvaluacion.mockResolvedValue({ ...FORMULARIO, total: 1, criterios: [{ ...FORMULARIO.criterios[0], descriptores: [FORMULARIO.criterios[0].descriptores[0]] }] })
+    enviarEvaluacion.mockRejectedValue(new ApiError(409, 'Ya enviaste esta evaluación'))
+    abrir()
+    await userEvent.click((await screen.findAllByRole('radio', { name: 'Nivel 3' }))[0])
+    await userEvent.click(screen.getByRole('checkbox'))
+    await userEvent.click(screen.getByRole('button', { name: 'Enviar evaluación' }))
+    expect(await screen.findByText('Ya enviaste esta evaluación')).toBeInTheDocument()
   })
 
-  it('muestra 404 si la clase no es del estudiante', async () => {
-    params.idClase = '99'
-    params.idDocente = '1'
-    obtenerHeteroevaluacion.mockRejectedValue(new ApiError(404, 'No encontrado'))
-    renderizarConSesion(<HeteroevaluacionClase />, { rol: 'ESTUDIANTE' })
-    expect(await screen.findByText('Formulario no encontrado')).toBeInTheDocument()
-    expect(screen.getByText('Esa clase no está entre tus matrículas de este periodo.')).toBeInTheDocument()
+  it('una evaluación enviada o cerrada no se puede responder', async () => {
+    obtenerEvaluacion.mockResolvedValue({ ...FORMULARIO, estado: 'ENVIADA' })
+    abrir()
+    expect(await screen.findByText('Ya enviaste esta evaluación')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Enviar evaluación' })).not.toBeInTheDocument()
   })
 
-  it('muestra el 409 de etapa o periodo cerrado', async () => {
-    obtenerHeteroevaluacion.mockRejectedValue(
-      new ApiError(409, 'Los formularios solo se responden en el periodo activo'),
-    )
-    renderizarConSesion(<HeteroevaluacionClase />, { rol: 'ESTUDIANTE' })
-    expect(await screen.findByText('No se puede responder ahora')).toBeInTheDocument()
-    expect(screen.getByText('Los formularios solo se responden en el periodo activo')).toBeInTheDocument()
+  it('una asignación ajena responde 404', async () => {
+    obtenerEvaluacion.mockRejectedValue(new ApiError(404, 'Evaluación no encontrada'))
+    abrir()
+    expect(await screen.findByText('Evaluación no encontrada')).toBeInTheDocument()
   })
 })
