@@ -55,50 +55,15 @@ class MapeoColumnasTest extends PruebaIntegracion {
   }
 
   @Test
-  void conColumnasQueNoSeReconocenValidarDevuelveLasDetectadasYLoQueFalta() throws Exception {
-    enviar("/importaciones/csv/validar", CSV_POWER_BI)
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.valido").value(false))
-        .andExpect(jsonPath("$.origenMapeo").value("AUTOMATICO"))
-        .andExpect(jsonPath("$.columnas", contains(COLUMNAS.toArray())))
-        .andExpect(jsonPath("$.mapeo.Email").value("CORREO_DOCENTE"))
-        .andExpect(jsonPath("$.camposObligatoriosSinMapear", hasSize(5)));
-  }
-
-  @Test
-  void conElMapeoDelUsuarioSeValidaYSeImportaEnUnSoloFlujo() throws Exception {
+  void validarEImportarQuedanCortadosAunqueHayaMapeo() throws Exception {
     String mapeo = aJson(mapeoPowerBi());
-
-    enviar("/importaciones/csv/validar", CSV_POWER_BI, "mapeo", mapeo)
-        .andExpect(jsonPath("$.valido").value(true))
-        .andExpect(jsonPath("$.origenMapeo").value("MANUAL"))
-        .andExpect(jsonPath("$.mapeo['Dom.']").value("DOMINIO_DISCIPLINAR"));
-    enviar("/importaciones/csv", CSV_POWER_BI, "mapeo", mapeo)
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.importacion.notasNuevas").value(1));
-  }
-
-  @Test
-  void siElMapeoDejaUnCampoObligatorioSinAsignarLaImportacionSeRechaza() throws Exception {
-    Map<String, CampoImportacion> incompleto = new LinkedHashMap<>(mapeoPowerBi());
-    incompleto.remove("Comp.");
-
-    enviar("/importaciones/csv", CSV_POWER_BI, "mapeo", aJson(incompleto))
-        .andExpect(status().isUnprocessableEntity())
+    enviar("/importaciones/csv/validar", CSV_POWER_BI)
+        .andExpect(status().isConflict())
         .andExpect(
-            jsonPath("$.reporte.camposObligatoriosSinMapear", contains("COMPROMISO_INSTITUCIONAL")))
-        .andExpect(
-            jsonPath("$.reporte.errores[0].motivo", containsString("Compromiso institucional")));
+            jsonPath("$.mensaje")
+                .value("La evaluación de estudiantes se responde en el formulario"));
+    enviar("/importaciones/csv", CSV_POWER_BI, "mapeo", mapeo).andExpect(status().isConflict());
     assertThat(calificacionRepository.count()).isZero();
-  }
-
-  @Test
-  void unMapeoMalFormadoOConUnCampoDesconocidoEsUnaPeticionInvalida() throws Exception {
-    enviar("/importaciones/csv/validar", CSV_POWER_BI, "mapeo", "{no json")
-        .andExpect(status().isBadRequest());
-    enviar("/importaciones/csv/validar", CSV_POWER_BI, "mapeo", "{\"Email\":\"TELEFONO\"}")
-        .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.mensaje", containsString("columna a campo")));
   }
 
   @Test
@@ -108,10 +73,7 @@ class MapeoColumnasTest extends PruebaIntegracion {
         .andExpect(jsonPath("$.nombre").value("Power BI"))
         .andExpect(jsonPath("$.mapeo['Email']").value("CORREO_DOCENTE"));
 
-    enviar("/importaciones/csv", CSV_POWER_BI)
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.reporte.origenMapeo").value("PLANTILLA"))
-        .andExpect(jsonPath("$.reporte.plantilla").value("Power BI"));
+    enviar("/importaciones/csv", CSV_POWER_BI).andExpect(status().isConflict());
   }
 
   @Test
@@ -122,14 +84,9 @@ class MapeoColumnasTest extends PruebaIntegracion {
             + "julian.hoyos@uniautonoma.edu.co;4;4;4;4;4;Bien\n";
 
     enviar("/importaciones/csv/validar", csvCambiado, "plantilla", "power bi")
-        .andExpect(jsonPath("$.valido").value(false))
-        .andExpect(jsonPath("$.plantilla").value("Power BI"))
-        .andExpect(jsonPath("$.columnasFaltantes", contains("Metod.")))
-        .andExpect(jsonPath("$.columnasNuevas", contains("Metodología")))
-        .andExpect(jsonPath("$.camposObligatoriosSinMapear", contains("METODOLOGIA_ENSENANZA")))
-        .andExpect(jsonPath("$.advertencias[0]", containsString("no tiene las mismas columnas")));
+        .andExpect(status().isConflict());
     enviar("/importaciones/csv", csvCambiado, "plantilla", "Power BI")
-        .andExpect(status().isUnprocessableEntity());
+        .andExpect(status().isConflict());
   }
 
   @Test
@@ -166,8 +123,7 @@ class MapeoColumnasTest extends PruebaIntegracion {
                 .file(archivo(CSV_POWER_BI))
                 .param("plantilla", "Power BI")
                 .with(como(otro)))
-        .andExpect(status().isNotFound())
-        .andExpect(jsonPath("$.mensaje").value("Plantilla no encontrada"));
+        .andExpect(status().isConflict());
     mockMvc
         .perform(delete("/importaciones/plantillas/{id}", idPlantilla).with(como(otro)))
         .andExpect(status().isNotFound());

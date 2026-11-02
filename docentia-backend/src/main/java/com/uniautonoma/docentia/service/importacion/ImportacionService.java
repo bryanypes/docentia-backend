@@ -55,6 +55,9 @@ import org.springframework.web.multipart.MultipartFile;
 @Transactional
 public class ImportacionService {
 
+  public static final String MENSAJE_CSV_CORTADO =
+      "La evaluación de estudiantes se responde en el formulario";
+
   private final ApplicationEventPublisher eventos;
 
   static final int ERRORES_MAXIMOS_EN_REPORTE = 500;
@@ -109,6 +112,7 @@ public class ImportacionService {
   @Transactional(readOnly = true)
   public ReporteImportacionResponse validar(
       MultipartFile archivo, String mapeoJson, String nombrePlantilla, UsuarioSesion sesion) {
+    exigirCsvDeNotasCortado(archivo);
     Analisis analisis = analizar(archivo, mapeoJson, nombrePlantilla, sesion);
     Optional<PeriodoAcademico> periodo = periodoService.buscarPeriodoActivo();
     if (periodo.isEmpty()) {
@@ -137,6 +141,7 @@ public class ImportacionService {
    */
   public ResultadoImportacionResponse importar(
       MultipartFile archivo, String mapeoJson, String nombrePlantilla, UsuarioSesion sesion) {
+    exigirCsvDeNotasCortado(archivo);
     PeriodoAcademico periodo = periodoService.exigirPeriodoActivo();
     ventanaEtapaService.exigirEtapaAbierta(periodo, TipoEtapa.RECOLECCION_CALIFICACIONES);
     Analisis analisis = analizar(archivo, mapeoJson, nombrePlantilla, sesion);
@@ -366,6 +371,14 @@ public class ImportacionService {
     } catch (EtapaCerradaException cerrada) {
       analisis.advertencias.add(cerrada.getMessage() + ": el archivo no se podrá importar hoy");
     }
+  }
+
+  private void exigirCsvDeNotasCortado(MultipartFile archivo) {
+    if (archivo != null && archivo.getSize() > propiedades.tamanoMaximoBytes()) {
+      throw new ArchivoDemasiadoGrandeException(
+          "El archivo pesa más de " + propiedades.tamanoMaximoBytes() / 1024 + " KB");
+    }
+    throw new ReglaNegocioException(MENSAJE_CSV_CORTADO);
   }
 
   private byte[] leerContenido(MultipartFile archivo) {

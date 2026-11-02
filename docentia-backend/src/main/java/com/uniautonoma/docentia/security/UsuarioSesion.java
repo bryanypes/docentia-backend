@@ -81,4 +81,8 @@ public record UsuarioSesion(
   public boolean esDocente() {
     return rol == Rol.DOCENTE;
   }
+
+  public boolean esEstudiante() {
+    return rol == Rol.ESTUDIANTE;
+  }
 }

@@ -15,3 +15,4 @@ application-local.yml
 .github/modernize/
 .DS_Store
 Thumbs.db
+docs/client_secret_*.json

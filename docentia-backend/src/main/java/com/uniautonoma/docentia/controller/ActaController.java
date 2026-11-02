@@ -55,6 +55,7 @@ public class ActaController {
   }
 
   @GetMapping
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'DOCENTE', 'VICERRECTOR')")
   public List<ActaResponse> listar(
       @RequestParam(required = false) Long idDocente,
       @AuthenticationPrincipal UsuarioSesion sesion) {
@@ -62,6 +63,7 @@ public class ActaController {
   }
 
   @GetMapping("/{idActa}")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'DOCENTE', 'VICERRECTOR')")
   public ActaResponse obtener(
       @PathVariable Long idActa, @AuthenticationPrincipal UsuarioSesion sesion) {
     ActaResponse acta = actaService.obtener(idActa, sesion);
@@ -104,6 +106,7 @@ public class ActaController {
 
   @PostMapping("/{idActa}/correcciones")
   @ResponseStatus(HttpStatus.CREATED)
+  @PreAuthorize("hasRole('VICERRECTOR')")
   public ActaResponse corregir(
       @PathVariable Long idActa,
       @Valid @RequestBody CorreccionActaRequest solicitud,
@@ -114,6 +117,7 @@ public class ActaController {
   }
 
   @GetMapping("/{idActa}/pdf")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'DOCENTE', 'VICERRECTOR')")
   public ResponseEntity<byte[]> descargarPdf(
       @PathVariable Long idActa, @AuthenticationPrincipal UsuarioSesion sesion) {
     PdfActa pdf = actaService.descargarPdf(idActa, sesion);
