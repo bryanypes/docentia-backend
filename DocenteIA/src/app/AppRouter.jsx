@@ -13,6 +13,7 @@ import EvaluacionProfesores from '../features/formularios/pages/EvaluacionProfes
 import HeteroevaluacionClase from '../features/formularios/pages/HeteroevaluacionClase.jsx'
 import MiAutoevaluacion from '../features/formularios/pages/MiAutoevaluacion.jsx'
 import Auditoria from '../features/auditoria/pages/Auditoria.jsx'
+import Matricula from '../features/heteroevaluacion/pages/Matricula.jsx'
 import Notificaciones from '../features/notificaciones/pages/Notificaciones.jsx'
 import PanelProgramas from '../features/kpis/pages/PanelProgramas.jsx'
 import Agenda from '../features/agenda/pages/Agenda.jsx'
@@ -63,7 +64,7 @@ function RutasDocentia() {
               <Route element={<ProtectedRoute rolesPermitidos={[ROLES.ESTUDIANTE]} />}>
                 <Route path="/evaluacion-profesores" element={<EvaluacionProfesores />} />
                 <Route
-                  path="/evaluacion-profesores/:idClase/:idDocente"
+                  path="/evaluacion-profesores/:idAsignacion"
                   element={<HeteroevaluacionClase />}
                 />
               </Route>
@@ -82,6 +83,7 @@ function RutasDocentia() {
                 <Route path="/docentes" element={<Docentes />} />
                 <Route path="/docentes/:idDocente" element={<ExpedienteDocente />} />
                 <Route path="/acciones-sugeridas" element={<AccionesSugeridas />} />
+                <Route path="/matricula" element={<Matricula />} />
                 <Route path="/panel-programas" element={<PanelProgramas />} />
               </Route>
 

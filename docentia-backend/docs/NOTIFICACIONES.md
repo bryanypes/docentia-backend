@@ -26,6 +26,7 @@ flowchart LR
 - Cada destinatario va en su propia transacción. Un fallo se registra y no llega al negocio.
 - La firma de un acta nunca habla con el servidor de correo: solo escribe en la cola.
 - `UNIQUE (usuario_id, tipo, clave_dedupe)` hace idempotentes los eventos y los recordatorios.
+- Carga: 2.000 correos se envían en lotes de 20 y dos procesadores toman filas distintas.
 - Reintentos: 5 en total, con espera de 2, 4, 8 y 16 minutos. Después queda en ERROR.
 
 ## Eventos
@@ -53,6 +54,8 @@ flowchart LR
 | Autoevaluación sin enviar, 3 días y 1 día antes del cierre | Docente | App y correo | `AUTOEVALUACION_PENDIENTE` |
 | Coevaluaciones sin enviar, 3 días y 1 día antes del cierre | Coordinación de la facultad, con la cantidad | App y correo | `COEVALUACIONES_PENDIENTES` |
 | Un docente envía su autoevaluación | Coordinación de la facultad | App y correo | `AUTOEVALUACION_ENVIADA` |
+| Evaluaciones pendientes: al abrir, a 3 días y a 1 día del cierre | Estudiante | App y correo genérico | `HETEROEVALUACION_PENDIENTE` |
+| Cobertura de la facultad menor a 50 % a 3 días del cierre | Coordinación de la facultad | App y correo, sin nombres | `COBERTURA_BAJA` |
 | Docente con resultado definitivo Muy bajo | Vicerrectoría | App y correo | `ALERTA_INFORMATIVA` |
 | Etapa cerrada | Vicerrectoría | App y correo | `VENTANA_CERRADA` |
 | Etapa abierta, hasta 3 días después de abrir | Coordinaciones; docentes si participan | App y correo | `VENTANA_ABIERTA` |

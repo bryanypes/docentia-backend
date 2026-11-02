@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import com.uniautonoma.docentia.BaseDatosPruebaConfig;
 import com.uniautonoma.docentia.EscenarioPrueba;
 import com.uniautonoma.docentia.PruebaIntegracion;
+import com.uniautonoma.docentia.dto.EnvioEstudianteRequest;
 import com.uniautonoma.docentia.dto.FormularioRequest;
 import com.uniautonoma.docentia.dto.SolicitudAnalisisResponse;
 import com.uniautonoma.docentia.entity.Cita;
@@ -24,7 +25,11 @@ import com.uniautonoma.docentia.repository.SolicitudAnalisisRepository;
 import com.uniautonoma.docentia.security.UsuarioSesion;
 import com.uniautonoma.docentia.service.analisis.ValidacionHallazgoService;
 import com.uniautonoma.docentia.service.formulario.FormularioService;
+import com.uniautonoma.docentia.service.heteroevaluacion.HeteroevaluacionService;
+import com.uniautonoma.docentia.service.heteroevaluacion.MatriculaService;
+import com.uniautonoma.docentia.service.importacion.ImportacionService;
 import java.math.BigDecimal;
+import java.nio.charset.StandardCharsets;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -42,6 +47,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.transaction.support.TransactionTemplate;
@@ -56,7 +62,10 @@ class ConcurrenciaFlujosTest extends PruebaIntegracion {
   @Autowired private EscenarioPrueba escenario;
   @Autowired private ActaService actaService;
   @Autowired private ValidacionHallazgoService validacionService;
+  @Autowired private ImportacionService importacionService;
   @Autowired private FormularioService formularioService;
+  @Autowired private HeteroevaluacionService heteroevaluacion;
+  @Autowired private MatriculaService matriculaService;
   @Autowired private SolicitudAnalisisRepository solicitudRepository;
   @Autowired private FranjaHorariaRepository franjaRepository;
   @Autowired private CitaRepository citaRepository;
@@ -107,6 +116,32 @@ class ConcurrenciaFlujosTest extends PruebaIntegracion {
             + " (select id_periodo from periodos_academicos where nombre = '"
             + PERIODO
             + "')");
+    jdbcTemplate.update(
+        "delete from respuestas_heteroevaluacion where periodo_id in"
+            + " (select id_periodo from periodos_academicos where nombre = '"
+            + PERIODO
+            + "')");
+    jdbcTemplate.update(
+        "delete from participaciones_heteroevaluacion where estudiante_id in"
+            + " (select id_usuario from usuarios where nombre_completo like '%"
+            + MARCA
+            + "%' or correo = 'alumno.cf@uniautonoma.edu.co')");
+    jdbcTemplate.update(
+        "delete from matriculas where clase_id in (select id from clases where id_periodo in"
+            + " (select id_periodo from periodos_academicos where nombre = '"
+            + PERIODO
+            + "'))");
+    jdbcTemplate.update(
+        "delete from clases_docente where clase_id in (select id from clases where id_periodo in"
+            + " (select id_periodo from periodos_academicos where nombre = '"
+            + PERIODO
+            + "'))");
+    jdbcTemplate.update(
+        "delete from clases where id_periodo in"
+            + " (select id_periodo from periodos_academicos where nombre = '"
+            + PERIODO
+            + "')");
+    jdbcTemplate.update("delete from cursos where codigo like 'CF-%'");
     jdbcTemplate.update("delete from compromisos" + enPeriodo);
     jdbcTemplate.update("delete from actas" + enPeriodo);
     jdbcTemplate.update("delete from solicitudes_analisis" + enPeriodo);
@@ -119,6 +154,7 @@ class ConcurrenciaFlujosTest extends PruebaIntegracion {
     jdbcTemplate.update("delete from promedios_docente" + enPeriodo);
     jdbcTemplate.update("delete from periodos_academicos where nombre = ?", PERIODO);
     jdbcTemplate.update("delete from usuarios where nombre_completo like ?", "%" + MARCA + "%");
+    jdbcTemplate.update("delete from usuarios where correo = 'alumno.cf@uniautonoma.edu.co'");
     jdbcTemplate.update("delete from programas where nombre like ?", "%" + MARCA + "%");
     jdbcTemplate.update("delete from facultades where nombre like ?", "%" + MARCA + "%");
     jdbcTemplate.update("delete from cola_correo where notificacion_id is null");
@@ -197,6 +233,98 @@ class ConcurrenciaFlujosTest extends PruebaIntegracion {
   }
 
   @Test
+  void dobleEnvioDelEstudianteYRecalculoConcurrenteNoSePisan() throws Exception {
+    List<UsuarioSesion> alumnos = new ArrayList<>();
+    Long asignacion =
+        transaccion.execute(
+            estado -> {
+              var curso =
+                  escenario.crearCurso(
+                      "CF-101", "Curso " + MARCA, escenario.recargar(docente).getPrograma());
+              var clase = escenario.crearClase(periodo, curso, "A", escenario.recargar(docente));
+              for (int i = 0; i < 6; i++) {
+                Usuario alumno =
+                    escenario.crearEstudiante("Alumno " + MARCA + " " + i, curso.getPrograma());
+                escenario.matricular(clase, alumno);
+                alumnos.add(UsuarioSesion.desde(escenario.recargar(alumno)));
+              }
+              return jdbcTemplate.queryForObject(
+                  "select id from clases_docente where clase_id = ?", Long.class, clase.getId());
+            });
+    Map<String, BigDecimal> respuestas = new HashMap<>();
+    for (String codigo :
+        List.of("D02", "D03", "D04", "D05", "D06", "D07", "D08", "D09", "D10", "D11", "D12")) {
+      respuestas.put(codigo, BigDecimal.valueOf(4));
+    }
+    EnvioEstudianteRequest envio = new EnvioEstudianteRequest(respuestas, null);
+    UsuarioSesion primero = alumnos.get(0);
+
+    int exitos =
+        enParalelo(
+            () -> {
+              heteroevaluacion.enviar(asignacion, envio, primero);
+              return null;
+            });
+    assertThat(exitos).isEqualTo(1);
+
+    ExecutorService hilos = Executors.newFixedThreadPool(5);
+    List<Future<?>> envios = new ArrayList<>();
+    for (UsuarioSesion alumno : alumnos.subList(1, 6)) {
+      envios.add(
+          hilos.submit(
+              () -> {
+                heteroevaluacion.enviar(asignacion, envio, alumno);
+                return null;
+              }));
+    }
+    for (Future<?> futuro : envios) {
+      futuro.get(30, TimeUnit.SECONDS);
+    }
+    hilos.shutdown();
+
+    assertThat(
+            jdbcTemplate.queryForObject(
+                "select count(*) from respuestas_heteroevaluacion where asignacion_id = ?",
+                Long.class,
+                asignacion))
+        .isEqualTo(6);
+    assertThat(
+            jdbcTemplate.queryForObject(
+                "select origen from calificaciones where id_docente = ? and fuente = 'ESTUDIANTES'",
+                String.class,
+                docente.getIdUsuario()))
+        .isEqualTo("FORMULARIO");
+  }
+
+  @Test
+  void dosImportacionesDeMatriculaSimultaneasNoDuplican() throws Exception {
+    String csv =
+        "correo_estudiante,nombre_estudiante,programa,codigo_curso,nombre_curso,correo_docente\n"
+            + "alumno.cf@uniautonoma.edu.co,Alumno "
+            + MARCA
+            + ",Programa "
+            + MARCA
+            + ",CF-201,Curso "
+            + MARCA
+            + ","
+            + docente.getCorreo()
+            + "\n";
+    UsuarioSesion sesion = UsuarioSesion.desde(coordinador);
+    enParalelo(
+        () ->
+            matriculaService.importar(
+                new MockMultipartFile(
+                    "archivo", "m.csv", "text/csv", csv.getBytes(StandardCharsets.UTF_8)),
+                sesion));
+    assertThat(
+            jdbcTemplate.queryForObject(
+                "select count(*) from matriculas m join usuarios u on u.id_usuario = m.estudiante_id"
+                    + " where u.correo = 'alumno.cf@uniautonoma.edu.co'",
+                Long.class))
+        .isEqualTo(1);
+  }
+
+  @Test
   void doblePublicacionSoloGanaUna() throws Exception {
     Long idSolicitud =
         transaccion.execute(
@@ -225,5 +353,37 @@ class ConcurrenciaFlujosTest extends PruebaIntegracion {
             });
 
     assertThat(exitos).isEqualTo(1);
+  }
+
+  @Test
+  void dosImportacionesSimultaneasNoDuplicanNada() throws Exception {
+    String csv =
+        "Correo docente;Dominio disciplinar;Planeación académica;Metodología de enseñanza;"
+            + "Evaluación del aprendizaje;Compromiso institucional;Comentario\n"
+            + docente.getCorreo()
+            + ";4.0;4.0;4.0;4.0;4.0;Explica muy bien\n";
+    UsuarioSesion sesion = UsuarioSesion.desde(coordinador);
+
+    enParalelo(
+        () ->
+            importacionService.importar(
+                new MockMultipartFile(
+                    "archivo", "e.csv", "text/csv", csv.getBytes(StandardCharsets.UTF_8)),
+                null,
+                null,
+                sesion));
+
+    assertThat(
+            jdbcTemplate.queryForObject(
+                "select count(*) from comentarios_estudiantes where id_docente = ?",
+                Integer.class,
+                docente.getIdUsuario()))
+        .isEqualTo(1);
+    assertThat(
+            jdbcTemplate.queryForObject(
+                "select count(*) from calificaciones where id_docente = ? and fuente = 'ESTUDIANTES'",
+                Integer.class,
+                docente.getIdUsuario()))
+        .isEqualTo(1);
   }
 }

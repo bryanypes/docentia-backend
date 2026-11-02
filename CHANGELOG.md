@@ -1,5 +1,18 @@
 # Cambios
 
+## 0.3.3
+
+### Agregado
+
+- Heteroevaluación por formulario: 11 ítems, anónima por diseño y con k-anonimato de 5 respuestas.
+- Matrícula por CSV con plantilla, cobertura por docente y programa, y cobertura en el panel I11.
+- Avisos al estudiante y de cobertura baja, auditoría del envío y tope de solicitudes.
+
+### Cambiado
+
+- Las respuestas del estudiante dejan de guardarse junto a su usuario (V28).
+- La carga CSV de estudiantes vuelve como respaldo y no pisa la nota que ya viene del formulario.
+
 ## 0.3.2
 
 ### Agregado

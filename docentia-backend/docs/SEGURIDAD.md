@@ -12,6 +12,19 @@
 **Datos sensibles:** notas por fuente, promedio, categoría, comentarios de estudiantes, hallazgos y
 actas. La regla A4 impide que el docente vea notas individuales de cada fuente o un promedio parcial.
 
+## Rol estudiante
+
+| Amenaza | Control |
+|---------|---------|
+| Saber quién respondió qué | Tablas separadas sin vínculo, UUID aleatorio, sin fecha en la respuesta, nada en logs ni auditoría |
+| Deducir respuestas de grupos pequeños | k-anonimato: nada se usa ni se muestra con menos de 5 respuestas por docente |
+| Evaluar a un docente ajeno o hacerlo dos veces | Solo asignaciones de su matrícula activa (404 en otro caso) y clave única de participación |
+| Ver resultados | El estudiante solo recibe estructura y estado; 403 en todo lo demás |
+| Abuso del formulario | Tope de lecturas y envíos por minuto (429) |
+
+**Riesgo aceptado.** Un administrador de la base podría intentar correlacionar por el orden físico de las
+filas en disco. La app nunca expone ese orden y las respuestas se listan por UUID.
+
 ## Controles
 
 | Riesgo | Control | Evidencia |
