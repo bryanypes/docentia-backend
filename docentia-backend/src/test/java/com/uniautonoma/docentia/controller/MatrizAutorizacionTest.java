@@ -6,6 +6,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import com.uniautonoma.docentia.EscenarioPrueba;
 import com.uniautonoma.docentia.PruebaIntegracion;
 import com.uniautonoma.docentia.entity.Facultad;
+import com.uniautonoma.docentia.entity.Programa;
 import com.uniautonoma.docentia.entity.Usuario;
 import java.util.Map;
 import java.util.Set;
@@ -26,8 +27,8 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 /**
- * Rol por endpoint. D = docente, C = coordinador, V = vicerrector, P = público. Si aparece un
- * endpoint nuevo sin clasificar, {@link #todoEndpointEstaClasificado} falla.
+ * Rol por endpoint. D = docente, C = coordinador, V = vicerrector, E = estudiante, P = público. Si
+ * aparece un endpoint nuevo sin clasificar, {@link #todoEndpointEstaClasificado} falla.
  */
 class MatrizAutorizacionTest extends PruebaIntegracion {
 
@@ -67,10 +68,16 @@ class MatrizAutorizacionTest extends PruebaIntegracion {
       {"GET /formularios/coevaluacion/{}", "C"},
       {"PUT /formularios/coevaluacion/{}", "C"},
       {"POST /formularios/coevaluacion/{}/enviar", "C"},
+      {"GET /estudiante/evaluaciones", "E"},
+      {"GET /estudiante/evaluaciones/{}", "E"},
+      {"POST /estudiante/evaluaciones/{}/enviar", "E"},
+      {"GET /cobertura-heteroevaluacion", "CV"},
+      {"POST /matriculas/csv", "CV"},
+      {"GET /matriculas/plantilla", "CV"},
       {"GET /franjas/disponibles", "D"},
       {"POST /franjas/{}/reserva", "D"},
       {"GET /citas/mia", "D"},
-      {"GET /configuracion/evaluacion", "DCV"},
+      {"GET /configuracion/evaluacion", "DCVE"},
       {"GET /docentes", "CV"},
       {"GET /docentes/seguimiento", "CV"},
       {"GET /docentes/{}", "CV"},
@@ -95,17 +102,17 @@ class MatrizAutorizacionTest extends PruebaIntegracion {
       {"DELETE /importaciones/plantillas/{}", "C"},
       {"GET /kpis", "CV"},
       {"GET /kpis/panel", "CV"},
-      {"GET /notificaciones", "DCV"},
-      {"GET /notificaciones/no-leidas/conteo", "DCV"},
-      {"PATCH /notificaciones/{}/leida", "DCV"},
-      {"PATCH /notificaciones/leer-todas", "DCV"},
-      {"GET /notificaciones/preferencias", "DCV"},
-      {"PUT /notificaciones/preferencias", "DCV"},
-      {"GET /periodos-academicos", "DCV"},
-      {"GET /periodos-academicos/activo", "DCV"},
-      {"GET /periodos-academicos/activo/calendario", "DCV"},
-      {"GET /periodos-academicos/activo/ventanas", "DCV"},
-      {"GET /periodos-academicos/{}", "DCV"},
+      {"GET /notificaciones", "DCVE"},
+      {"GET /notificaciones/no-leidas/conteo", "DCVE"},
+      {"PATCH /notificaciones/{}/leida", "DCVE"},
+      {"PATCH /notificaciones/leer-todas", "DCVE"},
+      {"GET /notificaciones/preferencias", "DCVE"},
+      {"PUT /notificaciones/preferencias", "DCVE"},
+      {"GET /periodos-academicos", "DCVE"},
+      {"GET /periodos-academicos/activo", "DCVE"},
+      {"GET /periodos-academicos/activo/calendario", "DCVE"},
+      {"GET /periodos-academicos/activo/ventanas", "DCVE"},
+      {"GET /periodos-academicos/{}", "DCVE"},
       {"POST /periodos-academicos", "V"},
       {"PUT /periodos-academicos/{}", "V"},
       {"PUT /periodos-academicos/{}/activacion", "V"},
@@ -121,8 +128,8 @@ class MatrizAutorizacionTest extends PruebaIntegracion {
       {"DELETE /programas/{}", "V"},
       {"POST /sesiones", "P"},
       {"POST /sesiones/google", "P"},
-      {"GET /sesiones/actual", "DCV"},
-      {"PUT /sesiones/actual/contrasena", "DCV"},
+      {"GET /sesiones/actual", "DCVE"},
+      {"PUT /sesiones/actual/contrasena", "DCVE"},
       {"GET /usuarios", "V"},
       {"GET /usuarios/{}", "V"},
       {"POST /usuarios", "V"},
@@ -144,11 +151,14 @@ class MatrizAutorizacionTest extends PruebaIntegracion {
   private Usuario docente;
   private Usuario coordinador;
   private Usuario vicerrector;
+  private Usuario estudiante;
 
   @BeforeEach
   void crearEscenario() {
     Facultad facultad = escenario.crearFacultad("Ingeniería");
-    docente = escenario.crearDocente("Docente Uno", escenario.crearPrograma("Software", facultad));
+    Programa programa = escenario.crearPrograma("Software", facultad);
+    docente = escenario.crearDocente("Docente Uno", programa);
+    estudiante = escenario.crearEstudiante("Estudiante Uno", programa);
     coordinador = escenario.crearCoordinador("Coordinador Uno", facultad);
     vicerrector = escenario.crearVicerrector("Vicerrector Uno");
   }
@@ -157,7 +167,7 @@ class MatrizAutorizacionTest extends PruebaIntegracion {
     return MATRIZ.entrySet().stream()
         .flatMap(
             fila ->
-                Stream.of('D', 'C', 'V')
+                Stream.of('D', 'C', 'V', 'E')
                     .map(rol -> Arguments.of(fila.getKey(), fila.getValue(), rol)));
   }
 
@@ -202,7 +212,13 @@ class MatrizAutorizacionTest extends PruebaIntegracion {
     if (permitidos.equals("P")) {
       return;
     }
-    Usuario usuario = rol == 'D' ? docente : rol == 'C' ? coordinador : vicerrector;
+    Usuario usuario =
+        switch (rol) {
+          case 'D' -> docente;
+          case 'C' -> coordinador;
+          case 'V' -> vicerrector;
+          default -> estudiante;
+        };
     RequestPostProcessor sesion = como(usuario);
     int estado =
         mockMvc.perform(peticion(endpoint).with(sesion)).andReturn().getResponse().getStatus();

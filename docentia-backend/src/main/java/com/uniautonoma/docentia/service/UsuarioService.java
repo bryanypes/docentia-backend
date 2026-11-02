@@ -141,7 +141,7 @@ public class UsuarioService {
   }
 
   private Vinculo resolverVinculo(UsuarioRequest solicitud) {
-    if (solicitud.rol() != Rol.DOCENTE) {
+    if (solicitud.rol() != Rol.DOCENTE && solicitud.rol() != Rol.ESTUDIANTE) {
       Facultad facultad =
           solicitud.idFacultad() == null
               ? null
@@ -150,8 +150,9 @@ public class UsuarioService {
           solicitud.idPrograma() == null ? null : buscarProgramaActivo(solicitud.idPrograma());
       return new Vinculo(facultad, programa);
     }
+    String quien = solicitud.rol() == Rol.ESTUDIANTE ? "El estudiante" : "El docente";
     if (solicitud.idPrograma() == null) {
-      throw new DatosInvalidosException("El docente debe estar vinculado a un programa");
+      throw new DatosInvalidosException(quien + " debe estar vinculado a un programa");
     }
     Programa programa = buscarProgramaActivo(solicitud.idPrograma());
     // El formulario puede mandar también la facultad elegida; se acepta si es la del programa.

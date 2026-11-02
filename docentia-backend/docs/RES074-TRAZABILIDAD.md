@@ -4,7 +4,7 @@ Historias del Excel v2 frente a lo construido. Si difieren, manda la resolución
 
 | Historia | Estado | Evidencia |
 |----------|--------|-----------|
-| HU-01 Formulario de estudiantes | Por CSV; formulario futuro | DOCENTIA importa la heteroevaluación (`ImportacionCsvTest`); no hay rol de estudiante ni matrículas |
+| HU-01 Formulario de estudiantes (11 ítems) | Implementado; el CSV queda de respaldo | `/estudiante/evaluaciones`, `HeteroevaluacionTest`, E2E |
 | HU-02 Formulario de coevaluación (6 ítems) | Implementado | `/formularios/coevaluacion`, `FormulariosTest`, E2E |
 | HU-03 Formulario de autoevaluación (14 ítems) | Implementado | `/formularios/autoevaluacion`, `FormulariosTest`, E2E |
 | HU-04 Cálculo de la nota final | Implementado | `CalculadoraPromedioPonderado`, `ClasificadorDesempenoTest`, `AutoevaluacionTest` |
@@ -14,6 +14,7 @@ Historias del Excel v2 frente a lo construido. Si difieren, manda la resolución
 | HU-08 Reportes | Vía I5 e I11 | `GET /kpis`, `GET /kpis/panel`, `AccionesYPanelTest` |
 | HU-09 Evidencias complementarias | Futuro | No implementado |
 
+ESC-01.1 se cumple: el estudiante solo recibe los 11 descriptores de su actor (`HeteroevaluacionTest`).
 ESC-09.2 se cumple sin HU-09: D12, sobre metodologías, herramientas y tecnologías, es un ítem
 obligatorio de la autoevaluación y de la coevaluación.
 

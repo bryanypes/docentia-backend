@@ -33,6 +33,12 @@ public enum TipoNotificacion {
       "Coevaluaciones pendientes", "Tienes coevaluaciones pendientes y la etapa está por cerrar."),
   AUTOEVALUACION_ENVIADA(
       "Autoevaluación enviada", "Un docente de tu facultad envió su autoevaluación."),
+  HETEROEVALUACION_PENDIENTE(
+      "Evaluaciones pendientes",
+      "Tienes evaluaciones de tus profesores pendientes. Ingresa para responderlas."),
+  COBERTURA_BAJA(
+      "Cobertura baja",
+      "Menos de la mitad de los estudiantes de tu facultad ha respondido y la etapa está por cerrar."),
   VENTANA_POR_CERRAR(
       "Etapa próxima a cerrar",
       "Una etapa del periodo cierra en 3 días. Revisa los pendientes de tu facultad."),

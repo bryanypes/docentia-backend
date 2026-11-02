@@ -29,7 +29,7 @@ DOCENTIA_API_URL=http://localhost:8080 npm run dev
 ```
 
 El frontend vive en el repositorio `DocenteIA`. La carpeta `DocenteIA/` del monorepo es la copia que usa
-Docker y se sincroniza en cada versión. `docentia-docker` ya no se usa.
+Docker y se sincroniza en cada versión. `docentia-docker` reúne el backend y el frontend de cada versión publicada.
 
 ## Usuarios de demo
 

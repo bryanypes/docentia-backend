@@ -69,6 +69,9 @@ docentia:
   # Con una nota menor al umbral el acta exige al menos un compromiso con plazo.
   compromisos:
     umbral: ${DOCENTIA_COMPROMISOS_UMBRAL:3.8}
+  # Heteroevaluación: por debajo del mínimo no se usa ni se muestra ningún agregado.
+  heteroevaluacion:
+    minimo-respuestas: ${DOCENTIA_HETEROEVALUACION_MINIMO:5}
   # Escala de los formularios, de 1 a 5. La resolución no la define: pendiente de confirmar.
   formularios:
     etiquetas-escala: Muy en desacuerdo,En desacuerdo,Ni de acuerdo ni en desacuerdo,De acuerdo,Muy de acuerdo

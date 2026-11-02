@@ -9,8 +9,11 @@ import VerificarActa from '../features/actas/pages/VerificarActa.jsx'
 import MiActa from '../features/actas/pages/MiActa.jsx'
 import CoevaluacionDocente from '../features/formularios/pages/CoevaluacionDocente.jsx'
 import Coevaluaciones from '../features/formularios/pages/Coevaluaciones.jsx'
+import EvaluacionProfesores from '../features/formularios/pages/EvaluacionProfesores.jsx'
+import HeteroevaluacionClase from '../features/formularios/pages/HeteroevaluacionClase.jsx'
 import MiAutoevaluacion from '../features/formularios/pages/MiAutoevaluacion.jsx'
 import Auditoria from '../features/auditoria/pages/Auditoria.jsx'
+import Matricula from '../features/heteroevaluacion/pages/Matricula.jsx'
 import Notificaciones from '../features/notificaciones/pages/Notificaciones.jsx'
 import PanelProgramas from '../features/kpis/pages/PanelProgramas.jsx'
 import Agenda from '../features/agenda/pages/Agenda.jsx'
@@ -58,6 +61,14 @@ function RutasDocentia() {
 
             <Route element={<AppLayout />}>
               <Route path="/notificaciones" element={<Notificaciones />} />
+              <Route element={<ProtectedRoute rolesPermitidos={[ROLES.ESTUDIANTE]} />}>
+                <Route path="/evaluacion-profesores" element={<EvaluacionProfesores />} />
+                <Route
+                  path="/evaluacion-profesores/:idAsignacion"
+                  element={<HeteroevaluacionClase />}
+                />
+              </Route>
+
               <Route element={<ProtectedRoute rolesPermitidos={[ROLES.DOCENTE]} />}>
                 <Route path="/mi-evaluacion" element={<MiEvaluacion />} />
                 <Route path="/mi-cita" element={<MiCita />} />
@@ -72,6 +83,7 @@ function RutasDocentia() {
                 <Route path="/docentes" element={<Docentes />} />
                 <Route path="/docentes/:idDocente" element={<ExpedienteDocente />} />
                 <Route path="/acciones-sugeridas" element={<AccionesSugeridas />} />
+                <Route path="/matricula" element={<Matricula />} />
                 <Route path="/panel-programas" element={<PanelProgramas />} />
               </Route>
 
