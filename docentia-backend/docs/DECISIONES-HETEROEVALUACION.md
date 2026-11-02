@@ -1,3 +1,7 @@
+> **Reemplazado en 0.3.3.** Este documento describe el primer esquema de heteroevaluación,
+> que guardaba al estudiante junto a sus respuestas. Lo vigente está en [DECISIONES.md](DECISIONES.md)
+> y [API.md](API.md).
+
 # Decisiones — heteroevaluación (HU-01)
 
 Decisiones tomadas al pasar la fuente **Estudiantes (50 %)** del CSV del coordinador al

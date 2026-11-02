@@ -18,16 +18,17 @@ vi.mock('react-router-dom', () => ({
 }))
 
 describe('Sidebar', () => {
-  it('el coordinador no ve la carga de CSV de estudiantes', () => {
+  it('el coordinador tiene la carga de estudiantes y la matrícula', () => {
     renderizarConSesion(<Sidebar />, { rol: 'COORDINADOR' })
     expect(screen.getByRole('link', { name: 'Coevaluaciones' })).toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: 'Evaluación de estudiantes' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: /CSV|Excel|carga/i })).not.toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Evaluación de estudiantes' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Matrícula y cobertura' })).toBeInTheDocument()
   })
 
-  it('el vicerrector no ve el menú de cargas de estudiantes', () => {
-    renderizarConSesion(<Sidebar />, { rol: 'VICERRECTOR' })
-    expect(screen.getByRole('link', { name: 'Docentes' })).toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: 'Cargas de estudiantes' })).not.toBeInTheDocument()
+  it('el estudiante solo ve sus evaluaciones', () => {
+    renderizarConSesion(<Sidebar />, { rol: 'ESTUDIANTE' })
+    expect(screen.getByRole('link', { name: 'Mis evaluaciones' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Docentes' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Mi evaluación' })).not.toBeInTheDocument()
   })
 })

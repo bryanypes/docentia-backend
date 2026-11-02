@@ -1,3 +1,7 @@
+> **Reemplazado en 0.3.3.** Este documento describe el primer esquema de heteroevaluación,
+> que guardaba al estudiante junto a sus respuestas. Lo vigente está en [DECISIONES.md](DECISIONES.md)
+> y [API.md](API.md).
+
 # Heteroevaluación (estudiante → docente)
 
 SPEC de HU-01. Las etapas 1 a 3 ya tienen pruebas. Si el código y este texto chocan, mandan
