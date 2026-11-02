@@ -62,6 +62,7 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
   private final ComentarioEstudianteRepository comentarioRepository;
   private final FranjaHorariaRepository franjaRepository;
   private final CargadorClasesCampus cargadorClasesCampus;
+  private final SemillaHeteroevaluacion semillaHeteroevaluacion;
 
   public CargadorDatosDesarrollo(
       FranjaHorariaRepository franjaRepository,
@@ -78,7 +79,9 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
       PasswordEncoder passwordEncoder,
       @Value("${docentia.desarrollo.contrasena-inicial}") String contrasenaInicial,
       TransactionTemplate transaccion,
-      CargadorClasesCampus cargadorClasesCampus) {
+      CargadorClasesCampus cargadorClasesCampus,
+      SemillaHeteroevaluacion semillaHeteroevaluacion) {
+    this.semillaHeteroevaluacion = semillaHeteroevaluacion;
     this.transaccion = transaccion;
     this.importacionRepository = importacionRepository;
     this.comentarioRepository = comentarioRepository;
@@ -257,6 +260,7 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
             periodoAnterior,
             "Entregar el plan de asignatura firmado por el programa",
             LocalDate.of(2026, 9, 30)));
+    semillaHeteroevaluacion.cargar(periodoActivo, software, coordinadorIngenieria, camilo, hash);
   }
 
   private void cargarComentarios(
