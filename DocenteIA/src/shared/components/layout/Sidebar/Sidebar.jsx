@@ -7,7 +7,6 @@ import {
   ClipboardCheck,
   ClipboardList,
   FileSignature,
-  FileUp,
   GraduationCap,
   KeyRound,
   LayoutDashboard,
@@ -32,6 +31,7 @@ import { iniciales } from '../../../utils/formatters.js'
 import './Sidebar.css'
 
 const NAVEGACION = {
+  [ROLES.ESTUDIANTE]: [{ ruta: '/evaluacion-profesores', etiqueta: 'Evaluación a profesor', Icono: ClipboardCheck }],
   [ROLES.DOCENTE]: [
     { ruta: '/mi-evaluacion', etiqueta: 'Mi evaluación', Icono: ClipboardCheck },
     { ruta: '/mi-autoevaluacion', etiqueta: 'Mi autoevaluación', Icono: PenLine },
@@ -42,7 +42,6 @@ const NAVEGACION = {
     { ruta: '/inicio', etiqueta: 'Inicio', Icono: LayoutDashboard },
     { ruta: '/docentes', etiqueta: 'Docentes', Icono: Users },
     { ruta: '/coevaluaciones', etiqueta: 'Coevaluaciones', Icono: ClipboardList },
-    { ruta: '/importaciones', etiqueta: 'Evaluación de estudiantes', Icono: FileUp },
     { ruta: '/analisis', etiqueta: 'Análisis de comentarios', Icono: MessagesSquare },
     { ruta: '/agenda', etiqueta: 'Agenda de citas', Icono: CalendarDays },
     { ruta: '/acciones-sugeridas', etiqueta: 'Acciones sugeridas', Icono: Lightbulb },
@@ -51,7 +50,6 @@ const NAVEGACION = {
   [ROLES.VICERRECTOR]: [
     { ruta: '/inicio', etiqueta: 'Inicio', Icono: LayoutDashboard },
     { ruta: '/docentes', etiqueta: 'Docentes', Icono: Users },
-    { ruta: '/importaciones', etiqueta: 'Cargas de estudiantes', Icono: FileUp },
     { ruta: '/analisis', etiqueta: 'Análisis de comentarios', Icono: MessagesSquare },
     { ruta: '/acciones-sugeridas', etiqueta: 'Acciones sugeridas', Icono: Lightbulb },
     { ruta: '/panel-programas', etiqueta: 'Panel por programa', Icono: ChartColumn },

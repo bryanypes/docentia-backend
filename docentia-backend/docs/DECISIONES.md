@@ -108,8 +108,13 @@ ambigüedad. La fuente de verdad es la resolución; el Excel v2 tiene errores (v
   así que esto solo afecta el desglose visual.
 - **Escala de 1 a 5.** La resolución no la define. Sus etiquetas están en configuración
   (`docentia.formularios.etiquetas-escala`) y quedan pendientes de confirmar con Vicerrectoría.
-- **Precedencia.** La media del formulario prevalece sobre la nota previa de AUTO y COEVAL, sea manual o
-  de CSV. HETERO sigue por CSV. El reemplazo queda en el historial de correcciones.
+- **Precedencia.** La media del formulario prevalece sobre la nota previa de AUTO, COEVAL y HETERO.
+  HU-01 corta el CSV de notas: la fuente `ESTUDIANTES` sale de formularios HETERO agregados.
+  El reemplazo queda en el historial de correcciones.
+- **Unidad HETERO.** Un formulario por (estudiante, clase, docente). Clase = curso + grupo + jornada
+  del JSON de Campus. El detalle de HU-01 está en
+  [DECISIONES-HETEROEVALUACION.md](DECISIONES-HETEROEVALUACION.md) y el contrato en
+  [api-heteroevaluacion.md](api-heteroevaluacion.md).
 - **Origen.** `calificaciones.origen` admite MANUAL, CSV y FORMULARIO. Se agregó MANUAL porque los datos
   existentes y las notas registradas por pantalla no son ninguno de los otros dos.
 - **Notas por aspecto.** El instrumento no tiene los cinco aspectos anteriores. Al enviar, los cinco

@@ -2,12 +2,14 @@ export const ROLES = {
   VICERRECTOR: 'VICERRECTOR',
   COORDINADOR: 'COORDINADOR',
   DOCENTE: 'DOCENTE',
+  ESTUDIANTE: 'ESTUDIANTE',
 }
 
 export const ETIQUETA_ROL = {
   VICERRECTOR: 'Vicerrectoría',
   COORDINADOR: 'Coordinación',
   DOCENTE: 'Docente',
+  ESTUDIANTE: 'Estudiante',
 }
 
 export const ETIQUETA_FUENTE = {

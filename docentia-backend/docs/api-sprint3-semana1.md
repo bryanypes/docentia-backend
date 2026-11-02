@@ -36,10 +36,12 @@ Un usuario tiene **un solo rol**. El vínculo depende del rol:
 | ------------- | -------------- | -------------- |
 | `COORDINADOR` | obligatorio    | no se envía    |
 | `DOCENTE`     | opcional (*)   | obligatorio    |
+| `ESTUDIANTE`  | opcional (*)   | obligatorio (carrera) |
 | `VICERRECTOR` | no se envía    | no se envía    |
 
-(*) La facultad del docente es la de su programa. Si el formulario la envía, debe coincidir con la
-del programa; si no coincide responde 400.
+(*) La facultad del docente o del estudiante es la de su programa. Si el formulario la envía, debe
+coincidir con la del programa; si no coincide responde 400. El estudiante no lleva las clases en el
+JWT: salen de `matriculas`.
 
 El alcance ya viaja en el login (`POST /api/sesiones` → `usuario.rol`, `usuario.idFacultad`,
 `usuario.idPrograma`) y dentro del JWT; el backend filtra con eso sin volver a consultar la base.
@@ -47,7 +49,7 @@ El alcance ya viaja en el login (`POST /api/sesiones` → `usuario.rol`, `usuari
 que el token vence (8 h) o vuelve a iniciar sesión.**
 
 Todos los endpoints de `/usuarios` son solo para `VICERRECTOR` (no existe rol administrador).
-Coordinador y docente reciben 403.
+Coordinador, docente y estudiante reciben 403.
 
 ### `GET /api/usuarios?rol=`
 
@@ -259,6 +261,10 @@ anterior (buscar y luego insertar) esa prueba fallaba por llave duplicada.
 ---
 
 ## C4 — Carga del CSV de evaluación de estudiantes
+
+**Cortado en HU-01 etapa 3.** `POST /api/importaciones/csv` y `.../validar` responden **409**
+`"La evaluación de estudiantes se responde en el formulario"`. El historial `GET` sigue. Ver
+`docs/api-heteroevaluacion.md`.
 
 Flujo en la pantalla: el coordinador elige el archivo → `POST /api/importaciones/csv/validar`
 (no guarda nada, muestra el reporte) → si `valido` es `true`, el mismo archivo va a

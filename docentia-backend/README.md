@@ -86,6 +86,12 @@ usuarios, todos con la contraseña `Docentia2026*`:
 | Docente      | oscar.chantre@uniautonoma.edu.co           | Ingeniería Electrónica |
 | Docente      | luisa.mosquera@uniautonoma.edu.co          | Derecho                |
 | Docente      | hector.quilindo@uniautonoma.edu.co         | Derecho                |
+| Estudiante   | karen.mancilla@uniautonoma.edu.co          | Administración (3 clases Campus) |
+| Estudiante   | andrea.nieto@uniautonoma.edu.co            | Administración (Zulema grupo B) |
+
+Si la base arranca vacía, el seed de Campus (`campus-clases-demo.json`) también crea a Zulema León,
+Martín Valencia y Francisco Ramírez como docentes, y a Karen Mancilla y Andrea Nieto como
+estudiantes, todos con la misma contraseña.
 
 Además quedan el periodo 2026-1 cerrado y el 2026-2 activo. En 2026-2, Julián Hoyos y Diana
 Astaiza tienen las tres fuentes (estudiantes, coordinación y vicerrectoría), así que su promedio

@@ -6,6 +6,10 @@ Endpoints agregados el 30 de octubre porque la aplicación web
 
 Inicio de sesión con Google: ver `docs/api-sesiones-google.md`.
 
+Rol `ESTUDIANTE`: `POST /api/sesiones` y `GET /api/sesiones/actual` responden igual que para el
+docente (`rol`, `idPrograma`, `idFacultad` del programa). No entra a `/api/docentes` ni a
+`/api/usuarios` (`403`). Matriz: letra **E**. Heteroevaluación: `docs/api-heteroevaluacion.md`.
+
 ---
 
 ## Contraseña temporal
