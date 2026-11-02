@@ -11,6 +11,9 @@ import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { formatearNota, iniciales, listarFuentes, normalizarTexto } from '../../../shared/utils/formatters.js'
 import { useSesion } from '../../auth/sesionContext.js'
 import { listarFacultades } from '../../facultades/services/facultadesService.js'
+import { ChipProceso } from '../../proceso/components/ChipProceso.jsx'
+import { ESTADOS_PROCESO, ORDEN_ESTADOS } from '../../proceso/estados.js'
+import { listarProcesos } from '../../proceso/services/procesoService.js'
 import { listarSeguimientoDocentes } from '../services/docentesService.js'
 import './Docentes.css'
 
@@ -61,9 +64,17 @@ export default function Docentes() {
     Object.values(ESTADOS).includes(parametros.get('estado')) ? parametros.get('estado') : TODOS,
   )
   const [busqueda, setBusqueda] = useState('')
+  const [estadoProceso, setEstadoProceso] = useState(TODOS)
 
   const cargarDocentes = useCallback(() => listarSeguimientoDocentes(idFacultad || null), [idFacultad])
   const seguimiento = useFetch(cargarDocentes, [cargarDocentes])
+  // El estado del proceso llega aparte: si falla, la lista sigue funcionando sin esa columna.
+  const cargarProcesos = useCallback(() => listarProcesos(idFacultad || null), [idFacultad])
+  const procesos = useFetch(cargarProcesos, [cargarProcesos])
+  const procesoPorDocente = useMemo(
+    () => new Map((procesos.datos ?? []).map((p) => [p.docente.idDocente, p])),
+    [procesos.datos],
+  )
   const facultades = useFetch(() => (esVicerrector ? listarFacultades() : Promise.resolve([])), [esVicerrector])
 
   const periodo = seguimiento.datos?.periodo ?? null
@@ -80,20 +91,22 @@ export default function Docentes() {
       ({ docente, promedio }) =>
         (!programa || docente.nombrePrograma === programa) &&
         cumpleEstado(promedio, estado, miFuente) &&
+        (!estadoProceso || procesoPorDocente.get(docente.idDocente)?.estado === estadoProceso) &&
         (!termino ||
           normalizarTexto(`${docente.nombreCompleto} ${docente.correo} ${docente.nombrePrograma}`).includes(termino)),
     )
-  }, [lista, programa, estado, miFuente, busqueda])
+  }, [lista, programa, estado, estadoProceso, procesoPorDocente, miFuente, busqueda])
 
   function limpiarFiltros() {
     setBusqueda('')
     setPrograma(TODOS)
     setEstado(TODOS)
+    setEstadoProceso(TODOS)
     setIdFacultad(TODOS)
   }
 
   const alcance = esVicerrector ? 'toda la universidad' : (lista[0]?.docente.nombreFacultad ?? 'tu facultad')
-  const hayFiltros = Boolean(busqueda || programa || estado || idFacultad)
+  const hayFiltros = Boolean(busqueda || programa || estado || estadoProceso || idFacultad)
 
   return (
     <>
@@ -173,6 +186,22 @@ export default function Docentes() {
             </select>
           </label>
 
+          <label className="docentes__selector">
+            <span className="docentes__etiqueta">Proceso</span>
+            <select
+              value={estadoProceso}
+              onChange={(e) => setEstadoProceso(e.target.value)}
+              disabled={!periodo || !procesos.datos}
+            >
+              <option value={TODOS}>Todos</option>
+              {ORDEN_ESTADOS.map((clave) => (
+                <option key={clave} value={clave}>
+                  {ESTADOS_PROCESO[clave].etiqueta}
+                </option>
+              ))}
+            </select>
+          </label>
+
           <span className="docentes__conteo" aria-live="polite">
             {filas.length} de {lista.length}
           </span>
@@ -209,6 +238,7 @@ export default function Docentes() {
                       <th scope="col">Docente</th>
                       <th scope="col">Programa</th>
                       <th scope="col">Evaluación {periodo?.nombre ?? ''}</th>
+                      <th scope="col">Proceso</th>
                       <th scope="col" className="tabla__numero">
                         Promedio
                       </th>
@@ -245,6 +275,13 @@ export default function Docentes() {
                           </td>
                           <td>
                             <EstadoEvaluacion promedio={promedio} faltaMia={faltaMia} />
+                          </td>
+                          <td>
+                            {procesoPorDocente.get(d.idDocente) ? (
+                              <ChipProceso estado={procesoPorDocente.get(d.idDocente).estado} />
+                            ) : (
+                              '—'
+                            )}
                           </td>
                           <td className="tabla__numero docentes__promedio">
                             {promedio?.estado === 'COMPLETO' ? formatearNota(promedio.valor) : '—'}

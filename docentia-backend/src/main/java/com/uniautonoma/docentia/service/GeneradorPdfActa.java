@@ -12,6 +12,7 @@ import com.uniautonoma.docentia.entity.CategoriaDesempeno;
 import com.uniautonoma.docentia.entity.Compromiso;
 import com.uniautonoma.docentia.entity.FirmaActa;
 import com.uniautonoma.docentia.entity.Rol;
+import com.uniautonoma.docentia.entity.TipoActa;
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
@@ -85,10 +86,21 @@ public class GeneradorPdfActa {
     try {
       PdfWriter.getInstance(documento, salida);
       documento.open();
-      documento.addTitle("Acta de retroalimentación");
+      String nombreActa =
+          acta.getTipo() == TipoActa.COMPROMISO
+              ? "Acta de compromiso docente"
+              : "Acta de retroalimentación docente";
+      documento.addTitle(nombreActa);
       documento.add(new Paragraph("DOCENTIA", titulo));
       documento.add(new Paragraph("Corporación Universitaria Autónoma del Cauca", texto));
-      documento.add(new Paragraph("Acta de retroalimentación docente", seccion));
+      documento.add(new Paragraph(nombreActa, seccion));
+      if (acta.getTipo() == TipoActa.RETROALIMENTACION) {
+        documento.add(
+            new Paragraph(
+                "El docente recibió la retroalimentación de su evaluación en reunión con la"
+                    + " coordinación.",
+                texto));
+      }
       documento.add(new Paragraph(" "));
       documento.add(new Paragraph("Docente: " + acta.getDocente().getNombreCompleto(), texto));
       documento.add(new Paragraph("Identificación: " + acta.getDocente().getCorreo(), texto));

@@ -5,6 +5,7 @@ import com.uniautonoma.docentia.entity.Compromiso;
 import com.uniautonoma.docentia.entity.EstadoActa;
 import com.uniautonoma.docentia.entity.FirmaActa;
 import com.uniautonoma.docentia.entity.Rol;
+import com.uniautonoma.docentia.entity.TipoActa;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -18,6 +19,7 @@ public record ActaResponse(
     PeriodoResumenResponse periodo,
     int version,
     EstadoActa estado,
+    TipoActa tipo,
     BigDecimal promedio,
     EstadoPromedio estadoPromedio,
     CategoriaResponse categoria,
@@ -49,6 +51,7 @@ public record ActaResponse(
         PeriodoResumenResponse.desde(acta.getPeriodo()),
         acta.getVersion(),
         acta.getEstado(),
+        acta.getTipo(),
         ocultarNota ? null : acta.getPromedio(),
         acta.getEstadoPromedio(),
         ocultarNota ? null : CategoriaResponse.desde(acta.getCategoria()),

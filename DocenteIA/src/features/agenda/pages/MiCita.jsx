@@ -1,4 +1,4 @@
-import { CalendarCheck, RefreshCw } from 'lucide-react'
+import { CalendarCheck, CalendarX, CircleCheck, RefreshCw } from 'lucide-react'
 import { useState } from 'react'
 import { useVentanaEtapa } from '../../../shared/components/layout/AppLayout/periodoContext.js'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
@@ -11,12 +11,61 @@ import { ETAPAS } from '../../../shared/constants/dominio.js'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { formatearFecha } from '../../../shared/utils/formatters.js'
 import { AvisoEtapaCerrada } from '../../periodos/components/AvisoEtapaCerrada.jsx'
+import { PanelProcesoPropio } from '../../proceso/components/PanelProcesoPropio.jsx'
+import { responderCita } from '../../proceso/services/procesoService.js'
 import { agruparPorFecha, formatearHora } from '../franjas.js'
 import { listarFranjasDisponibles, obtenerMiCita, reservarFranja } from '../services/agendaService.js'
 import './Agenda.css'
 
 function describir(franja) {
   return `${formatearFecha(franja.fecha)}, ${formatearHora(franja.horaInicio)}–${formatearHora(franja.horaFin)}`
+}
+
+/** Confirmar o declinar la cita. Declinar la libera y la franja queda para otro docente. */
+function ConfirmacionCita({ cita, onRespondida, onError }) {
+  const [enviando, setEnviando] = useState(false)
+
+  async function responder(asiste) {
+    if (
+      !asiste &&
+      !window.confirm('Si declinas, tu cita se libera y la franja queda para otro docente. ¿Declinar la cita?')
+    ) {
+      return
+    }
+    setEnviando(true)
+    onError(null)
+    try {
+      await responderCita(asiste)
+      onRespondida(asiste ? 'Confirmaste tu asistencia. La coordinación ya fue avisada.' : 'Declinaste la cita; reserva otra franja.')
+    } catch (errorApi) {
+      onError(errorApi)
+    } finally {
+      setEnviando(false)
+    }
+  }
+
+  if (cita.asistencia === 'ASISTIO') {
+    return <span className="pildora pildora--exito">Asististe a tu reunión</span>
+  }
+  return (
+    <div className="agenda__confirmacion">
+      {cita.confirmacion === 'CONFIRMADA' ? (
+        <span className="pildora pildora--turquesa">Asistencia confirmada</span>
+      ) : (
+        <span className="pildora pildora--violeta">Falta confirmar tu asistencia</span>
+      )}
+      <div className="acciones-fila">
+        {cita.confirmacion !== 'CONFIRMADA' && (
+          <Boton icono={CircleCheck} disabled={enviando} onClick={() => responder(true)}>
+            Confirmar asistencia
+          </Boton>
+        )}
+        <Boton variante="contorno" icono={CalendarX} disabled={enviando} onClick={() => responder(false)}>
+          No podré asistir
+        </Boton>
+      </div>
+    </div>
+  )
 }
 
 export default function MiCita() {
@@ -26,6 +75,7 @@ export default function MiCita() {
   const [reservando, setReservando] = useState(null)
   const [error, setError] = useState(null)
   const [resultado, setResultado] = useState(null)
+  const [versionProceso, setVersionProceso] = useState(0)
 
   async function reservar(franja) {
     // Solo hay una cita activa por periodo: reservar otra libera la anterior.
@@ -52,6 +102,7 @@ export default function MiCita() {
       // Tanto si se reservó como si otra persona la tomó, la lista cambió.
       cita.recargar()
       disponibles.recargar()
+      setVersionProceso((v) => v + 1)
     }
   }
 
@@ -86,10 +137,22 @@ export default function MiCita() {
         {cita.datos && (
           <Panel titulo="Tu cita" descripcion={`Con ${cita.datos.nombreCoordinador}`} icono={CalendarCheck}>
             <p className="agenda__cita">{describir(cita.datos)}</p>
+            <ConfirmacionCita
+              cita={cita.datos}
+              onError={setError}
+              onRespondida={(mensaje) => {
+                setResultado(mensaje)
+                cita.recargar()
+                disponibles.recargar()
+                setVersionProceso((v) => v + 1)
+              }}
+            />
           </Panel>
         )}
 
-        <Panel titulo="Franjas disponibles">
+        <PanelProcesoPropio version={versionProceso} />
+
+        <Panel titulo="Franjas disponibles" icono={CalendarCheck} tono="violeta">
           {disponibles.cargando && !disponibles.datos && <Cargando texto="Cargando franjas" bloques={1} />}
           {disponibles.error && (
             <EstadoVista tipo="error" titulo="No fue posible cargar las franjas" mensaje={disponibles.error.message}>

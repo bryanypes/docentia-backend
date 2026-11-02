@@ -302,6 +302,31 @@ textarea.campo__control {
   color: var(--color-texto-apagado);
 }
 
+.pildora--turquesa {
+  background: var(--color-turquesa-fondo);
+  color: var(--color-turquesa);
+}
+
+.pildora--violeta {
+  background: var(--color-violeta-fondo);
+  color: var(--color-violeta);
+}
+
+.pildora--coral {
+  background: var(--color-coral-fondo);
+  color: var(--color-coral);
+}
+
+.pildora--cielo {
+  background: var(--color-cielo-fondo);
+  color: var(--color-cielo);
+}
+
+.pildora--rosa {
+  background: var(--color-rosa-fondo);
+  color: var(--color-rosa);
+}
+
 /* Formularios cortos en línea y acciones de una fila */
 .formulario-simple {
   display: flex;

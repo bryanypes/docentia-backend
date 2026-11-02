@@ -5,8 +5,14 @@ export function listarActas(idDocente) {
   return api.get(idDocente ? `/actas?idDocente=${encodeURIComponent(idDocente)}` : '/actas')
 }
 
-export function crearActa(idDocente) {
-  return api.post('/actas', { idDocente: Number(idDocente) })
+/** `tipo`: COMPROMISO o RETROALIMENTACION; sin él, el que corresponde a la nota. */
+export function crearActa(idDocente, tipo) {
+  return api.post('/actas', tipo ? { idDocente: Number(idDocente), tipo } : { idDocente: Number(idDocente) })
+}
+
+/** Cambia el tipo del acta antes de la primera firma. */
+export function cambiarTipoActa(idActa, tipo) {
+  return api.patch(`/actas/${encodeURIComponent(idActa)}/tipo`, { tipo })
 }
 
 export function agregarCompromiso(idActa, compromiso) {

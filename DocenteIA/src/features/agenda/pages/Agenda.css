@@ -37,3 +37,297 @@
   font-weight: var(--peso-fuerte);
   color: var(--color-azul);
 }
+.agenda__confirmacion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 12px;
+  margin-top: 14px;
+}
+
+/* Calendario semanal de la coordinación */
+.agenda {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+@media (min-width: 1180px) {
+  .agenda:has(.agenda__detalle) {
+    grid-template-columns: minmax(0, 1fr) 300px;
+  }
+}
+
+.agenda__navegacion {
+  display: flex;
+  gap: 6px;
+}
+
+.agenda__resumen {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+
+.agenda__semana {
+  margin-right: 6px;
+  font-size: 15px;
+  text-transform: capitalize;
+}
+
+.agenda__contador {
+  padding: 3px 10px;
+  border-radius: var(--radio-pildora);
+  font-size: 12px;
+  font-weight: var(--peso-semi);
+}
+
+.agenda__contador--libre {
+  background: var(--color-turquesa-fondo);
+  color: var(--color-turquesa);
+}
+
+.agenda__contador--reservada {
+  background: var(--color-violeta-fondo);
+  color: var(--color-violeta);
+}
+
+.agenda__contador--confirmada {
+  background: var(--color-exito-fondo);
+  color: var(--color-exito-texto);
+}
+
+.agenda__contador--asistio {
+  background: var(--color-azul-suave);
+  color: var(--color-azul);
+}
+
+.agenda__barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+  padding: 10px 14px;
+  border-radius: var(--radio-lg);
+  background: var(--color-cielo-fondo);
+  border: 1px solid var(--color-cielo-borde);
+  color: var(--color-cielo);
+}
+
+.agenda__contenedor {
+  overflow-x: auto;
+  border: 1px solid var(--color-borde-suave);
+  border-radius: var(--radio-lg);
+  background: var(--color-superficie);
+}
+
+.agenda__rejilla {
+  display: grid;
+  min-width: 620px;
+  user-select: none;
+}
+
+.agenda__esquina,
+.agenda__cabecera {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  padding: 8px 6px;
+  background: var(--color-fondo);
+  border-bottom: 1px solid var(--color-borde);
+  font-size: 12.5px;
+  font-weight: var(--peso-semi);
+  text-align: center;
+  text-transform: capitalize;
+}
+
+.agenda__cabecera--hoy {
+  color: var(--color-turquesa);
+  box-shadow: inset 0 -3px 0 var(--color-turquesa);
+}
+
+.agenda__hora {
+  padding: 0 8px;
+  font-size: 11.5px;
+  color: var(--color-texto-tenue);
+  text-align: right;
+  transform: translateY(-7px);
+}
+
+.agenda__celda {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 34px;
+  margin: 1px;
+  padding: 2px 6px;
+  border: 1px solid transparent;
+  border-radius: 6px;
+  font: inherit;
+  font-size: 11.5px;
+  line-height: 1.2;
+  text-align: left;
+  cursor: pointer;
+  touch-action: none;
+  overflow: hidden;
+}
+
+.agenda__celda:focus-visible {
+  outline: 2px solid var(--color-foco);
+  outline-offset: 1px;
+}
+
+.agenda__celda--vacia {
+  background: transparent;
+  border-color: var(--color-borde-suave);
+  border-style: dashed;
+}
+
+.agenda__celda--vacia:hover:not(:disabled) {
+  background: var(--color-cielo-fondo);
+}
+
+.agenda__celda--vacia:disabled {
+  background: repeating-linear-gradient(
+    -45deg,
+    var(--color-fondo),
+    var(--color-fondo) 4px,
+    var(--color-borde-suave) 4px,
+    var(--color-borde-suave) 6px
+  );
+  cursor: not-allowed;
+}
+
+.agenda__celda--nueva {
+  background: var(--color-cielo-fondo);
+  border: 2px solid var(--color-cielo);
+}
+
+.agenda__celda--libre {
+  background: var(--color-turquesa-fondo);
+  border-color: var(--color-turquesa-borde);
+  color: var(--color-turquesa);
+}
+
+.agenda__celda--reservada {
+  background: var(--color-violeta-fondo);
+  border-color: var(--color-violeta-borde);
+  color: var(--color-violeta);
+}
+
+.agenda__celda--confirmada {
+  background: var(--color-exito-fondo);
+  border-color: var(--color-exito-borde);
+  color: var(--color-exito-texto);
+}
+
+.agenda__celda--asistio {
+  background: var(--color-azul-suave);
+  border-color: var(--color-azul-claro);
+  color: var(--color-azul);
+}
+
+.agenda__celda--cerrada {
+  background: var(--color-borde-suave);
+  color: var(--color-texto-apagado);
+}
+
+.agenda__celda--marcada {
+  box-shadow: inset 0 0 0 2px var(--color-coral);
+}
+
+.agenda__celda--activa {
+  box-shadow: 0 0 0 2px var(--color-violeta);
+}
+
+.agenda__celda-texto {
+  font-weight: var(--peso-semi);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.agenda__celda-sub {
+  font-size: 10.5px;
+  opacity: 0.9;
+}
+
+.agenda__leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 14px 0 0;
+  padding: 0;
+  list-style: none;
+  font-size: 12px;
+  color: var(--color-texto-secundario);
+}
+
+.agenda__leyenda li {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.agenda__muestra {
+  display: inline-block;
+  width: 16px;
+  height: 12px;
+  min-height: 0;
+  margin: 0;
+  padding: 0;
+  border-radius: 3px;
+}
+
+.agenda__chip {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: var(--radio-pildora);
+  font-size: 12px;
+  font-weight: var(--peso-semi);
+}
+
+.agenda__chip--libre {
+  background: var(--color-turquesa-fondo);
+  color: var(--color-turquesa);
+}
+
+.agenda__chip--reservada {
+  background: var(--color-violeta-fondo);
+  color: var(--color-violeta);
+}
+
+.agenda__chip--confirmada {
+  background: var(--color-exito-fondo);
+  color: var(--color-exito-texto);
+}
+
+.agenda__chip--asistio {
+  background: var(--color-azul-suave);
+  color: var(--color-azul);
+}
+
+.agenda__chip--cerrada {
+  background: var(--color-borde-suave);
+  color: var(--color-texto-apagado);
+}
+
+.agenda__detalle {
+  position: sticky;
+  top: 16px;
+}
+
+.agenda__detalle-docente {
+  margin: 12px 0 8px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.agenda__detalle .proceso__asistencia {
+  margin-top: 14px;
+}

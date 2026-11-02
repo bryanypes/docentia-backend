@@ -9,10 +9,13 @@ import java.util.List;
  * @param periodo periodo activo, o nulo si no hay ninguno
  * @param promedio promedio ponderado del periodo activo, o nulo si no hay periodo
  * @param dimensiones resultado ya ponderado de cada dimensión en el periodo activo
+ * @param resultadoHabilitado falso mientras la coordinación no registre la asistencia a la cita:
+ *     entonces promedio y dimensiones llegan sin valor
  */
 public record ExpedientePropioResponse(
     DocenteResponse docente,
     PeriodoResumenResponse periodo,
     PromedioPonderadoResponse promedio,
     List<ResultadoDimensionResponse> dimensiones,
-    List<CompromisoResponse> compromisosVigentes) {}
+    List<CompromisoResponse> compromisosVigentes,
+    boolean resultadoHabilitado) {}

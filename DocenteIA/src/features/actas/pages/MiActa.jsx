@@ -6,8 +6,8 @@ export default function MiActa() {
     <>
       <Encabezado
         miga="Docente · Mi acta"
-        titulo="Mi acta de retroalimentación"
-        subtitulo="Revísala después de tu cita. Firmar es irreversible y genera el PDF con su código de verificación."
+        titulo="Mi acta"
+        subtitulo="Se habilita en tu reunión de retroalimentación y la firmas ahí mismo. Firmar es irreversible y genera el PDF con su código de verificación."
       />
       <div className="pagina">
         <PanelActa />

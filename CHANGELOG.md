@@ -1,5 +1,23 @@
 # Cambios
 
+## Sin publicar
+
+### Agregado
+
+- Estado general del proceso por docente, con línea de pasos y trazabilidad para coordinación,
+  vicerrectoría y el propio docente.
+- Confirmación o declinación de la cita por el docente; declinar libera la franja.
+- Registro de asistencia por la coordinación, que habilita al docente su resultado y el acta.
+- Acta de compromiso y acta de retroalimentación, con el tipo en el PDF.
+- Agenda como calendario semanal: se arrastra para abrir franjas y cada reserva muestra su estado.
+- Columna y filtro de proceso en Docentes, y cobertura de estudiantes que respondieron.
+
+### Cambiado
+
+- El docente ve su nota, compromisos, hallazgos y acta del periodo en la reunión, no antes.
+- El acta se firma después de registrar la asistencia.
+- Paleta con acentos turquesa, violeta, coral, cielo y rosa para estados y calendario.
+
 ## 0.3.3
 
 ### Agregado
