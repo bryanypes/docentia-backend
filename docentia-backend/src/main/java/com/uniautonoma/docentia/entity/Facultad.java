@@ -17,6 +17,9 @@ public class Facultad {
   @GeneratedValue(strategy = GenerationType.IDENTITY)
   private Long idFacultad;
 
+  @Column(length = 40)
+  private String codigo;
+
   @Column(nullable = false, length = 120)
   private String nombre;
 
@@ -33,8 +36,21 @@ public class Facultad {
     this.nombre = nombre;
   }
 
+  public Facultad(String nombre, String codigo) {
+    this.nombre = nombre;
+    this.codigo = codigo;
+  }
+
   public Long getIdFacultad() {
     return idFacultad;
+  }
+
+  public String getCodigo() {
+    return codigo;
+  }
+
+  public void setCodigo(String codigo) {
+    this.codigo = codigo;
   }
 
   public String getNombre() {

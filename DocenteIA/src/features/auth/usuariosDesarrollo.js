@@ -11,4 +11,6 @@ export const USUARIOS_DESARROLLO = [
   { rol: 'Docente', nombre: 'Julián Hoyos', correo: 'julian.hoyos@uniautonoma.edu.co' },
   { rol: 'Docente', nombre: 'Luisa Mosquera', correo: 'luisa.mosquera@uniautonoma.edu.co' },
   { rol: 'Docente', nombre: 'Nora Muñoz (nota 2,85)', correo: 'nora.munoz@uniautonoma.edu.co' },
+  { rol: 'Estudiante', nombre: 'Karen Mancilla (3 clases)', correo: 'karen.mancilla@uniautonoma.edu.co' },
+  { rol: 'Estudiante', nombre: 'Andrea Nieto (Zulema grupo B)', correo: 'andrea.nieto@uniautonoma.edu.co' },
 ]

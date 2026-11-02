@@ -1,45 +1,42 @@
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
+import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
 import { ROLES } from '../../../shared/constants/dominio.js'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { useSesion } from '../../auth/sesionContext.js'
-import { CargaCsv } from '../components/CargaCsv.jsx'
 import { HistorialImportaciones } from '../components/HistorialImportaciones.jsx'
-import { PanelPlantillas } from '../components/PanelPlantillas.jsx'
-import { listarImportaciones, listarPlantillas } from '../services/importacionesService.js'
+import { listarImportaciones } from '../services/importacionesService.js'
 import './Importaciones.css'
 
 /**
- * Coordinación carga el CSV de evaluación de estudiantes de su facultad y administra sus plantillas.
- * Vicerrectoría solo consulta el historial de todas las cargas.
+ * Historial de cargas CSV anteriores. La subida se cortó: la fuente ESTUDIANTES llega del formulario
+ * HETERO. La ruta se conserva por si alguien tiene el enlace; ya no está en el menú.
  */
 export default function Importaciones() {
   const { usuario } = useSesion()
   const esCoordinador = usuario.rol === ROLES.COORDINADOR
-
   const importaciones = useFetch(() => listarImportaciones(), [])
-  const plantillas = useFetch(() => (esCoordinador ? listarPlantillas() : Promise.resolve([])), [esCoordinador])
 
   return (
     <>
       <Encabezado
-        miga={`${esCoordinador ? 'Coordinación' : 'Vicerrectoría'} · Evaluación de estudiantes`}
-        titulo={esCoordinador ? 'Carga de evaluación de estudiantes' : 'Cargas de evaluación de estudiantes'}
-        subtitulo={
-          esCoordinador
-            ? 'Sube el CSV de la encuesta, revisa el reporte y luego impórtalo. Si una sola fila tiene error, no se guarda nada.'
-            : 'Historial de los archivos que cargó cada coordinación, incluidos los rechazados.'
-        }
+        miga={`${esCoordinador ? 'Coordinación' : 'Vicerrectoría'} · Historial de cargas`}
+        titulo="Historial de evaluación de estudiantes"
+        subtitulo="La evaluación de estudiantes se responde en el formulario. Aquí solo queda el historial de cargas anteriores."
       />
 
       <div className="pagina">
-        {esCoordinador && <CargaCsv plantillas={plantillas} alImportar={importaciones.recargar} />}
-
-        {esCoordinador && <PanelPlantillas plantillas={plantillas} />}
+        <Aviso tipo="info" titulo="La carga de CSV ya no está disponible">
+          Los estudiantes califican a sus profesores en Evaluación a profesor. Un archivo nuevo se rechaza.
+        </Aviso>
 
         <HistorialImportaciones
           importaciones={importaciones}
           mostrarUsuario={!esCoordinador}
-          descripcion={esCoordinador ? 'Tus cargas, de la más reciente a la más antigua.' : 'Todas las cargas de la universidad.'}
+          descripcion={
+            esCoordinador
+              ? 'Tus cargas anteriores, de la más reciente a la más antigua.'
+              : 'Todas las cargas anteriores de la universidad.'
+          }
         />
       </div>
     </>

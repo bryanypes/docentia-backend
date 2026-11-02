@@ -4,7 +4,7 @@ Historias del Excel v2 frente a lo construido. Si difieren, manda la resolución
 
 | Historia | Estado | Evidencia |
 |----------|--------|-----------|
-| HU-01 Formulario de estudiantes | Por CSV; formulario futuro | DOCENTIA importa la heteroevaluación (`ImportacionCsvTest`); no hay rol de estudiante ni matrículas |
+| HU-01 Formulario de estudiantes | Etapa 1 (persistencia) | [api-heteroevaluacion.md](api-heteroevaluacion.md), [CALIDAD.md](../../.cursor/docs/CALIDAD.md), `CampusClasesPersistenciaTest`; formulario y UI pendientes |
 | HU-02 Formulario de coevaluación (6 ítems) | Implementado | `/formularios/coevaluacion`, `FormulariosTest`, E2E |
 | HU-03 Formulario de autoevaluación (14 ítems) | Implementado | `/formularios/autoevaluacion`, `FormulariosTest`, E2E |
 | HU-04 Cálculo de la nota final | Implementado | `CalculadoraPromedioPonderado`, `ClasificadorDesempenoTest`, `AutoevaluacionTest` |
