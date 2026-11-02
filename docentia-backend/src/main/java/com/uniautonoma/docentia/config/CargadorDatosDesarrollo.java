@@ -123,6 +123,8 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
     periodoRepository
         .findByEsActivoTrue()
         .ifPresent(periodo -> cargadorClasesCampus.cargarDemo(periodo, hash));
+    // Igual que Campus: corre también sobre una base que ya tenía el seed.
+    semillaHeteroevaluacion.cargarSiFalta(hash);
   }
 
   private void sembrarCatalogoLocal(String hash) {
@@ -260,7 +262,6 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
             periodoAnterior,
             "Entregar el plan de asignatura firmado por el programa",
             LocalDate.of(2026, 9, 30)));
-    semillaHeteroevaluacion.cargar(periodoActivo, software, coordinadorIngenieria, camilo, hash);
   }
 
   private void cargarComentarios(

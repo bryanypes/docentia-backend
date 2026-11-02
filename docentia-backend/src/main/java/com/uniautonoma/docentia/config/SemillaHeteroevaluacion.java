@@ -8,6 +8,7 @@ import com.uniautonoma.docentia.entity.Programa;
 import com.uniautonoma.docentia.entity.TipoFormulario;
 import com.uniautonoma.docentia.entity.Usuario;
 import com.uniautonoma.docentia.repository.CalificacionRepository;
+import com.uniautonoma.docentia.repository.PeriodoAcademicoRepository;
 import com.uniautonoma.docentia.repository.UsuarioRepository;
 import com.uniautonoma.docentia.service.CalificacionService;
 import com.uniautonoma.docentia.service.PromedioService;
@@ -18,6 +19,7 @@ import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.springframework.context.annotation.Profile;
 import org.springframework.jdbc.core.JdbcTemplate;
@@ -35,6 +37,7 @@ class SemillaHeteroevaluacion {
 
   private final JdbcTemplate jdbcTemplate;
   private final UsuarioRepository usuarioRepository;
+  private final PeriodoAcademicoRepository periodoRepository;
   private final CalificacionRepository calificacionRepository;
   private final CalificacionService calificacionService;
   private final PromedioService promedioService;
@@ -44,6 +47,7 @@ class SemillaHeteroevaluacion {
   SemillaHeteroevaluacion(
       JdbcTemplate jdbcTemplate,
       UsuarioRepository usuarioRepository,
+      PeriodoAcademicoRepository periodoRepository,
       CalificacionRepository calificacionRepository,
       CalificacionService calificacionService,
       PromedioService promedioService,
@@ -51,11 +55,27 @@ class SemillaHeteroevaluacion {
       Clock reloj) {
     this.jdbcTemplate = jdbcTemplate;
     this.usuarioRepository = usuarioRepository;
+    this.periodoRepository = periodoRepository;
     this.calificacionRepository = calificacionRepository;
     this.calificacionService = calificacionService;
     this.promedioService = promedioService;
     this.catalogo = catalogo;
     this.reloj = reloj;
+  }
+
+  /** Siembra la demo si aún no existe y está el resto del seed de Ingeniería. */
+  void cargarSiFalta(String hash) {
+    if (usuarioRepository.findByCorreoIgnoreCase("laura.demo" + DOMINIO).isPresent()) {
+      return;
+    }
+    Optional<PeriodoAcademico> periodo = periodoRepository.findByEsActivoTrue();
+    Optional<Usuario> coordinador =
+        usuarioRepository.findByCorreoIgnoreCase("coordinacion.ingenieria" + DOMINIO);
+    Optional<Usuario> camilo = usuarioRepository.findByCorreoIgnoreCase("camilo.vidal" + DOMINIO);
+    if (periodo.isEmpty() || coordinador.isEmpty() || camilo.isEmpty()) {
+      return;
+    }
+    cargar(periodo.get(), camilo.get().getPrograma(), coordinador.get(), camilo.get(), hash);
   }
 
   void cargar(
