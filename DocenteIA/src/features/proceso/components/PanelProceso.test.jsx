@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react'
+import { screen, waitFor } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderizarConSesion } from '../../../pruebas/renderizarConSesion.jsx'
@@ -63,7 +63,7 @@ describe('PanelProceso', () => {
 
     await userEvent.click(await screen.findByRole('button', { name: 'Asistió · habilitar resultado' }))
     expect(procesoService.registrarAsistencia).toHaveBeenCalledWith(3, true)
-    expect(procesoService.obtenerProceso).toHaveBeenCalledTimes(2)
+    await waitFor(() => expect(procesoService.obtenerProceso).toHaveBeenCalledTimes(2))
   })
 
   it('el docente no ve detalle mientras las evaluaciones siguen en curso', async () => {
