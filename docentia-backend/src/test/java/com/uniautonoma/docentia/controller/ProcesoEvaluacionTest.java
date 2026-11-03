@@ -331,7 +331,14 @@ class ProcesoEvaluacionTest extends PruebaIntegracion {
         .andExpect(jsonPath("$[0].fuentesPendientes").value(hasItem("ESTUDIANTES")))
         .andExpect(jsonPath("$[0].fuentesPendientes").value(not(hasItem("COORDINACION"))))
         .andExpect(jsonPath("$[0].coberturaEstudiantes.esperadas").value(2))
-        .andExpect(jsonPath("$[0].coberturaEstudiantes.respondidas").value(0));
+        .andExpect(jsonPath("$[0].coberturaEstudiantes.respondidas").value(0))
+        .andExpect(jsonPath("$[0].coberturaEstudiantes.minimoRespuestas").value(5))
+        .andExpect(jsonPath("$[0].coberturaEstudiantes.origenNota").doesNotExist());
+    // Con nota de estudiantes que no viene de formularios, el proceso dice de dónde salió.
+    calificar(FuenteEvaluacion.ESTUDIANTES, "4.0");
+    mockMvc
+        .perform(get("/procesos-evaluacion").with(como(coordinador)))
+        .andExpect(jsonPath("$[0].coberturaEstudiantes.origenNota").value("MANUAL"));
     mockMvc
         .perform(get("/procesos-evaluacion").with(comoVicerrector()))
         .andExpect(status().isOk())
