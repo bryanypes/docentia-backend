@@ -44,3 +44,8 @@ export function publicarRevision(idSolicitud) {
 export function obtenerResultadoPropio() {
   return api.get('/analisis-ia/resultados/propio')
 }
+
+/** Panorama del análisis del alcance (solo conteos). Sin periodo, el activo. */
+export function obtenerPanorama(periodoId) {
+  return api.get(`/analisis-ia/panorama${periodoId ? `?periodoId=${encodeURIComponent(periodoId)}` : ''}`)
+}

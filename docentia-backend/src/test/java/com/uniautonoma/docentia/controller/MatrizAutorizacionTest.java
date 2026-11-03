@@ -51,6 +51,7 @@ class MatrizAutorizacionTest extends PruebaIntegracion {
       {"GET /analisis-ia/solicitudes/{}/comentarios-filtrados", "CV"},
       {"POST /analisis-ia/solicitudes/{}/publicacion", "C"},
       {"GET /analisis-ia/resultados/propio", "D"},
+      {"GET /analisis-ia/panorama", "CV"},
       {"POST /analisis-ia/hallazgos/{}/validacion", "C"},
       {"POST /analisis-ia/hallazgos/{}/descarte", "C"},
       {"PUT /analisis-ia/hallazgos/{}", "C"},

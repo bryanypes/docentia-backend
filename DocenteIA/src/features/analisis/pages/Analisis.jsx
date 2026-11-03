@@ -16,6 +16,7 @@ import { useSesion } from '../../auth/sesionContext.js'
 import { listarDocentes } from '../../docentes/services/docentesService.js'
 import { listarPeriodos } from '../../periodos/services/periodosService.js'
 import { HallazgoBorrador } from '../components/HallazgoBorrador.jsx'
+import { PanoramaAnalisis } from '../components/PanoramaAnalisis.jsx'
 import {
   CATEGORIAS_FILTRO,
   ESTADOS_SOLICITUD,
@@ -291,7 +292,7 @@ export default function Analisis() {
               value={docenteId}
               onChange={(e) => cambiarFiltro('docente', e.target.value)}
             >
-              <option value="">Elige un docente</option>
+              <option value="">Todos · panorama</option>
               {(docentes.datos ?? []).map((docente) => (
                 <option key={docente.idDocente} value={docente.idDocente}>
                   {docente.nombreCompleto} · {docente.nombrePrograma}
@@ -318,10 +319,11 @@ export default function Analisis() {
         </div>
 
         {!docenteId || !periodoId ? (
-          <EstadoVista
-            titulo="Elige un docente y un periodo"
-            mensaje="Verás el último análisis o podrás solicitar uno nuevo."
-          />
+          periodoId ? (
+            <PanoramaAnalisis periodoId={periodoId} onElegirDocente={(id) => cambiarFiltro('docente', id)} />
+          ) : (
+            <EstadoVista titulo="Elige un periodo" mensaje="Verás el panorama del análisis y el detalle de cada docente." />
+          )
         ) : ultima.error ? (
           <EstadoVista tipo="error" titulo="No fue posible consultar el análisis" mensaje={ultima.error.message}>
             <Boton icono={RefreshCw} onClick={ultima.recargar}>Intentar de nuevo</Boton>
