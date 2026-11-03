@@ -11,12 +11,24 @@
 - Acta de compromiso y acta de retroalimentación, con el tipo en el PDF.
 - Agenda como calendario semanal: se arrastra para abrir franjas y cada reserva muestra su estado.
 - Columna y filtro de proceso en Docentes, y cobertura de estudiantes que respondieron.
+- Firma dibujada (o escrita) del acta en un modal; el trazo va en el PDF con su hash (V30).
+- Vista de Estadísticas con filtros y barras que actualizan todas las gráficas.
+- Panorama del análisis con IA: etapas, fortalezas y oportunidades, citas verificadas y filtrados.
+- Ver información de usuarios, facultades y programas; acciones con ícono de ver, editar y eliminar.
 
 ### Cambiado
 
 - El docente ve su nota, compromisos, hallazgos y acta del periodo en la reunión, no antes.
 - El acta se firma después de registrar la asistencia.
 - Paleta con acentos turquesa, violeta, coral, cielo y rosa para estados y calendario.
+- Calendario compacto con vista Día y Semana; las flechas mueven un día o una semana.
+- Matrícula y cobertura con resumen, importación en tres pasos y semáforo por docente.
+- /inicio es la ruta principal de todos los roles.
+
+### Corregido
+
+- Tras salir e iniciar con otro rol ya no se abre el panel del rol anterior.
+- Las páginas ya no se desbordan en el celular; las tablas se apilan como tarjetas.
 
 ## 0.3.3
 
