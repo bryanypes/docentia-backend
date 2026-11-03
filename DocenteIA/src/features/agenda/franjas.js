@@ -90,3 +90,28 @@ export function etiquetaDiaLarga(fechaIso) {
 export function etiquetaSemana(dias) {
   return `${FORMATO_MES.format(aFecha(dias[0]))} – ${FORMATO_MES.format(aFecha(dias[dias.length - 1]))}`
 }
+
+/** Primer día del mes de una fecha: "2026-11-17" → "2026-11-01". */
+export function inicioDeMes(fechaIso) {
+  return `${fechaIso.slice(0, 7)}-01`
+}
+
+/** Suma meses a un primer día de mes. */
+export function sumarMeses(inicioMes, meses) {
+  const fecha = aFecha(inicioMes)
+  fecha.setUTCMonth(fecha.getUTCMonth() + meses)
+  return fecha.toISOString().slice(0, 10)
+}
+
+/** Las 6 semanas (de lunes a domingo) que muestran un mes completo. */
+export function semanasDelMes(inicioMes) {
+  const primero = lunesDe(inicioMes)
+  return Array.from({ length: 6 }, (_, s) => diasDeSemana(sumarDias(primero, s * 7), 7))
+}
+
+const FORMATO_MES_LARGO = new Intl.DateTimeFormat('es-CO', { month: 'long', year: 'numeric', timeZone: 'UTC' })
+
+/** "noviembre de 2026" */
+export function etiquetaMes(inicioMes) {
+  return FORMATO_MES_LARGO.format(aFecha(inicioMes))
+}

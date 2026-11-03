@@ -3,7 +3,6 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useVentanaEtapa } from '../../../shared/components/layout/AppLayout/periodoContext.js'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
-import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
 import { Ayuda } from '../../../shared/components/ui/Ayuda/Ayuda.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { ErrorApi } from '../../../shared/components/ui/ErrorApi/ErrorApi.jsx'
@@ -36,6 +35,8 @@ import {
   listarFranjas,
 } from '../services/agendaService.js'
 import './Agenda.css'
+import { AvisoFlotante } from '../../../shared/components/ui/Avisos/AvisoFlotante.jsx'
+import { useAvisos } from '../../../shared/components/ui/Avisos/avisosContext.js'
 
 /** Horario que muestra el calendario; se amplía si hay franjas por fuera. */
 const PRIMERA_HORA = 7 * 60
@@ -68,17 +69,21 @@ function ReporteLote({ reporte }) {
   const { aplicadas, omitidas } = reporte
   const titulo = `Franjas ${verbo}: ${aplicadas.length}. Omitidas: ${omitidas.length}.`
   return (
-    <Aviso tipo={omitidas.length > 0 ? 'alerta' : 'exito'} titulo={titulo}>
-      {omitidas.length > 0 && (
-        <ul>
-          {omitidas.map((omitida) => (
-            <li key={`${omitida.indice}-${omitida.idFranja}`}>
-              {describirFranja(omitida)}: {omitida.motivo}
-            </li>
-          ))}
-        </ul>
-      )}
-    </Aviso>
+    <AvisoFlotante
+      tipo={omitidas.length > 0 ? 'alerta' : 'exito'}
+      mensaje={titulo}
+      detalle={
+        omitidas.length > 0 ? (
+          <ul>
+            {omitidas.map((omitida) => (
+              <li key={`${omitida.indice}-${omitida.idFranja}`}>
+                {describirFranja(omitida)}: {omitida.motivo}
+              </li>
+            ))}
+          </ul>
+        ) : null
+      }
+    />
   )
 }
 
@@ -138,6 +143,7 @@ function DetalleFranja({ franja, hoy, enviando, onCerrar, onEliminar, onAsistenc
  * reservó, si confirmó y el registro de asistencia el día de la cita.
  */
 function CalendarioFranjas() {
+  const { confirmar } = useAvisos()
   const hoy = hoyEnColombia()
   const [vista, setVista] = useState(() => (esPantallaAngosta() ? 'dia' : 'semana'))
   const [fecha, setFecha] = useState(hoy)
@@ -306,8 +312,14 @@ function CalendarioFranjas() {
     }
   }
 
-  function eliminar(franja) {
-    if (!window.confirm(`¿Eliminar la franja del ${describirFranja(franja)}?`)) return
+  async function eliminar(franja) {
+    const seguro = await confirmar({
+      tipo: 'peligro',
+      titulo: '¿Eliminar la franja?',
+      mensaje: `${describirFranja(franja)}. Esta acción no se puede deshacer.`,
+      textoConfirmar: 'Eliminar',
+    })
+    if (!seguro) return
     ejecutar(() => eliminarFranja(franja.idFranja), 'Franja eliminada.').then((hecho) => hecho && setIdDetalle(null))
   }
 
@@ -370,8 +382,8 @@ function CalendarioFranjas() {
         ))}
       </ul>
 
-      {resultado && <Aviso tipo="exito" titulo={resultado} />}
-      <ErrorApi error={error} />
+      <AvisoFlotante mensaje={resultado} />
+      <ErrorApi error={error} flotante />
       {reporte && <ReporteLote reporte={reporte} />}
 
       {seleccion && (nuevas.length > 0 || libres.length > 0) && (
