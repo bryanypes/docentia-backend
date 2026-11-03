@@ -14,6 +14,7 @@ import { iniciales, normalizarTexto } from '../../../shared/utils/formatters.js'
 import { useSesion } from '../../auth/sesionContext.js'
 import { cambiarEstadoUsuario, listarUsuarios } from '../services/usuariosService.js'
 import './Usuarios.css'
+import { useAvisos } from '../../../shared/components/ui/Avisos/avisosContext.js'
 
 const TODOS = ''
 
@@ -27,6 +28,7 @@ function vinculo(usuario) {
 }
 
 export default function Usuarios() {
+  const { confirmar } = useAvisos()
   const navegar = useNavigate()
   const { usuario: sesion } = useSesion()
   const [rol, setRol] = useState(TODOS)
@@ -56,9 +58,12 @@ export default function Usuarios() {
     const activar = !u.esActivo
     if (
       !activar &&
-      !window.confirm(
-        `¿Desactivar la cuenta de ${u.nombreCompleto}? No podrá ingresar y su sesión abierta se cerrará. Sus calificaciones e historial se conservan.`,
-      )
+      !(await confirmar({
+        tipo: 'peligro',
+        titulo: `¿Desactivar la cuenta de ${u.nombreCompleto}?`,
+        mensaje: 'No podrá ingresar y su sesión abierta se cerrará. Sus calificaciones e historial se conservan.',
+        textoConfirmar: 'Desactivar',
+      }))
     ) {
       return
     }

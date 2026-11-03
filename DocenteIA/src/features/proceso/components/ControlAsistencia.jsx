@@ -4,12 +4,14 @@ import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { ErrorApi } from '../../../shared/components/ui/ErrorApi/ErrorApi.jsx'
 import { registrarAsistencia } from '../services/procesoService.js'
 import './Proceso.css'
+import { useAvisos } from '../../../shared/components/ui/Avisos/avisosContext.js'
 
 /**
  * Botones de la coordinación para registrar si el docente asistió. Asistió habilita al docente su
  * resultado y el acta; No asistió libera la cita.
  */
 export function ControlAsistencia({ cita, nombreDocente, onRegistrada }) {
+  const { confirmar } = useAvisos()
   const [error, setError] = useState(null)
   const [enviando, setEnviando] = useState(false)
   const enCurso = useRef(false)
@@ -18,7 +20,12 @@ export function ControlAsistencia({ cita, nombreDocente, onRegistrada }) {
     if (enCurso.current) return
     if (
       !asistio &&
-      !window.confirm(`¿Registrar que ${nombreDocente ?? 'el docente'} no asistió? La cita se liberará y deberá reservar otra.`)
+      !(await confirmar({
+        tipo: 'peligro',
+        titulo: `¿${nombreDocente ?? 'El docente'} no asistió?`,
+        mensaje: 'La cita se libera y el docente deberá reservar otra.',
+        textoConfirmar: 'Registrar inasistencia',
+      }))
     ) {
       return
     }

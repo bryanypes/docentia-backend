@@ -1,7 +1,6 @@
 import { BookOpen, RefreshCw } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
-import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { BotonAccion } from '../../../shared/components/ui/BotonAccion/BotonAccion.jsx'
 import { Campo } from '../../../shared/components/ui/Campo/Campo.jsx'
@@ -11,6 +10,8 @@ import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { ModalAlcance } from '../../facultades/components/ModalAlcance.jsx'
 import { listarFacultades } from '../../facultades/services/facultadesService.js'
+import { AvisoFlotante } from '../../../shared/components/ui/Avisos/AvisoFlotante.jsx'
+import { useAvisos } from '../../../shared/components/ui/Avisos/avisosContext.js'
 import {
   actualizarPrograma,
   crearPrograma,
@@ -21,6 +22,7 @@ import {
 const VACIO = { nombre: '', idFacultad: '' }
 
 export default function Programas() {
+  const { confirmar } = useAvisos()
   const [filtro, setFiltro] = useState('')
   const [viendo, setViendo] = useState(null)
   const cargar = useCallback(() => listarProgramas(filtro || null), [filtro])
@@ -53,7 +55,13 @@ export default function Programas() {
   }
 
   async function eliminar(programa) {
-    if (!window.confirm(`¿Eliminar el programa «${programa.nombre}»?`)) return
+    const seguro = await confirmar({
+      tipo: 'peligro',
+      titulo: '¿Eliminar el programa?',
+      mensaje: `«${programa.nombre}» se elimina si no tiene docentes.`,
+      textoConfirmar: 'Eliminar',
+    })
+    if (!seguro) return
     setError(null)
     setResultado(null)
     try {
@@ -76,7 +84,7 @@ export default function Programas() {
     <>
       <Encabezado miga="Vicerrectoría · Programas" titulo="Programas" subtitulo="Programas académicos de cada facultad." />
       <div className="pagina">
-        {resultado && <Aviso tipo="exito" titulo={resultado} />}
+        <AvisoFlotante mensaje={resultado} />
         <ErrorApi error={error} nombresCampos={{ nombre: 'Nombre', idFacultad: 'Facultad' }} />
         <Panel titulo={enEdicion ? `Editar ${enEdicion.nombre}` : 'Nuevo programa'} icono={BookOpen}>
           <form className="formulario-simple" onSubmit={guardar}>

@@ -19,6 +19,8 @@ import {
   listarPeriodos,
 } from '../services/periodosService.js'
 import './Periodos.css'
+import { AvisoFlotante } from '../../../shared/components/ui/Avisos/AvisoFlotante.jsx'
+import { useAvisos } from '../../../shared/components/ui/Avisos/avisosContext.js'
 
 const NOMBRES_CAMPOS = { nombre: 'Nombre', fechaInicio: 'Inicio', fechaFin: 'Fin', etapas: 'Etapas' }
 
@@ -190,6 +192,7 @@ function EtapasDe({ periodo, ventanas }) {
 }
 
 export default function Periodos() {
+  const { confirmar } = useAvisos()
   const periodos = useFetch(listarPeriodos)
   const { ventanas, recargar: recargarActivo } = usePeriodoActivo()
   const [enEdicion, setEnEdicion] = useState(null)
@@ -214,9 +217,12 @@ export default function Periodos() {
     if (
       !periodo.esActivo &&
       activo &&
-      !window.confirm(
-        `Solo puede haber un periodo activo. Activar ${periodo.nombre} desactivará ${activo.nombre}. ¿Continuar?`,
-      )
+      !(await confirmar({
+        tipo: 'alerta',
+        titulo: `¿Activar ${periodo.nombre}?`,
+        mensaje: `Solo puede haber un periodo activo: ${activo.nombre} quedará desactivado.`,
+        textoConfirmar: 'Activar',
+      }))
     ) {
       return
     }
@@ -242,7 +248,7 @@ export default function Periodos() {
         subtitulo="Crea los periodos, define las ventanas de cada etapa y activa el periodo en curso."
       />
       <div className="pagina">
-        {resultado && <Aviso tipo="exito" titulo={resultado} />}
+        <AvisoFlotante mensaje={resultado} />
         <ErrorApi error={errorAccion} />
         <FormularioPeriodo
           key={`${enEdicion?.idPeriodo ?? 'nuevo'}-${version}`}

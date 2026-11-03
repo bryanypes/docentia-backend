@@ -31,6 +31,7 @@ import Programas from '../features/programas/pages/Programas.jsx'
 import FormularioUsuario from '../features/usuarios/pages/FormularioUsuario.jsx'
 import Usuarios from '../features/usuarios/pages/Usuarios.jsx'
 import { AppLayout } from '../shared/components/layout/AppLayout/AppLayout.jsx'
+import { AvisosProvider } from '../shared/components/ui/Avisos/AvisosProvider.jsx'
 import { ROLES } from '../shared/constants/dominio.js'
 import InicioPorRol from './InicioPorRol.jsx'
 import { PaginaNoEncontrada } from './PaginasSistema.jsx'
@@ -51,6 +52,7 @@ function RutasDocentia() {
   return (
     <BrowserRouter>
       <SesionProvider>
+        <AvisosProvider>
         <Routes>
           <Route path="/" element={<RedirigirAlInicio />} />
           <Route path="/login" element={<Login />} />
@@ -112,6 +114,7 @@ function RutasDocentia() {
             </Route>
           </Route>
         </Routes>
+        </AvisosProvider>
       </SesionProvider>
     </BrowserRouter>
   )

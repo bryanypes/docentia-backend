@@ -1,7 +1,6 @@
 import { Building2, RefreshCw } from 'lucide-react'
 import { useState } from 'react'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
-import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { BotonAccion } from '../../../shared/components/ui/BotonAccion/BotonAccion.jsx'
 import { Campo } from '../../../shared/components/ui/Campo/Campo.jsx'
@@ -10,6 +9,8 @@ import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { ModalAlcance } from '../components/ModalAlcance.jsx'
+import { AvisoFlotante } from '../../../shared/components/ui/Avisos/AvisoFlotante.jsx'
+import { useAvisos } from '../../../shared/components/ui/Avisos/avisosContext.js'
 import {
   actualizarFacultad,
   crearFacultad,
@@ -18,6 +19,7 @@ import {
 } from '../services/facultadesService.js'
 
 export default function Facultades() {
+  const { confirmar } = useAvisos()
   const facultades = useFetch(listarFacultades)
   const [enEdicion, setEnEdicion] = useState(null)
   const [viendo, setViendo] = useState(null)
@@ -47,7 +49,13 @@ export default function Facultades() {
   }
 
   async function eliminar(facultad) {
-    if (!window.confirm(`¿Eliminar la facultad «${facultad.nombre}»?`)) return
+    const seguro = await confirmar({
+      tipo: 'peligro',
+      titulo: '¿Eliminar la facultad?',
+      mensaje: `«${facultad.nombre}» se elimina si no tiene programas ni usuarios.`,
+      textoConfirmar: 'Eliminar',
+    })
+    if (!seguro) return
     setError(null)
     setResultado(null)
     try {
@@ -65,7 +73,7 @@ export default function Facultades() {
     <>
       <Encabezado miga="Vicerrectoría · Facultades" titulo="Facultades" subtitulo="Facultades de la universidad." />
       <div className="pagina">
-        {resultado && <Aviso tipo="exito" titulo={resultado} />}
+        <AvisoFlotante mensaje={resultado} />
         <ErrorApi error={error} nombresCampos={{ nombre: 'Nombre' }} />
         <Panel titulo={enEdicion ? `Editar ${enEdicion.nombre}` : 'Nueva facultad'} icono={Building2}>
           <form className="formulario-simple" onSubmit={guardar}>

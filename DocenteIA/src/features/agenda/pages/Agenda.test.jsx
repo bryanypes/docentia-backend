@@ -1,4 +1,4 @@
-import { fireEvent, screen } from '@testing-library/react'
+import { fireEvent, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderizarConSesion } from '../../../pruebas/renderizarConSesion.jsx'
@@ -102,12 +102,14 @@ describe('Agenda', () => {
   })
 
   it('eliminar una franja muestra el error del backend', async () => {
-    vi.spyOn(window, 'confirm').mockReturnValue(true)
     agendaService.eliminarFranja.mockRejectedValue(new ApiError(409, 'La franja ya tuvo citas'))
     renderizarConSesion(<Agenda />)
 
     await userEvent.click(await screen.findByRole('button', { name: /08:30–09:00: Libre/ }))
     await userEvent.click(screen.getByRole('button', { name: 'Eliminar' }))
+    // Se confirma en un modal propio, no en el diálogo del navegador.
+    const confirmacion = await screen.findByRole('dialog', { name: '¿Eliminar la franja?' })
+    await userEvent.click(within(confirmacion).getByRole('button', { name: 'Eliminar' }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent('La franja ya tuvo citas')
   })

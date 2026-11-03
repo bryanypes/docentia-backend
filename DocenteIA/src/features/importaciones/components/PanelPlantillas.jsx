@@ -5,14 +5,22 @@ import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
 import { formatearFechaHora } from '../../../shared/utils/formatters.js'
 import { NOMBRE_CAMPO } from '../mapeo.js'
 import { eliminarPlantilla } from '../services/importacionesService.js'
+import { useAvisos } from '../../../shared/components/ui/Avisos/avisosContext.js'
 
 /** Plantillas de mapeo del coordinador. `plantillas` es el resultado de useFetch. */
 export function PanelPlantillas({ plantillas }) {
+  const { confirmar } = useAvisos()
   const [eliminando, setEliminando] = useState(null)
   const [error, setError] = useState(null)
 
   async function eliminar(plantilla) {
-    if (!window.confirm(`¿Eliminar la plantilla "${plantilla.nombre}"?`)) return
+    const seguro = await confirmar({
+      tipo: 'peligro',
+      titulo: '¿Eliminar la plantilla?',
+      mensaje: `«${plantilla.nombre}» deja de estar disponible para nuevas cargas.`,
+      textoConfirmar: 'Eliminar',
+    })
+    if (!seguro) return
     setEliminando(plantilla.idPlantilla)
     setError(null)
     try {
