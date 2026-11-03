@@ -18,7 +18,8 @@ describe('Coevaluaciones', () => {
       docentes: [{ idDocente: 1, nombreDocente: 'Nora', programa: 'Software', estado: 'BORRADOR', respondidos: 2 }],
     })
     renderizarConSesion(<Coevaluaciones />)
-    expect(await screen.findByRole('link', { name: 'Nora' })).toHaveAttribute('href', '/coevaluaciones/1')
+    expect(await screen.findByRole('link', { name: 'Continuar · Nora' })).toHaveAttribute('href', '/coevaluaciones/1')
+    expect(screen.getByRole('link', { name: 'Ver expediente · Nora' })).toHaveAttribute('href', '/docentes/1')
     expect(screen.getByText('En borrador')).toBeInTheDocument()
     expect(screen.getByText('2 de 6')).toBeInTheDocument()
   })
