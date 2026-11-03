@@ -342,3 +342,135 @@
     color: var(--color-texto-tenue);
   }
 }
+
+/* Filtros y listado en una sola tarjeta: la barra de filtros queda pegada encima de las columnas,
+   así se entiende que filtra esa tabla. */
+.docentes__panel {
+  overflow: hidden;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-xl);
+  background: var(--color-superficie);
+  box-shadow: var(--sombra-tarjeta);
+}
+
+.docentes__panel-cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 16px 18px 12px;
+}
+
+.docentes__panel-cabecera > div {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+}
+
+.docentes__panel-titulo {
+  margin: 0;
+  font-size: 17px;
+  font-weight: var(--peso-fuerte);
+  color: var(--color-azul);
+}
+
+.docentes__panel .docentes__conteo {
+  margin-left: 0;
+  font-size: 13px;
+  font-weight: var(--peso-normal);
+  color: var(--color-texto-secundario);
+}
+
+.docentes__panel .docentes__conteo strong {
+  font-size: 15px;
+  color: var(--color-azul);
+}
+
+.docentes__panel .docentes__filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px 12px;
+  padding: 12px 18px 14px;
+  border: 0;
+  border-top: 1px solid var(--color-borde-suave);
+  border-bottom: 1px solid var(--color-borde);
+  border-radius: 0;
+  background: var(--color-fondo);
+}
+
+.docentes__filtros-rotulo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: center;
+  padding: 8px 12px;
+  border-radius: var(--radio-pildora);
+  background: var(--color-azul);
+  color: var(--color-crema);
+  font-size: 13px;
+  font-weight: var(--peso-semi);
+}
+
+/* Rótulo encima de cada lista: se lee qué filtra antes de abrirla. */
+.docentes__panel .docentes__selector {
+  display: grid;
+  gap: 4px;
+}
+
+.docentes__panel .docentes__etiqueta {
+  font-size: 11.5px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-texto-tenue);
+}
+
+.docentes__panel .docentes__selector select {
+  width: 100%;
+}
+
+.docentes__panel .docentes__buscador {
+  flex: 2 1 260px;
+  min-height: 40px;
+}
+
+.docentes__panel .docentes__selector {
+  flex: 1 1 160px;
+}
+
+.docentes__filtros-rotulo {
+  flex: 0 0 auto;
+  margin-bottom: 2px;
+}
+
+.docentes__limpiar {
+  flex: 0 0 auto;
+  align-self: center;
+}
+
+/* La tabla ya va dentro de la tarjeta: sin un segundo borde. */
+.docentes__panel .docentes__tabla-contenedor {
+  border: 0;
+  border-radius: 0;
+}
+
+.docentes__panel > .estado-vista,
+.docentes__panel > .cargando {
+  margin: 16px 18px;
+}
+
+@media (max-width: 720px) {
+  .docentes__panel .docentes__filtros {
+    padding: 12px 14px;
+  }
+
+  .docentes__panel .docentes__buscador,
+  .docentes__panel .docentes__selector {
+    flex-basis: 100%;
+  }
+
+  .docentes__panel .docentes__tabla-contenedor {
+    padding: 10px 12px;
+  }
+}

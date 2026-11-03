@@ -6,6 +6,7 @@ import {
   obtenerVentanasActivas,
 } from '../../../../features/periodos/services/periodosService.js'
 import { useFetch } from '../../../hooks/useFetch.js'
+import { LimiteError } from '../../ui/LimiteError/LimiteError.jsx'
 import { Sidebar } from '../Sidebar/Sidebar.jsx'
 import { PeriodoContext } from './periodoContext.js'
 import './AppLayout.css'
@@ -56,7 +57,10 @@ export function AppLayout() {
         <Sidebar />
         <main id="contenido" ref={principal} tabIndex={-1} className="app-layout__principal">
           <Campana />
-          <Outlet />
+          {/* Si una pantalla falla, el menú sigue y el error queda en el área de contenido. */}
+          <LimiteError key={pathname} enLinea>
+            <Outlet />
+          </LimiteError>
         </main>
       </div>
     </PeriodoContext.Provider>
