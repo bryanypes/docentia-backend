@@ -80,6 +80,11 @@
     padding: 18px 16px;
   }
 
+  /* La campana ya va en la barra fija: el título usa todo el ancho. */
+  .encabezado__textos {
+    padding-right: 0;
+  }
+
   .encabezado__titulo {
     font-size: 24px;
   }
