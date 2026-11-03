@@ -229,3 +229,14 @@
   max-width: 100%;
   min-width: 0;
 }
+
+@media (max-width: 720px) {
+  .docentes__tabla-contenedor:has(.tabla--apilable) {
+    padding: 10px;
+  }
+
+  .docentes__tabla .docentes__accion .boton-accion {
+    width: 100%;
+    justify-content: center;
+  }
+}
