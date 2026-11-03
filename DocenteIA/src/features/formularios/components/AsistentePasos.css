@@ -1,10 +1,10 @@
-.asistente {
+.cuestionario {
   display: grid;
   gap: 16px;
 }
 
 /* Cabecera fija mientras se responde: avance y pasos. */
-.asistente__cabecera {
+.cuestionario__cabecera {
   position: sticky;
   top: 0;
   z-index: 6;
@@ -18,7 +18,7 @@
   box-shadow: var(--sombra-tarjeta);
 }
 
-.asistente__avance {
+.cuestionario__avance {
   display: grid;
   gap: 6px;
   font-size: 13px;
@@ -26,7 +26,7 @@
   color: var(--color-azul);
 }
 
-.asistente__riel {
+.cuestionario__riel {
   display: block;
   height: 8px;
   overflow: hidden;
@@ -34,7 +34,7 @@
   background: var(--color-borde-suave);
 }
 
-.asistente__relleno {
+.cuestionario__relleno {
   display: block;
   height: 100%;
   border-radius: 999px;
@@ -42,7 +42,7 @@
   transition: width 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-.asistente__pasos {
+.cuestionario__pasos {
   display: flex;
   gap: 6px;
   margin: 0;
@@ -52,14 +52,14 @@
   scrollbar-width: thin;
 }
 
-.asistente__paso {
+.cuestionario__paso {
   position: relative;
   flex: 1 1 0;
   min-width: 96px;
 }
 
 /* Conector entre pasos */
-.asistente__paso:not(:last-child)::after {
+.cuestionario__paso:not(:last-child)::after {
   content: '';
   position: absolute;
   top: 16px;
@@ -71,11 +71,11 @@
   transition: background-color 0.3s ease;
 }
 
-.asistente__paso--completo:not(:last-child)::after {
+.cuestionario__paso--completo:not(:last-child)::after {
   background: var(--color-turquesa);
 }
 
-.asistente__paso button {
+.cuestionario__paso button {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -92,13 +92,13 @@
   cursor: pointer;
 }
 
-.asistente__paso button:focus-visible {
+.cuestionario__paso button:focus-visible {
   outline: 3px solid var(--color-foco);
   outline-offset: 2px;
   border-radius: 8px;
 }
 
-.asistente__marca {
+.cuestionario__marca {
   position: relative;
   z-index: 1;
   display: flex;
@@ -114,24 +114,24 @@
   transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease, transform 0.3s ease, box-shadow 0.3s ease;
 }
 
-.asistente__nombre {
+.cuestionario__nombre {
   display: -webkit-box;
   overflow: hidden;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 2;
 }
 
-.asistente__paso--completo .asistente__marca {
+.cuestionario__paso--completo .cuestionario__marca {
   border-color: var(--color-turquesa);
   background: var(--color-turquesa);
   color: #fff;
 }
 
-.asistente__paso--completo .asistente__nombre {
+.cuestionario__paso--completo .cuestionario__nombre {
   color: var(--color-turquesa);
 }
 
-.asistente__paso--actual .asistente__marca {
+.cuestionario__paso--actual .cuestionario__marca {
   border-color: var(--color-azul);
   background: var(--color-azul);
   color: var(--color-crema);
@@ -139,13 +139,13 @@
   box-shadow: 0 0 0 5px var(--color-azul-suave);
 }
 
-.asistente__paso--actual .asistente__nombre {
+.cuestionario__paso--actual .cuestionario__nombre {
   font-weight: var(--peso-semi);
   color: var(--color-texto);
 }
 
 /* Cuerpo del paso con transición según la dirección. */
-.asistente__cuerpo {
+.cuestionario__cuerpo {
   overflow: hidden;
   padding: 20px;
   border: 1px solid var(--color-borde-suave);
@@ -154,13 +154,13 @@
   box-shadow: var(--sombra-tarjeta);
 }
 
-.asistente__contenido {
+.cuestionario__contenido {
   display: grid;
   gap: 16px;
   animation: paso-entrar-adelante 0.35s cubic-bezier(0.2, 0.8, 0.2, 1) both;
 }
 
-.asistente__contenido--atras {
+.cuestionario__contenido--atras {
   animation-name: paso-entrar-atras;
 }
 
@@ -178,7 +178,7 @@
   }
 }
 
-.asistente__titulo-paso {
+.cuestionario__titulo-paso {
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
@@ -187,7 +187,7 @@
   border-bottom: 1px solid var(--color-borde-suave);
 }
 
-.asistente__titulo-paso h2 {
+.cuestionario__titulo-paso h2 {
   flex: 1 1 100%;
   order: 2;
   margin: 0;
@@ -198,7 +198,7 @@
   outline: none;
 }
 
-.asistente__contador {
+.cuestionario__contador {
   order: 1;
   font-size: 12px;
   font-weight: var(--peso-semi);
@@ -207,7 +207,7 @@
   color: var(--color-violeta);
 }
 
-.asistente__estado {
+.cuestionario__estado {
   order: 1;
   margin-left: auto;
   padding: 2px 10px;
@@ -219,12 +219,12 @@
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-.asistente__estado--completo {
+.cuestionario__estado--completo {
   background: var(--color-turquesa-fondo);
   color: var(--color-turquesa);
 }
 
-.asistente__navegacion {
+.cuestionario__navegacion {
   display: flex;
   justify-content: space-between;
   gap: 10px;
@@ -390,7 +390,7 @@
 }
 
 @media (max-width: 640px) {
-  .asistente__cuerpo {
+  .cuestionario__cuerpo {
     padding: 14px;
   }
 
@@ -407,13 +407,13 @@
     font-size: 9.5px;
   }
 
-  .asistente__paso {
+  .cuestionario__paso {
     min-width: 76px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .asistente__contenido,
+  .cuestionario__contenido,
   .pregunta__opcion:has(input:checked) {
     animation: none;
   }
@@ -424,7 +424,7 @@
 }
 
 /* Dentro del asistente el criterio ya va en su tarjeta: sin un segundo borde. */
-.asistente .instrumento__criterio {
+.cuestionario .instrumento__criterio {
   padding: 0;
   border: 0;
   background: none;

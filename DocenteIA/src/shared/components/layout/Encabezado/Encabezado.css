@@ -14,6 +14,8 @@
 
 .encabezado__textos {
   min-width: 0;
+  /* Deja libre la esquina de la campana de notificaciones, que va fija arriba a la derecha. */
+  padding-right: 52px;
 }
 
 .encabezado__miga {

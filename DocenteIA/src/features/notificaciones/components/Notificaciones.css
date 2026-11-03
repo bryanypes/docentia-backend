@@ -95,3 +95,10 @@
   align-items: center;
   gap: 10px;
 }
+
+@media (max-width: 900px) {
+  .campana {
+    top: 12px;
+    right: 16px;
+  }
+}

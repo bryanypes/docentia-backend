@@ -13,6 +13,7 @@ import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { formatearFecha } from '../../../shared/utils/formatters.js'
 import { AvisoEtapaCerrada } from '../../periodos/components/AvisoEtapaCerrada.jsx'
 import { ControlAsistencia } from '../../proceso/components/ControlAsistencia.jsx'
+import { CalendarioMes } from '../components/CalendarioMes.jsx'
 import { ETIQUETA_ASISTENCIA, ETIQUETA_CONFIRMACION } from '../../proceso/estados.js'
 import {
   aHora,
@@ -24,8 +25,11 @@ import {
   etiquetaSemana,
   formatearHora,
   hoyEnColombia,
+  inicioDeMes,
   lunesDe,
+  minutoEnColombia,
   sumarDias,
+  sumarMeses,
 } from '../franjas.js'
 import {
   abrirFranjasEnLote,
@@ -196,6 +200,29 @@ function CalendarioFranjas() {
 
   const detalle = lista.find((f) => f.idFranja === idDetalle) ?? null
 
+  const marcasMes = useMemo(() => {
+    const mapa = new Map()
+    for (const franja of lista) {
+      const actual = mapa.get(franja.fecha) ?? { total: 0, libres: 0 }
+      actual.total += 1
+      if (franja.estado === 'ABIERTA' && !franja.reserva) actual.libres += 1
+      mapa.set(franja.fecha, actual)
+    }
+    return new Map(
+      [...mapa].map(([d, { total, libres }]) => [
+        d,
+        { cantidad: total, tono: libres ? 'libre' : 'ocupado', texto: `${total} franjas, ${libres} libres` },
+      ]),
+    )
+  }, [lista])
+
+  // La línea de "ahora" se mueve sola cada minuto.
+  const [minutoActual, setMinutoActual] = useState(minutoEnColombia)
+  useEffect(() => {
+    const temporizador = setInterval(() => setMinutoActual(minutoEnColombia()), 60000)
+    return () => clearInterval(temporizador)
+  }, [])
+
   const seleccion = useMemo(() => {
     if (!ancla || !foco) return null
     const d1 = Math.min(dias.indexOf(ancla.dia), dias.indexOf(foco.dia))
@@ -344,14 +371,11 @@ function CalendarioFranjas() {
   return (
     <section className="agenda panel" aria-labelledby="titulo-calendario">
       <div className="agenda__barra-superior">
-        <div className="agenda__navegacion">
-          <Boton variante="contorno" icono={ChevronLeft} aria-label={`${unidad} anterior`} onClick={() => mover(-1)} />
-          <Boton variante="contorno" onClick={() => setFecha(hoy)}>
-            Hoy
-          </Boton>
-          <Boton variante="contorno" icono={ChevronRight} aria-label={`${unidad} siguiente`} onClick={() => mover(1)} />
+        <div className="agenda__lugar">
+          <span className="agenda__rotulo">{vista === 'semana' ? 'Semana que estás viendo' : 'Día que estás viendo'}</span>
           <h2 id="titulo-calendario" className="agenda__semana" aria-live="polite">
             {vista === 'semana' ? etiquetaSemana(dias) : etiquetaDiaLarga(fecha)}
+            {(vista === 'semana' ? dias.includes(hoy) : fecha === hoy) && <span className="agenda__hoy">Hoy</span>}
           </h2>
         </div>
         <div className="agenda__vistas" role="group" aria-label="Vista del calendario">
@@ -371,6 +395,43 @@ function CalendarioFranjas() {
           ))}
           <Ayuda texto="Arrastra sobre las horas vacías para abrir franjas de 30 minutos. En el celular toca el inicio y luego el final. Con teclado: Enter marca el inicio y Mayús+Enter el final." />
         </div>
+      </div>
+
+      <div className="agenda__navegacion">
+        <Boton variante="contorno" icono={ChevronLeft} aria-label={`${unidad} anterior`} onClick={() => mover(-1)}>
+          <span className="agenda__flecha-texto">Anterior</span>
+        </Boton>
+        <ol className={`agenda__tira${vista === 'semana' ? ' agenda__tira--semana' : ''}`} aria-label="Días de la semana">
+          {diasDeSemana(lunesDe(fecha), 7).map((d) => {
+            const total = lista.filter((f) => f.fecha === d).length
+            const activo = vista === 'semana' ? dias.includes(d) : d === fecha
+            return (
+              <li key={d}>
+                <button
+                  type="button"
+                  className={`agenda__tira-dia${activo ? ' agenda__tira-dia--activo' : ''}${d === hoy ? ' agenda__tira-dia--hoy' : ''}`}
+                  aria-pressed={activo}
+                  aria-label={`${etiquetaDiaLarga(d)}${d === hoy ? ', hoy' : ''}: ${total} franjas`}
+                  onClick={() => {
+                    limpiarSeleccion()
+                    setFecha(d)
+                    if (vista === 'semana') setVista('dia')
+                  }}
+                >
+                  <span className="agenda__tira-nombre">{etiquetaDia(d).split(' ')[0]}</span>
+                  <span className="agenda__tira-numero">{Number(d.slice(8))}</span>
+                  <span className={`agenda__tira-cuenta${total ? '' : ' agenda__tira-cuenta--vacia'}`}>{total || '·'}</span>
+                </button>
+              </li>
+            )
+          })}
+        </ol>
+        <Boton variante="contorno" icono={ChevronRight} aria-label={`${unidad} siguiente`} onClick={() => mover(1)}>
+          <span className="agenda__flecha-texto">Siguiente</span>
+        </Boton>
+        <Boton variante="secundario" disabled={fecha === hoy} onClick={() => setFecha(hoy)}>
+          Ir a hoy
+        </Boton>
       </div>
 
       <ul className="agenda__estados" aria-label="Estado de las franjas visibles">
@@ -423,6 +484,25 @@ function CalendarioFranjas() {
       )}
 
       {franjas.datos && (
+        <div className="agenda__cuerpo">
+        <aside className="agenda__lateral" aria-label="Elegir fecha">
+          <CalendarioMes
+            mes={inicioDeMes(fecha)}
+            onMes={(paso) => {
+              limpiarSeleccion()
+              setFecha((actual) => sumarMeses(inicioDeMes(actual), paso))
+            }}
+            seleccionado={fecha}
+            onElegir={(d) => {
+              limpiarSeleccion()
+              setFecha(d)
+            }}
+            marcas={marcasMes}
+            hoy={hoy}
+            titulo="Elegir fecha de la agenda"
+          />
+          <p className="agenda__lateral-ayuda">Los días con color tienen franjas: turquesa si hay libres, cielo si todas están reservadas.</p>
+        </aside>
         <div className="agenda__contenedor" ref={desplazable}>
           <div
             className={`agenda__rejilla agenda__rejilla--${vista}`}
@@ -446,6 +526,7 @@ function CalendarioFranjas() {
                 idDetalle={idDetalle}
                 onIniciar={iniciarArrastre}
                 onClic={alHacerClic}
+                ahora={dias.includes(hoy) ? minutoActual : null}
                 onAbrirDetalle={(franja) => {
                   limpiarSeleccion()
                   setIdDetalle(franja.idFranja)
@@ -453,6 +534,7 @@ function CalendarioFranjas() {
               />
             ))}
           </div>
+        </div>
         </div>
       )}
 
@@ -475,24 +557,25 @@ function CalendarioFranjas() {
   )
 }
 
-function FilaHora({ min, dias, hoy, porCelda, enSeleccion, idDetalle, onIniciar, onClic, onAbrirDetalle }) {
+function FilaHora({ min, dias, hoy, porCelda, enSeleccion, idDetalle, onIniciar, onClic, onAbrirDetalle, ahora }) {
   const hora = aHora(min)
   const fin = aHora(min + DURACION_FRANJA_MIN)
   return (
     <>
-      <div className="agenda__hora" data-fila={min} aria-hidden="true">
+      <div className={`agenda__hora${ahora !== null && ahora >= min && ahora < min + DURACION_FRANJA_MIN ? ' agenda__hora--ahora' : ''}`} data-fila={min} aria-hidden="true">
         {min % 60 === 0 ? hora : ''}
       </div>
       {dias.map((dia) => {
         const franja = porCelda.get(`${dia}|${hora}`)
         const etiqueta = `${etiquetaDiaLarga(dia)}, ${hora}–${fin}`
+        const esAhora = dia === hoy && ahora !== null && ahora >= min && ahora < min + DURACION_FRANJA_MIN
         if (franja) {
           const { tono, texto } = aspectoFranja(franja)
           return (
             <button
               key={dia}
               type="button"
-              className={`agenda__celda agenda__celda--${tono}${idDetalle === franja.idFranja ? ' agenda__celda--activa' : ''}${enSeleccion(dia, min) ? ' agenda__celda--marcada' : ''}`}
+              className={`agenda__celda agenda__celda--${tono}${idDetalle === franja.idFranja ? ' agenda__celda--activa' : ''}${enSeleccion(dia, min) ? ' agenda__celda--marcada' : ''}${esAhora ? ' agenda__celda--ahora' : ''}`}
               aria-label={`${etiqueta}: ${franja.reserva ? `${franja.reserva.nombreDocente}, ` : ''}${texto}`}
               title={franja.reserva ? `${franja.reserva.nombreDocente} · ${texto}` : texto}
               onClick={() => onAbrirDetalle(franja)}
@@ -511,7 +594,7 @@ function FilaHora({ min, dias, hoy, porCelda, enSeleccion, idDetalle, onIniciar,
             data-dia={dia}
             data-min={min}
             disabled={pasada}
-            className={`agenda__celda agenda__celda--vacia${enSeleccion(dia, min) && !pasada ? ' agenda__celda--nueva' : ''}`}
+            className={`agenda__celda agenda__celda--vacia${enSeleccion(dia, min) && !pasada ? ' agenda__celda--nueva' : ''}${esAhora ? ' agenda__celda--ahora' : ''}`}
             aria-label={`${etiqueta}: vacía`}
             aria-pressed={enSeleccion(dia, min)}
             onPointerDown={(e) => onIniciar(e, dia, min)}

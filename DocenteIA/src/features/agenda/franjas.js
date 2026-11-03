@@ -115,3 +115,12 @@ const FORMATO_MES_LARGO = new Intl.DateTimeFormat('es-CO', { month: 'long', year
 export function etiquetaMes(inicioMes) {
   return FORMATO_MES_LARGO.format(aFecha(inicioMes))
 }
+
+/** Minuto del día en Colombia (0 a 1439), para marcar la hora actual en la agenda. */
+export function minutoEnColombia() {
+  const partes = new Intl.DateTimeFormat('en-GB', { timeZone: 'America/Bogota', hour: '2-digit', minute: '2-digit', hourCycle: 'h23' })
+    .format(new Date())
+    .split(':')
+    .map(Number)
+  return partes[0] * 60 + partes[1]
+}
