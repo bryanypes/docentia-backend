@@ -65,7 +65,7 @@ public class Usuario {
   protected Usuario() {}
 
   private Usuario(String nombreCompleto, String correo, String contrasenaHash, Rol rol) {
-    this.nombreCompleto = nombreCompleto;
+    this.nombreCompleto = NombrePropio.normalizar(nombreCompleto);
     this.correo = correo;
     this.contrasenaHash = contrasenaHash;
     this.rol = rol;
@@ -168,7 +168,7 @@ public class Usuario {
   }
 
   public void setNombreCompleto(String nombreCompleto) {
-    this.nombreCompleto = nombreCompleto;
+    this.nombreCompleto = NombrePropio.normalizar(nombreCompleto);
   }
 
   public String getCodigo() {
