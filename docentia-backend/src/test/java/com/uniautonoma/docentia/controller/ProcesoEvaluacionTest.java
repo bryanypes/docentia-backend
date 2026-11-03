@@ -20,6 +20,7 @@ import com.uniautonoma.docentia.PruebaIntegracion;
 import com.uniautonoma.docentia.dto.AsistenciaCitaRequest;
 import com.uniautonoma.docentia.dto.CompromisoActaRequest;
 import com.uniautonoma.docentia.dto.ConfirmacionCitaRequest;
+import com.uniautonoma.docentia.dto.ReprogramacionCitaRequest;
 import com.uniautonoma.docentia.dto.FirmaActaRequest;
 import com.uniautonoma.docentia.dto.NuevaActaRequest;
 import com.uniautonoma.docentia.dto.TipoActaRequest;
@@ -238,6 +239,57 @@ class ProcesoEvaluacionTest extends PruebaIntegracion {
   }
 
   @Test
+  void laCoordinacionCambiaDeHorarioOCancelaLaCitaDelDocente() throws Exception {
+    calificarTodo("4.0");
+    Long cita = agendarCita(HOY.plusDays(1), LocalTime.of(9, 0));
+    confirmar(true).andExpect(status().isOk());
+    Long otra =
+        franjaRepository
+            .saveAndFlush(
+                new FranjaHoraria(coordinador, periodo, HOY.plusDays(2), LocalTime.of(10, 0)))
+            .getIdFranja();
+    Long ajena =
+        franjaRepository
+            .saveAndFlush(
+                new FranjaHoraria(
+                    escenario.crearCoordinador("Paola Sarria", escenario.crearFacultad("Derecho")),
+                    periodo,
+                    HOY.plusDays(2),
+                    LocalTime.of(11, 0)))
+            .getIdFranja();
+
+    reprogramar(cita, ajena).andExpect(status().isNotFound());
+    String nueva =
+        reprogramar(cita, otra)
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$.idFranja").value(otra.intValue()))
+            .andExpect(jsonPath("$.confirmacion").doesNotExist())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    Long idNueva = ((Number) JsonPath.read(nueva, "$.idCita")).longValue();
+    reprogramar(cita, otra).andExpect(status().isConflict());
+    proceso()
+        .andExpect(jsonPath("$.estado").value("CITA_AGENDADA"))
+        .andExpect(jsonPath("$.hitos[*].titulo").value(hasItem("La coordinación cambió el horario")));
+
+    mockMvc
+        .perform(post("/citas/{id}/cancelacion", idNueva).with(como(docente)))
+        .andExpect(status().isForbidden());
+    mockMvc
+        .perform(post("/citas/{id}/cancelacion", idNueva).with(como(coordinador)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.estado").value("LIBERADA"));
+    mockMvc.perform(get("/citas/mia").with(como(docente))).andExpect(status().isNoContent());
+    mockMvc
+        .perform(get("/franjas/disponibles").with(como(docente)))
+        .andExpect(jsonPath("$[*].idFranja").value(hasItem(otra.intValue())));
+    proceso()
+        .andExpect(jsonPath("$.estado").value("EVALUACION_COMPLETA"))
+        .andExpect(jsonPath("$.hitos[*].titulo").value(hasItem("La coordinación canceló la cita")));
+  }
+
+  @Test
   void soloLaCoordinacionDelDocenteRegistraLaAsistencia() throws Exception {
     calificarTodo("4.0");
     Long cita = agendarCita(HOY, LocalTime.of(8, 0));
@@ -388,6 +440,14 @@ class ProcesoEvaluacionTest extends PruebaIntegracion {
             .with(como(docente))
             .contentType(MediaType.APPLICATION_JSON)
             .content(aJson(new ConfirmacionCitaRequest(asiste))));
+  }
+
+  private ResultActions reprogramar(Long cita, Long franja) throws Exception {
+    return mockMvc.perform(
+        post("/citas/{id}/reprogramacion", cita)
+            .with(como(coordinador))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(aJson(new ReprogramacionCitaRequest(franja))));
   }
 
   private ResultActions registrarAsistencia(Long cita, boolean asistio) throws Exception {

@@ -341,6 +341,15 @@ public class ProcesoEvaluacionService {
               "DECLINACION", "Declinó la cita", franja + " quedó libre", cita.getFechaLiberacion());
       case INASISTENCIA ->
           new Hito("INASISTENCIA", "No asistió a la reunión", franja, cita.getFechaAsistencia());
+      case CANCELADA_POR_COORDINACION ->
+          new Hito(
+              "DECLINACION",
+              "La coordinación canceló la cita",
+              franja + " quedó libre",
+              cita.getFechaLiberacion());
+      case REPROGRAMADA_POR_COORDINACION ->
+          new Hito(
+              "CAMBIO", "La coordinación cambió el horario", franja, cita.getFechaLiberacion());
     };
   }
 
