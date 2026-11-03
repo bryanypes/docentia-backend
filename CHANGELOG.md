@@ -15,6 +15,13 @@
 - Vista de Estadísticas con filtros y barras que actualizan todas las gráficas.
 - Panorama del análisis con IA: etapas, fortalezas y oportunidades, citas verificadas y filtrados.
 - Ver información de usuarios, facultades y programas; acciones con ícono de ver, editar y eliminar.
+- Descarga de Estadísticas en Excel (.xlsx): resumen con fórmulas que se recalculan al filtrar la
+  hoja Docentes, y hojas por desempeño, proceso, programa o facultad, distribución y fuentes.
+- Certificado de firma electrónica en el PDF del acta, con el logo institucional y los datos del
+  docente.
+- Reserva de cita desde un calendario de días disponibles, con modal para confirmar o cambiar.
+- Modal para agregar compromisos, con sugerencias y plazos rápidos.
+- Avisos como notificaciones flotantes y confirmaciones en modal en lugar de `window.confirm`.
 
 ### Cambiado
 
@@ -24,6 +31,12 @@
 - Calendario compacto con vista Día y Semana; las flechas mueven un día o una semana.
 - Matrícula y cobertura con resumen, importación en tres pasos y semáforo por docente.
 - /inicio es la ruta principal de todos los roles.
+- Cuestionarios de docente y estudiante por pasos, con avance, transición y revisión final.
+- Agenda con la semana o el día visible rotulado, tira de días, Ir a hoy, calendario del mes y
+  línea de la hora actual.
+- Nombres de personas, programas, facultades y cursos con mayúscula inicial y tildes en las
+  palabras académicas (V31, V32).
+- Listas de Estadísticas y Usuarios en tandas con «Mostrar más» y tarjetas compactas en el celular.
 
 ### Corregido
 

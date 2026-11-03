@@ -405,6 +405,19 @@ textarea.campo__control {
     min-width: 0 !important;
   }
 
+  /* Tablas de solo cifras: etiqueta y valor en la misma línea. */
+  .tabla--apilable.tabla--cifras td[data-etiqueta] {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 4px 0;
+    border-top: 1px dashed var(--color-borde-suave);
+  }
+
+  .tabla--apilable.tabla--cifras td[data-etiqueta]::before {
+    margin: 0;
+  }
+
   .tabla-contenedor:has(.tabla--apilable) {
     overflow: visible;
     border: 0;
