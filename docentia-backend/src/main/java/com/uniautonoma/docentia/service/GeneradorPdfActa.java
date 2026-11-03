@@ -4,6 +4,7 @@ import com.lowagie.text.Document;
 import com.lowagie.text.DocumentException;
 import com.lowagie.text.Font;
 import com.lowagie.text.FontFactory;
+import com.lowagie.text.Image;
 import com.lowagie.text.PageSize;
 import com.lowagie.text.Paragraph;
 import com.lowagie.text.pdf.PdfWriter;
@@ -15,6 +16,7 @@ import com.uniautonoma.docentia.entity.Rol;
 import com.uniautonoma.docentia.entity.TipoActa;
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -42,7 +44,16 @@ public class GeneradorPdfActa {
             .collect(Collectors.joining(";"));
     String firmas =
         acta.getFirmas().stream()
-            .map(f -> f.getRol() + "|" + f.getNombre() + "|" + f.getFecha() + "|" + f.getIp())
+            .map(
+                f ->
+                    f.getRol()
+                        + "|"
+                        + f.getNombre()
+                        + "|"
+                        + f.getFecha()
+                        + "|"
+                        + f.getIp()
+                        + (f.getHashImagen() == null ? "" : "|" + f.getHashImagen()))
             .collect(Collectors.joining(";"));
     return String.join(
         "\n",
@@ -151,6 +162,13 @@ public class GeneradorPdfActa {
             new Paragraph(
                 "Fecha: " + firma.getFecha().format(FORMATO_FECHA) + " · IP: " + firma.getIp(),
                 texto));
+        if (firma.getImagen() != null) {
+          documento.add(trazo(firma));
+          documento.add(
+              new Paragraph(
+                  "Firma dibujada en DOCENTIA · SHA-256 " + firma.getHashImagen(), pequena));
+        }
+        documento.add(new Paragraph(" "));
       }
       documento.add(new Paragraph(" "));
       documento.add(new Paragraph("Sello de verificación", seccion));
@@ -161,5 +179,17 @@ public class GeneradorPdfActa {
       throw new IllegalStateException("No se pudo generar el PDF del acta", excepcion);
     }
     return salida.toByteArray();
+  }
+
+  /** El trazo, a lo sumo 180 x 70 puntos, sobre la línea de la firma. */
+  private Image trazo(FirmaActa firma) throws DocumentException {
+    try {
+      Image imagen = Image.getInstance(firma.getImagen());
+      imagen.scaleToFit(180, 70);
+      imagen.setSpacingBefore(4);
+      return imagen;
+    } catch (IOException ilegible) {
+      throw new DocumentException(ilegible);
+    }
   }
 }

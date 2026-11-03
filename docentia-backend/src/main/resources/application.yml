@@ -78,6 +78,8 @@ docentia:
   # Rol que puede corregir un acta firmada (VICERRECTOR o COORDINADOR).
   actas:
     rol-corrector: ${DOCENTIA_ACTAS_ROL_CORRECTOR:VICERRECTOR}
+    # La firma lleva el trazo dibujado en la página; se imprime en el PDF con su hash.
+    exigir-firma-dibujada: ${DOCENTIA_ACTAS_EXIGIR_FIRMA_DIBUJADA:true}
   # El docente ve su nota, compromisos y acta solo cuando la coordinación registra su asistencia a la
   # cita, y el acta se firma en esa reunión.
   proceso:

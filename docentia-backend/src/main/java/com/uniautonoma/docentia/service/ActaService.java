@@ -223,6 +223,17 @@ public class ActaService {
    * @throws ReglaNegocioException si no hay cita agendada, el promedio no está completo o ya firmó
    */
   public ActaResponse firmar(Long idActa, boolean confirmacion, String ip, UsuarioSesion sesion) {
+    return firmar(idActa, confirmacion, null, ip, sesion);
+  }
+
+  /**
+   * Firma el acta con el trazo dibujado en la página, que se imprime en el PDF.
+   *
+   * @param trazo PNG como data URL; obligatorio si docentia.actas.exigir-firma-dibujada
+   * @throws NoProcesableException si falta la confirmación, el trazo o los compromisos exigidos
+   */
+  public ActaResponse firmar(
+      Long idActa, boolean confirmacion, String trazo, String ip, UsuarioSesion sesion) {
     Acta acta = buscarVisible(idActa, sesion);
     acta.exigirBorrador();
     if (!confirmacion) {
@@ -253,8 +264,10 @@ public class ActaService {
               + acta.getUmbralCompromisos()
               + " el acta exige al menos un compromiso con plazo");
     }
+    byte[] png =
+        trazo != null || propiedades.actas().exigirFirmaDibujada() ? TrazoFirma.leer(trazo) : null;
     LocalDateTime ahora = LocalDateTime.now(reloj);
-    acta.registrarFirma(
+    FirmaActa firma =
         new FirmaActa(
             acta,
             sesion.idUsuario(),
@@ -262,7 +275,8 @@ public class ActaService {
             sesion.nombreCompleto(),
             sesion.correo(),
             ip,
-            ahora));
+            ahora);
+    acta.registrarFirma(png == null ? firma : firma.conTrazo(png, generadorPdf.sha256(png)));
     if (acta.firmadaPor(Rol.DOCENTE) && acta.firmadaPor(Rol.COORDINADOR)) {
       cerrar(acta, ahora);
     }

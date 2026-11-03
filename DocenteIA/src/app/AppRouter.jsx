@@ -24,7 +24,6 @@ import ExpedienteDocente from '../features/expedientes/pages/ExpedienteDocente.j
 import MiEvaluacion from '../features/expedientes/pages/MiEvaluacion.jsx'
 import Facultades from '../features/facultades/pages/Facultades.jsx'
 import Importaciones from '../features/importaciones/pages/Importaciones.jsx'
-import Inicio from '../features/kpis/pages/Inicio.jsx'
 import Periodos from '../features/periodos/pages/Periodos.jsx'
 import Ponderaciones from '../features/ponderaciones/pages/Ponderaciones.jsx'
 import Programas from '../features/programas/pages/Programas.jsx'
@@ -32,6 +31,7 @@ import FormularioUsuario from '../features/usuarios/pages/FormularioUsuario.jsx'
 import Usuarios from '../features/usuarios/pages/Usuarios.jsx'
 import { AppLayout } from '../shared/components/layout/AppLayout/AppLayout.jsx'
 import { ROLES } from '../shared/constants/dominio.js'
+import InicioPorRol from './InicioPorRol.jsx'
 import { PaginaNoEncontrada } from './PaginasSistema.jsx'
 import { ProtectedRoute } from './ProtectedRoute.jsx'
 import { RUTA_CAMBIO_CONTRASENA, rutaInicioDelRol } from './rutasPorRol.js'
@@ -60,6 +60,7 @@ function RutasDocentia() {
             <Route path={RUTA_CAMBIO_CONTRASENA} element={<CambiarContrasena />} />
 
             <Route element={<AppLayout />}>
+              <Route path="/inicio" element={<InicioPorRol />} />
               <Route path="/notificaciones" element={<Notificaciones />} />
               <Route element={<ProtectedRoute rolesPermitidos={[ROLES.ESTUDIANTE]} />}>
                 <Route path="/evaluacion-profesores" element={<EvaluacionProfesores />} />
@@ -77,7 +78,6 @@ function RutasDocentia() {
               </Route>
 
               <Route element={<ProtectedRoute rolesPermitidos={GESTION} />}>
-                <Route path="/inicio" element={<Inicio />} />
                 <Route path="/importaciones" element={<Importaciones />} />
                 <Route path="/analisis" element={<Analisis />} />
                 <Route path="/docentes" element={<Docentes />} />

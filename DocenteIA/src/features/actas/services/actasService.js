@@ -23,9 +23,12 @@ export function quitarCompromiso(idActa, idCompromiso) {
   return api.delete(`/actas/${encodeURIComponent(idActa)}/compromisos/${encodeURIComponent(idCompromiso)}`)
 }
 
-/** La firma es irreversible: el backend exige `confirmacion` en true. */
-export function firmarActa(idActa) {
-  return api.post(`/actas/${encodeURIComponent(idActa)}/firmas`, { confirmacion: true })
+/**
+ * La firma es irreversible: el backend exige `confirmacion` en true y el trazo dibujado en la
+ * página (PNG como data URL), que se imprime en el PDF.
+ */
+export function firmarActa(idActa, trazo) {
+  return api.post(`/actas/${encodeURIComponent(idActa)}/firmas`, { confirmacion: true, trazo })
 }
 
 export function corregirActa(idActa, motivo) {

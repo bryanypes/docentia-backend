@@ -10,6 +10,9 @@ docentia:
   # Las pruebas anteriores al proceso con asistencia no la registran; ProcesoEvaluacionTest la activa.
   proceso:
     exigir-asistencia: false
+  # Las pruebas anteriores firman sin trazo; ProcesoEvaluacionTest y FirmaDibujadaTest lo exigen.
+  actas:
+    exigir-firma-dibujada: false
   login:
     maximo-por-correo: 100000
     maximo-por-ip: 100000

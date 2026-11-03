@@ -32,9 +32,9 @@ import { iniciales } from '../../../utils/formatters.js'
 import './Sidebar.css'
 
 const NAVEGACION = {
-  [ROLES.ESTUDIANTE]: [{ ruta: '/evaluacion-profesores', etiqueta: 'Mis evaluaciones', Icono: ClipboardCheck }],
+  [ROLES.ESTUDIANTE]: [{ ruta: '/inicio', etiqueta: 'Mis evaluaciones', Icono: ClipboardCheck }],
   [ROLES.DOCENTE]: [
-    { ruta: '/mi-evaluacion', etiqueta: 'Mi evaluación', Icono: ClipboardCheck },
+    { ruta: '/inicio', etiqueta: 'Mi evaluación', Icono: ClipboardCheck },
     { ruta: '/mi-autoevaluacion', etiqueta: 'Mi autoevaluación', Icono: PenLine },
     { ruta: '/mi-cita', etiqueta: 'Mi cita', Icono: CalendarDays },
     { ruta: '/mi-acta', etiqueta: 'Mi acta', Icono: FileSignature },

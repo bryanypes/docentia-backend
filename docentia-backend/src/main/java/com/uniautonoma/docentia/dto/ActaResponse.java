@@ -74,9 +74,13 @@ public record ActaResponse(
     }
   }
 
-  public record Firma(Rol rol, String nombre, LocalDateTime fecha) {
+  /**
+   * @param conTrazo la firma se dibujó en la página y su trazo va en el PDF
+   */
+  public record Firma(Rol rol, String nombre, LocalDateTime fecha, boolean conTrazo) {
     static Firma desde(FirmaActa firma) {
-      return new Firma(firma.getRol(), firma.getNombre(), firma.getFecha());
+      return new Firma(
+          firma.getRol(), firma.getNombre(), firma.getFecha(), firma.getImagen() != null);
     }
   }
 }
