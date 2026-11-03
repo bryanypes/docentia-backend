@@ -38,7 +38,7 @@ import './Agenda.css'
 
 /** Horario que muestra el calendario; se amplía si hay franjas por fuera. */
 const PRIMERA_HORA = 7 * 60
-const ULTIMA_HORA = 20 * 60
+const ULTIMA_HORA = 22 * 60
 
 /** Cómo se ve cada franja existente: el tono y el texto corto de la celda. */
 function aspectoFranja(franja) {
