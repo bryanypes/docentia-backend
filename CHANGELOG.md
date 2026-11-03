@@ -32,6 +32,8 @@
 
 ### Cambiado
 
+- El login ya no muestra el panel de usuarios de prueba; se escribe el correo de la cuenta.
+
 - El docente ve su nota, compromisos, hallazgos y acta del periodo en la reunión, no antes.
 - El acta se firma después de registrar la asistencia.
 - Paleta con acentos turquesa, violeta, coral, cielo y rosa para estados y calendario.
