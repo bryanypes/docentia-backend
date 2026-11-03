@@ -1,5 +1,6 @@
 package com.uniautonoma.docentia.service;
 
+import com.uniautonoma.docentia.config.HeteroevaluacionProperties;
 import com.uniautonoma.docentia.config.ProcesoProperties;
 import com.uniautonoma.docentia.dto.DocenteResponse;
 import com.uniautonoma.docentia.dto.ProcesoEvaluacionResponse;
@@ -18,6 +19,7 @@ import com.uniautonoma.docentia.entity.EstadoProcesoEvaluacion;
 import com.uniautonoma.docentia.entity.FirmaActa;
 import com.uniautonoma.docentia.entity.FuenteEvaluacion;
 import com.uniautonoma.docentia.entity.MotivoLiberacion;
+import com.uniautonoma.docentia.entity.OrigenCalificacion;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.Rol;
 import com.uniautonoma.docentia.entity.TipoActa;
@@ -25,6 +27,7 @@ import com.uniautonoma.docentia.entity.Usuario;
 import com.uniautonoma.docentia.exception.RecursoNoEncontradoException;
 import com.uniautonoma.docentia.repository.ProcesoEvaluacionRepository;
 import com.uniautonoma.docentia.repository.ProcesoEvaluacionRepository.CoberturaEstudiantes;
+import com.uniautonoma.docentia.repository.ProcesoEvaluacionRepository.OrigenNota;
 import com.uniautonoma.docentia.repository.UsuarioRepository;
 import com.uniautonoma.docentia.security.UsuarioSesion;
 import java.time.format.DateTimeFormatter;
@@ -57,6 +60,7 @@ public class ProcesoEvaluacionService {
   private final PeriodoAcademicoService periodoService;
   private final PromedioService promedioService;
   private final ProcesoProperties propiedades;
+  private final HeteroevaluacionProperties heteroevaluacion;
 
   public ProcesoEvaluacionService(
       ProcesoEvaluacionRepository procesoRepository,
@@ -64,13 +68,15 @@ public class ProcesoEvaluacionService {
       DocenteService docenteService,
       PeriodoAcademicoService periodoService,
       PromedioService promedioService,
-      ProcesoProperties propiedades) {
+      ProcesoProperties propiedades,
+      HeteroevaluacionProperties heteroevaluacion) {
     this.procesoRepository = procesoRepository;
     this.usuarioRepository = usuarioRepository;
     this.docenteService = docenteService;
     this.periodoService = periodoService;
     this.promedioService = promedioService;
     this.propiedades = propiedades;
+    this.heteroevaluacion = heteroevaluacion;
   }
 
   /**
@@ -153,6 +159,13 @@ public class ProcesoEvaluacionService {
             ? procesoRepository.contarCobertura(idPeriodo, ids).stream()
                 .collect(Collectors.toMap(CoberturaEstudiantes::getIdDocente, Function.identity()))
             : Map.of();
+    Map<Long, OrigenCalificacion> origenes =
+        conCobertura
+            ? procesoRepository.buscarOrigenEstudiantes(idPeriodo, ids).stream()
+                .collect(
+                    Collectors.toMap(
+                        OrigenNota::getIdDocente, o -> OrigenCalificacion.valueOf(o.getOrigen())))
+            : Map.of();
     return docentes.stream()
         .map(
             docente -> {
@@ -165,7 +178,11 @@ public class ProcesoEvaluacionService {
                   actas.getOrDefault(id, List.of()),
                   cobertura == null
                       ? null
-                      : new Cobertura(cobertura.getRespondidas(), cobertura.getEsperadas()));
+                      : new Cobertura(
+                          cobertura.getRespondidas(),
+                          cobertura.getEsperadas(),
+                          heteroevaluacion.minimoRespuestas(),
+                          origenes.get(id)));
             })
         .toList();
   }

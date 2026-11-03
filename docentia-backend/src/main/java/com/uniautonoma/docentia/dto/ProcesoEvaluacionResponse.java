@@ -5,6 +5,7 @@ import com.uniautonoma.docentia.entity.ConfirmacionCita;
 import com.uniautonoma.docentia.entity.EstadoActa;
 import com.uniautonoma.docentia.entity.EstadoProcesoEvaluacion;
 import com.uniautonoma.docentia.entity.FuenteEvaluacion;
+import com.uniautonoma.docentia.entity.OrigenCalificacion;
 import com.uniautonoma.docentia.entity.TipoActa;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -35,7 +36,15 @@ public record ProcesoEvaluacionResponse(
     boolean resultadoHabilitado,
     List<Hito> hitos) {
 
-  public record Cobertura(long respondidas, long esperadas) {}
+  /**
+   * Formularios de estudiantes en la app frente a matrículas, y de dónde salió la nota que usa el
+   * promedio. Con menos de {@code minimoRespuestas} respuestas el formulario no se usa (anonimato)
+   * y, si hay nota, viene de un CSV o de un registro manual.
+   *
+   * @param origenNota origen de la nota de estudiantes del periodo, o nulo si aún no hay
+   */
+  public record Cobertura(
+      long respondidas, long esperadas, int minimoRespuestas, OrigenCalificacion origenNota) {}
 
   public record CitaProceso(
       Long idCita,

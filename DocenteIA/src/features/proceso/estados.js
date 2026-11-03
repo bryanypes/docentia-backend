@@ -83,3 +83,30 @@ export const ETIQUETA_ASISTENCIA = {
 export function puedeRegistrarAsistencia(cita, hoy) {
   return Boolean(cita?.activa && !cita.asistencia && cita.fecha <= hoy)
 }
+
+const ORIGEN = { CSV: 'cargada por CSV', MANUAL: 'registrada sin formularios' }
+
+/**
+ * Explica la nota de estudiantes: cuántos respondieron el formulario en la app y, si la nota no sale
+ * de ahí, de dónde salió. Evita que "0 de 0" contradiga un paso ya cumplido.
+ * @returns {{ titulo: string, detalle: string|null }}
+ */
+export function describirCobertura(cobertura) {
+  if (!cobertura) return { titulo: '—', detalle: null }
+  const { respondidas, esperadas, minimoRespuestas: minimo, origenNota } = cobertura
+  if (origenNota === 'FORMULARIO') {
+    return { titulo: `${respondidas} de ${esperadas} respondieron`, detalle: 'La nota sale de sus formularios.' }
+  }
+  if (esperadas === 0) {
+    return origenNota
+      ? { titulo: 'Sin matrícula en la app', detalle: `La nota de estudiantes está ${ORIGEN[origenNota]}.` }
+      : { titulo: 'Sin matrícula en la app', detalle: 'Importa la matrícula para que los estudiantes respondan.' }
+  }
+  const faltan = Math.max(0, minimo - respondidas)
+  const umbral =
+    faltan > 0
+      ? `${faltan === 1 ? 'Falta 1' : `Faltan ${faltan}`} para usar el formulario (mínimo ${minimo}, por anonimato).`
+      : null
+  const origen = origenNota ? `La nota actual está ${ORIGEN[origenNota]}.` : null
+  return { titulo: `${respondidas} de ${esperadas} respondieron`, detalle: [umbral, origen].filter(Boolean).join(' ') || null }
+}

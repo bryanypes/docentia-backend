@@ -13,7 +13,7 @@ const PROCESO = {
   estado: 'ASISTENCIA_CONFIRMADA',
   paso: 5,
   fuentesPendientes: [],
-  coberturaEstudiantes: { respondidas: 18, esperadas: 25 },
+  coberturaEstudiantes: { respondidas: 18, esperadas: 25, minimoRespuestas: 5, origenNota: 'FORMULARIO' },
   cita: {
     idCita: 3,
     activa: true,
@@ -48,7 +48,7 @@ describe('PanelProceso', () => {
     renderizarConSesion(<PanelProceso idDocente={4} />, { rol: 'VICERRECTOR' })
 
     expect(await screen.findByText('Asistencia confirmada')).toBeInTheDocument()
-    expect(screen.getByText('18 de 25')).toBeInTheDocument()
+    expect(screen.getByText('18 de 25 respondieron')).toBeInTheDocument()
     expect(screen.getByText('Oculto hasta la reunión')).toBeInTheDocument()
     expect(screen.getByText('Escogió horario')).toBeInTheDocument()
     expect(screen.getByText('Confirmó asistencia')).toBeInTheDocument()

@@ -78,6 +78,25 @@ public interface ProcesoEvaluacionRepository extends Repository<Cita, Long> {
       nativeQuery = true)
   List<CoberturaEstudiantes> contarCobertura(Long idPeriodo, Collection<Long> idsDocentes);
 
+  /** Origen de la nota de estudiantes de cada docente en el periodo (MANUAL, CSV o FORMULARIO). */
+  @Query(
+      value =
+          """
+          select c.id_docente as idDocente, c.origen as origen
+          from calificaciones c
+          where c.id_periodo = :idPeriodo
+            and c.fuente = 'ESTUDIANTES'
+            and c.id_docente in (:idsDocentes)
+          """,
+      nativeQuery = true)
+  List<OrigenNota> buscarOrigenEstudiantes(Long idPeriodo, Collection<Long> idsDocentes);
+
+  interface OrigenNota {
+    Long getIdDocente();
+
+    String getOrigen();
+  }
+
   interface CoberturaEstudiantes {
     Long getIdDocente();
 

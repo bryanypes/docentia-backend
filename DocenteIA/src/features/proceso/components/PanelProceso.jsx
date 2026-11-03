@@ -13,6 +13,7 @@ import {
   ETIQUETA_ASISTENCIA,
   ETIQUETA_CONFIRMACION,
   ETIQUETA_TIPO_ACTA,
+  describirCobertura,
   puedeRegistrarAsistencia,
 } from '../estados.js'
 import { obtenerProceso } from '../services/procesoService.js'
@@ -85,9 +86,12 @@ export function PanelProceso({ idDocente, onCambio }) {
         </div>
         {cobertura && (
           <div>
-            <dt>Estudiantes que respondieron</dt>
+            <dt>Formularios de estudiantes</dt>
             <dd>
-              {cobertura.respondidas} de {cobertura.esperadas}
+              {describirCobertura(cobertura).titulo}
+              {describirCobertura(cobertura).detalle && (
+                <span className="proceso__dato-detalle">{describirCobertura(cobertura).detalle}</span>
+              )}
             </dd>
           </div>
         )}
