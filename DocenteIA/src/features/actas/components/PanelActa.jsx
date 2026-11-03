@@ -23,6 +23,7 @@ import {
   listarActas,
   quitarCompromiso,
 } from '../services/actasService.js'
+import { ModalFirma } from './ModalFirma.jsx'
 import './PanelActa.css'
 
 const ESTADO_ACTA = {
@@ -108,13 +109,16 @@ function Compromisos({ acta, editable, ejecutar, ocupado }) {
   )
 }
 
-function Firma({ acta, usuario, ejecutar, ocupado }) {
-  const [confirmado, setConfirmado] = useState(false)
+function Firma({ acta, usuario, ejecutar, ocupado, error }) {
+  const [firmando, setFirmando] = useState(false)
   const puedeFirmar =
     acta.estado === 'BORRADOR' &&
     (usuario.rol === ROLES.COORDINADOR || usuario.rol === ROLES.DOCENTE) &&
     !acta.firmas.some((firma) => firma.rol === usuario.rol)
-  const idConfirmacion = `confirmar-${acta.idActa}`
+
+  async function firmar(trazo) {
+    if (await ejecutar(() => firmarActa(acta.idActa, trazo))) setFirmando(false)
+  }
 
   return (
     <section>
@@ -126,25 +130,28 @@ function Firma({ acta, usuario, ejecutar, ocupado }) {
           {acta.firmas.map((firma) => (
             <li key={firma.rol}>
               {ETIQUETA_ROL[firma.rol]}: {firma.nombre} · {formatearFechaHora(firma.fecha)}
+              {firma.conTrazo && <span className="pildora pildora--rosa">Firma dibujada</span>}
             </li>
           ))}
         </ul>
       )}
       {puedeFirmar && (
         <div className="acta__firmar">
-          <label htmlFor={idConfirmacion}>
-            <input
-              id={idConfirmacion}
-              type="checkbox"
-              checked={confirmado}
-              onChange={(e) => setConfirmado(e.target.checked)}
-            />{' '}
-            Leí el acta y entiendo que firmar es irreversible.
-          </label>
-          <Boton icono={FileSignature} disabled={!confirmado || ocupado} onClick={() => ejecutar(() => firmarActa(acta.idActa))}>
+          <Boton icono={FileSignature} disabled={ocupado} onClick={() => setFirmando(true)}>
             Firmar acta
           </Boton>
+          <span className="campo__ayuda">Dibujas tu firma aquí mismo; queda impresa en el PDF.</span>
         </div>
+      )}
+      {firmando && (
+        <ModalFirma
+          nombre={usuario.nombreCompleto}
+          tipoActa={acta.tipo ? ETIQUETA_TIPO_ACTA[acta.tipo] : null}
+          enviando={ocupado}
+          error={error}
+          onFirmar={firmar}
+          onCerrar={() => setFirmando(false)}
+        />
       )}
     </section>
   )
@@ -198,7 +205,7 @@ function TipoActa({ acta, ejecutar, ocupado }) {
   )
 }
 
-function DetalleActa({ acta, usuario, rolCorrector, ejecutar, ocupado, onDescargar }) {
+function DetalleActa({ acta, usuario, rolCorrector, ejecutar, ocupado, error, onDescargar }) {
   const estado = ESTADO_ACTA[acta.estado]
   const editable = acta.estado === 'BORRADOR' && usuario.rol === ROLES.COORDINADOR && acta.firmas.length === 0
   const umbral = formatearNota(acta.umbralCompromisos)
@@ -244,7 +251,7 @@ function DetalleActa({ acta, usuario, rolCorrector, ejecutar, ocupado, onDescarg
         </Aviso>
       )}
       <Compromisos acta={acta} editable={editable} ejecutar={ejecutar} ocupado={ocupado} />
-      <Firma acta={acta} usuario={usuario} ejecutar={ejecutar} ocupado={ocupado} />
+      <Firma acta={acta} usuario={usuario} ejecutar={ejecutar} ocupado={ocupado} error={error} />
       {acta.estado === 'FIRMADA' && (
         <>
           <p className="acta__sello">
@@ -308,7 +315,7 @@ export function PanelActa({ idDocente }) {
   const lista = actas.datos ?? []
   const [vigente, ...anteriores] = lista
   const rolCorrector = configuracion.datos?.rolCorrectorActas
-  const propsDetalle = { usuario, rolCorrector, ejecutar, ocupado, onDescargar: descargar }
+  const propsDetalle = { usuario, rolCorrector, ejecutar, ocupado, error, onDescargar: descargar }
 
   return (
     <Panel titulo="Acta de la reunión" descripcion="Acta de compromiso o de retroalimentación; se firma en la reunión." icono={FileSignature} tono="rosa">

@@ -53,8 +53,9 @@ describe('Agenda', () => {
     const reservada = await screen.findByRole('button', { name: /08:00–08:30: Julián Camilo Hoyos, Confirmó/ })
     expect(reservada).toHaveTextContent('Julián Camilo Hoyos')
     expect(screen.getByRole('button', { name: /martes, 10 de noviembre, 08:30–09:00: Libre/ })).toBeInTheDocument()
-    expect(screen.getByText('1 libres')).toBeInTheDocument()
-    expect(screen.getByText('1 confirmadas')).toBeInTheDocument()
+    const estados = screen.getByRole('list', { name: 'Estado de las franjas visibles' })
+    expect(estados).toHaveTextContent('1 libres')
+    expect(estados).toHaveTextContent('1 confirmadas')
   })
 
   it('arrastrar sobre horas vacías abre las franjas del bloque', async () => {

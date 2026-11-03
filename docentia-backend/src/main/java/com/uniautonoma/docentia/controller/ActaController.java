@@ -107,11 +107,16 @@ public class ActaController {
   @PreAuthorize("hasAnyRole('COORDINADOR', 'DOCENTE')")
   public ActaResponse firmar(
       @PathVariable Long idActa,
-      @RequestBody FirmaActaRequest solicitud,
+      @Valid @RequestBody FirmaActaRequest solicitud,
       HttpServletRequest peticion,
       @AuthenticationPrincipal UsuarioSesion sesion) {
     ActaResponse acta =
-        actaService.firmar(idActa, solicitud.confirmacion(), DireccionCliente.de(peticion), sesion);
+        actaService.firmar(
+            idActa,
+            solicitud.confirmacion(),
+            solicitud.trazo(),
+            DireccionCliente.de(peticion),
+            sesion);
     auditoria.registrar(AccionAuditoria.FIRMA_ACTA, "ACTA", idActa, sesion);
     return acta;
   }

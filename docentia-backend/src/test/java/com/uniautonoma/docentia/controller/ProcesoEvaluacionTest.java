@@ -12,6 +12,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.jayway.jsonpath.JsonPath;
+import com.lowagie.text.pdf.PdfReader;
+import com.lowagie.text.pdf.parser.PdfTextExtractor;
 import com.uniautonoma.docentia.BaseDatosPruebaConfig;
 import com.uniautonoma.docentia.EscenarioPrueba;
 import com.uniautonoma.docentia.PruebaIntegracion;
@@ -33,8 +35,15 @@ import com.uniautonoma.docentia.entity.TipoEtapa;
 import com.uniautonoma.docentia.entity.Usuario;
 import com.uniautonoma.docentia.repository.CitaRepository;
 import com.uniautonoma.docentia.repository.FranjaHorariaRepository;
+import java.awt.BasicStroke;
+import java.awt.Color;
+import java.awt.Graphics2D;
+import java.awt.image.BufferedImage;
+import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.Base64;
+import javax.imageio.ImageIO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,7 +55,11 @@ import org.springframework.test.web.servlet.ResultActions;
  * Estado general del proceso: evaluaciones, cita con confirmación, asistencia que habilita el
  * resultado al docente, tipo de acta y firma en la reunión.
  */
-@TestPropertySource(properties = "docentia.proceso.exigir-asistencia=true")
+@TestPropertySource(
+    properties = {
+      "docentia.proceso.exigir-asistencia=true",
+      "docentia.actas.exigir-firma-dibujada=true"
+    })
 class ProcesoEvaluacionTest extends PruebaIntegracion {
 
   private static final LocalDate HOY = BaseDatosPruebaConfig.HOY;
@@ -132,11 +145,34 @@ class ProcesoEvaluacionTest extends PruebaIntegracion {
         .andExpect(jsonPath("$[0].requiereCompromisos").value(true));
 
     agregarCompromiso(acta).andExpect(status().isCreated());
-    firmar(acta, coordinador).andExpect(status().isOk());
+    firmarCon(acta, coordinador, null)
+        .andExpect(status().isUnprocessableEntity())
+        .andExpect(jsonPath("$.mensaje").value(containsString("Dibuja tu firma")));
+    firmarCon(acta, coordinador, png(false))
+        .andExpect(status().isUnprocessableEntity())
+        .andExpect(jsonPath("$.mensaje").value(containsString("Dibuja tu firma")));
+    firmar(acta, coordinador)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.firmas[0].conTrazo").value(true));
     proceso()
         .andExpect(jsonPath("$.estado").value("ACTA_EN_FIRMA"))
         .andExpect(jsonPath("$.acta.firmadaPorCoordinacion").value(true));
     firmar(acta, docente).andExpect(jsonPath("$.estado").value("FIRMADA"));
+    byte[] pdf =
+        mockMvc
+            .perform(get("/actas/{id}/pdf", acta).with(como(docente)))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsByteArray();
+    PdfReader lector = new PdfReader(pdf);
+    StringBuilder texto = new StringBuilder();
+    for (int pagina = 1; pagina <= lector.getNumberOfPages(); pagina++) {
+      texto.append(new PdfTextExtractor(lector).getTextFromPage(pagina));
+    }
+    org.assertj.core.api.Assertions.assertThat(texto.toString())
+        .contains("Acta de compromiso docente")
+        .contains("Firma dibujada en DOCENTIA");
 
     proceso()
         .andExpect(jsonPath("$.estado").value("FINALIZADO"))
@@ -386,11 +422,31 @@ class ProcesoEvaluacionTest extends PruebaIntegracion {
   }
 
   private ResultActions firmar(Long acta, Usuario firmante) throws Exception {
+    return firmarCon(acta, firmante, png(true));
+  }
+
+  private ResultActions firmarCon(Long acta, Usuario firmante, String trazo) throws Exception {
     return mockMvc.perform(
         post("/actas/{id}/firmas", acta)
             .with(como(firmante))
             .contentType(MediaType.APPLICATION_JSON)
-            .content(aJson(new FirmaActaRequest(true))));
+            .content(aJson(new FirmaActaRequest(true, trazo))));
+  }
+
+  /** Un trazo como el del lienzo de la página, o un lienzo en blanco. */
+  private static String png(boolean conTrazo) throws Exception {
+    BufferedImage lienzo = new BufferedImage(400, 150, BufferedImage.TYPE_INT_ARGB);
+    if (conTrazo) {
+      Graphics2D lapiz = lienzo.createGraphics();
+      lapiz.setColor(Color.BLACK);
+      lapiz.setStroke(new BasicStroke(4));
+      lapiz.drawLine(20, 100, 180, 40);
+      lapiz.drawLine(180, 40, 360, 110);
+      lapiz.dispose();
+    }
+    ByteArrayOutputStream salida = new ByteArrayOutputStream();
+    ImageIO.write(lienzo, "png", salida);
+    return "data:image/png;base64," + Base64.getEncoder().encodeToString(salida.toByteArray());
   }
 
   private Long idActa(ResultActions respuesta) throws Exception {

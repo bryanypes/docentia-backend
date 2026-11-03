@@ -7,10 +7,15 @@ export function SesionProvider({ children }) {
   const [usuario, setUsuario] = useState(null)
   const [validando, setValidando] = useState(() => Boolean(leerToken()))
   const [motivoCierre, setMotivoCierre] = useState(null)
+  // Solo si la sesión venció se vuelve a la pantalla de antes, y solo para la misma persona.
+  const [idSesionVencida, setIdSesionVencida] = useState(null)
 
   const cerrarSesion = useCallback((motivo = null) => {
     guardarToken(null)
-    setUsuario(null)
+    setUsuario((actual) => {
+      setIdSesionVencida(motivo === MOTIVO_CIERRE.EXPIRADA ? (actual?.idUsuario ?? null) : null)
+      return null
+    })
     setMotivoCierre(motivo)
   }, [])
 
@@ -53,8 +58,17 @@ export function SesionProvider({ children }) {
   }, [])
 
   const valor = useMemo(
-    () => ({ usuario, validando, motivoCierre, entrar, entrarConGoogle, cerrarSesion, reemplazarSesion }),
-    [usuario, validando, motivoCierre, entrar, entrarConGoogle, cerrarSesion, reemplazarSesion],
+    () => ({
+      usuario,
+      validando,
+      motivoCierre,
+      idSesionVencida,
+      entrar,
+      entrarConGoogle,
+      cerrarSesion,
+      reemplazarSesion,
+    }),
+    [usuario, validando, motivoCierre, idSesionVencida, entrar, entrarConGoogle, cerrarSesion, reemplazarSesion],
   )
 
   return <SesionContext.Provider value={valor}>{children}</SesionContext.Provider>

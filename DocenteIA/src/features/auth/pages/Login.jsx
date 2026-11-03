@@ -21,7 +21,7 @@ const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim() ?? ''
 
 export default function Login() {
   useTituloDocumento('Iniciar sesión')
-  const { usuario, validando, motivoCierre, entrar, entrarConGoogle } = useSesion()
+  const { usuario, validando, motivoCierre, idSesionVencida, entrar, entrarConGoogle } = useSesion()
   const ubicacion = useLocation()
 
   const [formulario, setFormulario] = useState({ correo: '', contrasena: '' })
@@ -35,12 +35,16 @@ export default function Login() {
 
   // Con un token guardado se espera a validarlo: así el formulario no aparece y desaparece.
   if (validando) return null
-  // Al abrirse la sesión, vuelve a la ruta protegida de origen o al inicio del rol. Con contraseña
-  // temporal, primero hay que cambiarla.
+  // Al abrirse la sesión va al inicio del rol. Solo si la sesión anterior venció y entra la misma
+  // persona vuelve a la ruta donde estaba; quien entra después de un "Salir" nunca hereda la ruta
+  // del rol anterior. Con contraseña temporal, primero hay que cambiarla.
   if (usuario) {
+    const volver = ubicacion.state?.desde && idSesionVencida === usuario.idUsuario
     const destino = usuario.debeCambiarContrasena
       ? RUTA_CAMBIO_CONTRASENA
-      : (ubicacion.state?.desde ?? rutaInicioDelRol(usuario.rol))
+      : volver
+        ? ubicacion.state.desde
+        : rutaInicioDelRol(usuario.rol)
     return <Navigate to={destino} replace />
   }
 
