@@ -13,6 +13,7 @@ import {
   LayoutDashboard,
   Lightbulb,
   LogOut,
+  Menu,
   MessagesSquare,
   PenLine,
   Scale,
@@ -20,9 +21,9 @@ import {
   Settings,
   UserCog,
   Users,
+  X,
 } from 'lucide-react'
-import { useEffect, useRef } from 'react'
-import { Link, NavLink, useLocation } from 'react-router-dom'
+import { Link, NavLink } from 'react-router-dom'
 import { useSesion } from '../../../../features/auth/sesionContext.js'
 import '../../../../features/formularios/components/FormularioInstrumento.css'
 import { obtenerPendientesCoevaluacion } from '../../../../features/formularios/services/formulariosService.js'
@@ -80,22 +81,16 @@ function ContadorCoevaluaciones() {
   )
 }
 
-export function Sidebar() {
+/**
+ * Menú principal. En escritorio es la barra lateral y `onCerrar` la oculta del todo; en el celular
+ * (`movil`) es un panel sobre la página que se cierra al elegir un destino (`onNavegar`).
+ */
+export function Sidebar({ id, movil = false, onCerrar, onNavegar }) {
   const { usuario, cerrarSesion } = useSesion()
   const enlaces = NAVEGACION[usuario.rol] ?? []
-  const { pathname } = useLocation()
-  const nav = useRef(null)
-
-  // En móvil el menú es una fila con desplazamiento: se lleva el enlace activo a la vista.
-  useEffect(() => {
-    const activo = nav.current?.querySelector('.active')
-    if (activo && nav.current.scrollWidth > nav.current.clientWidth) {
-      nav.current.scrollTo({ left: activo.offsetLeft - nav.current.offsetLeft - 12 })
-    }
-  }, [pathname])
 
   return (
-    <aside className="sidebar">
+    <aside id={id} className="sidebar" aria-label="Menú principal">
       <div className="sidebar__marca">
         <span className="sidebar__logo" aria-hidden="true">
           <GraduationCap size={20} strokeWidth={2.25} />
@@ -104,12 +99,24 @@ export function Sidebar() {
           <strong>DOCENTIA</strong>
           <span>Evaluación docente</span>
         </span>
+        <button
+          id="cerrar-menu"
+          type="button"
+          className="sidebar__cerrar"
+          onClick={onCerrar}
+          aria-controls={id}
+          aria-expanded="true"
+          aria-label="Cerrar menú"
+          title="Cerrar menú"
+        >
+          {movil ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
+        </button>
       </div>
 
-      <nav ref={nav} className="sidebar__nav" aria-label="Navegación principal">
+      <nav className="sidebar__nav" aria-label="Navegación principal">
         <span className="sidebar__seccion">{ETIQUETA_ROL[usuario.rol]}</span>
         {enlaces.map(({ ruta, etiqueta, Icono }) => (
-          <NavLink key={ruta} to={ruta} className="sidebar__enlace">
+          <NavLink key={ruta} to={ruta} className="sidebar__enlace" onClick={onNavegar}>
             <Icono size={18} strokeWidth={1.75} aria-hidden="true" className="sidebar__icono" />
             {etiqueta}
             {ruta === '/coevaluaciones' && <ContadorCoevaluaciones />}
@@ -125,7 +132,7 @@ export function Sidebar() {
           <span className="sidebar__usuario-nombre">{usuario.nombreCompleto}</span>
           <span className="sidebar__usuario-meta">{usuario.correo}</span>
         </span>
-        <Link to="/perfil" className="sidebar__icono-boton" title="Mi perfil y configuración">
+        <Link to="/perfil" className="sidebar__icono-boton" title="Mi perfil y configuración" onClick={onNavegar}>
           <Settings size={17} aria-hidden="true" />
           <span className="solo-lectores">Mi perfil y configuración</span>
         </Link>
