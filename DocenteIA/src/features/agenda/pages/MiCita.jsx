@@ -244,6 +244,8 @@ export default function MiCita() {
 
         <PanelProcesoPropio version={versionProceso} />
 
+        {/* Con la asistencia registrada la cita ya ocurrió: no hay horario que cambiar. */}
+        {cita.datos?.asistencia !== 'ASISTIO' && (
         <section id="calendario-disponibilidad" className="mi-cita panel" aria-label="Horarios disponibles">
           <div className="mi-cita__columna">
             <h2 className="mi-cita__titulo">Elige un día</h2>
@@ -310,6 +312,7 @@ export default function MiCita() {
             </ul>
           </div>
         </section>
+        )}
       </div>
 
       {elegida && (
