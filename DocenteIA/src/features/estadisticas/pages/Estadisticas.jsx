@@ -1,6 +1,7 @@
 import {
   CalendarCheck,
   ChartColumnBig,
+  Download,
   Eye,
   FileSignature,
   Filter,
@@ -30,12 +31,15 @@ import { obtenerConfiguracionEvaluacion } from '../../kpis/services/configuracio
 import { ChipProceso } from '../../proceso/components/ChipProceso.jsx'
 import { ESTADOS_PROCESO } from '../../proceso/estados.js'
 import { listarProcesos } from '../../proceso/services/procesoService.js'
+import { descargarXlsx } from '../../../shared/utils/xlsx.js'
 import { calcular, filtrar, unirDatos } from '../estadisticas.js'
+import { hojasDelReporte, nombreDelReporte } from '../reporteExcel.js'
 import './Estadisticas.css'
 
 const SIN_FILTROS = { facultad: '', programa: '', nivel: '', estado: '', busqueda: '' }
 const TONO_NIVEL = { MUY_ALTO: 'muy-alto', ALTO: 'alto', ACEPTABLE: 'aceptable', BAJO: 'bajo', MUY_BAJO: 'muy-bajo' }
-const MAXIMO_FILAS = 50
+// Docentes que se muestran de entrada y en cada «Mostrar más».
+const TANDA_FILAS = 10
 
 const porcentaje = (valor) => (valor === null || valor === undefined ? '—' : `${valor} %`)
 const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`
@@ -99,6 +103,7 @@ export default function Estadisticas() {
   const { usuario } = useSesion()
   const esVicerrector = usuario.rol === ROLES.VICERRECTOR
   const [filtros, setFiltros] = useState(SIN_FILTROS)
+  const [mostrar, setMostrar] = useState(TANDA_FILAS)
   const agruparPor = esVicerrector && !filtros.facultad ? 'nombreFacultad' : 'nombrePrograma'
 
   const cargarSeguimiento = useCallback(() => listarSeguimientoDocentes(null), [])
@@ -193,6 +198,20 @@ export default function Estadisticas() {
   const maxPendiente = Math.max(1, r.total)
   const nombreGrupo = agruparPor === 'nombreFacultad' ? 'facultad' : 'programa'
 
+  function descargar() {
+    const periodo = seguimiento.datos.periodo.nombre
+    const descripcionFiltros = [
+      filtros.facultad && `Facultad: ${nombreFacultad(filtros.facultad)}`,
+      filtros.programa && `Programa: ${filtros.programa}`,
+      filtros.nivel && `Desempeño: ${NIVELES.find((n) => n.codigo === filtros.nivel)?.etiqueta}`,
+      filtros.estado && `Proceso: ${ESTADOS_PROCESO[filtros.estado].etiqueta}`,
+      filtros.busqueda && `Búsqueda: “${filtros.busqueda}”`,
+    ]
+      .filter(Boolean)
+      .join(' · ')
+    descargarXlsx(nombreDelReporte(periodo), hojasDelReporte({ filas: visibles, r, periodo, descripcionFiltros, nombreGrupo }))
+  }
+
   return (
     <>
       {encabezado}
@@ -260,6 +279,16 @@ export default function Estadisticas() {
             <span aria-live="polite">
               <Filter size={14} aria-hidden="true" /> {plural(r.total, 'docente', 'docentes')} en la selección
             </span>
+            <Boton
+              variante="contorno"
+              icono={Download}
+              className="estadisticas__descargar"
+              disabled={r.total === 0}
+              onClick={descargar}
+              title="Libro con el resumen, los docentes y cada gráfica; las cifras se recalculan al filtrar en Excel"
+            >
+              Descargar Excel
+            </Boton>
             {hayFiltros && (
               <ul className="estadisticas__chips" aria-label="Filtros activos">
                 {filtros.facultad && <FiltroActivo texto={nombreFacultad(filtros.facultad)} onQuitar={() => fijar('facultad', '')} />}
@@ -452,7 +481,7 @@ export default function Estadisticas() {
 
             <Panel className="estadisticas__ancho" titulo="Docentes de la selección" descripcion="La lista cambia con los filtros." icono={Users}>
               <div className="tabla-contenedor">
-                <table className="tabla tabla--apilable estadisticas__tabla">
+                <table className="tabla tabla--apilable estadisticas__tabla estadisticas__docentes">
                   <thead>
                     <tr>
                       <th scope="col">Docente</th>
@@ -465,7 +494,7 @@ export default function Estadisticas() {
                     </tr>
                   </thead>
                   <tbody>
-                    {visibles.slice(0, MAXIMO_FILAS).map(({ docente, promedio, proceso }) => (
+                    {visibles.slice(0, mostrar).map(({ docente, promedio, proceso }) => (
                       <tr key={docente.idDocente}>
                         <td className="tabla__fuerte">{docente.nombreCompleto}</td>
                         <td data-etiqueta="Programa">{docente.nombrePrograma}</td>
@@ -474,9 +503,13 @@ export default function Estadisticas() {
                         </td>
                         <td data-etiqueta="Proceso">{proceso ? <ChipProceso estado={proceso.estado} /> : '—'}</td>
                         <td>
-                          <Link to={`/docentes/${docente.idDocente}`} className="boton boton--contorno estadisticas__ver">
+                          <Link
+                            to={`/docentes/${docente.idDocente}`}
+                            className="boton boton--contorno estadisticas__ver"
+                            title={`Ver información de ${docente.nombreCompleto}`}
+                          >
                             <Eye size={16} aria-hidden="true" />
-                            Ver información
+                            <span className="estadisticas__ver-texto">Ver información</span>
                             <span className="solo-lectores"> de {docente.nombreCompleto}</span>
                           </Link>
                         </td>
@@ -485,10 +518,21 @@ export default function Estadisticas() {
                   </tbody>
                 </table>
               </div>
-              {visibles.length > MAXIMO_FILAS && (
-                <p className="estadisticas__nota">
-                  Se muestran {MAXIMO_FILAS} de {visibles.length}. Afina los filtros o usa la lista de Docentes.
-                </p>
+              {visibles.length > TANDA_FILAS && (
+                <div className="estadisticas__mas">
+                  <span>
+                    Mostrando {Math.min(mostrar, visibles.length)} de {visibles.length}
+                  </span>
+                  {mostrar < visibles.length ? (
+                    <Boton variante="contorno" onClick={() => setMostrar((n) => n + TANDA_FILAS)}>
+                      Mostrar {Math.min(TANDA_FILAS, visibles.length - mostrar)} más
+                    </Boton>
+                  ) : (
+                    <Boton variante="enlace" onClick={() => setMostrar(TANDA_FILAS)}>
+                      Mostrar menos
+                    </Boton>
+                  )}
+                </div>
               )}
             </Panel>
           </div>

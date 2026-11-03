@@ -9,7 +9,7 @@ class NombrePropioTest {
   @Test
   void loQueLlegaTodoEnMayusculasOMinusculasQuedaConMayusculaInicial() {
     assertThat(NombrePropio.normalizar("ADMINISTRACION DE EMPRESAS PROFESIONAL"))
-        .isEqualTo("Administracion de Empresas Profesional");
+        .isEqualTo("Administración de Empresas Profesional");
     assertThat(NombrePropio.normalizar("FINANZAS Y NEGOCIOS INTERNACIONALES"))
         .isEqualTo("Finanzas y Negocios Internacionales");
     assertThat(NombrePropio.normalizar("DESARROLLO DE APLICACIONES MÓVILES"))
@@ -19,6 +19,7 @@ class NombrePropioTest {
     assertThat(NombrePropio.normalizar("ELECTIVA II (OPTATIVA)"))
         .isEqualTo("Electiva II (Optativa)");
     assertThat(NombrePropio.normalizar("DE LA CRUZ")).isEqualTo("De la Cruz");
+    assertThat(NombrePropio.normalizar("INGENIERIA ELECTRONICA")).isEqualTo("Ingeniería Electrónica");
   }
 
   @Test
@@ -28,6 +29,7 @@ class NombrePropioTest {
     assertThat(NombrePropio.normalizar("ELECTIVA I (Optativa)")).isEqualTo("ELECTIVA I (Optativa)");
     assertThat(NombrePropio.normalizar("Estudiante Demo 5")).isEqualTo("Estudiante Demo 5");
     assertThat(NombrePropio.normalizar("DEMO-101")).isEqualTo("Demo-101");
+    assertThat(NombrePropio.normalizar("Gestion Publica")).isEqualTo("Gestion Publica");
     assertThat(NombrePropio.normalizar(null)).isNull();
   }
 }

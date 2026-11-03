@@ -17,6 +17,8 @@ import './Usuarios.css'
 import { useAvisos } from '../../../shared/components/ui/Avisos/avisosContext.js'
 
 const TODOS = ''
+// Usuarios que se muestran de entrada y en cada «Mostrar más».
+const TANDA = 20
 
 /** Facultad y programa al que está vinculado el usuario según su rol. */
 function vinculo(usuario) {
@@ -34,6 +36,7 @@ export default function Usuarios() {
   const [rol, setRol] = useState(TODOS)
   const [viendo, setViendo] = useState(null)
   const [busqueda, setBusqueda] = useState('')
+  const [mostrar, setMostrar] = useState(TANDA)
   // Usuarios cuyo estado cambió aquí: se muestran con la respuesta del backend sin recargar la lista.
   const [actualizados, setActualizados] = useState({})
   const [cambiando, setCambiando] = useState(null)
@@ -106,13 +109,19 @@ export default function Usuarios() {
             <input
               type="search"
               value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
+              onChange={(e) => {
+                setBusqueda(e.target.value)
+                setMostrar(TANDA)
+              }}
               placeholder="Buscar por nombre, correo, programa o facultad"
             />
           </label>
           <label className="usuarios__filtro">
             <span className="usuarios__filtro-etiqueta">Rol</span>
-            <select className="campo__control usuarios__selector" value={rol} onChange={(e) => setRol(e.target.value)}>
+            <select className="campo__control usuarios__selector" value={rol} onChange={(e) => {
+                setRol(e.target.value)
+                setMostrar(TANDA)
+              }}>
               <option value={TODOS}>Todos los roles</option>
               {Object.values(ROLES).map((r) => (
                 <option key={r} value={r}>
@@ -157,7 +166,7 @@ export default function Usuarios() {
                 </tr>
               </thead>
               <tbody>
-                {filas.map((u) => {
+                {filas.slice(0, mostrar).map((u) => {
                   const { principal, secundario } = vinculo(u)
                   const esPropio = u.idUsuario === sesion.idUsuario
                   return (
@@ -223,6 +232,22 @@ export default function Usuarios() {
                 })}
               </tbody>
             </table>
+          </div>
+        )}
+        {!usuarios.cargando && !usuarios.error && filas.length > TANDA && (
+          <div className="usuarios__mas">
+            <span>
+              Mostrando {Math.min(mostrar, filas.length)} de {filas.length}
+            </span>
+            {mostrar < filas.length ? (
+              <Boton variante="contorno" onClick={() => setMostrar((n) => n + TANDA)}>
+                Mostrar {Math.min(TANDA, filas.length - mostrar)} más
+              </Boton>
+            ) : (
+              <Boton variante="enlace" onClick={() => setMostrar(TANDA)}>
+                Mostrar menos
+              </Boton>
+            )}
           </div>
         )}
       </div>

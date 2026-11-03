@@ -101,7 +101,8 @@
 /* Importación en tres pasos */
 .matricula__pasos {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  /* Tres pasos en una fila o uno debajo de otro: nunca dos y uno suelto. */
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
   margin: 0 0 12px;
   padding: 0;
@@ -399,5 +400,11 @@
 
   .matricula__cifras strong {
     font-size: 18px;
+  }
+}
+
+@media (max-width: 680px) {
+  .matricula__pasos {
+    grid-template-columns: minmax(0, 1fr);
   }
 }
