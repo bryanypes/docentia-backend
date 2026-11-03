@@ -161,7 +161,13 @@ export default function Inicio() {
           Seguimiento del periodo activo{seguimiento.datos?.periodo ? ` (${seguimiento.datos.periodo.nombre})` : ''}
         </h2>
         {viendoActivo ? (
-          <Seguimiento seguimiento={seguimiento} analisis={analisis} agrupacion={agrupacion} miFuente={miFuente} />
+          <Seguimiento
+            seguimiento={seguimiento}
+            configuracion={configuracion}
+            analisis={analisis}
+            agrupacion={agrupacion}
+            miFuente={miFuente}
+          />
         ) : (
           <Aviso tipo="info" titulo="El seguimiento se calcula solo para el periodo activo">
             El avance, los niveles y los docentes que requieren seguimiento corresponden a{' '}
@@ -267,13 +273,19 @@ function Indicadores({ kpis, esVicerrector, mostrarCompletos }) {
   )
 }
 
-function Seguimiento({ seguimiento, analisis, agrupacion, miFuente }) {
-
+function Seguimiento({ seguimiento, configuracion, analisis, agrupacion, miFuente }) {
   if (seguimiento.cargando) return <Cargando texto="Cargando el seguimiento" bloques={2} />
-  if (seguimiento.error) {
+  const error = seguimiento.error ?? configuracion.error
+  if (error) {
     return (
-      <EstadoVista tipo="error" titulo="No fue posible cargar el seguimiento" mensaje={seguimiento.error.message}>
-        <Boton icono={RefreshCw} onClick={seguimiento.recargar}>
+      <EstadoVista tipo="error" titulo="No fue posible cargar el seguimiento" mensaje={error.message}>
+        <Boton
+          icono={RefreshCw}
+          onClick={() => {
+            seguimiento.recargar()
+            configuracion.recargar()
+          }}
+        >
           Intentar de nuevo
         </Boton>
       </EstadoVista>
@@ -282,6 +294,8 @@ function Seguimiento({ seguimiento, analisis, agrupacion, miFuente }) {
   if (!seguimiento.datos?.periodo) {
     return <EstadoVista titulo="No hay un periodo académico activo" mensaje="Cuando la vicerrectoría active uno, verás aquí el avance." />
   }
+  // El seguimiento puede llegar antes que la configuración (el umbral); mientras tanto, cargando.
+  if (!analisis) return <Cargando texto="Cargando el seguimiento" bloques={2} />
   if (analisis.total === 0) {
     return <EstadoVista titulo="No hay docentes en este alcance" mensaje="Cuando se registren docentes activos aparecerán aquí." />
   }
