@@ -21,6 +21,8 @@
   docente.
 - Reserva de cita desde un calendario de días disponibles, con modal para confirmar o cambiar.
 - Modal para agregar compromisos, con sugerencias y plazos rápidos.
+- La coordinación cancela o cambia de horario una cita desde la agenda; el docente recibe el
+  aviso y vuelve a confirmar (V33).
 - Avisos como notificaciones flotantes y confirmaciones en modal en lugar de `window.confirm`.
 
 ### Cambiado

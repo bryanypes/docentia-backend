@@ -29,6 +29,8 @@ Se calculan en cada consulta a partir de los datos (`EstadoProcesoEvaluacion`); 
 | `GET /procesos-evaluacion/propio` | Docente | El suyo. En `EVALUACIONES_EN_CURSO` llega sin fuentes, cita ni hitos |
 | `POST /citas/mia/confirmacion` `{asiste}` | Docente | `CitaResponse`. `false` declina y libera la franja |
 | `POST /citas/{idCita}/asistencia` `{asistio}` | Coordinador | `CitaResponse`. `true` habilita el resultado; `false` libera la cita |
+| `POST /citas/{idCita}/cancelacion` | Coordinador | `CitaResponse` liberada (`CANCELADA_POR_COORDINACION`); la franja queda libre |
+| `POST /citas/{idCita}/reprogramacion` `{idFranja}` | Coordinador | `CitaResponse` de la nueva cita, sin confirmación; `idCitaLiberada` es la anterior (`REPROGRAMADA_POR_COORDINACION`) |
 | `PATCH /actas/{idActa}/tipo` `{tipo}` | Coordinador | `ActaResponse`. `COMPROMISO` o `RETROALIMENTACION` |
 
 `POST /actas` acepta `tipo` opcional. `ActaResponse` trae `tipo`; `CitaResponse` y la reserva de
@@ -78,6 +80,9 @@ de `GET /cobertura-heteroevaluacion`; nunca dice quién respondió y no llega al
 | Firmar el acta antes de registrar la asistencia | 409 |
 | Acta de retroalimentación con nota bajo el umbral | 409 |
 | Cambiar el tipo con el acta ya firmada por alguien | 409 |
+| Cancelar o mover una cita liberada o con asistencia registrada | 409 |
+| Mover a una franja cerrada, que ya empezó, de otro periodo, reservada o la misma | 409 |
+| Cancelar o mover una cita, o usar una franja, de otro coordinador | 404 |
 
 Hasta que la coordinación registre la asistencia, el docente recibe `GET /expedientes/propio` sin
 `promedio.valor`, sin categoría ni resultado por dimensión, `GET /actas` sin el borrador del periodo
@@ -92,6 +97,8 @@ y `GET /analisis-ia/resultados/propio` sin hallazgos.
 | `CITA_DECLINADA` | Coordinación de la facultad | El docente declinó; la franja quedó libre |
 | `RESULTADO_HABILITADO` | Docente | La coordinación registró que asistió |
 | `INASISTENCIA_CITA` | Docente | La coordinación registró que no asistió |
+| `CITA_CANCELADA` | Docente | La coordinación canceló la cita |
+| `CITA_CAMBIADA` | Docente | La coordinación movió la cita a otra franja |
 
 `ACTA_POR_FIRMAR` ya no se envía antes de habilitar el resultado.
 

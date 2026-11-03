@@ -4,8 +4,10 @@ import com.uniautonoma.docentia.dto.AsistenciaCitaRequest;
 import com.uniautonoma.docentia.dto.CitaResponse;
 import com.uniautonoma.docentia.dto.ConfirmacionCitaRequest;
 import com.uniautonoma.docentia.dto.ProcesoEvaluacionResponse;
+import com.uniautonoma.docentia.dto.ReprogramacionCitaRequest;
 import com.uniautonoma.docentia.security.UsuarioSesion;
 import com.uniautonoma.docentia.service.AsistenciaCitaService;
+import com.uniautonoma.docentia.service.GestionCitaService;
 import com.uniautonoma.docentia.service.ProcesoEvaluacionService;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -24,11 +26,15 @@ public class ProcesoEvaluacionController {
 
   private final ProcesoEvaluacionService procesoService;
   private final AsistenciaCitaService asistenciaService;
+  private final GestionCitaService gestionCitaService;
 
   public ProcesoEvaluacionController(
-      ProcesoEvaluacionService procesoService, AsistenciaCitaService asistenciaService) {
+      ProcesoEvaluacionService procesoService,
+      AsistenciaCitaService asistenciaService,
+      GestionCitaService gestionCitaService) {
     this.procesoService = procesoService;
     this.asistenciaService = asistenciaService;
+    this.gestionCitaService = gestionCitaService;
   }
 
   /** Proceso de los docentes del alcance en el periodo activo. */
@@ -72,5 +78,23 @@ public class ProcesoEvaluacionController {
       @Valid @RequestBody AsistenciaCitaRequest solicitud,
       @AuthenticationPrincipal UsuarioSesion sesion) {
     return asistenciaService.registrarAsistencia(idCita, solicitud.asistio(), sesion);
+  }
+
+  /** La coordinación cancela una cita de sus franjas; la franja queda libre. */
+  @PostMapping("/citas/{idCita}/cancelacion")
+  @PreAuthorize("hasRole('COORDINADOR')")
+  public CitaResponse cancelar(
+      @PathVariable Long idCita, @AuthenticationPrincipal UsuarioSesion sesion) {
+    return gestionCitaService.cancelar(idCita, sesion);
+  }
+
+  /** La coordinación mueve una cita a otra de sus franjas libres. */
+  @PostMapping("/citas/{idCita}/reprogramacion")
+  @PreAuthorize("hasRole('COORDINADOR')")
+  public CitaResponse reprogramar(
+      @PathVariable Long idCita,
+      @Valid @RequestBody ReprogramacionCitaRequest solicitud,
+      @AuthenticationPrincipal UsuarioSesion sesion) {
+    return gestionCitaService.reprogramar(idCita, solicitud.idFranja(), sesion);
   }
 }

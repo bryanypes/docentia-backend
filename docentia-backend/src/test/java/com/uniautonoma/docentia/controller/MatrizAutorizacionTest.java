@@ -80,6 +80,8 @@ class MatrizAutorizacionTest extends PruebaIntegracion {
       {"GET /citas/mia", "D"},
       {"POST /citas/mia/confirmacion", "D"},
       {"POST /citas/{}/asistencia", "C"},
+      {"POST /citas/{}/cancelacion", "C"},
+      {"POST /citas/{}/reprogramacion", "C"},
       {"GET /procesos-evaluacion", "CV"},
       {"GET /procesos-evaluacion/propio", "D"},
       {"GET /procesos-evaluacion/{}", "CV"},

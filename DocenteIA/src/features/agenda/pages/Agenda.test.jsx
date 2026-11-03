@@ -101,6 +101,25 @@ describe('Agenda', () => {
     expect(await screen.findByText('Asistencia registrada.')).toBeInTheDocument()
   })
 
+  it('la coordinación mueve una cita a otra franja libre o la cancela', async () => {
+    agendaService.reprogramarCita.mockResolvedValue({ idCita: 5, idFranja: 2 })
+    agendaService.cancelarCita.mockResolvedValue({ idCita: 3, estado: 'LIBERADA' })
+    renderizarConSesion(<Agenda />)
+
+    await userEvent.click(await screen.findByRole('button', { name: /Julián Camilo Hoyos, Confirmó/ }))
+    await userEvent.click(screen.getByRole('button', { name: 'Cambiar horario' }))
+    await userEvent.selectOptions(screen.getByLabelText('Nuevo horario'), '2')
+    await userEvent.click(screen.getByRole('button', { name: 'Mover la cita' }))
+    expect(agendaService.reprogramarCita).toHaveBeenCalledWith(3, 2)
+    expect(await screen.findByText('Cita movida. Se avisó al docente.')).toBeInTheDocument()
+
+    await userEvent.click(await screen.findByRole('button', { name: /Julián Camilo Hoyos, Confirmó/ }))
+    await userEvent.click(screen.getByRole('button', { name: 'Cancelar cita' }))
+    const confirmacion = await screen.findByRole('dialog', { name: '¿Cancelar la cita?' })
+    await userEvent.click(within(confirmacion).getByRole('button', { name: 'Cancelar cita' }))
+    expect(agendaService.cancelarCita).toHaveBeenCalledWith(3)
+  })
+
   it('eliminar una franja muestra el error del backend', async () => {
     agendaService.eliminarFranja.mockRejectedValue(new ApiError(409, 'La franja ya tuvo citas'))
     renderizarConSesion(<Agenda />)

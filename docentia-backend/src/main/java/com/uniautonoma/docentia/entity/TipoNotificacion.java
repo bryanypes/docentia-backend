@@ -54,6 +54,9 @@ public enum TipoNotificacion {
       "Asistencia confirmada", "Un docente de tu facultad confirmó su asistencia a la cita."),
   CITA_DECLINADA(
       "Cita declinada", "Un docente de tu facultad declinó su cita; la franja quedó libre."),
+  CITA_CANCELADA(
+      "Cita cancelada",
+      "La coordinación canceló tu cita de retroalimentación. Reserva una nueva franja en Mi cita."),
   INASISTENCIA_CITA(
       "Cita sin asistencia",
       "La coordinación registró que no asististe a tu cita. Reserva una nueva franja."),

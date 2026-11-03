@@ -1,4 +1,4 @@
-import { CalendarDays, ChevronLeft, ChevronRight, Eye, RefreshCw, Trash2, X } from 'lucide-react'
+import { CalendarDays, CalendarX, ChevronLeft, ChevronRight, Eye, RefreshCcw, RefreshCw, Trash2, X } from 'lucide-react'
 import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useVentanaEtapa } from '../../../shared/components/layout/AppLayout/periodoContext.js'
@@ -33,10 +33,12 @@ import {
 } from '../franjas.js'
 import {
   abrirFranjasEnLote,
+  cancelarCita,
   cerrarFranja,
   cerrarFranjasEnLote,
   eliminarFranja,
   listarFranjas,
+  reprogramarCita,
 } from '../services/agendaService.js'
 import './Agenda.css'
 import { AvisoFlotante } from '../../../shared/components/ui/Avisos/AvisoFlotante.jsx'
@@ -92,10 +94,23 @@ function ReporteLote({ reporte }) {
 }
 
 /** Detalle de una franja con sus acciones, en un modal accesible. */
-function DetalleFranja({ franja, hoy, enviando, onCerrar, onEliminar, onAsistencia, onSalir }) {
+function DetalleFranja({
+  franja,
+  hoy,
+  libres,
+  enviando,
+  onCerrar,
+  onEliminar,
+  onAsistencia,
+  onCancelarCita,
+  onReprogramar,
+  onSalir,
+}) {
   const { tono, texto } = aspectoFranja(franja)
   const reserva = franja.reserva
   const puedeAsistencia = reserva && !reserva.asistencia && franja.fecha <= hoy
+  const [moviendo, setMoviendo] = useState(false)
+  const [destino, setDestino] = useState('')
   return (
     <Modal
       titulo={`${formatearHora(franja.horaInicio)}–${formatearHora(franja.horaFin)}`}
@@ -122,6 +137,61 @@ function DetalleFranja({ franja, hoy, enviando, onCerrar, onEliminar, onAsistenc
             )}
             {!reserva.asistencia && franja.fecha > hoy && (
               <p className="campo__ayuda">La asistencia se registra el día de la cita.</p>
+            )}
+            {!reserva.asistencia && (
+              <div className="agenda__gestion">
+                {moviendo ? (
+                  <form
+                    className="agenda__mover"
+                    onSubmit={(evento) => {
+                      evento.preventDefault()
+                      if (destino) onReprogramar(Number(destino))
+                    }}
+                  >
+                    <label className="campo__etiqueta" htmlFor="destino-cita">
+                      Nuevo horario
+                    </label>
+                    {libres.length === 0 ? (
+                      <p className="campo__ayuda">
+                        No tienes franjas libres más adelante. Abre una en el calendario y vuelve aquí.
+                      </p>
+                    ) : (
+                      <select
+                        id="destino-cita"
+                        className="campo__control"
+                        value={destino}
+                        onChange={(e) => setDestino(e.target.value)}
+                        required
+                      >
+                        <option value="">Elige una franja libre</option>
+                        {libres.map((f) => (
+                          <option key={f.idFranja} value={f.idFranja}>
+                            {etiquetaDiaLarga(f.fecha)}, {formatearHora(f.horaInicio)}–{formatearHora(f.horaFin)}
+                          </option>
+                        ))}
+                      </select>
+                    )}
+                    <p className="campo__ayuda">El docente recibe el aviso y vuelve a confirmar su asistencia.</p>
+                    <div className="acciones-fila">
+                      <Boton variante="secundario" onClick={() => setMoviendo(false)}>
+                        Volver
+                      </Boton>
+                      <Boton type="submit" icono={RefreshCcw} disabled={enviando || !destino}>
+                        Mover la cita
+                      </Boton>
+                    </div>
+                  </form>
+                ) : (
+                  <div className="acciones-fila">
+                    <Boton variante="contorno" icono={RefreshCcw} disabled={enviando} onClick={() => setMoviendo(true)}>
+                      Cambiar horario
+                    </Boton>
+                    <Boton variante="peligro" icono={CalendarX} disabled={enviando} onClick={onCancelarCita}>
+                      Cancelar cita
+                    </Boton>
+                  </div>
+                )}
+              </div>
             )}
           </>
         ) : (
@@ -339,6 +409,26 @@ function CalendarioFranjas() {
     }
   }
 
+  async function cancelar(franja) {
+    const seguro = await confirmar({
+      tipo: 'peligro',
+      titulo: '¿Cancelar la cita?',
+      mensaje: `${franja.reserva.nombreDocente} · ${describirFranja(franja)}. La franja queda libre y el docente recibe un aviso para reservar otra.`,
+      textoConfirmar: 'Cancelar cita',
+      textoCancelar: 'Mantener',
+    })
+    if (!seguro) return
+    ejecutar(() => cancelarCita(franja.reserva.idCita), 'Cita cancelada. Se avisó al docente.').then(
+      (hecho) => hecho && setIdDetalle(null),
+    )
+  }
+
+  function reprogramar(franja, idFranja) {
+    ejecutar(() => reprogramarCita(franja.reserva.idCita, idFranja), 'Cita movida. Se avisó al docente.').then(
+      (hecho) => hecho && setIdDetalle(null),
+    )
+  }
+
   async function eliminar(franja) {
     const seguro = await confirmar({
       tipo: 'peligro',
@@ -350,6 +440,15 @@ function CalendarioFranjas() {
     ejecutar(() => eliminarFranja(franja.idFranja), 'Franja eliminada.').then((hecho) => hecho && setIdDetalle(null))
   }
 
+  // Franjas a las que se puede mover una cita: propias, abiertas, libres y que aún no empiezan.
+  const libresFuturas = lista
+    .filter(
+      (f) =>
+        f.estado === 'ABIERTA' &&
+        !f.reserva &&
+        (f.fecha > hoy || (f.fecha === hoy && aMinutos(f.horaInicio) > minutoActual)),
+    )
+    .sort((a, b) => `${a.fecha}${a.horaInicio}`.localeCompare(`${b.fecha}${b.horaInicio}`))
   const visibles = lista.filter((f) => dias.includes(f.fecha))
   const conteo = [
     { tono: 'libre', texto: 'libres', valor: visibles.filter((f) => f.estado === 'ABIERTA' && !f.reserva).length },
@@ -540,9 +639,13 @@ function CalendarioFranjas() {
 
       {detalle && (
         <DetalleFranja
+          key={detalle.idFranja}
           franja={detalle}
           hoy={hoy}
+          libres={libresFuturas}
           enviando={enviando}
+          onCancelarCita={() => cancelar(detalle)}
+          onReprogramar={(idFranja) => reprogramar(detalle, idFranja)}
           onSalir={() => setIdDetalle(null)}
           onCerrar={() => ejecutar(() => cerrarFranja(detalle.idFranja), 'Franja cerrada.')}
           onEliminar={() => eliminar(detalle)}
