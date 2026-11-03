@@ -94,3 +94,19 @@ y `GET /analisis-ia/resultados/propio` sin hallazgos.
 | `INASISTENCIA_CITA` | Docente | La coordinación registró que no asistió |
 
 `ACTA_POR_FIRMAR` ya no se envía antes de habilitar el resultado.
+
+## Firma dibujada (V30)
+
+`POST /actas/{id}/firmas` recibe `{confirmacion, trazo}`. `trazo` es el PNG de la firma hecha en la
+página, como `data:image/png;base64,...`, de hasta 300 KB y 2000 px por lado, y con trazo visible.
+Se guarda con su SHA-256 en `firmas_acta` y se imprime en el PDF bajo el nombre de quien firma.
+Sin trazo, o con un lienzo en blanco, responde 422 `Dibuja tu firma antes de firmar el acta`.
+`docentia.actas.exigir-firma-dibujada` (por defecto `true`) lo hace obligatorio. `ActaResponse.firmas[]`
+trae `conTrazo`.
+
+## Panorama del análisis
+
+`GET /analisis-ia/panorama?periodoId=&idFacultad=` (coordinación y vicerrectoría) devuelve, por
+docente del alcance, comentarios recibidos, estado del último análisis, si está publicado,
+fortalezas, oportunidades, descartados, por decidir, citas y citas verificadas, más los totales.
+Solo conteos: ningún texto de comentario o de hallazgo.

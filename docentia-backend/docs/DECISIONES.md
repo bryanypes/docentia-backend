@@ -194,6 +194,20 @@ Contrato: [api-proceso-evaluacion.md](api-proceso-evaluacion.md).
 - **Migración V29.** Agrega confirmación y asistencia a `citas` y `tipo` a `actas`. No se editó
   ninguna migración anterior.
 
+## Firma, inicio y estadísticas
+
+- **Firma dibujada.** Se firma en un modal con un lienzo (mouse, dedo o lápiz). Quien no puede
+  dibujar escribe su nombre y se dibuja con letra manuscrita: el resultado es el mismo PNG. El
+  backend valida que sea un PNG con trazo, guarda su hash y lo imprime en el PDF (V30).
+- **Inicio único.** `/inicio` es la ruta principal de todos los roles y muestra el panel de cada uno.
+  Solo cuando la sesión vence y entra la misma persona se vuelve a la pantalla anterior; tras un
+  Salir nadie hereda la ruta del rol anterior.
+- **Estadísticas.** Vista propia para coordinación y vicerrectoría. Se calculan en el navegador con
+  `/docentes/seguimiento` y `/procesos-evaluacion`: una sola selección filtrada alimenta todas las
+  gráficas. El Inicio conserva lo accionable y enlaza a ellas.
+- **Panorama del análisis.** Sin docente elegido, Análisis muestra el avance de la facultad con
+  conteos del backend, sin textos de comentarios ni de hallazgos.
+
 ## Estructura de repositorios
 
 - El backend se trabaja en `docentia-backend`, carpeta `docentia-backend/`.
