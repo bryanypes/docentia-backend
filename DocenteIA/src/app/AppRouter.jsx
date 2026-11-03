@@ -20,6 +20,7 @@ import Agenda from '../features/agenda/pages/Agenda.jsx'
 import MiCita from '../features/agenda/pages/MiCita.jsx'
 import Analisis from '../features/analisis/pages/Analisis.jsx'
 import Docentes from '../features/docentes/pages/Docentes.jsx'
+import Estadisticas from '../features/estadisticas/pages/Estadisticas.jsx'
 import ExpedienteDocente from '../features/expedientes/pages/ExpedienteDocente.jsx'
 import MiEvaluacion from '../features/expedientes/pages/MiEvaluacion.jsx'
 import Facultades from '../features/facultades/pages/Facultades.jsx'
@@ -80,6 +81,7 @@ function RutasDocentia() {
               <Route element={<ProtectedRoute rolesPermitidos={GESTION} />}>
                 <Route path="/importaciones" element={<Importaciones />} />
                 <Route path="/analisis" element={<Analisis />} />
+                <Route path="/estadisticas" element={<Estadisticas />} />
                 <Route path="/docentes" element={<Docentes />} />
                 <Route path="/docentes/:idDocente" element={<ExpedienteDocente />} />
                 <Route path="/acciones-sugeridas" element={<AccionesSugeridas />} />

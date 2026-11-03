@@ -1,4 +1,5 @@
-import { Award, ClipboardList, RefreshCw, UserCheck } from 'lucide-react'
+import { ArrowRight, Award, ChartColumnBig, ClipboardList, RefreshCw, UserCheck } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { useCallback, useMemo, useState } from 'react'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
 import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
@@ -14,12 +15,7 @@ import { listarSeguimientoDocentes } from '../../docentes/services/docentesServi
 import { listarFacultades } from '../../facultades/services/facultadesService.js'
 import { PanelEtapas } from '../../periodos/components/PanelEtapas.jsx'
 import { listarPeriodos } from '../../periodos/services/periodosService.js'
-import {
-  PanelAtencion,
-  PanelAvance,
-  PanelDistribucion,
-  PanelPorGrupo,
-} from '../components/PanelesSeguimiento.jsx'
+import { PanelAtencion, PanelAvance } from '../components/PanelesSeguimiento.jsx'
 import { AsistenteResumen } from '../components/AsistenteResumen.jsx'
 import { TarjetaKpi, TarjetaPromedio } from '../components/TarjetaKpi.jsx'
 import { LineaTiempo } from '../../periodos/components/LineaTiempo.jsx'
@@ -294,13 +290,21 @@ function Seguimiento({ seguimiento, analisis, agrupacion, miFuente }) {
     <>
       <div className="inicio__rejilla">
         <PanelAvance analisis={analisis} miFuente={miFuente} periodo={seguimiento.datos.periodo} />
-        <PanelDistribucion analisis={analisis} />
-      </div>
-      {/* Con un solo grupo, su promedio es el mismo promedio general: no se repite */}
-      <div className="inicio__rejilla">
         <PanelAtencion analisis={analisis} />
-        {analisis.porGrupo.length > 1 && <PanelPorGrupo analisis={analisis} agrupacion={agrupacion} />}
       </div>
+      <Link to="/estadisticas" className="inicio__estadisticas">
+        <span className="inicio__estadisticas-icono" aria-hidden="true">
+          <ChartColumnBig size={22} />
+        </span>
+        <span>
+          <strong>Ver todas las estadísticas</strong>
+          <span>
+            Niveles de desempeño, avance del proceso, promedios por {agrupacion}, respuesta de estudiantes y actas,
+            con filtros que actualizan todo a la vez.
+          </span>
+        </span>
+        <ArrowRight size={18} aria-hidden="true" />
+      </Link>
     </>
   )
 }

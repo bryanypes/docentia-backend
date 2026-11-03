@@ -4,6 +4,7 @@ import {
   CalendarDays,
   CalendarRange,
   ChartColumn,
+  ChartColumnBig,
   ClipboardCheck,
   ClipboardList,
   FileSignature,
@@ -41,6 +42,7 @@ const NAVEGACION = {
   ],
   [ROLES.COORDINADOR]: [
     { ruta: '/inicio', etiqueta: 'Inicio', Icono: LayoutDashboard },
+    { ruta: '/estadisticas', etiqueta: 'Estadísticas', Icono: ChartColumnBig },
     { ruta: '/docentes', etiqueta: 'Docentes', Icono: Users },
     { ruta: '/coevaluaciones', etiqueta: 'Coevaluaciones', Icono: ClipboardList },
     { ruta: '/importaciones', etiqueta: 'Evaluación de estudiantes', Icono: FileUp },
@@ -52,6 +54,7 @@ const NAVEGACION = {
   ],
   [ROLES.VICERRECTOR]: [
     { ruta: '/inicio', etiqueta: 'Inicio', Icono: LayoutDashboard },
+    { ruta: '/estadisticas', etiqueta: 'Estadísticas', Icono: ChartColumnBig },
     { ruta: '/docentes', etiqueta: 'Docentes', Icono: Users },
     { ruta: '/importaciones', etiqueta: 'Cargas de estudiantes', Icono: FileUp },
     { ruta: '/matricula', etiqueta: 'Matrícula y cobertura', Icono: GraduationCap },

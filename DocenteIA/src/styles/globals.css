@@ -351,3 +351,56 @@ textarea.campo__control {
 .docentes__desplazable {
   position: relative;
 }
+
+/* Tabla que en pantallas angostas se vuelve una lista de tarjetas: cada celda lleva su rótulo en
+   data-etiqueta, así no hay desplazamiento horizontal escondido. */
+@media (max-width: 720px) {
+  .tabla--apilable thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .tabla--apilable,
+  .tabla--apilable tbody,
+  .tabla--apilable tr,
+  .tabla--apilable th,
+  .tabla--apilable td {
+    display: block;
+    width: 100%;
+  }
+
+  .tabla--apilable tr {
+    margin-bottom: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--color-borde-suave);
+    border-radius: var(--radio-lg);
+    background: var(--color-superficie);
+  }
+
+  .tabla--apilable th,
+  .tabla--apilable td {
+    padding: 6px 0;
+    border: 0;
+    text-align: left;
+  }
+
+  .tabla--apilable td[data-etiqueta]::before {
+    content: attr(data-etiqueta);
+    display: block;
+    margin-bottom: 2px;
+    font-size: 11px;
+    font-weight: var(--peso-semi);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-texto-tenue);
+  }
+
+  .tabla-contenedor:has(.tabla--apilable) {
+    overflow: visible;
+    border: 0;
+    background: transparent;
+  }
+}
