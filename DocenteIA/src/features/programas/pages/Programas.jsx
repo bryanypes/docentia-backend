@@ -1,13 +1,15 @@
-import { BookOpen, Pencil, RefreshCw, Trash2 } from 'lucide-react'
+import { BookOpen, RefreshCw } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
 import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
+import { BotonAccion } from '../../../shared/components/ui/BotonAccion/BotonAccion.jsx'
 import { Campo } from '../../../shared/components/ui/Campo/Campo.jsx'
 import { ErrorApi } from '../../../shared/components/ui/ErrorApi/ErrorApi.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
+import { ModalAlcance } from '../../facultades/components/ModalAlcance.jsx'
 import { listarFacultades } from '../../facultades/services/facultadesService.js'
 import {
   actualizarPrograma,
@@ -20,6 +22,7 @@ const VACIO = { nombre: '', idFacultad: '' }
 
 export default function Programas() {
   const [filtro, setFiltro] = useState('')
+  const [viendo, setViendo] = useState(null)
   const cargar = useCallback(() => listarProgramas(filtro || null), [filtro])
   const programas = useFetch(cargar, [cargar])
   const facultades = useFetch(listarFacultades)
@@ -131,7 +134,7 @@ export default function Programas() {
         )}
         {lista.length > 0 && (
           <div className="tabla-contenedor">
-            <table className="tabla">
+            <table className="tabla tabla--apilable">
               <thead>
                 <tr>
                   <th scope="col">Programa</th>
@@ -143,25 +146,12 @@ export default function Programas() {
                 {lista.map((programa) => (
                   <tr key={programa.idPrograma}>
                     <td className="tabla__fuerte">{programa.nombre}</td>
-                    <td>{programa.nombreFacultad}</td>
+                    <td data-etiqueta="Facultad">{programa.nombreFacultad}</td>
                     <td>
                       <div className="acciones-fila">
-                        <Boton
-                          variante="enlace"
-                          icono={Pencil}
-                          aria-label={`Editar ${programa.nombre}`}
-                          onClick={() => editar(programa)}
-                        >
-                          Editar
-                        </Boton>
-                        <Boton
-                          variante="enlace"
-                          icono={Trash2}
-                          aria-label={`Eliminar ${programa.nombre}`}
-                          onClick={() => eliminar(programa)}
-                        >
-                          Eliminar
-                        </Boton>
+                        <BotonAccion tipo="ver" nombre={programa.nombre} onClick={() => setViendo(programa)} />
+                        <BotonAccion tipo="editar" nombre={programa.nombre} onClick={() => editar(programa)} />
+                        <BotonAccion tipo="eliminar" nombre={programa.nombre} onClick={() => eliminar(programa)} />
                       </div>
                     </td>
                   </tr>
@@ -170,6 +160,7 @@ export default function Programas() {
             </table>
           </div>
         )}
+        {viendo && <ModalAlcance programa={viendo} onCerrar={() => setViendo(null)} />}
       </div>
     </>
   )

@@ -1,9 +1,11 @@
-import { Pencil, Power, PowerOff, RefreshCw, Search, UserPlus } from 'lucide-react'
+import { Power, PowerOff, RefreshCw, Search, UserPlus, UserRound } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
-import { Link, Outlet, useNavigate } from 'react-router-dom'
+import { Outlet, useNavigate } from 'react-router-dom'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
 import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
+import { BotonAccion } from '../../../shared/components/ui/BotonAccion/BotonAccion.jsx'
+import { Modal } from '../../../shared/components/ui/Modal/Modal.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { MensajeNavegacion } from '../../../shared/components/ui/MensajeNavegacion/MensajeNavegacion.jsx'
 import { ETIQUETA_ROL, ROLES } from '../../../shared/constants/dominio.js'
@@ -28,6 +30,7 @@ export default function Usuarios() {
   const navegar = useNavigate()
   const { usuario: sesion } = useSesion()
   const [rol, setRol] = useState(TODOS)
+  const [viendo, setViendo] = useState(null)
   const [busqueda, setBusqueda] = useState('')
   // Usuarios cuyo estado cambió aquí: se muestran con la respuesta del backend sin recargar la lista.
   const [actualizados, setActualizados] = useState({})
@@ -135,7 +138,7 @@ export default function Usuarios() {
 
         {!usuarios.cargando && !usuarios.error && filas.length > 0 && (
           <div className="tabla-contenedor">
-            <table className="tabla usuarios__tabla">
+            <table className="tabla tabla--apilable usuarios__tabla">
               <caption className="solo-lectores">Usuarios</caption>
               <thead>
                 <tr>
@@ -168,14 +171,14 @@ export default function Usuarios() {
                           </span>
                         </div>
                       </td>
-                      <td>
+                      <td data-etiqueta="Rol">
                         <span className="pildora pildora--info">{ETIQUETA_ROL[u.rol]}</span>
                       </td>
-                      <td>
+                      <td data-etiqueta="Vínculo">
                         {principal ?? '—'}
                         {secundario && <span className="tabla__tenue">{secundario}</span>}
                       </td>
-                      <td>
+                      <td data-etiqueta="Estado">
                         <div className="usuarios__estado">
                           <span className={`pildora pildora--${u.esActivo ? 'exito' : 'neutro'}`}>
                             {u.esActivo ? 'Activo' : 'Inactivo'}
@@ -189,15 +192,13 @@ export default function Usuarios() {
                       </td>
                       <td>
                         <div className="usuarios__acciones">
-                          <Link
-                            to={`/usuarios/${u.idUsuario}`}
+                          <BotonAccion tipo="ver" nombre={u.nombreCompleto} onClick={() => setViendo(u)} />
+                          <BotonAccion
+                            tipo="editar"
+                            nombre={u.nombreCompleto}
+                            a={`/usuarios/${u.idUsuario}`}
                             state={{ conservarFoco: true }}
-                            className="usuarios__accion"
-                            aria-label={`Editar a ${u.nombreCompleto}`}
-                          >
-                            <Pencil size={15} aria-hidden="true" />
-                            Editar
-                          </Link>
+                          />
                           {!esPropio && (
                             <button
                               type="button"
@@ -221,8 +222,44 @@ export default function Usuarios() {
         )}
       </div>
 
+      {viendo && <ModalUsuario usuario={viendo} vinculo={vinculo(viendo)} onCerrar={() => setViendo(null)} />}
+
       {/* Modal de crear o editar (rutas hijas); al guardar recarga la lista */}
       <Outlet context={{ alGuardar: usuarios.recargar }} />
     </>
+  )
+}
+
+/** Ficha de solo lectura de un usuario: rol, vínculo, estado y, si es docente, su expediente. */
+function ModalUsuario({ usuario, vinculo, onCerrar }) {
+  return (
+    <Modal titulo={usuario.nombreCompleto} descripcion={usuario.correo} icono={UserRound} ancho="pequeno" onCerrar={onCerrar}>
+      <dl className="usuarios__ficha">
+        <div>
+          <dt>Rol</dt>
+          <dd>{ETIQUETA_ROL[usuario.rol]}</dd>
+        </div>
+        <div>
+          <dt>Vínculo</dt>
+          <dd>
+            {vinculo.principal ?? 'Sin vínculo'}
+            {vinculo.secundario && <span>{vinculo.secundario}</span>}
+          </dd>
+        </div>
+        <div>
+          <dt>Estado</dt>
+          <dd>
+            {usuario.esActivo ? 'Activo' : 'Inactivo'}
+            {usuario.esActivo && usuario.debeCambiarContrasena && <span>Debe cambiar la contraseña temporal</span>}
+          </dd>
+        </div>
+      </dl>
+      <div className="acciones-fila">
+        {usuario.rol === ROLES.DOCENTE && (
+          <BotonAccion tipo="ver" texto="Ver expediente" nombre={usuario.nombreCompleto} a={`/docentes/${usuario.idUsuario}`} />
+        )}
+        <BotonAccion tipo="editar" nombre={usuario.nombreCompleto} a={`/usuarios/${usuario.idUsuario}`} />
+      </div>
+    </Modal>
   )
 }

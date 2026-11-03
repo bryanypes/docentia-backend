@@ -1,7 +1,8 @@
-import { Download, FileSignature, Plus, RefreshCw, Trash2 } from 'lucide-react'
+import { Download, FileSignature, Plus, RefreshCw } from 'lucide-react'
 import { useCallback, useRef, useState } from 'react'
 import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
+import { BotonAccion } from '../../../shared/components/ui/BotonAccion/BotonAccion.jsx'
 import { Campo } from '../../../shared/components/ui/Campo/Campo.jsx'
 import { ErrorApi } from '../../../shared/components/ui/ErrorApi/ErrorApi.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
@@ -67,10 +68,10 @@ function Compromisos({ acta, editable, ejecutar, ocupado }) {
                 {c.descripcion} · Plazo {formatearFecha(c.fechaLimite)}
               </span>
               {editable && (
-                <Boton
-                  variante="contorno"
-                  icono={Trash2}
-                  aria-label={`Quitar ${c.descripcion}`}
+                <BotonAccion
+                  tipo="eliminar"
+                  texto="Quitar"
+                  nombre={c.descripcion}
                   onClick={() => ejecutar(() => quitarCompromiso(acta.idActa, c.idCompromiso))}
                 />
               )}
