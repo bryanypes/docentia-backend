@@ -158,9 +158,9 @@ export function PanelHistorico({ historico }) {
   )
 }
 
-export function PanelCompromisos({ titulo = 'Compromisos vigentes', compromisos }) {
+export function PanelCompromisos({ titulo = 'Compromisos vigentes', compromisos, className }) {
   return (
-    <Panel titulo={titulo}>
+    <Panel titulo={titulo} className={className}>
       {compromisos.length === 0 ? (
         <p className="expediente__vacio">No hay compromisos de mejora vigentes.</p>
       ) : (

@@ -149,11 +149,11 @@ function Compromisos({ acta, editable, ejecutar, ocupado }) {
   const titulo = acta.categoria?.codigo === 'BAJO' ? 'Plan de Mejoramiento Profesoral' : 'Compromisos'
 
   return (
-    <section className="compromisos">
-      <div className="compromisos__cabecera">
+    <section className="acta-compromisos">
+      <div className="acta-compromisos__cabecera">
         <h3 className="acta__subtitulo">
           {titulo}
-          <span className="compromisos__contador">{acta.compromisos.length}</span>
+          <span className="acta-compromisos__contador">{acta.compromisos.length}</span>
         </h3>
         {editable && (
           <Boton icono={Plus} disabled={ocupado} onClick={() => setAgregando(true)}>
@@ -162,7 +162,7 @@ function Compromisos({ acta, editable, ejecutar, ocupado }) {
         )}
       </div>
       {acta.compromisos.length === 0 ? (
-        <div className={`compromisos__vacio${faltan ? ' compromisos__vacio--requerido' : ''}`}>
+        <div className={`acta-compromisos__vacio${faltan ? ' acta-compromisos__vacio--requerido' : ''}`}>
           <ListPlus size={22} aria-hidden="true" />
           <div>
             <strong>{faltan ? 'Esta acta necesita al menos un compromiso' : 'Sin compromisos registrados'}</strong>
@@ -174,13 +174,13 @@ function Compromisos({ acta, editable, ejecutar, ocupado }) {
           </div>
         </div>
       ) : (
-        <ol className="compromisos__lista">
+        <ol className="acta-compromisos__lista">
           {acta.compromisos.map((c, indice) => (
-            <li key={c.idCompromiso} className="compromisos__item">
-              <span className="compromisos__numero" aria-hidden="true">
+            <li key={c.idCompromiso} className="acta-compromisos__item">
+              <span className="acta-compromisos__numero" aria-hidden="true">
                 {indice + 1}
               </span>
-              <div className="compromisos__texto">
+              <div className="acta-compromisos__texto">
                 <strong>{c.descripcion}</strong>
                 <span>
                   <CalendarClock size={14} aria-hidden="true" /> Plazo {formatearFecha(c.fechaLimite)}

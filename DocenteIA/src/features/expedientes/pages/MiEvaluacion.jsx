@@ -78,7 +78,7 @@ export default function MiEvaluacion() {
           <>
           <LineaTiempo />
           <PanelProcesoPropio />
-          <div className="rejilla">
+          <div className="rejilla mi-evaluacion__rejilla">
             <section className="mi-evaluacion__resumen">
               <div className="mi-evaluacion__cabecera">
                 <span className="mi-evaluacion__ilustracion">
@@ -122,7 +122,11 @@ export default function MiEvaluacion() {
             </section>
 
             <PanelMiAutoevaluacion />
-            <PanelCompromisos titulo="Mis compromisos" compromisos={compromisosVigentes} />
+            <PanelCompromisos
+              titulo="Mis compromisos"
+              compromisos={compromisosVigentes}
+              className="mi-evaluacion__compromisos"
+            />
             <PanelHallazgosPropios />
           </div>
           <PanelSeguimientoPlan />

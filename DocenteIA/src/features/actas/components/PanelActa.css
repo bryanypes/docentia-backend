@@ -102,12 +102,12 @@
 }
 
 /* Compromisos: tarjetas numeradas y un botón claro para agregar. */
-.compromisos {
+.acta-compromisos {
   display: grid;
   gap: 10px;
 }
 
-.compromisos__cabecera {
+.acta-compromisos__cabecera {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -115,7 +115,7 @@
   gap: 10px;
 }
 
-.compromisos__cabecera .acta__subtitulo {
+.acta-compromisos__cabecera .acta__subtitulo {
   display: inline-flex;
   align-items: center;
   gap: 8px;
@@ -123,7 +123,7 @@
   font-size: 15px;
 }
 
-.compromisos__contador {
+.acta-compromisos__contador {
   min-width: 22px;
   padding: 1px 8px;
   border-radius: var(--radio-pildora);
@@ -133,7 +133,7 @@
   text-align: center;
 }
 
-.compromisos__vacio {
+.acta-compromisos__vacio {
   display: flex;
   align-items: center;
   gap: 12px;
@@ -144,26 +144,26 @@
   color: var(--color-texto-tenue);
 }
 
-.compromisos__vacio div {
+.acta-compromisos__vacio div {
   display: grid;
   gap: 2px;
 }
 
-.compromisos__vacio strong {
+.acta-compromisos__vacio strong {
   color: var(--color-texto);
 }
 
-.compromisos__vacio span {
+.acta-compromisos__vacio span {
   font-size: 13px;
 }
 
-.compromisos__vacio--requerido {
+.acta-compromisos__vacio--requerido {
   border-color: var(--color-rosa);
   background: var(--color-rosa-fondo);
   color: var(--color-rosa);
 }
 
-.compromisos__lista {
+.acta-compromisos__lista {
   display: grid;
   gap: 8px;
   margin: 0;
@@ -171,7 +171,7 @@
   list-style: none;
 }
 
-.compromisos__item {
+.acta-compromisos__item {
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
   align-items: center;
@@ -184,7 +184,7 @@
   animation: compromiso-entrar 0.3s ease both;
 }
 
-.compromisos__numero {
+.acta-compromisos__numero {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -197,19 +197,19 @@
   font-weight: var(--peso-fuerte);
 }
 
-.compromisos__texto {
+.acta-compromisos__texto {
   display: grid;
   gap: 4px;
   min-width: 0;
 }
 
-.compromisos__texto strong {
+.acta-compromisos__texto strong {
   font-size: 14px;
   font-weight: var(--peso-semi);
   overflow-wrap: anywhere;
 }
 
-.compromisos__texto span {
+.acta-compromisos__texto span {
   display: inline-flex;
   align-items: center;
   gap: 4px;
@@ -276,11 +276,11 @@
 }
 
 @media (max-width: 520px) {
-  .compromisos__item {
+  .acta-compromisos__item {
     grid-template-columns: auto minmax(0, 1fr);
   }
 
-  .compromisos__item .boton-accion {
+  .acta-compromisos__item .boton-accion {
     grid-column: 1 / -1;
     justify-self: end;
   }
