@@ -138,6 +138,7 @@ class MatrizAutorizacionTest extends PruebaIntegracion {
       {"POST /sesiones", "P"},
       {"POST /sesiones/google", "P"},
       {"GET /sesiones/actual", "DCVE"},
+      {"GET /sesiones/actual/perfil", "DCVE"},
       {"PUT /sesiones/actual/contrasena", "DCVE"},
       {"GET /usuarios", "V"},
       {"GET /usuarios/{}", "V"},

@@ -122,6 +122,36 @@ class SesionControllerTest extends PruebaIntegracion {
   }
 
   @Test
+  void elPerfilPropioTraeLaFacultadYElProgramaPorNombre() throws Exception {
+    Programa software = programaRepository.save(new Programa("Ingeniería de Software", ingenieria));
+    usuarioRepository.save(
+        Usuario.crearDocente(
+            "Luis Paz",
+            "luis.paz@uniautonoma.edu.co",
+            passwordEncoder.encode(CONTRASENA),
+            software));
+
+    mockMvc
+        .perform(
+            get("/sesiones/actual/perfil")
+                .header(
+                    HttpHeaders.AUTHORIZATION,
+                    "Bearer " + obtenerToken("luis.paz@uniautonoma.edu.co")))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.nombreCompleto").value("Luis Paz"))
+        .andExpect(jsonPath("$.rol").value("DOCENTE"))
+        .andExpect(jsonPath("$.nombrePrograma").value("Ingeniería de Software"))
+        .andExpect(jsonPath("$.nombreFacultad").value("Ingeniería"))
+        .andExpect(jsonPath("$.contrasenaHash").doesNotExist());
+    mockMvc
+        .perform(
+            get("/sesiones/actual/perfil")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + obtenerToken(CORREO_COORDINADOR)))
+        .andExpect(jsonPath("$.nombreFacultad").value("Ingeniería"))
+        .andExpect(jsonPath("$.nombrePrograma").doesNotExist());
+  }
+
+  @Test
   void elCoordinadorNoPuedeCrearFacultades() throws Exception {
     String token = obtenerToken(CORREO_COORDINADOR);
 

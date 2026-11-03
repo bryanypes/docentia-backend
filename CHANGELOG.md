@@ -23,6 +23,11 @@
 - Modal para agregar compromisos, con sugerencias y plazos rápidos.
 - La coordinación cancela o cambia de horario una cita desde la agenda; el docente recibe el
   aviso y vuelve a confirmar (V33).
+- Mi perfil (`GET /sesiones/actual/perfil`): datos propios con facultad y programa por nombre; el
+  cambio de contraseña voluntario es un modal con DocenteIA. El menú muestra el ícono de
+  configuración en lugar de la llave.
+- DocenteIA acompaña el análisis de comentarios: guía de tres pasos, resumen de lo encontrado y
+  mensajes para cada estado de la solicitud.
 - Avisos como notificaciones flotantes y confirmaciones en modal en lugar de `window.confirm`.
 
 ### Cambiado
