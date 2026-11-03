@@ -49,6 +49,9 @@ textarea {
 
 .solo-lectores {
   position: absolute;
+  /* Sin left quedaría en su posición estática: dentro de una fila con desplazamiento (el menú en el
+     celular) ensancharía la página. */
+  left: 0;
   width: 1px;
   height: 1px;
   overflow: hidden;
@@ -398,9 +401,22 @@ textarea.campo__control {
     color: var(--color-texto-tenue);
   }
 
+  .tabla--apilable {
+    min-width: 0 !important;
+  }
+
   .tabla-contenedor:has(.tabla--apilable) {
     overflow: visible;
     border: 0;
     background: transparent;
+  }
+}
+
+/* Filtros de Docentes a todo el ancho en el celular. */
+@media (max-width: 720px) {
+  .docentes__selector,
+  .docentes__selector select {
+    flex: 1 1 100%;
+    width: 100%;
   }
 }

@@ -232,7 +232,7 @@ export default function Docentes() {
           <div className="docentes__tabla-contenedor">
             {filas.length > 0 ? (
               <div className="docentes__desplazable">
-                <table className="docentes__tabla">
+                <table className="docentes__tabla tabla--apilable">
                   <caption className="solo-lectores">Docentes</caption>
                   <thead>
                     <tr>
@@ -270,21 +270,21 @@ export default function Docentes() {
                               </span>
                             </div>
                           </td>
-                          <td>
+                          <td data-etiqueta="Programa">
                             {d.nombrePrograma}
                             {esVicerrector && <span className="docentes__correo">{d.nombreFacultad}</span>}
                           </td>
-                          <td>
+                          <td data-etiqueta="Evaluación">
                             <EstadoEvaluacion promedio={promedio} faltaMia={faltaMia} />
                           </td>
-                          <td>
+                          <td data-etiqueta="Proceso">
                             {procesoPorDocente.get(d.idDocente) ? (
                               <ChipProceso estado={procesoPorDocente.get(d.idDocente).estado} />
                             ) : (
                               '—'
                             )}
                           </td>
-                          <td className="tabla__numero docentes__promedio">
+                          <td className="tabla__numero docentes__promedio" data-etiqueta="Promedio">
                             {promedio?.estado === 'COMPLETO' ? formatearNota(promedio.valor) : '—'}
                           </td>
                           <td className="docentes__accion" onClick={(e) => e.stopPropagation()}>
