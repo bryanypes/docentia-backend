@@ -1,4 +1,4 @@
-import { RefreshCw, Search } from 'lucide-react'
+import { RefreshCw, Search, SlidersHorizontal, X } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import robotSenala from '../../../assets/ilustraciones/robot-senala.svg'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
@@ -133,7 +133,27 @@ export default function Docentes() {
           </div>
         )}
 
-        <div className="docentes__filtros">
+        <section className="docentes__panel" aria-labelledby="docentes-titulo">
+          <div className="docentes__panel-cabecera">
+            <div>
+              <h2 id="docentes-titulo" className="docentes__panel-titulo">
+                Listado de docentes
+              </h2>
+              <span className="docentes__alcance">
+                Alcance: {alcance}
+                {periodo ? ` · Periodo ${periodo.nombre}` : ' · Sin periodo activo'}
+              </span>
+            </div>
+            <span className="docentes__conteo" aria-live="polite">
+              <strong>{filas.length}</strong> de {lista.length} docentes
+            </span>
+          </div>
+
+        <div className="docentes__filtros" role="search" aria-label="Filtrar docentes">
+          <span className="docentes__filtros-rotulo">
+            <SlidersHorizontal size={16} aria-hidden="true" />
+            Filtrar
+          </span>
           <label className="docentes__buscador">
             <Search size={16} aria-hidden="true" />
             <span className="solo-lectores">Buscar docente</span>
@@ -203,15 +223,12 @@ export default function Docentes() {
             </select>
           </label>
 
-          <span className="docentes__conteo" aria-live="polite">
-            {filas.length} de {lista.length}
-          </span>
+          {hayFiltros && (
+            <Boton variante="enlace" icono={X} className="docentes__limpiar" onClick={limpiarFiltros}>
+              Limpiar filtros
+            </Boton>
+          )}
         </div>
-
-        <span className="docentes__alcance">
-          Alcance: {alcance}
-          {periodo ? ` · Periodo ${periodo.nombre}` : ' · Sin periodo activo'}
-        </span>
 
         {seguimiento.cargando && <Cargando texto="Cargando docentes" bloques={1} />}
 
@@ -316,6 +333,7 @@ export default function Docentes() {
             )}
           </div>
         )}
+        </section>
       </div>
     </>
   )
