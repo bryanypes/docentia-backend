@@ -213,8 +213,6 @@
     order: 3;
     padding: 0 12px 10px;
     overflow-x: auto;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(254, 251, 244, 0.35) transparent;
   }
 
   .sidebar__enlace {
@@ -242,5 +240,49 @@
 
   .sidebar__salir {
     flex: 0 0 auto;
+  }
+}
+
+/* Barra de desplazamiento del menú: delgada, con el pulgar amarillo de la marca sobre un riel azul
+   apenas visible. Chrome y Edge usan los pseudoelementos; Firefox, scrollbar-color (en Chrome, si
+   se declara scrollbar-color, se ignoran los pseudoelementos, por eso va solo donde no existen). */
+.sidebar__nav::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+.sidebar__nav::-webkit-scrollbar-track {
+  margin: 8px 0;
+  border-radius: 999px;
+  background: rgba(254, 251, 244, 0.08);
+}
+
+.sidebar__nav::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: var(--color-amarillo) padding-box;
+}
+
+.sidebar__nav::-webkit-scrollbar-thumb:hover,
+.sidebar__nav::-webkit-scrollbar-thumb:active {
+  border-width: 1px;
+  background-color: var(--color-amarillo-oscuro);
+}
+
+.sidebar__nav::-webkit-scrollbar-button,
+.sidebar__nav::-webkit-scrollbar-corner {
+  display: none;
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  .sidebar__nav {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-amarillo) rgba(254, 251, 244, 0.08);
+  }
+}
+
+@media (max-width: 900px) {
+  .sidebar__nav::-webkit-scrollbar-track {
+    margin: 0 12px;
   }
 }
