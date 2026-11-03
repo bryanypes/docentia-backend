@@ -3,6 +3,7 @@ package com.uniautonoma.docentia.controller;
 import com.uniautonoma.docentia.dto.CambioContrasenaRequest;
 import com.uniautonoma.docentia.dto.InicioSesionGoogleRequest;
 import com.uniautonoma.docentia.dto.InicioSesionRequest;
+import com.uniautonoma.docentia.dto.PerfilResponse;
 import com.uniautonoma.docentia.dto.SesionResponse;
 import com.uniautonoma.docentia.entity.AccionAuditoria;
 import com.uniautonoma.docentia.exception.CredencialesInvalidasException;
@@ -11,6 +12,7 @@ import com.uniautonoma.docentia.security.LimitadorIntentos;
 import com.uniautonoma.docentia.security.UsuarioSesion;
 import com.uniautonoma.docentia.service.AuditoriaService;
 import com.uniautonoma.docentia.service.AutenticacionService;
+import com.uniautonoma.docentia.service.PerfilService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -31,12 +33,15 @@ public class SesionController {
   private final AutenticacionService autenticacionService;
   private final LimitadorIntentos limitador;
   private final AuditoriaService auditoria;
+  private final PerfilService perfilService;
 
   public SesionController(
       AutenticacionService autenticacionService,
       LimitadorIntentos limitador,
-      AuditoriaService auditoria) {
+      AuditoriaService auditoria,
+      PerfilService perfilService) {
     this.auditoria = auditoria;
+    this.perfilService = perfilService;
     this.autenticacionService = autenticacionService;
     this.limitador = limitador;
   }
@@ -102,6 +107,17 @@ public class SesionController {
   @GetMapping("/actual")
   public UsuarioSesion obtenerSesionActual(@AuthenticationPrincipal UsuarioSesion sesion) {
     return sesion;
+  }
+
+  /**
+   * Perfil del usuario autenticado, con su facultad y programa por nombre.
+   *
+   * @param sesion sesión leída del token
+   * @return datos propios de solo lectura
+   */
+  @GetMapping("/actual/perfil")
+  public PerfilResponse obtenerPerfil(@AuthenticationPrincipal UsuarioSesion sesion) {
+    return perfilService.obtener(sesion);
   }
 
   /**

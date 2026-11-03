@@ -7,6 +7,7 @@ import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { normalizarTexto } from '../../../shared/utils/formatters.js'
 import { obtenerPanorama } from '../services/analisisService.js'
+import { MensajeIA } from './DocenteIA.jsx'
 import './PanoramaAnalisis.css'
 
 /** Etapa del análisis de cada docente, con su tono. */
@@ -77,6 +78,13 @@ export function PanoramaAnalisis({ periodoId, onElegirDocente }) {
 
   return (
     <div className="panorama">
+      <MensajeIA robot={hallazgos ? 'aprobada' : 'pensando'} tono="turquesa" tamano="compacto">
+        <p>
+          {hallazgos
+            ? `En este periodo leí ${t.comentarios} comentarios y propuse ${hallazgos} hallazgos: ${t.fortalezas} fortalezas y ${t.oportunidades} oportunidades de mejora. El ${pct(t.citasVerificadas, t.citas)} % de mis citas aparece tal cual en los comentarios.`
+            : `Hay ${t.comentarios} comentarios recibidos. Cuando la coordinación solicite un análisis, aquí verás lo que encontré.`}
+        </p>
+      </MensajeIA>
       <div className="panorama__cifras">
         <div className="panorama__cifra">
           <MessagesSquare size={18} aria-hidden="true" />

@@ -1,6 +1,7 @@
 import { GoogleOAuthProvider } from '@react-oauth/google'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import CambiarContrasena from '../features/auth/pages/CambiarContrasena.jsx'
+import MiPerfil from '../features/perfil/pages/MiPerfil.jsx'
 import Login from '../features/auth/pages/Login.jsx'
 import { SesionProvider } from '../features/auth/SesionProvider.jsx'
 import { useSesion } from '../features/auth/sesionContext.js'
@@ -65,6 +66,7 @@ function RutasDocentia() {
             <Route element={<AppLayout />}>
               <Route path="/inicio" element={<InicioPorRol />} />
               <Route path="/notificaciones" element={<Notificaciones />} />
+              <Route path="/perfil" element={<MiPerfil />} />
               <Route element={<ProtectedRoute rolesPermitidos={[ROLES.ESTUDIANTE]} />}>
                 <Route path="/evaluacion-profesores" element={<EvaluacionProfesores />} />
                 <Route

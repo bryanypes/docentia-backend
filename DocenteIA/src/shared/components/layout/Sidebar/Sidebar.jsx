@@ -10,7 +10,6 @@ import {
   FileSignature,
   FileUp,
   GraduationCap,
-  KeyRound,
   LayoutDashboard,
   Lightbulb,
   LogOut,
@@ -18,12 +17,12 @@ import {
   PenLine,
   Scale,
   ScrollText,
+  Settings,
   UserCog,
   Users,
 } from 'lucide-react'
 import { useEffect, useRef } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
-import { RUTA_CAMBIO_CONTRASENA } from '../../../../app/rutasPorRol.js'
 import { useSesion } from '../../../../features/auth/sesionContext.js'
 import '../../../../features/formularios/components/FormularioInstrumento.css'
 import { obtenerPendientesCoevaluacion } from '../../../../features/formularios/services/formulariosService.js'
@@ -126,9 +125,9 @@ export function Sidebar() {
           <span className="sidebar__usuario-nombre">{usuario.nombreCompleto}</span>
           <span className="sidebar__usuario-meta">{usuario.correo}</span>
         </span>
-        <Link to={RUTA_CAMBIO_CONTRASENA} className="sidebar__icono-boton" title="Cambiar contraseña">
-          <KeyRound size={17} aria-hidden="true" />
-          <span className="solo-lectores">Cambiar contraseña</span>
+        <Link to="/perfil" className="sidebar__icono-boton" title="Mi perfil y configuración">
+          <Settings size={17} aria-hidden="true" />
+          <span className="solo-lectores">Mi perfil y configuración</span>
         </Link>
         <button type="button" className="sidebar__salir" onClick={() => cerrarSesion()}>
           <LogOut size={16} strokeWidth={2} aria-hidden="true" />
