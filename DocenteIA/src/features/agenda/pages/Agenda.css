@@ -75,7 +75,6 @@
 .agenda__semana {
   margin-right: 6px;
   font-size: 15px;
-  text-transform: capitalize;
 }
 
 .agenda__contador {
@@ -106,6 +105,11 @@
 }
 
 .agenda__barra {
+  /* Sigue a la vista mientras se arrastra en horas de la tarde. */
+  position: sticky;
+  top: 12px;
+  z-index: 3;
+  box-shadow: var(--sombra-tarjeta);
   display: flex;
   flex-wrap: wrap;
   align-items: center;
@@ -152,11 +156,10 @@
 }
 
 .agenda__hora {
-  padding: 0 8px;
+  padding: 3px 8px 0;
   font-size: 11.5px;
   color: var(--color-texto-tenue);
   text-align: right;
-  transform: translateY(-7px);
 }
 
 .agenda__celda {

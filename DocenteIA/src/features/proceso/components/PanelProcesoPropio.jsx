@@ -1,4 +1,5 @@
 import { Hourglass, Route } from 'lucide-react'
+import { useCallback } from 'react'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { ESTADOS_PROCESO } from '../estados.js'
@@ -12,7 +13,10 @@ import './Proceso.css'
  * evaluación está en curso; después ve cada paso hasta el acta firmada.
  */
 export function PanelProcesoPropio({ version = 0 }) {
-  const proceso = useFetch(obtenerProcesoPropio, [version])
+  // Una función nueva por versión: useFetch solo vuelve a pedir cuando cambia la que recibe.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const cargar = useCallback(() => obtenerProcesoPropio(), [version])
+  const proceso = useFetch(cargar, [cargar])
   const datos = proceso.datos
   if (!datos) return null
 

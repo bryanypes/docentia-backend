@@ -79,4 +79,14 @@ describe('PanelProceso', () => {
     expect(await screen.findByText(/Tu evaluación está en curso/)).toBeInTheDocument()
     expect(screen.queryByText('Trazabilidad')).not.toBeInTheDocument()
   })
+
+  it('el panel del docente vuelve a pedir el proceso cuando cambia la versión', async () => {
+    procesoService.obtenerProcesoPropio.mockResolvedValue({ ...PROCESO, estado: 'EVALUACION_COMPLETA', paso: 3 })
+    const { rerender } = renderizarConSesion(<PanelProcesoPropio version={0} />, { rol: 'DOCENTE' })
+    expect(await screen.findByText('Evaluación completa')).toBeInTheDocument()
+
+    procesoService.obtenerProcesoPropio.mockResolvedValue(PROCESO)
+    rerender(<PanelProcesoPropio version={1} />)
+    expect(await screen.findByText('Asistencia confirmada')).toBeInTheDocument()
+  })
 })
