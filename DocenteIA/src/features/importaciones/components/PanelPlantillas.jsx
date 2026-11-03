@@ -1,7 +1,6 @@
-import { Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
-import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
+import { BotonAccion } from '../../../shared/components/ui/BotonAccion/BotonAccion.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
 import { formatearFechaHora } from '../../../shared/utils/formatters.js'
 import { NOMBRE_CAMPO } from '../mapeo.js'
@@ -60,15 +59,13 @@ export function PanelPlantillas({ plantillas }) {
                   </ul>
                 </details>
               </div>
-              <Boton
-                variante="secundario"
-                icono={Trash2}
+              <BotonAccion
+                tipo="eliminar"
+                nombre={`la plantilla ${p.nombre}`}
+                texto={eliminando === p.idPlantilla ? 'Eliminando…' : 'Eliminar'}
                 onClick={() => eliminar(p)}
                 disabled={eliminando === p.idPlantilla}
-                aria-label={`Eliminar la plantilla ${p.nombre}`}
-              >
-                {eliminando === p.idPlantilla ? 'Eliminando…' : 'Eliminar'}
-              </Boton>
+              />
             </li>
           ))}
         </ul>

@@ -1,13 +1,15 @@
-import { Building2, Pencil, RefreshCw, Trash2 } from 'lucide-react'
+import { Building2, RefreshCw } from 'lucide-react'
 import { useState } from 'react'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
 import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
+import { BotonAccion } from '../../../shared/components/ui/BotonAccion/BotonAccion.jsx'
 import { Campo } from '../../../shared/components/ui/Campo/Campo.jsx'
 import { ErrorApi } from '../../../shared/components/ui/ErrorApi/ErrorApi.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
+import { ModalAlcance } from '../components/ModalAlcance.jsx'
 import {
   actualizarFacultad,
   crearFacultad,
@@ -18,6 +20,7 @@ import {
 export default function Facultades() {
   const facultades = useFetch(listarFacultades)
   const [enEdicion, setEnEdicion] = useState(null)
+  const [viendo, setViendo] = useState(null)
   const [nombre, setNombre] = useState('')
   const [error, setError] = useState(null)
   const [resultado, setResultado] = useState(null)
@@ -96,7 +99,7 @@ export default function Facultades() {
         )}
         {lista.length > 0 && (
           <div className="tabla-contenedor">
-            <table className="tabla">
+            <table className="tabla tabla--apilable">
               <thead>
                 <tr>
                   <th scope="col">Facultad</th>
@@ -109,22 +112,9 @@ export default function Facultades() {
                     <td className="tabla__fuerte">{facultad.nombre}</td>
                     <td>
                       <div className="acciones-fila">
-                        <Boton
-                          variante="enlace"
-                          icono={Pencil}
-                          aria-label={`Editar ${facultad.nombre}`}
-                          onClick={() => editar(facultad)}
-                        >
-                          Editar
-                        </Boton>
-                        <Boton
-                          variante="enlace"
-                          icono={Trash2}
-                          aria-label={`Eliminar ${facultad.nombre}`}
-                          onClick={() => eliminar(facultad)}
-                        >
-                          Eliminar
-                        </Boton>
+                        <BotonAccion tipo="ver" nombre={facultad.nombre} onClick={() => setViendo(facultad)} />
+                        <BotonAccion tipo="editar" nombre={facultad.nombre} onClick={() => editar(facultad)} />
+                        <BotonAccion tipo="eliminar" nombre={facultad.nombre} onClick={() => eliminar(facultad)} />
                       </div>
                     </td>
                   </tr>
@@ -133,6 +123,7 @@ export default function Facultades() {
             </table>
           </div>
         )}
+        {viendo && <ModalAlcance facultad={viendo} onCerrar={() => setViendo(null)} />}
       </div>
     </>
   )

@@ -1,9 +1,10 @@
-import { ChevronRight, RefreshCw, Search } from 'lucide-react'
+import { RefreshCw, Search } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import robotSenala from '../../../assets/ilustraciones/robot-senala.svg'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
+import { BotonAccion } from '../../../shared/components/ui/BotonAccion/BotonAccion.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { EtiquetaNivel } from '../../../shared/components/ui/EtiquetaNivel/EtiquetaNivel.jsx'
 import { ETIQUETA_FUENTE, FUENTE_DEL_ROL, ROLES } from '../../../shared/constants/dominio.js'
@@ -243,7 +244,7 @@ export default function Docentes() {
                         Promedio
                       </th>
                       <th scope="col">
-                        <span className="solo-lectores">Abrir expediente</span>
+                        <span className="solo-lectores">Acciones</span>
                       </th>
                     </tr>
                   </thead>
@@ -286,8 +287,8 @@ export default function Docentes() {
                           <td className="tabla__numero docentes__promedio">
                             {promedio?.estado === 'COMPLETO' ? formatearNota(promedio.valor) : '—'}
                           </td>
-                          <td className="docentes__flecha" aria-hidden="true">
-                            <ChevronRight size={18} />
+                          <td className="docentes__accion" onClick={(e) => e.stopPropagation()}>
+                            <BotonAccion tipo="ver" nombre={d.nombreCompleto} a={`/docentes/${d.idDocente}`} />
                           </td>
                         </tr>
                       )
