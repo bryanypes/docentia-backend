@@ -1,4 +1,4 @@
-import { Download, FileSignature, Plus, RefreshCw } from 'lucide-react'
+import { CalendarClock, Download, FileSignature, ListPlus, Plus, RefreshCw } from 'lucide-react'
 import { useCallback, useRef, useState } from 'react'
 import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
@@ -7,6 +7,7 @@ import { Campo } from '../../../shared/components/ui/Campo/Campo.jsx'
 import { ErrorApi } from '../../../shared/components/ui/ErrorApi/ErrorApi.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { ChipCategoria } from '../../../shared/components/ui/EtiquetaNivel/EtiquetaNivel.jsx'
+import { Modal } from '../../../shared/components/ui/Modal/Modal.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
 import { ETIQUETA_ROL, ROLES } from '../../../shared/constants/dominio.js'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
@@ -42,31 +43,149 @@ function guardarArchivo(blob, nombre) {
   URL.revokeObjectURL(url)
 }
 
-function Compromisos({ acta, editable, ejecutar, ocupado }) {
+const SUGERENCIAS = [
+  'Actualizar el plan de asignatura con resultados de aprendizaje',
+  'Retroalimentar cada evaluación en máximo ocho días',
+  'Participar en el curso de formación docente del periodo',
+  'Incorporar una estrategia didáctica activa por unidad',
+]
+
+/** Fecha AAAA-MM-DD a n meses de hoy, para los plazos rápidos. */
+function enMeses(meses) {
+  const fecha = new Date()
+  fecha.setMonth(fecha.getMonth() + meses)
+  return fecha.toISOString().slice(0, 10)
+}
+
+/** Modal para agregar un compromiso: qué se compromete el docente y para cuándo. */
+function ModalCompromiso({ acta, ejecutar, ocupado, onCerrar }) {
   const [descripcion, setDescripcion] = useState('')
   const [fechaLimite, setFechaLimite] = useState('')
+  // Se calculan al abrir el modal: hoy y los plazos rápidos no cambian mientras está abierto.
+  const [hoy] = useState(() => enMeses(0))
+  const [plazos] = useState(() => [
+    [enMeses(1), 'En 1 mes'],
+    [enMeses(3), 'En 3 meses'],
+    [enMeses(6), 'En 6 meses'],
+  ])
+  const idDescripcion = `compromiso-${acta.idActa}`
+  const idPlazo = `plazo-${acta.idActa}`
+  const listo = descripcion.trim().length >= 5 && fechaLimite
 
-  async function agregar(evento) {
+  async function guardar(evento) {
     evento.preventDefault()
+    if (!listo) return
     const hecho = await ejecutar(() => agregarCompromiso(acta.idActa, { descripcion: descripcion.trim(), fechaLimite }))
-    if (hecho) {
-      setDescripcion('')
-      setFechaLimite('')
-    }
+    if (hecho) onCerrar()
   }
 
   return (
-    <section>
-      <h3 className="acta__subtitulo">{acta.categoria?.codigo === 'BAJO' ? 'Plan de Mejoramiento Profesoral' : 'Compromisos'}</h3>
+    <Modal
+      titulo="Agregar compromiso"
+      descripcion="Una acción concreta que el docente se compromete a cumplir, con su plazo."
+      icono={ListPlus}
+      ancho="pequeno"
+      onCerrar={onCerrar}
+    >
+      <form className="compromiso-nuevo" onSubmit={guardar}>
+        <Campo id={idDescripcion} etiqueta="Compromiso" ayuda="Empieza con un verbo: actualizar, participar, incorporar…">
+          <textarea
+            id={idDescripcion}
+            className="campo__control"
+            rows={3}
+            maxLength={500}
+            required
+            value={descripcion}
+            onChange={(e) => setDescripcion(e.target.value)}
+          />
+        </Campo>
+        <div className="compromiso-nuevo__sugerencias" role="group" aria-label="Sugerencias">
+          {SUGERENCIAS.map((texto) => (
+            <button key={texto} type="button" className="compromiso-nuevo__sugerencia" onClick={() => setDescripcion(texto)}>
+              {texto}
+            </button>
+          ))}
+        </div>
+        <Campo id={idPlazo} etiqueta="Plazo">
+          <input
+            id={idPlazo}
+            type="date"
+            className="campo__control"
+            required
+            min={hoy}
+            value={fechaLimite}
+            onChange={(e) => setFechaLimite(e.target.value)}
+          />
+        </Campo>
+        <div className="compromiso-nuevo__plazos" role="group" aria-label="Plazos rápidos">
+          {plazos.map(([fecha, texto]) => (
+            <button
+              key={fecha}
+              type="button"
+              className={`compromiso-nuevo__plazo${fechaLimite === fecha ? ' compromiso-nuevo__plazo--activo' : ''}`}
+              aria-pressed={fechaLimite === fecha}
+              onClick={() => setFechaLimite(fecha)}
+            >
+              {texto}
+            </button>
+          ))}
+        </div>
+        <div className="compromiso-nuevo__acciones">
+          <Boton variante="secundario" onClick={onCerrar}>
+            Cancelar
+          </Boton>
+          <Boton type="submit" icono={Plus} disabled={ocupado || !listo}>
+            Guardar compromiso
+          </Boton>
+        </div>
+      </form>
+    </Modal>
+  )
+}
+
+function Compromisos({ acta, editable, ejecutar, ocupado }) {
+  const [agregando, setAgregando] = useState(false)
+  const faltan = editable && acta.requiereCompromisos && acta.compromisos.length === 0
+  const titulo = acta.categoria?.codigo === 'BAJO' ? 'Plan de Mejoramiento Profesoral' : 'Compromisos'
+
+  return (
+    <section className="compromisos">
+      <div className="compromisos__cabecera">
+        <h3 className="acta__subtitulo">
+          {titulo}
+          <span className="compromisos__contador">{acta.compromisos.length}</span>
+        </h3>
+        {editable && (
+          <Boton icono={Plus} disabled={ocupado} onClick={() => setAgregando(true)}>
+            Agregar compromiso
+          </Boton>
+        )}
+      </div>
       {acta.compromisos.length === 0 ? (
-        <p className="campo__ayuda">Sin compromisos registrados.</p>
+        <div className={`compromisos__vacio${faltan ? ' compromisos__vacio--requerido' : ''}`}>
+          <ListPlus size={22} aria-hidden="true" />
+          <div>
+            <strong>{faltan ? 'Esta acta necesita al menos un compromiso' : 'Sin compromisos registrados'}</strong>
+            <span>
+              {editable
+                ? 'Pulsa «Agregar compromiso» para escribir la acción y su plazo.'
+                : 'La coordinación los agrega en la reunión.'}
+            </span>
+          </div>
+        </div>
       ) : (
-        <ul className="acta__compromisos">
-          {acta.compromisos.map((c) => (
-            <li key={c.idCompromiso}>
-              <span>
-                {c.descripcion} · Plazo {formatearFecha(c.fechaLimite)}
+        <ol className="compromisos__lista">
+          {acta.compromisos.map((c, indice) => (
+            <li key={c.idCompromiso} className="compromisos__item">
+              <span className="compromisos__numero" aria-hidden="true">
+                {indice + 1}
               </span>
+              <div className="compromisos__texto">
+                <strong>{c.descripcion}</strong>
+                <span>
+                  <CalendarClock size={14} aria-hidden="true" /> Plazo {formatearFecha(c.fechaLimite)}
+                </span>
+              </div>
               {editable && (
                 <BotonAccion
                   tipo="eliminar"
@@ -77,35 +196,9 @@ function Compromisos({ acta, editable, ejecutar, ocupado }) {
               )}
             </li>
           ))}
-        </ul>
+        </ol>
       )}
-      {editable && (
-        <form className="acta__formulario" onSubmit={agregar}>
-          <Campo id={`compromiso-${acta.idActa}`} etiqueta="Compromiso">
-            <input
-              id={`compromiso-${acta.idActa}`}
-              className="campo__control"
-              maxLength={500}
-              required
-              value={descripcion}
-              onChange={(e) => setDescripcion(e.target.value)}
-            />
-          </Campo>
-          <Campo id={`plazo-${acta.idActa}`} etiqueta="Plazo">
-            <input
-              id={`plazo-${acta.idActa}`}
-              type="date"
-              className="campo__control"
-              required
-              value={fechaLimite}
-              onChange={(e) => setFechaLimite(e.target.value)}
-            />
-          </Campo>
-          <Boton type="submit" variante="contorno" icono={Plus} disabled={ocupado}>
-            Agregar compromiso
-          </Boton>
-        </form>
-      )}
+      {agregando && <ModalCompromiso acta={acta} ejecutar={ejecutar} ocupado={ocupado} onCerrar={() => setAgregando(false)} />}
     </section>
   )
 }
