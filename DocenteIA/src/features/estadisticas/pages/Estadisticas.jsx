@@ -43,6 +43,8 @@ const SIN_FILTROS = { facultad: '', programa: '', nivel: '', estado: '', busqued
 const TONO_NIVEL = { MUY_ALTO: 'muy-alto', ALTO: 'alto', ACEPTABLE: 'aceptable', BAJO: 'bajo', MUY_BAJO: 'muy-bajo' }
 // Docentes que se muestran de entrada y en cada «Mostrar más».
 const TANDA_FILAS = 10
+// Con hasta estas filas, una tabla de comparación cabe en media fila y comparte espacio.
+const FILAS_COMPACTAS = 5
 
 const porcentaje = (valor) => (valor === null || valor === undefined ? '—' : `${valor} %`)
 const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`
@@ -402,24 +404,6 @@ export default function Estadisticas() {
               </p>
             </Panel>
 
-            <Panel titulo="Avance del proceso" descripcion="Dónde está cada docente, de las evaluaciones al acta firmada." icono={Route} tono="turquesa">
-              <ul className="estadisticas__barras">
-                {r.porEstado.map((e) => (
-                  <BarraFiltro
-                    key={e.estado}
-                    etiqueta={ESTADOS_PROCESO[e.estado].etiqueta}
-                    valor={e.cantidad}
-                    maximo={maxEstado}
-                    texto={e.cantidad}
-                    tono={ESTADOS_PROCESO[e.estado].tono}
-                    activa={filtros.estado === e.estado}
-                    detalle={ESTADOS_PROCESO[e.estado].ayuda}
-                    onClick={() => cambiar('estado', e.estado)}
-                  />
-                ))}
-              </ul>
-            </Panel>
-
             <Panel titulo="Distribución de promedios" descripcion="Cuántos docentes hay en cada tramo de medio punto." icono={Sigma} tono="cielo">
               <div className="estadisticas__histograma" role="list" aria-label="Docentes por tramo de promedio">
                 {r.histograma.map((h) => (
@@ -435,6 +419,35 @@ export default function Estadisticas() {
                   </div>
                 ))}
               </div>
+            </Panel>
+
+            <Panel titulo="Avance del proceso" descripcion="Dónde está cada docente, de las evaluaciones al acta firmada." icono={Route} tono="turquesa">
+              {/* Solo las etapas con docentes: con pocos datos la tarjeta no se llena de barras en cero. */}
+              <ul className="estadisticas__barras">
+                {r.porEstado.filter((e) => e.cantidad > 0 || filtros.estado === e.estado).map((e) => (
+                  <BarraFiltro
+                    key={e.estado}
+                    etiqueta={ESTADOS_PROCESO[e.estado].etiqueta}
+                    valor={e.cantidad}
+                    maximo={maxEstado}
+                    texto={e.cantidad}
+                    tono={ESTADOS_PROCESO[e.estado].tono}
+                    activa={filtros.estado === e.estado}
+                    detalle={ESTADOS_PROCESO[e.estado].ayuda}
+                    onClick={() => cambiar('estado', e.estado)}
+                  />
+                ))}
+              </ul>
+              {r.porEstado.some((e) => e.cantidad === 0 && filtros.estado !== e.estado) && (
+                <p className="estadisticas__nota">
+                  Sin docentes en:{' '}
+                  {r.porEstado
+                    .filter((e) => e.cantidad === 0 && filtros.estado !== e.estado)
+                    .map((e) => ESTADOS_PROCESO[e.estado].etiqueta.toLowerCase())
+                    .join(', ')}
+                  .
+                </p>
+              )}
             </Panel>
 
             <Panel titulo="Calificaciones que faltan" descripcion="Docentes a los que les falta cada fuente." icono={Layers} tono="coral">
@@ -454,11 +467,13 @@ export default function Estadisticas() {
               </ul>
               <p className="estadisticas__nota">Pulsa una fuente para ver los docentes en esa etapa.</p>
             </Panel>
+
+            {esVicerrector && <EmbudoProceso pasos={embudo} className="" />}
           </div>
           <div className="estadisticas__rejilla">
 
             <Panel
-              className="estadisticas__ancho"
+              className={r.porGrupo.length > FILAS_COMPACTAS ? 'estadisticas__ancho' : ''}
               titulo={`Comparación por ${nombreGrupo}`}
               descripcion={`Promedio y avance en cada ${nombreGrupo}. Pulsa una fila para filtrar.`}
               icono={ChartColumnBig}
@@ -506,6 +521,17 @@ export default function Estadisticas() {
               </div>
             </Panel>
 
+            {esVicerrector && (
+              <PanoramaFacultades
+                className={facultadesPanorama.length > FILAS_COMPACTAS ? 'estadisticas__ancho' : ''}
+                facultades={facultadesPanorama}
+                umbral={umbral}
+                onElegir={(f) => fijar('facultad', String(f.idFacultad))}
+              />
+            )}
+
+          </div>
+          <div className="estadisticas__rejilla">
             <Panel className="estadisticas__ancho" titulo="Docentes de la selección" descripcion="La lista cambia con los filtros." icono={Users}>
               <div className="tabla-contenedor">
                 <table className="tabla tabla--apilable estadisticas__tabla estadisticas__docentes">
@@ -564,16 +590,6 @@ export default function Estadisticas() {
             </Panel>
           </div>
 
-          {esVicerrector && (
-            <div className="estadisticas__rejilla">
-              <EmbudoProceso pasos={embudo} />
-              <PanoramaFacultades
-                facultades={facultadesPanorama}
-                umbral={umbral}
-                onElegir={(f) => fijar('facultad', String(f.idFacultad))}
-              />
-            </div>
-          )}
           </>
         )}
 

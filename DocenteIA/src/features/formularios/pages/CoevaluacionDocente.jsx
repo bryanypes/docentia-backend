@@ -2,11 +2,9 @@ import { ChevronLeft, RefreshCw } from 'lucide-react'
 import { useCallback } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
-import { usePeriodoActivo } from '../../../shared/components/layout/AppLayout/periodoContext.js'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
-import { ResumenAnalisisIA } from '../../analisis/components/ResumenAnalisisIA.jsx'
 import { FormularioInstrumento } from '../components/FormularioInstrumento.jsx'
 import {
   enviarCoevaluacion,
@@ -16,7 +14,6 @@ import {
 
 export default function CoevaluacionDocente() {
   const { idDocente } = useParams()
-  const { periodo } = usePeriodoActivo()
   const cargar = useCallback(() => obtenerCoevaluacion(idDocente), [idDocente])
   const { datos, error, cargando, recargar } = useFetch(cargar, [cargar])
   const guardar = useCallback((borrador) => guardarCoevaluacion(idDocente, borrador), [idDocente])
@@ -48,8 +45,6 @@ export default function CoevaluacionDocente() {
             {!noEncontrado && <Boton icono={RefreshCw} onClick={recargar}>Intentar de nuevo</Boton>}
           </EstadoVista>
         )}
-        {/* Lo que dicen los estudiantes ayuda a coevaluar con contexto. */}
-        {datos && <ResumenAnalisisIA idDocente={idDocente} periodoId={periodo?.idPeriodo} className="resumen-ia--angosto" />}
         {datos && (
           <FormularioInstrumento
             key={`${datos.idDocente}-${datos.estado}`}

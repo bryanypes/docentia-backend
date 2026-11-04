@@ -1,12 +1,26 @@
-import { BadgeCheck, Brain, Filter, MessagesSquare, RefreshCw, ShieldAlert, Sparkles, TrendingUp } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import {
+  BadgeCheck,
+  Brain,
+  Filter,
+  MessageSquareText,
+  MessagesSquare,
+  RefreshCw,
+  Search,
+  ShieldAlert,
+  SlidersHorizontal,
+  Sparkles,
+  TrendingUp,
+} from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { BotonAccion } from '../../../shared/components/ui/BotonAccion/BotonAccion.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
+import { ROLES } from '../../../shared/constants/dominio.js'
 import { normalizarTexto } from '../../../shared/utils/formatters.js'
-import { obtenerPanorama } from '../services/analisisService.js'
+import { useSesion } from '../../auth/sesionContext.js'
+import { obtenerCoincidencias, obtenerPanorama } from '../services/analisisService.js'
 import { MensajeIA } from './DocenteIA.jsx'
 import './PanoramaAnalisis.css'
 
@@ -41,6 +55,22 @@ const TONO_ETAPA = {
   SIN_COMENTARIOS: 'neutro',
 }
 
+// La búsqueda en comentarios espera a que se deje de escribir y pide al menos tres letras.
+const RETRASO_BUSQUEDA_MS = 400
+const LARGO_MINIMO_BUSQUEDA = 3
+
+const ORDENES = {
+  nombre: { texto: 'Nombre', comparar: (a, b) => a.docente.nombreCompleto.localeCompare(b.docente.nombreCompleto, 'es') },
+  comentarios: { texto: 'Más comentarios', comparar: (a, b) => b.comentarios - a.comentarios },
+  balance: {
+    texto: 'Mejor balance',
+    comparar: (a, b) => b.fortalezas - b.oportunidades - (a.fortalezas - a.oportunidades),
+  },
+  oportunidades: { texto: 'Más oportunidades de mejora', comparar: (a, b) => b.oportunidades - a.oportunidades },
+}
+
+const unicos = (valores) => [...new Set(valores.filter(Boolean))].sort((a, b) => a.localeCompare(b, 'es'))
+
 const pct = (parte, total) => (total ? Math.round((parte / total) * 100) : 0)
 
 /**
@@ -50,18 +80,64 @@ const pct = (parte, total) => (total ? Math.round((parte / total) * 100) : 0)
 export function PanoramaAnalisis({ periodoId, onElegirDocente }) {
   const cargar = useCallback(() => obtenerPanorama(periodoId), [periodoId])
   const panorama = useFetch(cargar, [cargar])
+  const { usuario } = useSesion()
+  const esVicerrector = usuario.rol === ROLES.VICERRECTOR
   const [filtroEtapa, setFiltroEtapa] = useState('')
   const [busqueda, setBusqueda] = useState('')
+  const [facultad, setFacultad] = useState('')
+  const [programa, setPrograma] = useState('')
+  const [orden, setOrden] = useState('nombre')
+  const [enComentarios, setEnComentarios] = useState('')
+  // Última respuesta de la búsqueda en comentarios: { termino, mapa idDocente -> coincidencias }.
+  const [resultadoBusqueda, setResultadoBusqueda] = useState(null)
+  const terminoComentarios = enComentarios.trim()
+  const buscaEnComentarios = terminoComentarios.length >= LARGO_MINIMO_BUSQUEDA
+  const coincidencias = buscaEnComentarios ? (resultadoBusqueda?.mapa ?? null) : null
+  const buscandoComentarios = buscaEnComentarios && resultadoBusqueda?.termino !== terminoComentarios
+
+  useEffect(() => {
+    if (!buscaEnComentarios) return undefined
+    let vigente = true
+    const temporizador = setTimeout(() => {
+      obtenerCoincidencias(periodoId, terminoComentarios)
+        .then((lista) => new Map(lista.map((c) => [c.idDocente, c.coincidencias])))
+        .catch(() => new Map())
+        .then((mapa) => vigente && setResultadoBusqueda({ termino: terminoComentarios, mapa }))
+    }, RETRASO_BUSQUEDA_MS)
+    return () => {
+      vigente = false
+      clearTimeout(temporizador)
+    }
+  }, [buscaEnComentarios, terminoComentarios, periodoId])
 
   const filas = useMemo(() => (panorama.datos?.docentes ?? []).map((f) => ({ ...f, etapa: etapa(f) })), [panorama.datos])
+  const facultades = useMemo(() => unicos(filas.map((f) => f.docente.nombreFacultad)), [filas])
+  const programas = useMemo(
+    () => unicos(filas.filter((f) => !facultad || f.docente.nombreFacultad === facultad).map((f) => f.docente.nombrePrograma)),
+    [filas, facultad],
+  )
   const visibles = useMemo(() => {
     const termino = normalizarTexto(busqueda.trim())
-    return filas.filter(
-      (f) =>
-        (!filtroEtapa || f.etapa.clave === filtroEtapa) &&
-        (!termino || normalizarTexto(f.docente.nombreCompleto).includes(termino)),
-    )
-  }, [filas, filtroEtapa, busqueda])
+    return filas
+      .filter(
+        (f) =>
+          (!filtroEtapa || f.etapa.clave === filtroEtapa) &&
+          (!facultad || f.docente.nombreFacultad === facultad) &&
+          (!programa || f.docente.nombrePrograma === programa) &&
+          (!coincidencias || coincidencias.has(f.docente.idDocente)) &&
+          (!termino || normalizarTexto(f.docente.nombreCompleto).includes(termino)),
+      )
+      .sort(ORDENES[orden].comparar)
+  }, [filas, filtroEtapa, facultad, programa, coincidencias, busqueda, orden])
+  const hayFiltros = Boolean(filtroEtapa || facultad || programa || busqueda || enComentarios)
+
+  function limpiar() {
+    setFiltroEtapa('')
+    setFacultad('')
+    setPrograma('')
+    setBusqueda('')
+    setEnComentarios('')
+  }
 
   if (panorama.cargando && !panorama.datos) return <Cargando texto="Calculando el panorama del análisis" bloques={2} />
   if (panorama.error) {
@@ -187,29 +263,111 @@ export function PanoramaAnalisis({ periodoId, onElegirDocente }) {
         </Panel>
       </div>
 
-      <Panel
-        titulo="Docentes"
-        descripcion={filtroEtapa ? `Filtrado: ${ETAPAS.find(([c]) => c === filtroEtapa)[1]}` : 'Elige uno para ver o solicitar su análisis.'}
-        icono={Brain}
-        acciones={
-          filtroEtapa ? (
-            <Boton variante="enlace" onClick={() => setFiltroEtapa('')}>
-              Quitar filtro
+      <Panel titulo="Docentes" descripcion="Filtra y elige uno para ver o solicitar su análisis." icono={Brain}>
+        <div className="panorama__chips" role="group" aria-label="Filtrar por estado del análisis">
+          <button
+            type="button"
+            className={`panorama__chip${!filtroEtapa ? ' panorama__chip--activo' : ''}`}
+            aria-pressed={!filtroEtapa}
+            onClick={() => setFiltroEtapa('')}
+          >
+            Todos <strong>{filas.length}</strong>
+          </button>
+          {conteoEtapas
+            .filter((e) => e.cantidad > 0)
+            .map((e) => (
+              <button
+                key={e.clave}
+                type="button"
+                className={`panorama__chip panorama__chip--${TONO_ETAPA[e.clave]}${filtroEtapa === e.clave ? ' panorama__chip--activo' : ''}`}
+                aria-pressed={filtroEtapa === e.clave}
+                onClick={() => setFiltroEtapa((actual) => (actual === e.clave ? '' : e.clave))}
+              >
+                {e.texto} <strong>{e.cantidad}</strong>
+              </button>
+            ))}
+        </div>
+
+        <div className="panorama__filtros" role="search" aria-label="Filtrar docentes">
+          <span className="panorama__filtros-rotulo">
+            <SlidersHorizontal size={15} aria-hidden="true" />
+            Filtrar
+          </span>
+          <label className="panorama__busqueda">
+            <Search size={16} aria-hidden="true" />
+            <span className="solo-lectores">Buscar docente</span>
+            <input type="search" placeholder="Buscar docente" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
+          </label>
+          <label className="panorama__busqueda">
+            <MessageSquareText size={16} aria-hidden="true" />
+            <span className="solo-lectores">Buscar en los comentarios</span>
+            <input
+              type="search"
+              placeholder="Buscar en comentarios: puntual, notas…"
+              value={enComentarios}
+              onChange={(e) => setEnComentarios(e.target.value)}
+            />
+          </label>
+          {esVicerrector && facultades.length > 1 && (
+            <label className="panorama__selector">
+              <span>Facultad</span>
+              <select
+                className="campo__control"
+                value={facultad}
+                onChange={(e) => {
+                  setFacultad(e.target.value)
+                  setPrograma('')
+                }}
+              >
+                <option value="">Todas</option>
+                {facultades.map((f) => (
+                  <option key={f} value={f}>
+                    {f}
+                  </option>
+                ))}
+              </select>
+            </label>
+          )}
+          <label className="panorama__selector">
+            <span>Programa</span>
+            <select className="campo__control" value={programa} onChange={(e) => setPrograma(e.target.value)}>
+              <option value="">Todos</option>
+              {programas.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="panorama__selector">
+            <span>Ordenar por</span>
+            <select className="campo__control" value={orden} onChange={(e) => setOrden(e.target.value)}>
+              {Object.entries(ORDENES).map(([clave, { texto }]) => (
+                <option key={clave} value={clave}>
+                  {texto}
+                </option>
+              ))}
+            </select>
+          </label>
+          <span className="panorama__conteo" aria-live="polite">
+            {buscandoComentarios ? 'Buscando…' : `${visibles.length} de ${filas.length}`}
+          </span>
+          {hayFiltros && (
+            <Boton variante="enlace" onClick={limpiar}>
+              Limpiar
             </Boton>
-          ) : null
-        }
-      >
-        <label className="panorama__buscador">
-          <span className="solo-lectores">Buscar docente</span>
-          <input type="search" className="campo__control" placeholder="Buscar docente" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
-        </label>
+          )}
+        </div>
         <ul className="panorama__docentes">
           {visibles.map((f) => (
             <li key={f.docente.idDocente}>
               <div className="panorama__docente">
                 <strong>{f.docente.nombreCompleto}</strong>
                 <span>
-                  {f.docente.nombrePrograma} · {f.comentarios} comentarios
+                  {f.docente.nombrePrograma}
+                  {esVicerrector ? ` · ${f.docente.nombreFacultad}` : ''} · {f.comentarios} comentarios
+                  {coincidencias?.has(f.docente.idDocente) &&
+                    ` · ${coincidencias.get(f.docente.idDocente)} con «${enComentarios.trim()}»`}
                 </span>
               </div>
               <span className={`pildora pildora--${f.etapa.tono}`}>{f.etapa.texto}</span>

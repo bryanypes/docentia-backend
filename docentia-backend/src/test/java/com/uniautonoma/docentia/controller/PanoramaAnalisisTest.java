@@ -99,6 +99,27 @@ class PanoramaAnalisisTest extends PruebaIntegracion {
   }
 
   @Test
+  void buscaUnaPalabraEnLosComentariosSinTildesYSoloDevuelveConteos() throws Exception {
+    mockMvc
+        .perform(
+            get("/analisis-ia/panorama/coincidencias")
+                .param("buscar", "DEMORÁN")
+                .with(como(coordinador)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$", hasSize(1)))
+        .andExpect(jsonPath("$[0].idDocente").value(julian.getIdUsuario()))
+        .andExpect(jsonPath("$[0].coincidencias").value(6))
+        .andExpect(content().string(not(Matchers.containsString("corte"))));
+    mockMvc
+        .perform(get("/analisis-ia/panorama/coincidencias").param("buscar", "50%").with(como(coordinador)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$", hasSize(0)));
+    mockMvc
+        .perform(get("/analisis-ia/panorama/coincidencias").param("buscar", "de").with(como(coordinador)))
+        .andExpect(jsonPath("$", hasSize(0)));
+  }
+
+  @Test
   void elDocenteNoConsultaElPanorama() throws Exception {
     mockMvc
         .perform(get("/analisis-ia/panorama").with(como(julian)))

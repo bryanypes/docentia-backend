@@ -50,6 +50,13 @@ export function obtenerPanorama(periodoId) {
   return api.get(`/analisis-ia/panorama${periodoId ? `?periodoId=${encodeURIComponent(periodoId)}` : ''}`)
 }
 
+/** Cuántos comentarios de cada docente contienen la palabra; nunca devuelve el texto. */
+export function obtenerCoincidencias(periodoId, buscar) {
+  const parametros = new URLSearchParams({ buscar })
+  if (periodoId) parametros.set('periodoId', periodoId)
+  return api.get(`/analisis-ia/panorama/coincidencias?${parametros}`)
+}
+
 /**
  * Resumen agregado de los comentarios del periodo en el alcance (GET /analisis-comentarios/resumen).
  * `programa` es opcional. Con pocos docentes analizados llega `disponible: false`.

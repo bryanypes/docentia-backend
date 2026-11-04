@@ -4,13 +4,6 @@
   gap: 14px;
 }
 
-/* En la coevaluación va con el mismo ancho que el cuestionario. */
-.resumen-ia--angosto {
-  width: 100%;
-  max-width: 860px;
-  margin-inline: auto;
-}
-
 .resumen-ia .panel__cabecera {
   margin-bottom: 0;
 }

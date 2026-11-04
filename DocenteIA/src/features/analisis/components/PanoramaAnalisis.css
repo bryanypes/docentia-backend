@@ -209,10 +209,150 @@
   color: var(--color-texto-tenue);
 }
 
-.panorama__buscador {
-  display: block;
-  max-width: 360px;
+/* Chips de estado y barra de filtros de la lista de docentes. */
+.panorama__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
   margin-bottom: 12px;
+}
+
+.panorama__chip {
+  --tono: var(--color-azul);
+  --tono-fondo: var(--color-azul-suave);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 34px;
+  padding: 0 12px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-pildora);
+  background: var(--color-superficie);
+  color: var(--color-texto-secundario);
+  font: inherit;
+  font-size: 13px;
+  font-weight: var(--peso-semi);
+  cursor: pointer;
+}
+
+.panorama__chip strong {
+  padding: 0 7px;
+  border-radius: var(--radio-pildora);
+  background: var(--tono-fondo);
+  color: var(--tono);
+}
+
+.panorama__chip--violeta {
+  --tono: var(--color-violeta);
+  --tono-fondo: var(--color-violeta-fondo);
+}
+
+.panorama__chip--exito {
+  --tono: var(--color-turquesa);
+  --tono-fondo: var(--color-turquesa-fondo);
+}
+
+.panorama__chip--coral {
+  --tono: var(--color-coral);
+  --tono-fondo: var(--color-coral-fondo);
+}
+
+.panorama__chip--cielo {
+  --tono: var(--color-cielo);
+  --tono-fondo: var(--color-cielo-fondo);
+}
+
+.panorama__chip--neutro,
+.panorama__chip--alerta {
+  --tono: var(--color-texto-secundario);
+  --tono-fondo: var(--color-fondo);
+}
+
+.panorama__chip--activo {
+  border-color: var(--tono);
+  background: var(--tono-fondo);
+  color: var(--tono);
+}
+
+.panorama__chip:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+.panorama__filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px 12px;
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-borde-suave);
+  border-radius: var(--radio-lg);
+  background: var(--color-fondo);
+}
+
+.panorama__filtros-rotulo {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border-radius: var(--radio-pildora);
+  background: var(--color-azul);
+  color: var(--color-crema);
+  font-size: 13px;
+  font-weight: var(--peso-semi);
+}
+
+.panorama__busqueda {
+  display: flex;
+  flex: 2 1 220px;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--alto-tactil);
+  padding: 0 12px;
+  border: 1px solid var(--color-borde-control);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie);
+}
+
+.panorama__busqueda:focus-within {
+  outline: 2px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+.panorama__busqueda svg {
+  flex: 0 0 auto;
+  color: var(--color-texto-tenue);
+}
+
+.panorama__busqueda input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  background: transparent;
+  font: inherit;
+  font-size: 14px;
+}
+
+.panorama__selector {
+  display: grid;
+  flex: 1 1 160px;
+  max-width: 260px;
+  gap: 4px;
+  font-size: 11.5px;
+  font-weight: var(--peso-semi);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-texto-tenue);
+}
+
+.panorama__conteo {
+  align-self: center;
+  margin-left: auto;
+  font-size: 13px;
+  color: var(--color-texto-tenue);
 }
 
 .panorama__docentes {
@@ -274,5 +414,15 @@
 
   .panorama__mini {
     display: none;
+  }
+
+  .panorama__busqueda,
+  .panorama__selector {
+    flex-basis: 100%;
+    max-width: none;
+  }
+
+  .panorama__conteo {
+    margin-left: 0;
   }
 }

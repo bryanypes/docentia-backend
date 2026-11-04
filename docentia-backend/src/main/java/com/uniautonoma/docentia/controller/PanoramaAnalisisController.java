@@ -1,8 +1,11 @@
 package com.uniautonoma.docentia.controller;
 
+import com.uniautonoma.docentia.dto.CoincidenciaComentariosResponse;
 import com.uniautonoma.docentia.dto.PanoramaAnalisisResponse;
 import com.uniautonoma.docentia.security.UsuarioSesion;
+import com.uniautonoma.docentia.service.analisis.BusquedaComentariosService;
 import com.uniautonoma.docentia.service.analisis.PanoramaAnalisisService;
+import java.util.List;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,9 +17,12 @@ import org.springframework.web.bind.annotation.RestController;
 public class PanoramaAnalisisController {
 
   private final PanoramaAnalisisService panoramaService;
+  private final BusquedaComentariosService busquedaService;
 
-  public PanoramaAnalisisController(PanoramaAnalisisService panoramaService) {
+  public PanoramaAnalisisController(
+      PanoramaAnalisisService panoramaService, BusquedaComentariosService busquedaService) {
     this.panoramaService = panoramaService;
+    this.busquedaService = busquedaService;
   }
 
   @GetMapping("/analisis-ia/panorama")
@@ -26,5 +32,15 @@ public class PanoramaAnalisisController {
       @RequestParam(required = false) Long idFacultad,
       @AuthenticationPrincipal UsuarioSesion sesion) {
     return panoramaService.panorama(periodoId, idFacultad, sesion);
+  }
+
+  /** Docentes cuyos comentarios contienen el término; solo conteos, nunca el texto. */
+  @GetMapping("/analisis-ia/panorama/coincidencias")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
+  public List<CoincidenciaComentariosResponse> coincidencias(
+      @RequestParam(required = false) Long periodoId,
+      @RequestParam String buscar,
+      @AuthenticationPrincipal UsuarioSesion sesion) {
+    return busquedaService.buscar(periodoId, buscar, sesion);
   }
 }
