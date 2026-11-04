@@ -148,6 +148,56 @@ export function calcular(filas, { umbral = 3.8, agruparPor = 'nombrePrograma' } 
   }
 }
 
+/**
+ * Embudo del proceso: de los docentes con evaluación completa, cuántos llegaron a cada paso. Cada
+ * paso cuenta a quien ya lo pasó, aunque esté más adelante.
+ */
+export function embudoDelProceso(filas) {
+  const completos = filas.filter((f) => f.promedio?.estado === 'COMPLETO')
+  const conCita = completos.filter((f) => f.proceso?.cita || f.proceso?.acta)
+  const conReunion = completos.filter((f) => f.proceso?.cita?.asistencia === 'ASISTIO' || f.proceso?.acta)
+  const conActa = completos.filter((f) => f.proceso?.acta?.estado === 'FIRMADA')
+  const base = completos.length
+  const paso = (clave, etiqueta, cantidad) => ({
+    clave,
+    etiqueta,
+    cantidad,
+    porcentaje: base ? Math.round((cantidad / base) * 100) : 0,
+  })
+  return [
+    paso('completos', 'Evaluación completa', base),
+    paso('cita', 'Con cita', conCita.length),
+    paso('reunion', 'Reunión realizada', conReunion.length),
+    paso('acta', 'Acta firmada', conActa.length),
+  ]
+}
+
+/** Panorama de cada facultad para la vicerrectoría, ordenado por promedio. */
+export function panoramaPorFacultad(filas, umbral) {
+  const grupos = new Map()
+  for (const f of filas) {
+    const clave = f.docente.nombreFacultad ?? 'Sin facultad'
+    const g = grupos.get(clave) ?? { nombre: clave, idFacultad: f.docente.idFacultad, docentes: 0, completos: 0, suma: 0, bajoUmbral: 0, actasFirmadas: 0, reuniones: 0 }
+    g.docentes += 1
+    if (f.promedio?.estado === 'COMPLETO') {
+      const valor = Number(f.promedio.valor)
+      g.completos += 1
+      g.suma += valor
+      if (valor < umbral) g.bajoUmbral += 1
+    }
+    if (f.proceso?.acta?.estado === 'FIRMADA') g.actasFirmadas += 1
+    if (f.proceso?.cita?.asistencia === 'ASISTIO') g.reuniones += 1
+    grupos.set(clave, g)
+  }
+  return [...grupos.values()]
+    .map((g) => ({
+      ...g,
+      promedio: g.completos ? redondear(g.suma / g.completos) : null,
+      avance: Math.round((g.completos / g.docentes) * 100),
+    }))
+    .sort((a, b) => (b.promedio ?? -1) - (a.promedio ?? -1))
+}
+
 function mediana(valores) {
   const orden = [...valores].sort((a, b) => a - b)
   const medio = Math.floor(orden.length / 2)
