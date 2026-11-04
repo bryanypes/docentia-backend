@@ -57,6 +57,16 @@ function renderizar(rol = 'COORDINADOR') {
 describe('Analisis', () => {
   beforeEach(() => {
     vi.resetAllMocks()
+    // Vista de comentarios del contrato nuevo: por defecto aún no hay análisis.
+    analisisService.obtenerAnalisisDocente.mockResolvedValue({
+      estado: 'NO_DISPONIBLE_AUN',
+      motivo: 'SIN_SOLICITAR',
+      mensaje: 'Todavía no se ha solicitado el análisis.',
+      nombreDocente: 'Julián Camilo Hoyos',
+      nombrePeriodo: '2026-2',
+      resultado: null,
+    })
+    analisisService.listarComentariosDocente.mockResolvedValue({ disponible: false, motivo: 'SIN_SOLICITAR', total: 0, comentarios: [] })
     docentesService.listarDocentes.mockResolvedValue([
       { idDocente: 4, nombreCompleto: 'Julián Camilo Hoyos', nombrePrograma: 'Software' },
     ])

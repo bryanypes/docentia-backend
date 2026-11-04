@@ -59,3 +59,16 @@ export function obtenerResumenComentarios({ periodo, programa }) {
   if (programa) parametros.set('programa', programa)
   return api.get(`/analisis-comentarios/resumen?${parametros}`)
 }
+
+/** Análisis de comentarios de un docente en un periodo (contrato api-comentarios-ia.md). */
+export function obtenerAnalisisDocente(idDocente, periodo) {
+  return api.get(`/analisis-comentarios/docentes/${encodeURIComponent(idDocente)}?periodo=${encodeURIComponent(periodo)}`)
+}
+
+/** Comentarios anonimizados del análisis vigente, paginados y filtrables por criterio y sentimiento. */
+export function listarComentariosDocente(idDocente, { periodo, criterio, sentimiento, pagina = 0, tamano = 10 }) {
+  const parametros = new URLSearchParams({ periodo, page: pagina, size: tamano })
+  if (criterio) parametros.set('criterio', criterio)
+  if (sentimiento) parametros.set('sentimiento', sentimiento)
+  return api.get(`/comentarios-estudiantes/docentes/${encodeURIComponent(idDocente)}?${parametros}`)
+}
