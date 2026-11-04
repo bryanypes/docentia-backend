@@ -3,12 +3,14 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderizarConSesion } from '../../../pruebas/renderizarConSesion.jsx'
 import { ApiError } from '../../../services/api.js'
+import { obtenerAnalisisDocente } from '../../analisis/services/analisisService.js'
 import { obtenerConfiguracionEvaluacion } from '../../kpis/services/configuracionService.js'
 import { corregirActa, crearActa, firmarActa, listarActas } from '../services/actasService.js'
 import { PanelActa } from './PanelActa.jsx'
 
 vi.mock('../services/actasService.js')
 vi.mock('../../kpis/services/configuracionService.js')
+vi.mock('../../analisis/services/analisisService.js')
 
 const ACTA = {
   idActa: 7,
@@ -37,9 +39,33 @@ beforeEach(() => {
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(CONTEXTO)
   vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockReturnValue(TRAZO)
   obtenerConfiguracionEvaluacion.mockResolvedValue({ umbralCompromisos: 3.8, rolCorrectorActas: 'VICERRECTOR' })
+  obtenerAnalisisDocente.mockResolvedValue({ estado: 'NO_DISPONIBLE_AUN', resultado: null })
 })
 
 describe('PanelActa', () => {
+  it('sugiere como compromisos las oportunidades del análisis de comentarios', async () => {
+    listarActas.mockResolvedValue([ACTA])
+    obtenerAnalisisDocente.mockResolvedValue({
+      estado: 'COMPLETADO',
+      resultado: {
+        aspectos: {
+          fortalezas: [],
+          oportunidades: [
+            { criterio: 'C3', descriptor: 'D07', nombre: 'Retroalimentación sobre los resultados', frecuencia: 3, citas: [] },
+          ],
+        },
+      },
+    })
+    renderizarConSesion(<PanelActa idDocente={3} />)
+    expect(await screen.findByText('Retroalimentación sobre los resultados')).toBeInTheDocument()
+    expect(obtenerAnalisisDocente).toHaveBeenCalledWith(3, 1)
+    await userEvent.click(screen.getByRole('button', { name: 'Agregar' }))
+    const dialogo = screen.getByRole('dialog', { name: 'Agregar compromiso' })
+    expect(within(dialogo).getByLabelText(/Compromiso/)).toHaveValue(
+      'Fortalecer retroalimentación sobre los resultados, señalado en 3 comentarios de estudiantes',
+    )
+  })
+
   it('toma el umbral del acta y exige compromiso', async () => {
     listarActas.mockResolvedValue([ACTA])
     renderizarConSesion(<PanelActa idDocente={3} />)

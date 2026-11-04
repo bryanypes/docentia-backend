@@ -1,0 +1,118 @@
+/* Resumen del análisis de comentarios en el expediente y en la coevaluación. */
+.resumen-ia {
+  display: grid;
+  gap: 14px;
+}
+
+/* En la coevaluación va con el mismo ancho que el cuestionario. */
+.resumen-ia--angosto {
+  width: 100%;
+  max-width: 860px;
+  margin-inline: auto;
+}
+
+.resumen-ia .panel__cabecera {
+  margin-bottom: 0;
+}
+
+.resumen-ia__cifras {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 18px;
+  font-size: 13.5px;
+  color: var(--color-texto-secundario);
+}
+
+.resumen-ia__cifras strong {
+  font-size: 17px;
+  color: var(--color-azul);
+}
+
+.resumen-ia__positivo strong {
+  color: var(--color-turquesa);
+}
+
+.resumen-ia__negativo strong {
+  color: var(--color-coral);
+}
+
+.resumen-ia__rotulo {
+  padding: 3px 10px;
+  border-radius: var(--radio-pildora);
+  background: var(--color-violeta-fondo);
+  color: var(--color-violeta);
+  font-size: 12px;
+  font-weight: var(--peso-semi);
+}
+
+.resumen-ia__grupos {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: 12px;
+}
+
+.resumen-ia__grupo {
+  --tono: var(--color-turquesa);
+  --tono-fondo: var(--color-turquesa-fondo);
+  padding: 12px 14px;
+  border-left: 4px solid var(--tono);
+  border-radius: var(--radio-md);
+  background: var(--tono-fondo);
+}
+
+.resumen-ia__grupo--coral {
+  --tono: var(--color-coral);
+  --tono-fondo: var(--color-coral-fondo);
+}
+
+.resumen-ia__grupo h3 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0 0 8px;
+  font-size: 13.5px;
+  font-weight: var(--peso-fuerte);
+  color: var(--tono);
+}
+
+.resumen-ia__grupo ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.resumen-ia__grupo li {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: 2px 10px;
+  font-size: 13.5px;
+}
+
+.resumen-ia__grupo small {
+  color: var(--color-texto-tenue);
+}
+
+.resumen-ia__vacio {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--color-texto-tenue);
+}
+
+.resumen-ia__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 18px;
+}
+
+.resumen-ia__enlace {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 13.5px;
+  font-weight: var(--peso-semi);
+}

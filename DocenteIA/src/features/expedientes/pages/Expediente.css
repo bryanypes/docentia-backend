@@ -35,9 +35,181 @@
 }
 
 .expediente__calificar {
-  margin-top: var(--espacio-4);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--espacio-3);
+  grid-column: 1 / -1;
 }
 
-.expediente__etapa:not(:empty) {
-  margin-top: var(--espacio-3);
+.expediente__calificar .aviso {
+  flex: 1 1 280px;
+}
+
+/* Cabecera del expediente: perfil, datos clave y nota final en una sola tarjeta. */
+.panel.expediente__cabecera {
+  display: grid;
+  grid-template-columns: minmax(220px, auto) minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 16px 24px;
+}
+
+.expediente__cabecera .expediente__perfil {
+  margin-bottom: 0;
+}
+
+.expediente__cabecera .datos-docente {
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+}
+
+.expediente__nota {
+  display: grid;
+  justify-items: end;
+  gap: 2px;
+}
+
+/* Una tarjeta con pestañas; los paneles de adentro pierden su marco para no apilar tarjetas. */
+.expediente-pestanas {
+  overflow: hidden;
+  border: 1px solid rgba(230, 223, 206, 0.7);
+  border-radius: 16px;
+  background: var(--color-superficie);
+  box-shadow:
+    0 1px 2px rgba(30, 30, 30, 0.04),
+    0 12px 28px -18px rgba(5, 54, 134, 0.28);
+}
+
+.expediente-pestanas__barra {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--color-borde);
+  background: var(--color-fondo);
+  scrollbar-width: thin;
+}
+
+.expediente-pestanas__pestana {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--alto-tactil);
+  margin-bottom: -1px;
+  padding: 0 16px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: none;
+  color: var(--color-texto-tenue);
+  font: inherit;
+  font-size: 14px;
+  font-weight: var(--peso-semi);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.expediente-pestanas__pestana:hover {
+  color: var(--color-azul);
+}
+
+.expediente-pestanas__pestana--activa {
+  border-bottom-color: var(--color-azul);
+  color: var(--color-azul);
+}
+
+.expediente-pestanas__pestana:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: -3px;
+}
+
+.expediente-pestanas__contenido {
+  display: grid;
+  gap: 0;
+  padding: 0 22px;
+}
+
+.expediente-pestanas__contenido > .panel,
+.expediente-pestanas__columnas > .panel {
+  padding: 22px 0;
+  border: 0;
+  border-radius: 0;
+  background: none;
+  box-shadow: none;
+}
+
+/* Cada sección de la pestaña se separa con una línea, no con otra tarjeta. */
+.expediente-pestanas__contenido > * + * {
+  border-top: 1px solid var(--color-borde-suave);
+}
+
+.expediente-pestanas__columnas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0 32px;
+}
+
+.expediente-pestanas__columnas > .panel + .panel {
+  padding-left: 32px;
+  border-left: 1px solid var(--color-borde-suave);
+  margin-left: -1px;
+}
+
+@media (max-width: 900px) {
+  .panel.expediente__cabecera {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .expediente__cabecera .datos-docente {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  /* Con dos columnas, el dato que queda solo ocupa la fila entera y no deja hueco. */
+  .expediente__cabecera .datos-docente__item:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+
+  .expediente-pestanas__columnas {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .expediente-pestanas__columnas > .panel + .panel {
+    padding-left: 0;
+    border-left: 0;
+    border-top: 1px solid var(--color-borde-suave);
+  }
+}
+
+.expediente-pestanas__corta {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .expediente-pestanas__contenido {
+    padding: 0 14px;
+  }
+
+  .expediente-pestanas__barra {
+    padding: 0 6px;
+  }
+
+  .expediente-pestanas__pestana {
+    gap: 5px;
+    padding: 0 8px;
+  }
+
+  /* En el celular el nombre corto evita que las pestañas se salgan; los lectores siguen oyendo el largo. */
+  .expediente-pestanas__larga {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+
+  .expediente-pestanas__corta {
+    display: inline;
+  }
 }

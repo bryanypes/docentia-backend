@@ -3,7 +3,9 @@ import userEvent from '@testing-library/user-event'
 import { useState } from 'react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import * as analisisService from '../services/analisisService.js'
+import { MemoryRouter } from 'react-router-dom'
 import { ComentariosDocente } from './ComentariosDocente.jsx'
+import { ResumenAnalisisIA } from './ResumenAnalisisIA.jsx'
 import { ResultadoComentarios } from './ResultadoComentarios.jsx'
 
 vi.mock('../services/analisisService.js')
@@ -120,5 +122,38 @@ describe('Vista de comentarios del docente', () => {
     // Sondea cada 4 s: el resultado aparece sin recargar la página.
     expect(await screen.findByText('Análisis automático por reglas', {}, { timeout: 6000 })).toBeInTheDocument()
     expect(analisisService.obtenerAnalisisDocente).toHaveBeenCalledTimes(2)
+  })
+})
+
+describe('Resumen del análisis en el expediente', () => {
+  it('muestra fortalezas y oportunidades y despliega los comentarios de estudiantes', async () => {
+    analisisService.obtenerAnalisisDocente.mockResolvedValue(COMPLETADO)
+    render(
+      <MemoryRouter>
+        <ResumenAnalisisIA idDocente={1} periodoId={1} />
+      </MemoryRouter>,
+    )
+    expect(await screen.findByText('Claridad al explicar ideas e instrucciones')).toBeInTheDocument()
+    expect(screen.getByText('Retroalimentación sobre los resultados')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Abrir el análisis completo/ })).toHaveAttribute('href', '/analisis?docente=1&periodo=1')
+    await userEvent.click(screen.getByRole('button', { name: 'Ver comentarios de estudiantes' }))
+    expect(await screen.findByText('Demora mucho la retroalimentación de los parciales.')).toBeInTheDocument()
+  })
+
+  it('sin análisis explica cuándo se puede pedir', async () => {
+    analisisService.obtenerAnalisisDocente.mockResolvedValue({
+      ...COMPLETADO,
+      estado: 'NO_DISPONIBLE_AUN',
+      motivo: 'VENTANA_ABIERTA',
+      mensaje: 'La recolección sigue abierta.',
+      resultado: null,
+    })
+    render(
+      <MemoryRouter>
+        <ResumenAnalisisIA idDocente={1} periodoId={1} />
+      </MemoryRouter>,
+    )
+    expect(await screen.findByText(/Se puede pedir cuando cierre la recolección/)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Ver comentarios de estudiantes' })).not.toBeInTheDocument()
   })
 })
