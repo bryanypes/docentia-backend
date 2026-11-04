@@ -200,9 +200,10 @@ public class AnalizadorLocal implements AnalizadorComentarios {
     return new Salida(resultado, etiquetados);
   }
 
+  /** Fortalezas u oportunidades: solo temas recurrentes, por relevancia, hasta el máximo. */
   private List<Tema> mejores(List<Tema> temas, String polaridad) {
     return temas.stream()
-        .filter(t -> t.polaridad().equals(polaridad))
+        .filter(t -> t.recurrente() && t.polaridad().equals(polaridad))
         .limit(parametros.maximoPorLista())
         .toList();
   }
