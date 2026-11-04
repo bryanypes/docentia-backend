@@ -7,9 +7,10 @@ import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { useSesion } from '../../auth/sesionContext.js'
 import { Agradecimiento, FormularioEstudiante } from '../../estudiante/components/FormularioEstudiante.jsx'
+import { CelebracionFinal } from '../../estudiante/components/CelebracionFinal.jsx'
 import { ResumenEstudiante } from '../../estudiante/components/ResumenEstudiante.jsx'
 import { guardarResumen, leerResumen } from '../../estudiante/resumenLocal.js'
-import { enviarEvaluacion, obtenerEvaluacion } from '../../estudiante/services/estudianteService.js'
+import { enviarEvaluacion, listarEvaluaciones, obtenerEvaluacion } from '../../estudiante/services/estudianteService.js'
 
 export default function HeteroevaluacionClase() {
   const { idAsignacion } = useParams()
@@ -17,12 +18,20 @@ export default function HeteroevaluacionClase() {
   const cargar = useCallback(() => obtenerEvaluacion(idAsignacion), [idAsignacion])
   const { datos, error, cargando, recargar } = useFetch(cargar, [cargar])
   const [enviada, setEnviada] = useState(false)
+  // Tras enviar: si ya no le quedan pendientes, el cierre es una celebración con el total evaluado.
+  const [terminoTodas, setTerminoTodas] = useState(null)
   const enviar = useCallback(
     async (envio) => {
       await enviarEvaluacion(idAsignacion, envio)
       // Copia solo en este navegador: el servidor no sabe quién respondió qué.
       guardarResumen(usuario.idUsuario, idAsignacion, envio)
       setEnviada(true)
+      try {
+        const lista = await listarEvaluaciones()
+        if (lista && lista.pendientes === 0) setTerminoTodas({ total: lista.evaluaciones.length })
+      } catch {
+        // Sin la lista queda el agradecimiento de siempre.
+      }
     },
     [idAsignacion, usuario.idUsuario],
   )
@@ -53,7 +62,10 @@ export default function HeteroevaluacionClase() {
             {!noEncontrado && <Boton icono={RefreshCw} onClick={recargar}>Intentar de nuevo</Boton>}
           </EstadoVista>
         )}
-        {enviada && <Agradecimiento />}
+        {enviada && terminoTodas && (
+          <CelebracionFinal nombre={usuario.nombreCompleto.split(' ')[0]} total={terminoTodas.total} />
+        )}
+        {enviada && !terminoTodas && <Agradecimiento />}
         {datos && yaEnviada && <ResumenEstudiante formulario={datos} copia={copia} />}
         {datos && !yaEnviada && <FormularioEstudiante formulario={datos} onEnviar={enviar} />}
       </div>
