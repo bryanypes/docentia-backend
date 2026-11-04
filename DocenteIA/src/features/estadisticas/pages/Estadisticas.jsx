@@ -140,6 +140,9 @@ export default function Estadisticas() {
   const r = useMemo(() => calcular(visibles, { umbral, agruparPor }), [visibles, umbral, agruparPor])
   const embudo = useMemo(() => embudoDelProceso(visibles), [visibles])
   const facultadesPanorama = useMemo(() => panoramaPorFacultad(visibles, umbral), [visibles, umbral])
+  // Las dos tablas van lado a lado solo si las dos son cortas; si no, cada una a todo el ancho.
+  const emparejarTablas =
+    esVicerrector && (r?.porGrupo.length ?? 0) <= FILAS_COMPACTAS && facultadesPanorama.length <= FILAS_COMPACTAS
   // El resumen de comentarios se pide por id de programa.
   const idProgramaElegido = filtros.programa
     ? (filas.find((f) => f.docente.nombrePrograma === filtros.programa)?.docente.idPrograma ?? null)
@@ -404,23 +407,6 @@ export default function Estadisticas() {
               </p>
             </Panel>
 
-            <Panel titulo="Distribución de promedios" descripcion="Cuántos docentes hay en cada tramo de medio punto." icono={Sigma} tono="cielo">
-              <div className="estadisticas__histograma" role="list" aria-label="Docentes por tramo de promedio">
-                {r.histograma.map((h) => (
-                  <div key={h.etiqueta} className="estadisticas__columna" role="listitem" aria-label={`${h.etiqueta}: ${plural(h.cantidad, 'docente', 'docentes')}`}>
-                    <span className="estadisticas__columna-valor">{h.cantidad || ''}</span>
-                    <span className="estadisticas__columna-riel" aria-hidden="true">
-                      <span
-                        className={`estadisticas__columna-relleno${h.hasta <= r.umbral ? ' estadisticas__columna-relleno--bajo' : ''}`}
-                        style={{ height: `${(h.cantidad / maxHistograma) * 100}%` }}
-                      />
-                    </span>
-                    <span className="estadisticas__columna-etiqueta">{h.etiqueta}</span>
-                  </div>
-                ))}
-              </div>
-            </Panel>
-
             <Panel titulo="Avance del proceso" descripcion="Dónde está cada docente, de las evaluaciones al acta firmada." icono={Route} tono="turquesa">
               {/* Solo las etapas con docentes: con pocos datos la tarjeta no se llena de barras en cero. */}
               <ul className="estadisticas__barras">
@@ -468,12 +454,31 @@ export default function Estadisticas() {
               <p className="estadisticas__nota">Pulsa una fuente para ver los docentes en esa etapa.</p>
             </Panel>
 
+            <Panel
+              className={esVicerrector ? 'estadisticas__doble' : 'estadisticas__ancho'}
+              titulo="Distribución de promedios" descripcion="Cuántos docentes hay en cada tramo de medio punto." icono={Sigma} tono="cielo">
+              <div className="estadisticas__histograma" role="list" aria-label="Docentes por tramo de promedio">
+                {r.histograma.map((h) => (
+                  <div key={h.etiqueta} className="estadisticas__columna" role="listitem" aria-label={`${h.etiqueta}: ${plural(h.cantidad, 'docente', 'docentes')}`}>
+                    <span className="estadisticas__columna-valor">{h.cantidad || ''}</span>
+                    <span className="estadisticas__columna-riel" aria-hidden="true">
+                      <span
+                        className={`estadisticas__columna-relleno${h.hasta <= r.umbral ? ' estadisticas__columna-relleno--bajo' : ''}`}
+                        style={{ height: `${(h.cantidad / maxHistograma) * 100}%` }}
+                      />
+                    </span>
+                    <span className="estadisticas__columna-etiqueta">{h.etiqueta}</span>
+                  </div>
+                ))}
+              </div>
+            </Panel>
+
             {esVicerrector && <EmbudoProceso pasos={embudo} className="" />}
           </div>
           <div className="estadisticas__rejilla">
 
             <Panel
-              className={r.porGrupo.length > FILAS_COMPACTAS ? 'estadisticas__ancho' : ''}
+              className={emparejarTablas ? '' : 'estadisticas__ancho'}
               titulo={`Comparación por ${nombreGrupo}`}
               descripcion={`Promedio y avance en cada ${nombreGrupo}. Pulsa una fila para filtrar.`}
               icono={ChartColumnBig}
@@ -523,7 +528,7 @@ export default function Estadisticas() {
 
             {esVicerrector && (
               <PanoramaFacultades
-                className={facultadesPanorama.length > FILAS_COMPACTAS ? 'estadisticas__ancho' : ''}
+                className={emparejarTablas ? '' : 'estadisticas__ancho'}
                 facultades={facultadesPanorama}
                 umbral={umbral}
                 onElegir={(f) => fijar('facultad', String(f.idFacultad))}

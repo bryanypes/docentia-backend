@@ -203,3 +203,31 @@
     grid-template-columns: minmax(0, 1fr);
   }
 }
+
+/* Botón de información junto al título: abre la explicación de DocenteIA en un modal. */
+.analisis__ayuda {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--color-borde);
+  border-radius: 50%;
+  background: var(--color-superficie);
+  color: var(--color-azul);
+  cursor: pointer;
+}
+
+.analisis__ayuda:hover {
+  background: var(--color-azul-suave);
+}
+
+.analisis__ayuda:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+/* En el modal los pasos van uno debajo del otro. */
+.modal .analisis__guia {
+  grid-template-columns: minmax(0, 1fr);
+}

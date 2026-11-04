@@ -86,7 +86,9 @@ function ContadorCoevaluaciones() {
 export function Sidebar({ id, movil = false, onCerrar, onNavegar }) {
   const { usuario, cerrarSesion } = useSesion()
   const enlaces = (NAVEGACION[usuario.rol] ?? []).filter(
-    ({ ruta }) => FUNCIONES.coberturaEstudiantes || ruta !== '/matricula',
+    ({ ruta }) =>
+      (FUNCIONES.coberturaEstudiantes || ruta !== '/matricula') &&
+      (FUNCIONES.cargaCsvEstudiantes || ruta !== '/importaciones'),
   )
 
   return (
