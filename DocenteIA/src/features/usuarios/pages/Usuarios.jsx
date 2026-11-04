@@ -1,6 +1,6 @@
-import { Power, PowerOff, RefreshCw, Search, UserPlus, UserRound } from 'lucide-react'
+import { Power, PowerOff, RefreshCw, ScrollText, Search, UserPlus, UserRound, Users } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
-import { Outlet, useNavigate } from 'react-router-dom'
+import { Outlet, useNavigate, useSearchParams } from 'react-router-dom'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
 import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
@@ -11,6 +11,7 @@ import { MensajeNavegacion } from '../../../shared/components/ui/MensajeNavegaci
 import { ETIQUETA_ROL, ROLES } from '../../../shared/constants/dominio.js'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { iniciales, normalizarTexto } from '../../../shared/utils/formatters.js'
+import { RegistroAuditoria } from '../../auditoria/components/RegistroAuditoria.jsx'
 import { useSesion } from '../../auth/sesionContext.js'
 import { cambiarEstadoUsuario, listarUsuarios } from '../services/usuariosService.js'
 import './Usuarios.css'
@@ -32,6 +33,9 @@ function vinculo(usuario) {
 export default function Usuarios() {
   const { confirmar } = useAvisos()
   const navegar = useNavigate()
+  // La actividad (auditoría) vive como pestaña de Usuarios.
+  const [parametros, setParametros] = useSearchParams()
+  const vista = parametros.get('vista') === 'actividad' ? 'actividad' : 'usuarios'
   const { usuario: sesion } = useSesion()
   const [rol, setRol] = useState(TODOS)
   const [viendo, setViendo] = useState(null)
@@ -93,12 +97,39 @@ export default function Usuarios() {
         titulo="Usuarios y roles"
         subtitulo="Cada persona tiene un solo rol. La coordinación queda vinculada a una facultad y el docente a un programa."
       >
-        <Boton icono={UserPlus} onClick={() => navegar('/usuarios/nuevo', { state: { conservarFoco: true } })}>
-          Nuevo usuario
-        </Boton>
+        {vista === 'usuarios' && (
+          <Boton icono={UserPlus} onClick={() => navegar('/usuarios/nuevo', { state: { conservarFoco: true } })}>
+            Nuevo usuario
+          </Boton>
+        )}
       </Encabezado>
+      <div className="usuarios__pestanas" role="tablist" aria-label="Secciones de usuarios">
+        {[
+          ['usuarios', 'Usuarios', Users],
+          ['actividad', 'Actividad', ScrollText],
+        ].map(([clave, etiqueta, Icono]) => (
+          <button
+            key={clave}
+            type="button"
+            role="tab"
+            aria-selected={vista === clave}
+            className={`usuarios__pestana${vista === clave ? ' usuarios__pestana--activa' : ''}`}
+            onClick={() => setParametros(clave === 'usuarios' ? {} : { vista: clave }, { replace: true })}
+          >
+            <Icono size={16} aria-hidden="true" />
+            {etiqueta}
+          </button>
+        ))}
+      </div>
+      {vista === 'actividad' && (
+        <div className="pagina" role="tabpanel" aria-label="Actividad">
+          <p className="usuarios__ayuda-actividad">Registro de auditoría: quién hizo qué y cuándo. Solo lectura.</p>
+          <RegistroAuditoria />
+        </div>
+      )}
 
-      <div className="pagina">
+      {vista === 'usuarios' && (
+      <div className="pagina" role="tabpanel" aria-label="Usuarios">
         <MensajeNavegacion />
         <div aria-live="polite">{resultado && <Aviso tipo={resultado.tipo} titulo={resultado.texto} />}</div>
 
@@ -251,6 +282,7 @@ export default function Usuarios() {
           </div>
         )}
       </div>
+      )}
 
       {viendo && <ModalUsuario usuario={viendo} vinculo={vinculo(viendo)} onCerrar={() => setViendo(null)} />}
 

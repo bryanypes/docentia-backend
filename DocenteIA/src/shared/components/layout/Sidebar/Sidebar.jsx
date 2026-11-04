@@ -1,5 +1,4 @@
 import {
-  BookOpen,
   Building2,
   CalendarDays,
   CalendarRange,
@@ -17,7 +16,6 @@ import {
   MessagesSquare,
   PenLine,
   Scale,
-  ScrollText,
   Settings,
   UserCog,
   Users,
@@ -64,10 +62,8 @@ const NAVEGACION = {
     { ruta: '/panel-programas', etiqueta: 'Panel por programa', Icono: ChartColumn },
     { ruta: '/periodos', etiqueta: 'Periodos', Icono: CalendarRange },
     { ruta: '/ponderaciones', etiqueta: 'Ponderaciones', Icono: Scale },
-    { ruta: '/facultades', etiqueta: 'Facultades', Icono: Building2 },
-    { ruta: '/programas', etiqueta: 'Programas', Icono: BookOpen },
+    { ruta: '/facultades', etiqueta: 'Facultades y programas', Icono: Building2 },
     { ruta: '/usuarios', etiqueta: 'Usuarios', Icono: UserCog },
-    { ruta: '/auditoria', etiqueta: 'Auditoría', Icono: ScrollText },
   ],
 }
 
