@@ -2,6 +2,7 @@ package com.uniautonoma.docentia.service.analisis;
 
 import com.uniautonoma.docentia.repository.ComentarioEstudianteRepository;
 import java.util.List;
+import org.springframework.context.annotation.Primary;
 import org.springframework.stereotype.Component;
 
 /**
@@ -13,6 +14,7 @@ import org.springframework.stereotype.Component;
  * sin comentario no hay nada que analizar.
  */
 @Component
+@Primary
 public class ComentariosImportadosProveedor implements ProveedorComentarios {
 
   private final ComentarioEstudianteRepository comentarioRepository;
