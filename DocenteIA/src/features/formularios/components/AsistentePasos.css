@@ -439,21 +439,49 @@
   margin-inline: auto;
 }
 
-/* Centinela de la cabecera fija: marca el punto donde se pega. */
-.cuestionario__centinela {
-  display: block;
-  height: 1px;
-  margin-bottom: -1px;
+/* La cabecera completa va en el flujo normal (no fija): su alto nunca cambia. */
+.cuestionario .cuestionario__cabecera {
+  position: static;
 }
 
-/* La cabecera se pega debajo de la barra superior del celular (en escritorio, arriba del todo). */
-.cuestionario__cabecera {
+/* Barra compacta: vive en un contenedor fijo de alto cero, así aparece encima sin mover la página. */
+.cuestionario__fija {
+  position: sticky;
   top: var(--alto-barra-fija, 0px);
-  transition: padding 0.2s ease, gap 0.2s ease, box-shadow 0.2s ease;
+  z-index: 8;
+  height: 0;
+  /* Compensa el espacio de la rejilla del cuestionario: no debe sumar alto. */
+  margin-bottom: -16px;
+}
+
+.cuestionario__compacta {
+  position: absolute;
+  top: 0;
+  right: 0;
+  left: 0;
+  display: grid;
+  gap: 6px;
+  padding: 10px 16px;
+  border: 1px solid var(--color-borde-suave);
+  border-radius: 0 0 var(--radio-lg) var(--radio-lg);
+  background: color-mix(in srgb, var(--color-superficie) 96%, transparent);
+  backdrop-filter: blur(6px);
+  box-shadow: 0 8px 18px -14px rgba(10, 30, 80, 0.45);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-6px);
+  transition: opacity 0.2s ease, transform 0.2s ease, visibility 0s linear 0.2s;
+}
+
+.cuestionario__compacta--visible {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  transition: opacity 0.2s ease, transform 0.2s ease;
 }
 
 .cuestionario__resumen-paso {
-  display: none;
+  display: flex;
   align-items: baseline;
   gap: 8px;
   min-width: 0;
@@ -476,31 +504,22 @@
   white-space: nowrap;
 }
 
-/* Versión compacta al bajar: rótulo del paso y barra de avance, sin los círculos. */
-.cuestionario__cabecera--compacta {
-  gap: 6px;
-  padding: 10px 14px;
-  border-radius: 0 0 var(--radio-lg) var(--radio-lg);
-  box-shadow: 0 8px 18px -14px rgba(10, 30, 80, 0.45);
-}
-
-.cuestionario__cabecera--compacta .cuestionario__resumen-paso {
-  display: flex;
-}
-
-.cuestionario__cabecera--compacta .cuestionario__pasos {
-  display: none;
-}
-
-.cuestionario__cabecera--compacta .cuestionario__avance {
+.cuestionario__compacta-avance {
+  display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
+  gap: 10px;
   font-size: 12px;
+  font-weight: var(--peso-semi);
+  color: var(--color-azul);
+  white-space: nowrap;
 }
 
-.cuestionario__cabecera--compacta .cuestionario__avance > span:first-child {
-  order: 2;
-  white-space: nowrap;
+@media (prefers-reduced-motion: reduce) {
+  .cuestionario__compacta,
+  .cuestionario__compacta--visible {
+    transition: none;
+  }
 }
 
 @media (max-width: 900px) {

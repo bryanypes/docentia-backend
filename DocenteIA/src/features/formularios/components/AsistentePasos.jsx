@@ -29,7 +29,9 @@ export function AsistentePasos({ pasos, revision, etiqueta = 'Pasos del cuestion
   const respondidas = pasos.reduce((a, p) => a + p.respondidas, 0)
   const total = pasos.reduce((a, p) => a + p.total, 0)
 
-  // Al bajar, la cabecera queda fija en versión compacta: un centinela invisible marca cuándo se pegó.
+  // La cabecera completa se queda en su lugar. Cuando sale de la vista aparece encima una barra
+  // compacta que no ocupa espacio en la página: así nada cambia de alto al bajar y el navegador no
+  // reacomoda el desplazamiento (antes la cabecera se encogía y la página saltaba sin parar).
   const centinela = useRef(null)
   const [compacta, setCompacta] = useState(false)
   useEffect(() => {
@@ -69,12 +71,23 @@ export function AsistentePasos({ pasos, revision, etiqueta = 'Pasos del cuestion
 
   return (
     <div className="cuestionario">
-      <span ref={centinela} className="cuestionario__centinela" aria-hidden="true" />
-      <div className={`cuestionario__cabecera${compacta ? ' cuestionario__cabecera--compacta' : ''}`}>
-        <p className="cuestionario__resumen-paso" aria-hidden="true">
-          <strong>{paso.revision ? 'Último paso' : `Paso ${actual + 1} de ${pasos.length}`}</strong>
-          <span>{paso.titulo}</span>
-        </p>
+      <div className="cuestionario__fija" aria-hidden="true">
+        <div className={`cuestionario__compacta${compacta ? ' cuestionario__compacta--visible' : ''}`}>
+          <p className="cuestionario__resumen-paso">
+            <strong>{paso.revision ? 'Último paso' : `Paso ${actual + 1} de ${pasos.length}`}</strong>
+            <span>{paso.titulo}</span>
+          </p>
+          <span className="cuestionario__compacta-avance">
+            <span className="cuestionario__riel">
+              <span className="cuestionario__relleno" style={{ width: `${total ? (respondidas / total) * 100 : 0}%` }} />
+            </span>
+            <span>
+              {respondidas} de {total}
+            </span>
+          </span>
+        </div>
+      </div>
+      <div ref={centinela} className="cuestionario__cabecera">
         <div className="cuestionario__avance">
           <span>
             {respondidas} de {total} ítems respondidos
