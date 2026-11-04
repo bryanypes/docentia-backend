@@ -17,7 +17,7 @@
   "fuente" : "FORMULARIO",
   "idSolicitud" : 1,
   "version" : 1,
-  "generadoEn" : "2026-11-03T22:02:17.212602",
+  "generadoEn" : "2026-11-03T22:09:31.381451",
   "estadoHallazgos" : "PENDIENTE_VALIDACION",
   "resultado" : {
     "tipoModelo" : "REGLAS",
@@ -29,10 +29,10 @@
     },
     "sentimientoGlobal" : {
       "positivos" : 8,
-      "negativos" : 2,
-      "neutros" : 1,
+      "negativos" : 3,
+      "neutros" : 0,
       "mixtos" : 0,
-      "indice" : 0.55
+      "indice" : 0.45
     },
     "temas" : [ {
       "criterio" : "C2",
@@ -73,11 +73,11 @@
       "descriptor" : "D07",
       "nombre" : "Retroalimentación sobre los resultados",
       "polaridad" : "NEGATIVO",
-      "frecuencia" : 2,
-      "porcentaje" : 18.18,
+      "frecuencia" : 3,
+      "porcentaje" : 27.27,
       "intensidad" : 1.2,
-      "relevancia" : 4.4,
-      "recurrente" : false,
+      "relevancia" : 6.6,
+      "recurrente" : true,
       "citas" : [ {
         "comentarioId" : 1,
         "fragmento" : "Demora mucho la retroalimentación de los parciales"
@@ -146,82 +146,23 @@
           "comentarioId" : 6,
           "fragmento" : "Explica muy bien los temas y usa ejemplos claros"
         } ]
-      }, {
-        "criterio" : "C4",
-        "descriptor" : "D09",
-        "nombre" : "Trato respetuoso y cordial",
-        "polaridad" : "POSITIVO",
-        "frecuencia" : 2,
-        "porcentaje" : 18.18,
-        "intensidad" : 2.65,
-        "relevancia" : 7.3,
-        "recurrente" : false,
-        "citas" : [ {
-          "comentarioId" : 3,
-          "fragmento" : "Es muy puntual y respetuoso con todos"
-        }, {
-          "comentarioId" : 11,
-          "fragmento" : "Es respetuoso y escucha a los estudiantes"
-        } ]
-      }, {
-        "criterio" : "C5",
-        "descriptor" : "D12",
-        "nombre" : "Uso de metodologías, herramientas y tecnologías",
-        "polaridad" : "POSITIVO",
-        "frecuencia" : 1,
-        "porcentaje" : 9.09,
-        "intensidad" : 3.1,
-        "relevancia" : 4.1,
-        "recurrente" : false,
-        "citas" : [ {
-          "comentarioId" : 6,
-          "fragmento" : "Explica muy bien los temas y usa ejemplos claros"
-        } ]
-      }, {
-        "criterio" : "C4",
-        "descriptor" : "D10",
-        "nombre" : "Atención a las necesidades de los estudiantes",
-        "polaridad" : "POSITIVO",
-        "frecuencia" : 1,
-        "porcentaje" : 9.09,
-        "intensidad" : 2.3,
-        "relevancia" : 3.3,
-        "recurrente" : false,
-        "citas" : [ {
-          "comentarioId" : 11,
-          "fragmento" : "Es respetuoso y escucha a los estudiantes"
-        } ]
       } ],
       "oportunidades" : [ {
         "criterio" : "C3",
         "descriptor" : "D07",
         "nombre" : "Retroalimentación sobre los resultados",
         "polaridad" : "NEGATIVO",
-        "frecuencia" : 2,
-        "porcentaje" : 18.18,
+        "frecuencia" : 3,
+        "porcentaje" : 27.27,
         "intensidad" : 1.2,
-        "relevancia" : 4.4,
-        "recurrente" : false,
+        "relevancia" : 6.6,
+        "recurrente" : true,
         "citas" : [ {
           "comentarioId" : 1,
           "fragmento" : "Demora mucho la retroalimentación de los parciales"
         }, {
           "comentarioId" : 10,
           "fragmento" : "Las notas se demoran mucho en salir"
-        } ]
-      }, {
-        "criterio" : "C3",
-        "descriptor" : "D06",
-        "nombre" : "Evaluaciones alineadas con lo enseñado",
-        "polaridad" : "NEGATIVO",
-        "frecuencia" : 1,
-        "porcentaje" : 9.09,
-        "intensidad" : 1.2,
-        "relevancia" : 2.2,
-        "recurrente" : false,
-        "citas" : [ {
-          "comentarioId" : 1,
-          "fragmento" : "Demora mucho la retroalimentación de los parciales"
         } ]
       } ]
     },
@@ -244,7 +185,7 @@
       "descriptor" : "D07",
       "polaridad" : "NEGATIVO",
       "porcentajeAnterior" : null,
-      "porcentajeActual" : 18.18,
+      "porcentajeActual" : 27.27,
       "cambio" : "SIN_REFERENCIA"
     }, {
       "criterio" : "C5",
@@ -284,8 +225,8 @@
       "codigo" : "C3",
       "nombre" : "Capacidad para evaluar procesos de docencia",
       "positivos" : 0,
-      "negativos" : 3,
-      "neutros" : 1,
+      "negativos" : 4,
+      "neutros" : 0,
       "balance" : -1.0
     }, {
       "codigo" : "C4",

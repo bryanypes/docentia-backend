@@ -154,6 +154,8 @@ NEGATIVO | injust | 1.5
 NEGATIVO | lent | 0.8
 NEGATIVO | demor | 1.2
 NEGATIVO | tarde$ | 0.8
+NEGATIVO | tardan$ | 1.2
+NEGATIVO | tarda$ | 1.2
 NEGATIVO | falt | 1
 NEGATIVO | paila | 1.5
 NEGATIVO | chimbo$ | 1.5
@@ -252,6 +254,8 @@ D07 | subir las notas
 D07 | sube las notas
 D07 | notas a tiempo
 D07 | demor
+D07 | tardan$
+D07 | tarda$
 D07 | observaciones
 D08 | asesor
 D08 | tutori

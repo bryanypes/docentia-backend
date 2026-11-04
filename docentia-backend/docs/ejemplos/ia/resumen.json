@@ -14,8 +14,8 @@
   },
   "sentimientoGlobal" : {
     "positivos" : 21,
-    "negativos" : 6,
-    "neutros" : 3,
+    "negativos" : 9,
+    "neutros" : 0,
     "mixtos" : 0
   },
   "temas" : [ {
@@ -31,8 +31,8 @@
     "descriptor" : "D07",
     "nombre" : "Retroalimentación sobre los resultados",
     "polaridad" : "NEGATIVO",
-    "frecuencia" : 6,
-    "porcentaje" : 20.0,
+    "frecuencia" : 9,
+    "porcentaje" : 30.0,
     "docentes" : 3
   }, {
     "criterio" : "C4",
@@ -77,8 +77,8 @@
     "codigo" : "C3",
     "nombre" : "Capacidad para evaluar procesos de docencia",
     "positivos" : 0,
-    "negativos" : 9,
-    "neutros" : 3
+    "negativos" : 12,
+    "neutros" : 0
   }, {
     "codigo" : "C4",
     "nombre" : "Sensibilidad social",
