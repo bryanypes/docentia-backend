@@ -4,6 +4,7 @@ import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { formatearFechaHora } from '../../../shared/utils/formatters.js'
 import { obtenerAnalisisDocente } from '../services/analisisService.js'
+import { ESTADO_ANALISIS } from '../estados.js'
 import { MensajeIA } from './DocenteIA.jsx'
 import './ResultadoComentarios.css'
 
@@ -16,15 +17,6 @@ const CAMBIO = {
   EN_AUMENTO: { texto: 'En aumento', Icono: ArrowUpRight, tono: 'turquesa' },
   EN_DISMINUCION: { texto: 'En disminución', Icono: ArrowDownRight, tono: 'coral' },
   SIN_REFERENCIA: { texto: 'Sin periodo anterior', Icono: Minus, tono: 'neutro' },
-}
-
-const ESTADO = {
-  EN_COLA: { robot: 'esperando', tono: 'violeta', titulo: 'El análisis está en cola' },
-  EN_PROCESO: { robot: 'pensando', tono: 'violeta', titulo: 'Estoy analizando los comentarios' },
-  INSUFICIENTE: { robot: 'error', tono: 'alerta', titulo: 'Evidencia insuficiente' },
-  ERROR: { robot: 'error', tono: 'coral', titulo: 'No pude generar el análisis' },
-  SIN_COMENTARIOS: { robot: 'esperando', tono: 'azul', titulo: 'No hubo comentarios útiles' },
-  NO_DISPONIBLE_AUN: { robot: 'esperando', tono: 'violeta', titulo: 'Todavía no hay análisis' },
 }
 
 const pct = (n) => `${String(Math.round(n * 10) / 10).replace('.', ',')} %`
@@ -85,7 +77,7 @@ export function ResultadoComentarios({ idDocente, periodoId, esCoordinador, crit
   }
   if (!datos) return null
 
-  const estado = ESTADO[datos.estado]
+  const estado = ESTADO_ANALISIS[datos.estado]
   const r = datos.resultado
   const rotuloModelo = r?.tipoModelo === 'LLM' ? 'Propuesto por un modelo de lenguaje' : 'Análisis automático por reglas'
 

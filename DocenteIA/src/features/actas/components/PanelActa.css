@@ -285,3 +285,60 @@
     justify-self: end;
   }
 }
+
+/* Oportunidades del análisis de comentarios, listas para volverse compromisos. */
+.acta-sugerencias {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 12px 14px;
+  border: 1px dashed var(--color-violeta);
+  border-radius: var(--radio-lg);
+  background: var(--color-violeta-fondo);
+}
+
+.acta-sugerencias__titulo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  font-size: 13.5px;
+  font-weight: var(--peso-fuerte);
+  color: var(--color-violeta);
+}
+
+.acta-sugerencias__lista {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.acta-sugerencias__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 12px;
+  padding: 10px 12px;
+  border-radius: var(--radio-md);
+  background: var(--color-superficie);
+}
+
+.acta-sugerencias__item div {
+  display: grid;
+  flex: 1 1 240px;
+  gap: 2px;
+  min-width: 0;
+}
+
+.acta-sugerencias__item strong {
+  font-size: 14px;
+}
+
+.acta-sugerencias__item span {
+  font-size: 12.5px;
+  color: var(--color-texto-tenue);
+  overflow-wrap: anywhere;
+}

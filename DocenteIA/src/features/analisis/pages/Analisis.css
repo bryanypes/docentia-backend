@@ -118,43 +118,88 @@
   margin: 2px 0 0;
 }
 
-/* Pasos de la guía de DocenteIA. */
-.analisis__pasos-ia {
+/* Guía de cuándo se puede pedir el análisis: tres pasos con su estado. */
+.analisis__guia {
   display: grid;
-  gap: 6px;
-  margin: 0;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 10px 0 0;
   padding: 0;
   list-style: none;
 }
 
-.analisis__pasos-ia li {
+.analisis__guia-paso {
+  --tono: var(--color-texto-tenue);
+  --tono-fondo: var(--color-fondo);
   display: flex;
   align-items: flex-start;
   gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-borde-suave);
+  border-top: 3px solid var(--tono);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie);
+  font-size: 13px;
 }
 
-.analisis__pasos-ia span {
+.analisis__guia-paso--hecho {
+  --tono: var(--color-turquesa);
+  --tono-fondo: var(--color-turquesa-fondo);
+}
+
+.analisis__guia-paso--actual {
+  --tono: var(--color-violeta);
+  --tono-fondo: var(--color-violeta-fondo);
+  background: var(--color-violeta-fondo);
+}
+
+.analisis__guia-paso div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.analisis__guia-paso strong {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-texto);
+}
+
+.analisis__guia-paso div > span {
+  color: var(--color-texto-secundario);
+}
+
+.analisis__guia-marca {
   display: grid;
   flex: 0 0 auto;
   place-items: center;
-  width: 22px;
-  height: 22px;
-  margin-top: 1px;
+  width: 24px;
+  height: 24px;
   border-radius: 50%;
-  background: var(--color-azul);
-  color: var(--color-crema);
+  background: var(--tono-fondo);
+  color: var(--tono);
   font-size: 12px;
   font-weight: var(--peso-fuerte);
 }
 
-.mensaje-ia--compacto .analisis__pasos-ia {
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 10px;
-  font-size: 13px;
+.analisis__guia-paso--actual .analisis__guia-marca {
+  background: var(--tono);
+  color: var(--color-superficie);
+}
+
+.analisis__guia-ahora {
+  padding: 1px 8px;
+  border-radius: var(--radio-pildora);
+  background: var(--color-violeta);
+  color: var(--color-superficie);
+  font-size: 11px;
+  font-style: normal;
 }
 
 @media (max-width: 900px) {
-  .mensaje-ia--compacto .analisis__pasos-ia {
+  .analisis__guia {
     grid-template-columns: minmax(0, 1fr);
   }
 }

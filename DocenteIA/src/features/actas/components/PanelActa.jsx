@@ -1,4 +1,4 @@
-import { CalendarClock, Download, FileSignature, ListPlus, Plus, RefreshCw } from 'lucide-react'
+import { CalendarClock, Download, FileSignature, ListPlus, Plus, RefreshCw, Sparkles } from 'lucide-react'
 import { useCallback, useRef, useState } from 'react'
 import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
@@ -12,6 +12,8 @@ import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
 import { ETIQUETA_ROL, ROLES } from '../../../shared/constants/dominio.js'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { formatearFecha, formatearFechaHora, formatearNota } from '../../../shared/utils/formatters.js'
+import { compromisoDesdeTema } from '../../analisis/estados.js'
+import { obtenerAnalisisDocente } from '../../analisis/services/analisisService.js'
 import { useSesion } from '../../auth/sesionContext.js'
 import { obtenerConfiguracionEvaluacion } from '../../kpis/services/configuracionService.js'
 import { ETIQUETA_TIPO_ACTA } from '../../proceso/estados.js'
@@ -58,8 +60,8 @@ function enMeses(meses) {
 }
 
 /** Modal para agregar un compromiso: qué se compromete el docente y para cuándo. */
-function ModalCompromiso({ acta, ejecutar, ocupado, onCerrar }) {
-  const [descripcion, setDescripcion] = useState('')
+function ModalCompromiso({ acta, inicial = '', ejecutar, ocupado, onCerrar }) {
+  const [descripcion, setDescripcion] = useState(inicial)
   const [fechaLimite, setFechaLimite] = useState('')
   // Se calculan al abrir el modal: hoy y los plazos rápidos no cambian mientras está abierto.
   const [hoy] = useState(() => enMeses(0))
@@ -143,8 +145,53 @@ function ModalCompromiso({ acta, ejecutar, ocupado, onCerrar }) {
   )
 }
 
-function Compromisos({ acta, editable, ejecutar, ocupado }) {
-  const [agregando, setAgregando] = useState(false)
+/**
+ * Oportunidades de mejora que DocenteIA encontró en los comentarios de los estudiantes, listas para
+ * convertirse en compromisos. Quien redacta decide cuáles agregar y puede editar el texto.
+ */
+function SugerenciasIA({ idDocente, idPeriodo, compromisos, onAgregar }) {
+  const cargar = useCallback(
+    () => (idDocente && idPeriodo ? obtenerAnalisisDocente(idDocente, idPeriodo) : Promise.resolve(null)),
+    [idDocente, idPeriodo],
+  )
+  const { datos } = useFetch(cargar, [cargar])
+  const oportunidades = datos?.resultado?.aspectos.oportunidades ?? []
+  if (oportunidades.length === 0) return null
+  const usadas = new Set(compromisos.map((c) => c.descripcion))
+
+  return (
+    <div className="acta-sugerencias">
+      <p className="acta-sugerencias__titulo">
+        <Sparkles size={15} aria-hidden="true" />
+        Sugerencias de DocenteIA según los comentarios de estudiantes
+      </p>
+      <ul className="acta-sugerencias__lista">
+        {oportunidades.map((tema) => {
+          const texto = compromisoDesdeTema(tema)
+          const agregada = usadas.has(texto)
+          return (
+            <li key={`${tema.criterio}-${tema.descriptor}`} className="acta-sugerencias__item">
+              <div>
+                <strong>{tema.nombre}</strong>
+                <span>
+                  {tema.criterio} · {tema.frecuencia} {tema.frecuencia === 1 ? 'comentario' : 'comentarios'}
+                  {tema.citas?.[0] ? ` · «${tema.citas[0].fragmento}»` : ''}
+                </span>
+              </div>
+              <Boton variante="contorno" icono={Plus} disabled={agregada} onClick={() => onAgregar(texto)}>
+                {agregada ? 'Agregado' : 'Agregar'}
+              </Boton>
+            </li>
+          )
+        })}
+      </ul>
+    </div>
+  )
+}
+
+function Compromisos({ acta, idDocente, editable, ejecutar, ocupado }) {
+  // null: modal cerrado; texto (posiblemente vacío): modal abierto con ese compromiso de partida.
+  const [agregando, setAgregando] = useState(null)
   const faltan = editable && acta.requiereCompromisos && acta.compromisos.length === 0
   const titulo = acta.categoria?.codigo === 'BAJO' ? 'Plan de Mejoramiento Profesoral' : 'Compromisos'
 
@@ -156,11 +203,19 @@ function Compromisos({ acta, editable, ejecutar, ocupado }) {
           <span className="acta-compromisos__contador">{acta.compromisos.length}</span>
         </h3>
         {editable && (
-          <Boton icono={Plus} disabled={ocupado} onClick={() => setAgregando(true)}>
+          <Boton icono={Plus} disabled={ocupado} onClick={() => setAgregando('')}>
             Agregar compromiso
           </Boton>
         )}
       </div>
+      {editable && (
+        <SugerenciasIA
+          idDocente={idDocente}
+          idPeriodo={acta.periodo?.idPeriodo}
+          compromisos={acta.compromisos}
+          onAgregar={setAgregando}
+        />
+      )}
       {acta.compromisos.length === 0 ? (
         <div className={`acta-compromisos__vacio${faltan ? ' acta-compromisos__vacio--requerido' : ''}`}>
           <ListPlus size={22} aria-hidden="true" />
@@ -198,7 +253,9 @@ function Compromisos({ acta, editable, ejecutar, ocupado }) {
           ))}
         </ol>
       )}
-      {agregando && <ModalCompromiso acta={acta} ejecutar={ejecutar} ocupado={ocupado} onCerrar={() => setAgregando(false)} />}
+      {agregando !== null && (
+        <ModalCompromiso acta={acta} inicial={agregando} ejecutar={ejecutar} ocupado={ocupado} onCerrar={() => setAgregando(null)} />
+      )}
     </section>
   )
 }
@@ -299,7 +356,7 @@ function TipoActa({ acta, ejecutar, ocupado }) {
   )
 }
 
-function DetalleActa({ acta, usuario, rolCorrector, ejecutar, ocupado, error, onDescargar }) {
+function DetalleActa({ acta, idDocente, usuario, rolCorrector, ejecutar, ocupado, error, onDescargar }) {
   const estado = ESTADO_ACTA[acta.estado]
   const editable = acta.estado === 'BORRADOR' && usuario.rol === ROLES.COORDINADOR && acta.firmas.length === 0
   const umbral = formatearNota(acta.umbralCompromisos)
@@ -344,7 +401,7 @@ function DetalleActa({ acta, usuario, rolCorrector, ejecutar, ocupado, error, on
             : 'Es la constancia de que el docente recibió la retroalimentación: basta con la confirmación de lectura.'}
         </Aviso>
       )}
-      <Compromisos acta={acta} editable={editable} ejecutar={ejecutar} ocupado={ocupado} />
+      <Compromisos acta={acta} idDocente={idDocente} editable={editable} ejecutar={ejecutar} ocupado={ocupado} />
       <Firma acta={acta} usuario={usuario} ejecutar={ejecutar} ocupado={ocupado} error={error} />
       {acta.estado === 'FIRMADA' && (
         <>
@@ -409,7 +466,7 @@ export function PanelActa({ idDocente }) {
   const lista = actas.datos ?? []
   const [vigente, ...anteriores] = lista
   const rolCorrector = configuracion.datos?.rolCorrectorActas
-  const propsDetalle = { usuario, rolCorrector, ejecutar, ocupado, error, onDescargar: descargar }
+  const propsDetalle = { idDocente, usuario, rolCorrector, ejecutar, ocupado, error, onDescargar: descargar }
 
   return (
     <Panel titulo="Acta de la reunión" descripcion="Acta de compromiso o de retroalimentación; se firma en la reunión." icono={FileSignature} tono="rosa">

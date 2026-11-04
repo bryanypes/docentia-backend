@@ -2,6 +2,7 @@ import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderizarConSesion } from '../../../pruebas/renderizarConSesion.jsx'
+import { PeriodoContext } from '../../../shared/components/layout/AppLayout/periodoContext.js'
 import { ApiError } from '../../../services/api.js'
 import * as docentesService from '../../docentes/services/docentesService.js'
 import * as periodosService from '../../periodos/services/periodosService.js'
@@ -74,6 +75,22 @@ describe('Analisis', () => {
     analisisService.listarComentariosFiltrados.mockResolvedValue([
       { idComentario: 112, texto: 'Se viste mal.', categoria: 'APARIENCIA' },
     ])
+  })
+
+  it('con la recolección abierta explica que aún no se puede pedir y bloquea el botón', async () => {
+    analisisService.listarSolicitudes.mockResolvedValue([])
+    const ventanas = [{ etapa: 'RECOLECCION_CALIFICACIONES', abierta: true, fechaCierre: '2026-11-20' }]
+    renderizarConSesion(
+      <PeriodoContext.Provider value={{ periodo: { idPeriodo: 2 }, ventanas, cargando: false }}>
+        <Analisis />
+      </PeriodoContext.Provider>,
+      { ruta: '/analisis?docente=4&periodo=2' },
+    )
+    expect(await screen.findByRole('button', { name: 'Solicitar análisis' })).toBeDisabled()
+    const guia = screen.getByRole('list', { name: 'Cuándo se puede pedir el análisis' })
+    expect(within(guia).getByText('Los estudiantes comentan')).toBeInTheDocument()
+    expect(within(guia).getByText(/cierra el/)).toBeInTheDocument()
+    expect(screen.getByText('Disponible cuando cierre la recolección de calificaciones.')).toBeInTheDocument()
   })
 
   it('muestra el borrador con citas, comentario de origen y filtrados', async () => {

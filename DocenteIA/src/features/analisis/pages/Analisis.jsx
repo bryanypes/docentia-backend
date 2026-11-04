@@ -1,6 +1,7 @@
-import { MessagesSquare, RefreshCw, ShieldOff } from 'lucide-react'
+import { Check, MessagesSquare, RefreshCw, ShieldOff } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
+import { useVentanaEtapa } from '../../../shared/components/layout/AppLayout/periodoContext.js'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
 import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
@@ -8,9 +9,9 @@ import { Campo } from '../../../shared/components/ui/Campo/Campo.jsx'
 import { ErrorApi } from '../../../shared/components/ui/ErrorApi/ErrorApi.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
-import { ROLES } from '../../../shared/constants/dominio.js'
+import { ETAPAS, ROLES } from '../../../shared/constants/dominio.js'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
-import { formatearFechaHora } from '../../../shared/utils/formatters.js'
+import { formatearFecha, formatearFechaHora } from '../../../shared/utils/formatters.js'
 import { useSesion } from '../../auth/sesionContext.js'
 import { listarDocentes } from '../../docentes/services/docentesService.js'
 import { listarPeriodos } from '../../periodos/services/periodosService.js'
@@ -38,6 +39,53 @@ import {
   validarHallazgo,
 } from '../services/analisisService.js'
 import './Analisis.css'
+
+/**
+ * Cuándo se puede pedir el análisis, en tres pasos con el estado de cada uno: los estudiantes comentan
+ * en su encuesta, cierra la recolección y la coordinación lo solicita.
+ */
+function GuiaAnalisis({ recoleccionAbierta, fechaCierre, solicitado, esCoordinador }) {
+  const pasos = [
+    {
+      titulo: 'Los estudiantes comentan',
+      texto: 'Al final de su encuesta, cada estudiante escribe un comentario anónimo sobre el docente.',
+      estado: recoleccionAbierta ? 'actual' : 'hecho',
+    },
+    {
+      titulo: 'Cierra la recolección',
+      texto: recoleccionAbierta
+        ? `Mientras sigue abierta no se analiza${fechaCierre ? `: cierra el ${formatearFecha(fechaCierre)}` : ''}.`
+        : `La recolección ya cerró${fechaCierre ? ` el ${formatearFecha(fechaCierre)}` : ''}.`,
+      estado: recoleccionAbierta ? 'pendiente' : 'hecho',
+    },
+    {
+      titulo: esCoordinador ? 'Solicitas el análisis' : 'La coordinación lo solicita',
+      texto: `Por docente, con al menos ${MINIMO_ENCUESTAS} encuestas con comentario. Luego se revisa cada hallazgo antes de que el docente lo vea.`,
+      estado: recoleccionAbierta ? 'pendiente' : solicitado ? 'hecho' : 'actual',
+    },
+  ]
+  return (
+    <ol className="analisis__guia" aria-label="Cuándo se puede pedir el análisis">
+      {pasos.map((paso, i) => (
+        <li key={paso.titulo} className={`analisis__guia-paso analisis__guia-paso--${paso.estado}`}>
+          <span className="analisis__guia-marca" aria-hidden="true">
+            {paso.estado === 'hecho' ? <Check size={14} strokeWidth={3} /> : i + 1}
+          </span>
+          <div>
+            <strong>
+              {paso.titulo}
+              {paso.estado === 'actual' && <em className="analisis__guia-ahora">Ahora</em>}
+            </strong>
+            <span>{paso.texto}</span>
+          </div>
+          <span className="solo-lectores">
+            {paso.estado === 'hecho' ? ' (cumplido)' : paso.estado === 'actual' ? ' (paso actual)' : ' (pendiente)'}
+          </span>
+        </li>
+      ))}
+    </ol>
+  )
+}
 
 function EstadoSolicitud({ solicitud, agotado, onReanudar }) {
   const { estado } = solicitud
@@ -273,6 +321,10 @@ export default function Analisis() {
   const periodos = useFetch(listarPeriodos)
   const periodoActivo = periodos.datos?.find((periodo) => periodo.esActivo)
   const periodoId = parametros.get('periodo') ?? (periodoActivo ? String(periodoActivo.idPeriodo) : '')
+  // La recolección solo puede estar abierta en el periodo activo; los anteriores ya cerraron.
+  const recoleccion = useVentanaEtapa(ETAPAS.RECOLECCION_CALIFICACIONES)
+  const esPeriodoActivo = Boolean(periodoActivo) && String(periodoActivo.idPeriodo) === periodoId
+  const recoleccionAbierta = esPeriodoActivo && Boolean(recoleccion?.abierta)
   const [solicitudNueva, setSolicitudNueva] = useState(null)
   const [errorSolicitar, setErrorSolicitar] = useState(null)
   const [enviando, setEnviando] = useState(false)
@@ -316,8 +368,8 @@ export default function Analisis() {
     <>
       <Encabezado
         miga={`${esCoordinador ? 'Coordinación' : 'Vicerrectoría'} · Análisis de comentarios`}
-        titulo="Análisis de comentarios"
-        subtitulo="Resume los comentarios abiertos en fortalezas y oportunidades, con citas textuales verificables."
+        titulo="Análisis de comentarios de estudiantes"
+        subtitulo="Lo que los estudiantes escriben al final de su encuesta, resumido en fortalezas y oportunidades con citas textuales."
       />
       <div className="pagina">
         <div className="analisis__filtros">
@@ -354,18 +406,17 @@ export default function Analisis() {
           </Campo>
         </div>
 
-        <MensajeIA robot="saludo" titulo="Hola, soy DocenteIA" tamano={docenteId ? 'compacto' : 'normal'}>
-          <ol className="analisis__pasos-ia">
-            <li>
-              <span>1</span>Leo los comentarios abiertos de los estudiantes, ya anonimizados y sin los ofensivos.
-            </li>
-            <li>
-              <span>2</span>Los agrupo en fortalezas y oportunidades de mejora, citando sus palabras textuales.
-            </li>
-            <li>
-              <span>3</span>La coordinación revisa cada hallazgo y decide qué ve el docente.
-            </li>
-          </ol>
+        <MensajeIA robot="saludo" titulo="Hola, soy DocenteIA: analizo los comentarios de los estudiantes" tamano="compacto">
+          <p>
+            Leo los comentarios anónimos que dejan en su encuesta, ya sin los ofensivos, y los agrupo en fortalezas y
+            oportunidades de mejora citando sus palabras. Así sabes cuándo puedes pedirme el análisis:
+          </p>
+          <GuiaAnalisis
+            recoleccionAbierta={recoleccionAbierta}
+            fechaCierre={esPeriodoActivo ? recoleccion?.fechaCierre : null}
+            solicitado={Boolean(docenteId && idSolicitud)}
+            esCoordinador={esCoordinador}
+          />
         </MensajeIA>
 
         {!docenteId || !periodoId ? (
@@ -386,9 +437,12 @@ export default function Analisis() {
           <>
             {esCoordinador && (
               <div className="analisis__acciones">
-                <Boton onClick={solicitar} disabled={enviando || estaEnCurso(ultima.datos)}>
+                <Boton onClick={solicitar} disabled={enviando || recoleccionAbierta || estaEnCurso(ultima.datos)}>
                   {enviando ? 'Solicitando…' : idSolicitud ? 'Solicitar un análisis nuevo' : 'Solicitar análisis'}
                 </Boton>
+                {recoleccionAbierta && (
+                  <span className="campo__ayuda">Disponible cuando cierre la recolección de calificaciones.</span>
+                )}
               </div>
             )}
             <ErrorApi error={errorSolicitar} />
