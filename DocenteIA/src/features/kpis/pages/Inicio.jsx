@@ -5,6 +5,7 @@ import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabez
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { MensajeNavegacion } from '../../../shared/components/ui/MensajeNavegacion/MensajeNavegacion.jsx'
+import { Portada } from '../../../shared/components/ui/Portada/Portada.jsx'
 import { useVentanaEtapa } from '../../../shared/components/layout/AppLayout/periodoContext.js'
 import { ETAPAS, FUENTE_DEL_ROL, ROLES } from '../../../shared/constants/dominio.js'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
@@ -113,20 +114,18 @@ export default function Inicio() {
         <MensajeNavegacion />
 
         {/* Portada: dónde se está mirando y los filtros que cambian todo el tablero. */}
-        <section className="inicio__portada" aria-labelledby="inicio-alcance">
-          <div className="inicio__portada-texto">
-            <span className="inicio__portada-rotulo">
-              <SlidersHorizontal size={14} aria-hidden="true" />
-              Estás viendo
-            </span>
-            <h2 id="inicio-alcance" className="inicio__portada-titulo">
-              {alcance}
-            </h2>
-            <span className="inicio__portada-periodo">
+        <Portada
+          id="inicio-alcance"
+          icono={SlidersHorizontal}
+          rotulo="Estás viendo"
+          titulo={alcance}
+          detalle={
+            <>
               Periodo {nombrePeriodo ?? '—'}
               {viendoActivo ? <span className="inicio__vigente">Activo</span> : <span className="inicio__historico">Histórico</span>}
-            </span>
-          </div>
+            </>
+          }
+        >
 
           <div className="inicio__filtros" role="search" aria-label="Filtrar el tablero">
             <Filtro id="filtro-periodo" etiqueta="Periodo" valor={periodoId} onCambiar={setPeriodoId}>
@@ -180,7 +179,7 @@ export default function Inicio() {
               </button>
             )}
           </div>
-        </section>
+        </Portada>
 
         {viendoActivo && analisis && analisis.total > 0 && (
           <AsistenteResumen
