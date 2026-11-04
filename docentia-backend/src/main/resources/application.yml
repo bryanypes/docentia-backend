@@ -94,7 +94,7 @@ docentia:
   # externo exige revisar la política de tratamiento de datos de la universidad (Ley 1581 de 2012).
   ia:
     habilitado: ${DOCENTIA_IA_HABILITADO:false}
-    proveedor: ${DOCENTIA_IA_PROVEEDOR:simulado}
+    proveedor: ${DOCENTIA_IA_PROVEEDOR:local}
     url-base: ${DOCENTIA_IA_URL_BASE:}
     modelo: ${DOCENTIA_IA_MODELO:}
     timeout-segundos: ${DOCENTIA_IA_TIMEOUT_SEGUNDOS:60}

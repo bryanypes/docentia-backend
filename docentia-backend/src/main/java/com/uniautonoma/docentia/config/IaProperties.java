@@ -8,8 +8,8 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
  *
  * @param habilitado si es falso no se aceptan solicitudes; por defecto apagado fuera de dev porque
  *     enviar comentarios a un proveedor externo exige revisar la política de datos
- * @param proveedor "simulado" (determinista, sin red) o "chat-completions" (API compatible con el
- *     formato chat/completions)
+ * @param proveedor "local" (reglas, por defecto, sin red), "simulado" (solo pruebas) o
+ *     "chat-completions" (API compatible con el formato chat/completions)
  * @param urlBase dirección del proveedor, sin barra final
  * @param modelo identificador del modelo en el proveedor
  * @param timeoutSegundos tiempo máximo de espera de la respuesta
@@ -19,7 +19,7 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
 @ConfigurationProperties(prefix = "docentia.ia")
 public record IaProperties(
     @DefaultValue("false") boolean habilitado,
-    @DefaultValue("simulado") String proveedor,
+    @DefaultValue("local") String proveedor,
     String urlBase,
     String modelo,
     @DefaultValue("60") int timeoutSegundos,
