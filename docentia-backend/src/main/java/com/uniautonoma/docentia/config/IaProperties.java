@@ -1,6 +1,7 @@
 package com.uniautonoma.docentia.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.bind.ConstructorBinding;
 import org.springframework.boot.context.properties.bind.DefaultValue;
 
 /**
@@ -15,6 +16,8 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
  * @param timeoutSegundos tiempo máximo de espera de la respuesta
  * @param clave clave del proveedor; solo por variable de entorno (DOCENTIA_IA_CLAVE)
  * @param minimoEncuestas encuestas cerradas necesarias para generar un borrador
+ * @param enviarTemperatura si se envía temperature=0; algunos modelos recientes lo rechazan y hay
+ *     que apagarlo (DOCENTIA_IA_ENVIAR_TEMPERATURA=false)
  */
 @ConfigurationProperties(prefix = "docentia.ia")
 public record IaProperties(
@@ -25,7 +28,32 @@ public record IaProperties(
     @DefaultValue("60") int timeoutSegundos,
     String clave,
     @DefaultValue("10") int minimoEncuestas,
-    @DefaultValue Worker worker) {
+    @DefaultValue Worker worker,
+    @DefaultValue("true") boolean enviarTemperatura) {
+
+  @ConstructorBinding
+  public IaProperties {}
+
+  public IaProperties(
+      boolean habilitado,
+      String proveedor,
+      String urlBase,
+      String modelo,
+      int timeoutSegundos,
+      String clave,
+      int minimoEncuestas,
+      Worker worker) {
+    this(
+        habilitado,
+        proveedor,
+        urlBase,
+        modelo,
+        timeoutSegundos,
+        clave,
+        minimoEncuestas,
+        worker,
+        true);
+  }
 
   /**
    * Procesador en segundo plano.
