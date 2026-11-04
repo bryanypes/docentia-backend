@@ -278,3 +278,23 @@
 .destacados__fila > .boton-accion {
   grid-column: 3;
 }
+
+/* Docentes del periodo: dos columnas apiladas que se llenan desde arriba, sin huecos. */
+.inicio__columnas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espacio-4);
+  align-items: start;
+}
+
+.inicio__columna {
+  display: grid;
+  gap: var(--espacio-4);
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .inicio__columnas {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
