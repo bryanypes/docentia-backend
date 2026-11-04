@@ -37,9 +37,17 @@ textarea {
   font-family: inherit;
 }
 
+/* Texto seleccionado: un azul lavanda suave, legible y sin el destello del amarillo. */
 ::selection {
-  background: var(--color-amarillo);
+  background: var(--color-seleccion);
   color: var(--color-texto);
+}
+
+/* Sobre el azul del menú y la barra superior, un velo claro. */
+.sidebar ::selection,
+.barra-movil ::selection {
+  background: rgba(254, 251, 244, 0.28);
+  color: var(--color-crema);
 }
 
 :focus-visible {
