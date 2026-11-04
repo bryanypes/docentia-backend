@@ -21,6 +21,7 @@ import {
   Users,
   X,
 } from 'lucide-react'
+import { Fragment } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { useSesion } from '../../../../features/auth/sesionContext.js'
 import '../../../../features/formularios/components/FormularioInstrumento.css'
@@ -52,18 +53,18 @@ const NAVEGACION = {
     { ruta: '/panel-programas', etiqueta: 'Panel por programa', Icono: ChartColumn },
   ],
   [ROLES.VICERRECTOR]: [
-    { ruta: '/inicio', etiqueta: 'Inicio', Icono: LayoutDashboard },
-    { ruta: '/estadisticas', etiqueta: 'Estadísticas', Icono: ChartColumnBig },
-    { ruta: '/docentes', etiqueta: 'Docentes', Icono: Users },
-    { ruta: '/importaciones', etiqueta: 'Cargas de estudiantes', Icono: FileUp },
-    { ruta: '/matricula', etiqueta: 'Matrícula y cobertura', Icono: GraduationCap },
-    { ruta: '/analisis', etiqueta: 'Análisis de comentarios', Icono: MessagesSquare },
-    { ruta: '/acciones-sugeridas', etiqueta: 'Acciones sugeridas', Icono: Lightbulb },
-    { ruta: '/panel-programas', etiqueta: 'Panel por programa', Icono: ChartColumn },
-    { ruta: '/periodos', etiqueta: 'Periodos', Icono: CalendarRange },
-    { ruta: '/ponderaciones', etiqueta: 'Ponderaciones', Icono: Scale },
-    { ruta: '/facultades', etiqueta: 'Facultades y programas', Icono: Building2 },
-    { ruta: '/usuarios', etiqueta: 'Usuarios', Icono: UserCog },
+    { ruta: '/inicio', etiqueta: 'Inicio', Icono: LayoutDashboard, grupo: 'Seguimiento' },
+    { ruta: '/estadisticas', etiqueta: 'Estadísticas', Icono: ChartColumnBig, grupo: 'Seguimiento' },
+    { ruta: '/docentes', etiqueta: 'Docentes', Icono: Users, grupo: 'Seguimiento' },
+    { ruta: '/importaciones', etiqueta: 'Cargas de estudiantes', Icono: FileUp, grupo: 'Seguimiento' },
+    { ruta: '/matricula', etiqueta: 'Matrícula y cobertura', Icono: GraduationCap, grupo: 'Seguimiento' },
+    { ruta: '/analisis', etiqueta: 'Análisis de comentarios', Icono: MessagesSquare, grupo: 'Seguimiento' },
+    { ruta: '/acciones-sugeridas', etiqueta: 'Acciones sugeridas', Icono: Lightbulb, grupo: 'Seguimiento' },
+    { ruta: '/panel-programas', etiqueta: 'Panel por programa', Icono: ChartColumn, grupo: 'Seguimiento' },
+    { ruta: '/periodos', etiqueta: 'Periodos', Icono: CalendarRange, grupo: 'Administración' },
+    { ruta: '/ponderaciones', etiqueta: 'Ponderaciones', Icono: Scale, grupo: 'Administración' },
+    { ruta: '/facultades', etiqueta: 'Facultades y programas', Icono: Building2, grupo: 'Administración' },
+    { ruta: '/usuarios', etiqueta: 'Usuarios', Icono: UserCog, grupo: 'Administración' },
   ],
 }
 
@@ -114,12 +115,18 @@ export function Sidebar({ id, movil = false, onCerrar, onNavegar }) {
 
       <nav className="sidebar__nav" aria-label="Navegación principal">
         <span className="sidebar__seccion">{ETIQUETA_ROL[usuario.rol]}</span>
-        {enlaces.map(({ ruta, etiqueta, Icono }) => (
-          <NavLink key={ruta} to={ruta} className="sidebar__enlace" onClick={onNavegar}>
+        {enlaces.map(({ ruta, etiqueta, Icono, grupo }, i) => (
+          <Fragment key={ruta}>
+          {/* La vicerrectoría separa el seguimiento de la administración de la plataforma. */}
+          {grupo && grupo !== enlaces[i - 1]?.grupo && (
+            <span className={`sidebar__grupo${i === 0 ? ' sidebar__grupo--primero' : ''}`}>{grupo}</span>
+          )}
+          <NavLink to={ruta} className="sidebar__enlace" onClick={onNavegar}>
             <Icono size={18} strokeWidth={1.75} aria-hidden="true" className="sidebar__icono" />
             {etiqueta}
             {ruta === '/coevaluaciones' && <ContadorCoevaluaciones />}
           </NavLink>
+          </Fragment>
         ))}
       </nav>
 
