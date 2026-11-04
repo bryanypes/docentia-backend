@@ -1,4 +1,4 @@
-import { Check, MessagesSquare, RefreshCw, ShieldOff } from 'lucide-react'
+import { Check, Info, MessagesSquare, RefreshCw, ShieldOff } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useVentanaEtapa } from '../../../shared/components/layout/AppLayout/periodoContext.js'
@@ -8,6 +8,7 @@ import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { Campo } from '../../../shared/components/ui/Campo/Campo.jsx'
 import { ErrorApi } from '../../../shared/components/ui/ErrorApi/ErrorApi.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
+import { Modal } from '../../../shared/components/ui/Modal/Modal.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
 import { ETAPAS, ROLES } from '../../../shared/constants/dominio.js'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
@@ -328,6 +329,7 @@ export default function Analisis() {
   const [solicitudNueva, setSolicitudNueva] = useState(null)
   const [errorSolicitar, setErrorSolicitar] = useState(null)
   const [enviando, setEnviando] = useState(false)
+  const [verAyuda, setVerAyuda] = useState(false)
 
   const cargarUltima = useCallback(
     () =>
@@ -370,7 +372,39 @@ export default function Analisis() {
         miga={`${esCoordinador ? 'Coordinación' : 'Vicerrectoría'} · Análisis de comentarios`}
         titulo="Análisis de comentarios de estudiantes"
         subtitulo="Lo que los estudiantes escriben al final de su encuesta, resumido en fortalezas y oportunidades con citas textuales."
+        ayuda={
+          <button
+            type="button"
+            className="analisis__ayuda"
+            onClick={() => setVerAyuda(true)}
+            aria-label="Cómo funciona el análisis y cuándo se puede pedir"
+            title="Cómo funciona el análisis y cuándo se puede pedir"
+          >
+            <Info size={18} aria-hidden="true" />
+          </button>
+        }
       />
+      {verAyuda && (
+        <Modal
+          titulo="Cómo funciona el análisis"
+          descripcion="Qué hace DocenteIA con los comentarios y cuándo se puede pedir."
+          icono={Info}
+          onCerrar={() => setVerAyuda(false)}
+        >
+          <MensajeIA robot="saludo" titulo="Hola, soy DocenteIA: analizo los comentarios de los estudiantes" tamano="compacto">
+            <p>
+              Leo los comentarios anónimos que dejan en su encuesta, ya sin los ofensivos, y los agrupo en fortalezas y
+              oportunidades de mejora citando sus palabras. Así sabes cuándo puedes pedirme el análisis:
+            </p>
+          </MensajeIA>
+          <GuiaAnalisis
+            recoleccionAbierta={recoleccionAbierta}
+            fechaCierre={esPeriodoActivo ? recoleccion?.fechaCierre : null}
+            solicitado={Boolean(docenteId && idSolicitud)}
+            esCoordinador={esCoordinador}
+          />
+        </Modal>
+      )}
       <div className="pagina">
         <div className="analisis__filtros">
           <Campo id="docenteAnalisis" etiqueta="Docente">
@@ -405,19 +439,6 @@ export default function Analisis() {
             </select>
           </Campo>
         </div>
-
-        <MensajeIA robot="saludo" titulo="Hola, soy DocenteIA: analizo los comentarios de los estudiantes" tamano="compacto">
-          <p>
-            Leo los comentarios anónimos que dejan en su encuesta, ya sin los ofensivos, y los agrupo en fortalezas y
-            oportunidades de mejora citando sus palabras. Así sabes cuándo puedes pedirme el análisis:
-          </p>
-          <GuiaAnalisis
-            recoleccionAbierta={recoleccionAbierta}
-            fechaCierre={esPeriodoActivo ? recoleccion?.fechaCierre : null}
-            solicitado={Boolean(docenteId && idSolicitud)}
-            esCoordinador={esCoordinador}
-          />
-        </MensajeIA>
 
         {!docenteId || !periodoId ? (
           periodoId ? (

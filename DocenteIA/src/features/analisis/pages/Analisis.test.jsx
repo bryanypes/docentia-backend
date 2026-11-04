@@ -87,6 +87,8 @@ describe('Analisis', () => {
       { ruta: '/analisis?docente=4&periodo=2' },
     )
     expect(await screen.findByRole('button', { name: 'Solicitar análisis' })).toBeDisabled()
+    expect(screen.queryByRole('list', { name: 'Cuándo se puede pedir el análisis' })).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Cómo funciona el análisis y cuándo se puede pedir' }))
     const guia = screen.getByRole('list', { name: 'Cuándo se puede pedir el análisis' })
     expect(within(guia).getByText('Los estudiantes comentan')).toBeInTheDocument()
     expect(within(guia).getByText(/cierra el/)).toBeInTheDocument()

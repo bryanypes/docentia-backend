@@ -82,7 +82,10 @@ function RutasDocentia() {
               </Route>
 
               <Route element={<ProtectedRoute rolesPermitidos={GESTION} />}>
-                <Route path="/importaciones" element={<Importaciones />} />
+                <Route
+                  path="/importaciones"
+                  element={FUNCIONES.cargaCsvEstudiantes ? <Importaciones /> : <Navigate to="/inicio" replace />}
+                />
                 <Route path="/analisis" element={<Analisis />} />
                 <Route path="/estadisticas" element={<Estadisticas />} />
                 <Route path="/docentes" element={<Docentes />} />

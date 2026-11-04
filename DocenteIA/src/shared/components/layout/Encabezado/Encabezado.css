@@ -89,3 +89,9 @@
     font-size: 24px;
   }
 }
+
+.encabezado__fila-titulo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
