@@ -5,7 +5,7 @@ import { render } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { SesionContext } from '../../auth/sesionContext.js'
 import { ApiError } from '../../../services/api.js'
-import { enviarEvaluacion, obtenerEvaluacion } from '../../estudiante/services/estudianteService.js'
+import { enviarEvaluacion, listarEvaluaciones, obtenerEvaluacion } from '../../estudiante/services/estudianteService.js'
 import HeteroevaluacionClase from './HeteroevaluacionClase.jsx'
 
 vi.mock('../../estudiante/services/estudianteService.js')
@@ -70,12 +70,29 @@ describe('HeteroevaluacionClase', () => {
     await userEvent.dblClick(boton)
     expect(enviarEvaluacion).toHaveBeenCalledTimes(1)
     expect(enviarEvaluacion).toHaveBeenCalledWith('7', { respuestas: { D02: 4, D05: 5 }, comentario: null })
+    listarEvaluaciones.mockResolvedValue({ pendientes: 2, evaluaciones: [{}, {}, {}] })
     terminar({ estado: 'ENVIADA' })
     expect(await screen.findByText('¡Gracias por tu evaluación!')).toBeInTheDocument()
     // Justo después del envío se ve el resumen con lo respondido.
     expect(screen.getByRole('heading', { name: 'Evaluación enviada' })).toBeInTheDocument()
     expect(screen.getByText('Socializa resultados').closest('li')).toHaveTextContent('4 Nivel 4')
     expect(screen.getByText('Expresa con claridad').closest('li')).toHaveTextContent('5 Nivel 5')
+  })
+
+  it('al enviar la última evaluación del periodo celebra y agradece', async () => {
+    obtenerEvaluacion.mockResolvedValue({ ...FORMULARIO, total: 1, criterios: [{ ...FORMULARIO.criterios[0], descriptores: [FORMULARIO.criterios[0].descriptores[0]] }] })
+    enviarEvaluacion.mockResolvedValue({ estado: 'ENVIADA' })
+    listarEvaluaciones.mockResolvedValue({ pendientes: 0, evaluaciones: [{}, {}, {}] })
+    abrir()
+    await userEvent.click((await screen.findAllByRole('radio', { name: 'Nivel 4' }))[0])
+    await userEvent.click(screen.getByRole('button', { name: 'Revisar' }))
+    await userEvent.click(screen.getByRole('checkbox'))
+    await userEvent.click(screen.getByRole('button', { name: 'Enviar evaluación' }))
+    expect(await screen.findByRole('heading', { name: '¡Terminaste, Est!' })).toBeInTheDocument()
+    expect(screen.getByText('Evaluaste a tus 3 profesores de este periodo.')).toBeInTheDocument()
+    expect(screen.getByText(/ayudan a mejorar la enseñanza/)).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Ver mis evaluaciones/ })).toHaveAttribute('href', '/evaluacion-profesores')
+    expect(screen.queryByText('¡Gracias por tu evaluación!')).not.toBeInTheDocument()
   })
 
   it('muestra el 409 del doble envío', async () => {
