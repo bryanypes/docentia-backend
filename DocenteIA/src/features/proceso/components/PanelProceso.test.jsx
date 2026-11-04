@@ -43,12 +43,12 @@ describe('PanelProceso', () => {
     vi.useRealTimers()
   })
 
-  it('muestra el estado, la cobertura de estudiantes y la trazabilidad', async () => {
+  it('muestra el estado y la trazabilidad, sin la cobertura de estudiantes (oculta)', async () => {
     procesoService.obtenerProceso.mockResolvedValue(PROCESO)
     renderizarConSesion(<PanelProceso idDocente={4} />, { rol: 'VICERRECTOR' })
 
     expect(await screen.findByText('Asistencia confirmada')).toBeInTheDocument()
-    expect(screen.getByText('18 de 25 respondieron')).toBeInTheDocument()
+    expect(screen.queryByText('18 de 25 respondieron')).not.toBeInTheDocument()
     expect(screen.getByText('Oculto hasta la reunión')).toBeInTheDocument()
     expect(screen.getByText('Escogió horario')).toBeInTheDocument()
     expect(screen.getByText('Confirmó asistencia')).toBeInTheDocument()

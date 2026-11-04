@@ -26,6 +26,16 @@ const COLUMNAS_DOCENTES = [
   { titulo: 'Estado del acta', ancho: 16 },
 ]
 
+// Posiciones de las columnas de respuesta de estudiantes en la hoja Docentes y en la de programas.
+const COLUMNAS_COBERTURA_DOCENTES = [9, 10, 11]
+const COLUMNAS_COBERTURA_GRUPO = [5, 6, 7]
+
+function quitarColumnas(hoja, posiciones) {
+  const quedan = (_, i) => !posiciones.includes(i)
+  hoja.columnas = hoja.columnas.filter(quedan)
+  hoja.filas = hoja.filas.map((fila) => fila.filter(quedan))
+}
+
 const etiquetaNivel = (codigo) => NIVELES.find((n) => n.codigo === codigo)?.etiqueta ?? ''
 
 function filaDocente({ docente, promedio, proceso, nivel }, numero) {
@@ -61,7 +71,7 @@ function filaDocente({ docente, promedio, proceso, nivel }, numero) {
  * @param filas filas ya filtradas en la vista (unirDatos + filtrar)
  * @param r     resultado de calcular(filas)
  */
-export function hojasDelReporte({ filas, r, periodo, descripcionFiltros, nombreGrupo }) {
+export function hojasDelReporte({ filas, r, periodo, descripcionFiltros, nombreGrupo, conCobertura = true }) {
   const ultima = Math.max(PRIMERA_FILA, PRIMERA_FILA + filas.length - 1)
   const rango = (columna) => `Docentes!${columna}${PRIMERA_FILA}:${columna}${ultima}`
 
@@ -183,6 +193,14 @@ export function hojasDelReporte({ filas, r, periodo, descripcionFiltros, nombreG
       { titulo: 'Docentes sin ella', ancho: 16, formato: 'entero' },
     ],
     filas: r.pendientesPorFuente.map((p) => [ETIQUETA_FUENTE[p.fuente] ?? p.fuente, p.cantidad]),
+  }
+
+  if (!conCobertura) {
+    // Respuesta de estudiantes oculta (FUNCIONES.coberturaEstudiantes): fuera sus columnas y su cifra.
+    // Ninguna fórmula que queda apunta a esas columnas.
+    quitarColumnas(docentes, COLUMNAS_COBERTURA_DOCENTES)
+    quitarColumnas(grupo, COLUMNAS_COBERTURA_GRUPO)
+    resumen.filas = resumen.filas.filter((fila) => fila[0] !== 'Respuesta de estudiantes')
   }
 
   return [resumen, docentes, nivel, proceso, grupo, distribucion, fuentes]

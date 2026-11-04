@@ -29,11 +29,11 @@ vi.mock('react-router-dom', () => ({
 }))
 
 describe('Sidebar', () => {
-  it('el coordinador tiene la carga de estudiantes y la matrícula', () => {
+  it('el coordinador tiene la carga de estudiantes y no ve la matrícula, que está oculta', () => {
     renderizarConSesion(<Sidebar />, { rol: 'COORDINADOR' })
     expect(screen.getByRole('link', { name: 'Coevaluaciones' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Evaluación de estudiantes' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Matrícula y cobertura' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Matrícula y cobertura' })).not.toBeInTheDocument()
   })
 
   it('el estudiante solo ve sus evaluaciones', () => {

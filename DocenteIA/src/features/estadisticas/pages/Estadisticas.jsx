@@ -22,6 +22,7 @@ import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista
 import { EtiquetaNivel } from '../../../shared/components/ui/EtiquetaNivel/EtiquetaNivel.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
 import { ETIQUETA_FUENTE, NIVELES, ROLES } from '../../../shared/constants/dominio.js'
+import { FUNCIONES } from '../../../shared/constants/funciones.js'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { formatearNota } from '../../../shared/utils/formatters.js'
 import { useSesion } from '../../auth/sesionContext.js'
@@ -104,7 +105,7 @@ export default function Estadisticas() {
   const esVicerrector = usuario.rol === ROLES.VICERRECTOR
   const [filtros, setFiltros] = useState(SIN_FILTROS)
   const [mostrar, setMostrar] = useState(TANDA_FILAS)
-  const agruparPor = esVicerrector && !filtros.facultad ? 'nombreFacultad' : 'nombrePrograma'
+  const agruparPor = 'nombrePrograma'
 
   const cargarSeguimiento = useCallback(() => listarSeguimientoDocentes(null), [])
   const seguimiento = useFetch(cargarSeguimiento, [cargarSeguimiento])
@@ -209,7 +210,17 @@ export default function Estadisticas() {
     ]
       .filter(Boolean)
       .join(' · ')
-    descargarXlsx(nombreDelReporte(periodo), hojasDelReporte({ filas: visibles, r, periodo, descripcionFiltros, nombreGrupo }))
+    descargarXlsx(
+      nombreDelReporte(periodo),
+      hojasDelReporte({
+        filas: visibles,
+        r,
+        periodo,
+        descripcionFiltros,
+        nombreGrupo,
+        conCobertura: FUNCIONES.coberturaEstudiantes,
+      }),
+    )
   }
 
   return (
@@ -318,6 +329,7 @@ export default function Estadisticas() {
             detalle={r.mediana === null ? 'Sin evaluaciones completas' : `Mediana ${formatearNota(r.mediana)}`}
             tono="violeta"
           />
+          {FUNCIONES.coberturaEstudiantes && (
           <Cifra
             icono={GraduationCap}
             rotulo="Estudiantes que respondieron"
@@ -325,6 +337,7 @@ export default function Estadisticas() {
             detalle={`${r.cobertura.respondidas} de ${r.cobertura.esperadas} matrículas`}
             tono="cielo"
           />
+          )}
           <Cifra
             icono={CalendarCheck}
             rotulo="Reuniones realizadas"
@@ -435,7 +448,7 @@ export default function Estadisticas() {
             <Panel
               className="estadisticas__ancho"
               titulo={`Comparación por ${nombreGrupo}`}
-              descripcion={`Promedio, avance y respuesta de estudiantes en cada ${nombreGrupo}. Pulsa una fila para filtrar.`}
+              descripcion={`Promedio y avance en cada ${nombreGrupo}. Pulsa una fila para filtrar.`}
               icono={ChartColumnBig}
               tono="rosa"
             >
@@ -446,7 +459,7 @@ export default function Estadisticas() {
                       <th scope="col">{nombreGrupo === 'facultad' ? 'Facultad' : 'Programa'}</th>
                       <th scope="col">Promedio</th>
                       <th scope="col">Avance</th>
-                      <th scope="col">Estudiantes</th>
+                      {FUNCIONES.coberturaEstudiantes && <th scope="col">Estudiantes</th>}
                     </tr>
                   </thead>
                   <tbody>
@@ -468,9 +481,11 @@ export default function Estadisticas() {
                           <td data-etiqueta="Avance">
                             <Medidor valor={g.avance} maximo={100} texto={`${g.avance} %`} tono="turquesa" />
                           </td>
-                          <td data-etiqueta="Estudiantes">
-                            <Medidor valor={g.cobertura} maximo={100} texto={porcentaje(g.cobertura)} tono="cielo" />
-                          </td>
+                          {FUNCIONES.coberturaEstudiantes && (
+                            <td data-etiqueta="Estudiantes">
+                              <Medidor valor={g.cobertura} maximo={100} texto={porcentaje(g.cobertura)} tono="cielo" />
+                            </td>
+                          )}
                         </tr>
                       )
                     })}

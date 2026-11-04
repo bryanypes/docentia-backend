@@ -74,7 +74,7 @@ export default function Inicio() {
   const hayFiltros = Boolean(periodoId || facultadId || programaId)
 
   const miFuente = FUENTE_DEL_ROL[usuario.rol]
-  const agrupacion = esVicerrector && !facultadId ? 'facultad' : 'programa'
+  const agrupacion = 'programa'
   const umbral = configuracion.datos ? Number(configuracion.datos.umbralCompromisos) : null
   const umbralDestacado = kpis.datos?.umbralDestacado ?? null
   const analisis = useMemo(
@@ -105,8 +105,8 @@ export default function Inicio() {
         titulo="Resumen de la evaluación"
         subtitulo={
           esVicerrector
-            ? 'Cómo va la evaluación docente en toda la universidad, una facultad o una carrera.'
-            : 'Cómo va la evaluación docente en tu facultad o en una de sus carreras, y qué falta por hacer.'
+            ? 'Cómo va la evaluación docente en toda la universidad, una facultad o un programa.'
+            : 'Cómo va la evaluación docente en los programas de tu facultad y qué falta por hacer.'
         }
       />
 
@@ -156,15 +156,10 @@ export default function Inicio() {
                   </option>
                 ))}
               </Filtro>
-            ) : (
-              <div className="inicio__filtro">
-                <span className="inicio__filtro-etiqueta">Facultad</span>
-                <span className="inicio__filtro-fijo">{nombreFacultad}</span>
-              </div>
-            )}
+            ) : null}
 
-            <Filtro id="filtro-programa" etiqueta="Carrera" valor={programaId} onCambiar={setProgramaId}>
-              <option value={TODOS}>Todas las carreras</option>
+            <Filtro id="filtro-programa" etiqueta="Programa" valor={programaId} onCambiar={setProgramaId}>
+              <option value={TODOS}>Todos los programas</option>
               {listaProgramas.map((p) => (
                 <option key={p.idPrograma} value={p.idPrograma}>
                   {p.nombre}

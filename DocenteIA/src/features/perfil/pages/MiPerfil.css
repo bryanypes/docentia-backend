@@ -266,3 +266,10 @@
     animation: none;
   }
 }
+
+.perfil__dato-detalle {
+  display: block;
+  margin-top: 2px;
+  font-size: 12.5px;
+  color: var(--color-texto-tenue);
+}

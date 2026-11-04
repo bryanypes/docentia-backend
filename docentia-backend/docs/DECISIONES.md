@@ -134,6 +134,12 @@ ambigüedad. La fuente de verdad es la resolución; el Excel v2 tiene errores (v
   mínimo de evidencia sigue contando solo encuestas de estudiantes. Esto cambia lo que decía V25
   («no van al análisis»). Los comentarios por criterio anteriores se conservan en la base y la
   pantalla los junta en el comentario general del borrador para no perderlos.
+- **Cobertura oculta.** Matrícula y cobertura de estudiantes se ocultan en la interfaz con
+  `FUNCIONES.coberturaEstudiantes` (`DocenteIA/src/shared/constants/funciones.js`): menú, ruta,
+  paneles, la cifra de Estadísticas, el dato del proceso y las columnas del Excel. No se borró código
+  ni endpoints; volver a mostrarlo es cambiar ese valor.
+- **Gestión por programa.** La coordinación ya no ve su facultad como filtro (es fija) y filtra por
+  programa; la vicerrectoría conserva facultad y suma programa. Las agrupaciones son por programa.
 - **Resumen del estudiante.** Las respuestas del formulario anónimo no se pueden recuperar desde el
   servidor. Al enviar, el navegador guarda una copia solo para ese usuario; desde otro equipo se ve
   un comprobante sin las respuestas.
