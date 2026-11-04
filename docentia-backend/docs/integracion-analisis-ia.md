@@ -12,6 +12,7 @@ Guía para quien integre el análisis en estadísticas o en otra pantalla. El co
 | `comentarios_analizados` | Copia anonimizada de lo analizado, sin fechas ni ids de respuesta | Procesador |
 | `hallazgos_analisis` | Hallazgos propuestos y su revisión (E4) | Procesador, revisión |
 | `respuestas_heteroevaluacion` | Respuesta anónima del formulario | Estudiante; el análisis solo la lee |
+| `evaluaciones_formulario.comentario_general` | Comentario general de autoevaluación y coevaluación (V35) | Docente y coordinación; el análisis lee solo los enviados |
 
 El vigente de un docente y periodo es la fila con `reemplazado = false` (hay un índice único).
 

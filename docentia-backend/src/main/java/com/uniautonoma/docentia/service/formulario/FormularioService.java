@@ -270,6 +270,7 @@ public class FormularioService {
     List<CatalogoInstrumento.Criterio> criterios = catalogo.de(tipo);
     Map<Long, Short> respuestas = validarRespuestas(solicitud.respuestas(), criterios);
     Map<Long, String> comentarios = validarComentarios(solicitud.comentarios(), criterios);
+    String comentarioGeneral = validarComentarioGeneral(solicitud.comentario());
     EvaluacionFormulario formulario =
         buscar(periodo, docente, tipo)
             .orElseGet(
@@ -281,7 +282,7 @@ public class FormularioService {
                         tipo,
                         CatalogoInstrumento.VERSION));
     exigirBorrador(formulario);
-    formulario.reemplazar(respuestas, comentarios);
+    formulario.reemplazar(respuestas, comentarios, comentarioGeneral);
     EvaluacionFormulario guardado = formularioRepository.saveAndFlush(formulario);
     return responder(periodo, docente, tipo, Optional.of(guardado));
   }
@@ -365,6 +366,18 @@ public class FormularioService {
     return validas;
   }
 
+  /** Comentario general: hasta el máximo, sin espacios sobrantes; vacío equivale a no tenerlo. */
+  private static String validarComentarioGeneral(String texto) {
+    if (texto == null || texto.isBlank()) {
+      return null;
+    }
+    if (texto.length() > MAXIMO_COMENTARIO) {
+      throw new NoProcesableException(
+          "El comentario no puede superar los " + MAXIMO_COMENTARIO + " caracteres");
+    }
+    return texto.trim();
+  }
+
   private static Map<Long, String> validarComentarios(
       Map<String, String> comentarios, List<CatalogoInstrumento.Criterio> criterios) {
     Map<Long, String> validos = new HashMap<>();
@@ -436,7 +449,8 @@ public class FormularioService {
         IntStream.range(0, etiquetasEscala.size())
             .mapToObj(i -> new OpcionEscala(i + 1, etiquetasEscala.get(i)))
             .toList(),
-        lista);
+        lista,
+        formulario.map(EvaluacionFormulario::getComentarioGeneral).orElse(null));
   }
 
   private boolean recoleccionAbierta(PeriodoAcademico periodo) {

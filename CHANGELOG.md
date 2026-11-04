@@ -4,6 +4,13 @@
 
 ### Agregado
 
+- Inicio de gestión con portada, filtros por periodo, facultad y carrera (`programaId` en `/kpis`;
+  `periodoId` e `idPrograma` en `/docentes/seguimiento`) y mención de honor con las mejores notas.
+- Portada con DocenteIA en el Inicio del docente y del estudiante.
+- Resumen de una evaluación enviada por el estudiante: sus respuestas desde el mismo equipo (copia
+  local) o un comprobante desde otro.
+- Comentario general al final de autoevaluación y coevaluación (V35), que entra al análisis de
+  comentarios de la fuente FORMULARIO.
 - Estado general del proceso por docente, con línea de pasos y trazabilidad para coordinación,
   vicerrectoría y el propio docente.
 - Confirmación o declinación de la cita por el docente; declinar libera la franja.
@@ -40,6 +47,9 @@
 
 ### Cambiado
 
+- Cuestionarios más angostos; la barra de pasos queda fija y compacta bajo la barra superior del
+  celular, y al cambiar de paso la página sube suave al inicio del paso.
+- Texto seleccionado en un azul lavanda suave en lugar del amarillo.
 - El login ya no muestra el panel de usuarios de prueba; se escribe el correo de la cuenta.
 - El docente ve su nota, compromisos, hallazgos y acta del periodo en la reunión, no antes.
 - El acta se firma después de registrar la asistencia.

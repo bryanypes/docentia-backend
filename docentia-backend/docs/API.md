@@ -36,7 +36,7 @@ Todas aceptan `?periodo=`; sin él usan el periodo activo.
 | Método y ruta | Roles | Respuesta |
 |---------------|-------|-----------|
 | `GET /formularios/autoevaluacion` | Docente | Estructura de 14 ítems y respuestas propias |
-| `PUT /formularios/autoevaluacion` | Docente | Borrador: `{respuestas: {D01: 4}, comentarios: {C1: "..."}}` |
+| `PUT /formularios/autoevaluacion` | Docente | Borrador: `{respuestas: {D01: 4}, comentario: "..."}`; el comentario general (máx. 1000) entra al análisis. `comentarios` por criterio se acepta por compatibilidad |
 | `POST /formularios/autoevaluacion/enviar` | Docente | 422 incompleto; 409 ventana cerrada o ya enviada |
 | `GET /formularios/coevaluacion/pendientes` | Coordinador, vicerrector | Estado y conteos, sin puntajes |
 | `GET` y `PUT /formularios/coevaluacion/{idDocente}` | Coordinador | 404 fuera de alcance |

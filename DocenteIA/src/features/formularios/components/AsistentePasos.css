@@ -430,3 +430,81 @@
   background: none;
   gap: 18px;
 }
+
+/* El cuestionario no se estira a todo el ancho: con tarjetas más angostas cada pregunta se lee en
+   pocas líneas. */
+.cuestionario {
+  width: 100%;
+  max-width: 860px;
+  margin-inline: auto;
+}
+
+/* Centinela de la cabecera fija: marca el punto donde se pega. */
+.cuestionario__centinela {
+  display: block;
+  height: 1px;
+  margin-bottom: -1px;
+}
+
+/* La cabecera se pega debajo de la barra superior del celular (en escritorio, arriba del todo). */
+.cuestionario__cabecera {
+  top: var(--alto-barra-fija, 0px);
+  transition: padding 0.2s ease, gap 0.2s ease, box-shadow 0.2s ease;
+}
+
+.cuestionario__resumen-paso {
+  display: none;
+  align-items: baseline;
+  gap: 8px;
+  min-width: 0;
+  margin: 0;
+  font-size: 13.5px;
+}
+
+.cuestionario__resumen-paso strong {
+  flex: 0 0 auto;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-violeta);
+}
+
+.cuestionario__resumen-paso span {
+  overflow: hidden;
+  font-weight: var(--peso-semi);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* Versión compacta al bajar: rótulo del paso y barra de avance, sin los círculos. */
+.cuestionario__cabecera--compacta {
+  gap: 6px;
+  padding: 10px 14px;
+  border-radius: 0 0 var(--radio-lg) var(--radio-lg);
+  box-shadow: 0 8px 18px -14px rgba(10, 30, 80, 0.45);
+}
+
+.cuestionario__cabecera--compacta .cuestionario__resumen-paso {
+  display: flex;
+}
+
+.cuestionario__cabecera--compacta .cuestionario__pasos {
+  display: none;
+}
+
+.cuestionario__cabecera--compacta .cuestionario__avance {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  font-size: 12px;
+}
+
+.cuestionario__cabecera--compacta .cuestionario__avance > span:first-child {
+  order: 2;
+  white-space: nowrap;
+}
+
+@media (max-width: 900px) {
+  .cuestionario {
+    --alto-barra-fija: 60px;
+  }
+}

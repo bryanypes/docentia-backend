@@ -5,6 +5,7 @@ import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import robotAprobada from '../../../assets/ilustraciones/robot-aprobada.svg'
 import robotSenala from '../../../assets/ilustraciones/robot-senala.svg'
+import { BotonAccion } from '../../../shared/components/ui/BotonAccion/BotonAccion.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
 import { CifraPortada, Portada } from '../../../shared/components/ui/Portada/Portada.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
@@ -87,7 +88,7 @@ export default function EvaluacionProfesores() {
                     </span>
                   </div>
                   <span className={`pildora pildora--${ESTADO[e.estado].clase}`}>{ESTADO[e.estado].etiqueta}</span>
-                  {e.estado === 'PENDIENTE' && (
+                  {e.estado === 'PENDIENTE' ? (
                     <Link
                       className="boton boton--primario"
                       to={`/evaluacion-profesores/${e.idAsignacion}`}
@@ -95,6 +96,13 @@ export default function EvaluacionProfesores() {
                     >
                       Evaluar
                     </Link>
+                  ) : (
+                    <BotonAccion
+                      tipo="ver"
+                      texto="Ver resumen"
+                      nombre={`de ${e.docente}`}
+                      a={`/evaluacion-profesores/${e.idAsignacion}`}
+                    />
                   )}
                 </li>
               ))}

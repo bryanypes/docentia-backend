@@ -22,9 +22,12 @@ import com.uniautonoma.docentia.entity.TipoEtapa;
 import com.uniautonoma.docentia.entity.Usuario;
 import com.uniautonoma.docentia.service.analisis.ProcesadorSolicitudesAnalisis;
 import jakarta.persistence.EntityManager;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -227,6 +230,43 @@ class AnalisisComentariosTest extends PruebaIntegracion {
         .as("el registro no lleva texto de comentarios")
         .doesNotContain("se demoran mucho")
         .doesNotContain("Explica muy bien");
+  }
+
+  @Test
+  void elComentarioGeneralDeCoevaluacionYAutoevaluacionEnviadasEntraAlAnalisis() throws Exception {
+    responder(docente, periodo, COMENTARIOS);
+    String coevaluacion = "Planea muy bien sus clases y comparte la rúbrica desde el inicio.";
+    String borrador = "Este comentario está en un borrador y no debe analizarse.";
+    insertarFormulario("COEVAL", coordinador, "ENVIADA", coevaluacion);
+    insertarFormulario("AUTO", docente, "BORRADOR", borrador);
+
+    solicitar(docente, periodo, "FORMULARIO").andExpect(status().isAccepted());
+    procesarCola();
+
+    analisis(coordinador, docente)
+        .andExpect(jsonPath("$.estado").value("COMPLETADO"))
+        .andExpect(jsonPath("$.resultado.nComentarios").value(12));
+    assertThat(
+            jdbcTemplate.queryForList(
+                "select texto from comentarios_analizados", String.class))
+        .contains(coevaluacion)
+        .doesNotContain(borrador);
+  }
+
+  private void insertarFormulario(String tipo, Usuario evaluador, String estado, String comentario) {
+    boolean enviada = "ENVIADA".equals(estado);
+    jdbcTemplate.update(
+        "insert into evaluaciones_formulario (periodo_id, docente_id, evaluador_usuario_id, tipo,"
+            + " estado, instrumento_version, valor, enviada_en, comentario_general)"
+            + " values (?, ?, ?, ?, ?, 'v1', ?, ?, ?)",
+        periodo.getIdPeriodo(),
+        docente.getIdUsuario(),
+        evaluador.getIdUsuario(),
+        tipo,
+        estado,
+        enviada ? new BigDecimal("4.0") : null,
+        enviada ? Timestamp.valueOf(LocalDateTime.now()) : null,
+        comentario);
   }
 
   @Test
