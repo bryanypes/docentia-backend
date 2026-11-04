@@ -375,29 +375,30 @@ function Seguimiento({ seguimiento, configuracion, analisis, agrupacion, miFuent
   }
 
   return (
-    <>
-      <div className="inicio__rejilla inicio__rejilla--extremos">
+    // Dos columnas que se llenan desde arriba: una tarjeta corta no deja hueco junto a una alta.
+    <div className="inicio__columnas">
+      <div className="inicio__columna">
         <PanelAtencion analisis={analisis} />
-        <PanelHonor analisis={analisis} />
-      </div>
-      <div className="inicio__rejilla">
         <PanelAvance analisis={analisis} miFuente={miFuente} periodo={seguimiento.datos.periodo} />
-        <PanelPorGrupo analisis={analisis} agrupacion={agrupacion} />
       </div>
-      <Link to="/estadisticas" className="inicio__estadisticas">
-        <span className="inicio__estadisticas-icono" aria-hidden="true">
-          <ChartColumnBig size={22} />
-        </span>
-        <span>
-          <strong>Ver todas las estadísticas</strong>
-          <span>
-            Niveles de desempeño, avance del proceso, promedios por {agrupacion}, respuesta de estudiantes y actas,
-            con filtros que actualizan todo a la vez.
+      <div className="inicio__columna">
+        <PanelHonor analisis={analisis} />
+        <PanelPorGrupo analisis={analisis} agrupacion={agrupacion} />
+        <Link to="/estadisticas" className="inicio__estadisticas">
+          <span className="inicio__estadisticas-icono" aria-hidden="true">
+            <ChartColumnBig size={22} />
           </span>
-        </span>
-        <ArrowRight size={18} aria-hidden="true" />
-      </Link>
-    </>
+          <span>
+            <strong>Ver todas las estadísticas</strong>
+            <span>
+              Niveles de desempeño, avance del proceso, promedios por {agrupacion}, respuesta de estudiantes y actas,
+              con filtros que actualizan todo a la vez.
+            </span>
+          </span>
+          <ArrowRight size={18} aria-hidden="true" />
+        </Link>
+      </div>
+    </div>
   )
 }
 
