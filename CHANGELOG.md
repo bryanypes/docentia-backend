@@ -1,5 +1,24 @@
 # Cambios
 
+## Sin publicar
+
+### Agregado
+
+- Modelo local por reglas para analizar comentarios: léxico versionado, negaciones, intensificadores,
+  ironía, jerga y descriptores D02 a D12 por criterio. Es el proveedor por defecto y no usa red.
+- Análisis de los comentarios del formulario anónimo, solo con la recolección cerrada.
+- Resultado estructurado versionado: sentimiento, temas, fortalezas, oportunidades, tendencias contra
+  el periodo anterior, criterios y advertencias.
+- Endpoints de análisis por docente, comentarios anonimizados y resumen agregado por programa.
+- Validación con 90 comentarios sintéticos etiquetados y métricas por criterio.
+- Instrucción `analisis-v2` contra inyección y prueba opcional con un proveedor real.
+
+### Cambiado
+
+- El filtro de calidad (vacíos, cortos, duplicados, órdenes al modelo) también se aplica al CSV.
+- Los comentarios se envían ordenados por la huella del texto, no por orden de carga.
+- `temperature` es opcional en el proveedor chat-completions.
+
 ## 0.3.3
 
 ### Agregado
