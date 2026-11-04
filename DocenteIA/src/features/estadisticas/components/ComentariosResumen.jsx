@@ -1,5 +1,5 @@
-import { MessagesSquare, RefreshCw, ShieldAlert, Sparkles, Tags } from 'lucide-react'
-import { useCallback, useEffect } from 'react'
+import { ChevronLeft, ChevronRight, MessagesSquare, RefreshCw, ShieldAlert, Sparkles, Tags } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
@@ -31,7 +31,81 @@ const MOTIVO_EXCLUSION = {
   LENGUAJE_OFENSIVO: 'ofensivos',
 }
 
-const POLARIDAD = { POSITIVO: 'Fortaleza', NEGATIVO: 'Por mejorar', NEUTRO: 'Neutro' }
+// Pestañas de los temas: una por polaridad, con pocas filas por página para no alargar la pantalla.
+const PESTANAS_TEMAS = [
+  { polaridad: 'POSITIVO', etiqueta: 'Fortalezas' },
+  { polaridad: 'NEGATIVO', etiqueta: 'Por mejorar' },
+  { polaridad: 'NEUTRO', etiqueta: 'Neutros' },
+]
+const TEMAS_POR_PAGINA = 5
+
+/** Temas más mencionados en pestañas (fortalezas, por mejorar) y paginados. */
+function TemasPorPestana({ temas }) {
+  const pestanas = PESTANAS_TEMAS.map((p) => ({ ...p, temas: temas.filter((t) => t.polaridad === p.polaridad) })).filter(
+    (p, i) => i < 2 || p.temas.length > 0,
+  )
+  const [elegida, setElegida] = useState(pestanas.find((p) => p.temas.length > 0)?.polaridad ?? 'POSITIVO')
+  const [pagina, setPagina] = useState(0)
+  const actual = pestanas.find((p) => p.polaridad === elegida) ?? pestanas[0]
+  const paginas = Math.max(1, Math.ceil(actual.temas.length / TEMAS_POR_PAGINA))
+  const visibles = actual.temas.slice(pagina * TEMAS_POR_PAGINA, (pagina + 1) * TEMAS_POR_PAGINA)
+
+  return (
+    <>
+      <div className="comentarios-resumen__pestanas" role="tablist" aria-label="Temas por tipo">
+        {pestanas.map((p) => (
+          <button
+            key={p.polaridad}
+            type="button"
+            role="tab"
+            aria-selected={p.polaridad === actual.polaridad}
+            className={`comentarios-resumen__pestana comentarios-resumen__pestana--${p.polaridad.toLowerCase()}${
+              p.polaridad === actual.polaridad ? ' comentarios-resumen__pestana--activa' : ''
+            }`}
+            onClick={() => {
+              setElegida(p.polaridad)
+              setPagina(0)
+            }}
+          >
+            {p.etiqueta} <strong>{p.temas.length}</strong>
+          </button>
+        ))}
+      </div>
+      {visibles.length === 0 ? (
+        <p className="comentarios-resumen__vacio">No hay temas de este tipo.</p>
+      ) : (
+        <ol className="comentarios-resumen__temas" role="tabpanel" aria-label={actual.etiqueta}>
+          {visibles.map((t) => (
+            <li key={`${t.criterio}-${t.descriptor}-${t.polaridad}`} className="comentarios-resumen__tema-fila">
+              <span className="comentarios-resumen__tema">{t.nombre}</span>
+              <span className="comentarios-resumen__riel" aria-hidden="true">
+                <span style={{ width: `${Math.min(100, t.porcentaje)}%` }} />
+              </span>
+              <span className="comentarios-resumen__cifra">
+                <strong>{String(t.porcentaje).replace('.', ',')} %</strong>
+                {plural(t.docentes, 'docente', 'docentes')}
+              </span>
+            </li>
+          ))}
+        </ol>
+      )}
+      {paginas > 1 && (
+        <div className="comentarios-resumen__paginas">
+          <Boton variante="contorno" icono={ChevronLeft} disabled={pagina === 0} onClick={() => setPagina((n) => n - 1)}>
+            Anterior
+          </Boton>
+          <span>
+            Página {pagina + 1} de {paginas}
+          </span>
+          <Boton variante="contorno" disabled={pagina + 1 >= paginas} onClick={() => setPagina((n) => n + 1)}>
+            Siguiente
+            <ChevronRight size={16} aria-hidden="true" />
+          </Boton>
+        </div>
+      )}
+    </>
+  )
+}
 
 const legible = (codigo) => MOTIVO_EXCLUSION[codigo] ?? codigo.toLowerCase().replaceAll('_', ' ')
 const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`
@@ -183,23 +257,7 @@ export function ComentariosResumen({ periodoId, programaId, alcance, esCoordinad
             icono={Sparkles}
             tono="cielo"
           >
-            <ol className="comentarios-resumen__temas">
-              {datos.temas.map((t) => (
-                <li key={`${t.criterio}-${t.descriptor}-${t.polaridad}`}>
-                  <span className={`comentarios-resumen__polaridad comentarios-resumen__polaridad--${t.polaridad.toLowerCase()}`}>
-                    {POLARIDAD[t.polaridad] ?? t.polaridad}
-                  </span>
-                  <span className="comentarios-resumen__tema">{t.nombre}</span>
-                  <span className="comentarios-resumen__riel" aria-hidden="true">
-                    <span style={{ width: `${Math.min(100, t.porcentaje)}%` }} />
-                  </span>
-                  <span className="comentarios-resumen__cifra">
-                    <strong>{String(t.porcentaje).replace('.', ',')} %</strong>
-                    {plural(t.docentes, 'docente', 'docentes')}
-                  </span>
-                </li>
-              ))}
-            </ol>
+            <TemasPorPestana temas={datos.temas} />
           </Panel>
 
           <p className="comentarios-resumen__pie">

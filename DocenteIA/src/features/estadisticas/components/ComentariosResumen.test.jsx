@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import * as analisisService from '../../analisis/services/analisisService.js'
 import { ComentariosResumen } from './ComentariosResumen.jsx'
@@ -36,7 +37,8 @@ describe('ComentariosResumen', () => {
     expect(await screen.findByRole('img', { name: 'Índice de sentimiento +40 sobre 100' })).toBeInTheDocument()
     expect(analisisService.obtenerResumenComentarios).toHaveBeenCalledWith({ periodo: 1, programa: 7 })
     expect(screen.getByText('Claridad al explicar ideas').closest('li')).toHaveTextContent('33,3 %')
-    expect(screen.getByText('Retroalimentación sobre los resultados').closest('li')).toHaveTextContent('Por mejorar')
+    await userEvent.click(screen.getByRole('tab', { name: /Por mejorar/ }))
+    expect(screen.getByRole('tabpanel', { name: 'Por mejorar' })).toHaveTextContent('Retroalimentación sobre los resultados')
     expect(screen.getByText(/2 órdenes al modelo/)).toBeInTheDocument()
     // La vicerrectoría no ve las advertencias sensibles.
     expect(screen.queryByText(/Advertencias para revisar/)).not.toBeInTheDocument()
