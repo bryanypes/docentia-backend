@@ -45,7 +45,10 @@ function abrir() {
   )
 }
 
-beforeEach(() => vi.clearAllMocks())
+beforeEach(() => {
+  vi.clearAllMocks()
+  localStorage.clear()
+})
 
 describe('HeteroevaluacionClase', () => {
   it('avisa el anonimato, exige todo y la confirmación, y agradece', async () => {
@@ -69,6 +72,10 @@ describe('HeteroevaluacionClase', () => {
     expect(enviarEvaluacion).toHaveBeenCalledWith('7', { respuestas: { D02: 4, D05: 5 }, comentario: null })
     terminar({ estado: 'ENVIADA' })
     expect(await screen.findByText('¡Gracias por tu evaluación!')).toBeInTheDocument()
+    // Justo después del envío se ve el resumen con lo respondido.
+    expect(screen.getByRole('heading', { name: 'Evaluación enviada' })).toBeInTheDocument()
+    expect(screen.getByText('Socializa resultados').closest('li')).toHaveTextContent('4 Nivel 4')
+    expect(screen.getByText('Expresa con claridad').closest('li')).toHaveTextContent('5 Nivel 5')
   })
 
   it('muestra el 409 del doble envío', async () => {
@@ -82,10 +89,29 @@ describe('HeteroevaluacionClase', () => {
     expect(await screen.findByText('Ya enviaste esta evaluación')).toBeInTheDocument()
   })
 
-  it('una evaluación enviada o cerrada no se puede responder', async () => {
+  it('una evaluación enviada no se puede responder y muestra su comprobante', async () => {
     obtenerEvaluacion.mockResolvedValue({ ...FORMULARIO, estado: 'ENVIADA' })
     abrir()
-    expect(await screen.findByText('Ya enviaste esta evaluación')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Evaluación enviada' })).toBeInTheDocument()
+    expect(screen.getByText(/Solo las verás desde el equipo con el que la enviaste/)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Enviar evaluación' })).not.toBeInTheDocument()
+  })
+
+  it('desde el mismo equipo, una evaluación enviada muestra lo que se respondió', async () => {
+    localStorage.setItem(
+      'docentia.resumen-evaluacion.1.7',
+      JSON.stringify({ respuestas: { D02: 2, D05: 3 }, comentario: 'Muy buena clase', enviadaEn: '2026-11-04T15:00:00Z' }),
+    )
+    obtenerEvaluacion.mockResolvedValue({ ...FORMULARIO, estado: 'ENVIADA' })
+    abrir()
+    expect((await screen.findByText('Socializa resultados')).closest('li')).toHaveTextContent('2 Nivel 2')
+    expect(screen.getByText('Muy buena clase')).toBeInTheDocument()
+  })
+
+  it('una evaluación cerrada sin enviar no se puede responder', async () => {
+    obtenerEvaluacion.mockResolvedValue({ ...FORMULARIO, ventanaAbierta: false })
+    abrir()
+    expect(await screen.findByText('La evaluación está cerrada')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Enviar evaluación' })).not.toBeInTheDocument()
   })
 

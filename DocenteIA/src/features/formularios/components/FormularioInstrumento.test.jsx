@@ -52,8 +52,29 @@ describe('FormularioInstrumento', () => {
     expect(enviar).toBeDisabled()
     await userEvent.click(screen.getByRole('checkbox'))
     await userEvent.dblClick(enviar)
-    expect(onGuardar).toHaveBeenCalledWith({ respuestas: { D01: 4, D02: 5 }, comentarios: { C1: '' } })
+    expect(onGuardar).toHaveBeenCalledWith({ respuestas: { D01: 4, D02: 5 }, comentario: null })
     expect(onEnviar).toHaveBeenCalledTimes(1)
+  })
+
+  it('tiene un solo comentario al final, que se guarda con el borrador', async () => {
+    const onGuardar = vi.fn().mockResolvedValue({})
+    render(<FormularioInstrumento formulario={FORMULARIO} onGuardar={onGuardar} onEnviar={vi.fn()} />)
+    // En el paso del criterio ya no hay comentario.
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Revisar' }))
+    await userEvent.type(screen.getByLabelText(/Comentarios u observaciones/), '  Mejorar la retroalimentación ')
+    await userEvent.click(screen.getByRole('button', { name: 'Guardar borrador' }))
+    expect(onGuardar).toHaveBeenCalledWith({ respuestas: {}, comentario: 'Mejorar la retroalimentación' })
+  })
+
+  it('un borrador anterior con comentarios por criterio los junta en el comentario general', async () => {
+    const anterior = {
+      ...FORMULARIO,
+      criterios: [{ ...FORMULARIO.criterios[0], comentario: 'Planea bien' }],
+    }
+    render(<FormularioInstrumento formulario={anterior} onGuardar={vi.fn()} onEnviar={vi.fn()} />)
+    await userEvent.click(screen.getByRole('button', { name: 'Revisar' }))
+    expect(screen.getByLabelText(/Comentarios u observaciones/)).toHaveValue('Capacidad para planear: Planea bien')
   })
 
   it('guarda cada 30 segundos solo si hubo cambios', async () => {

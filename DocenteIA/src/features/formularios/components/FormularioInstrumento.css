@@ -210,3 +210,8 @@
   background: linear-gradient(90deg, #7fe0d3, var(--color-crema));
   transition: width 0.5s ease;
 }
+
+.instrumento__contador {
+  justify-self: end;
+  font-size: 12px;
+}

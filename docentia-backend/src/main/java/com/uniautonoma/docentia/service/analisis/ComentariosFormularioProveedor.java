@@ -6,8 +6,9 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
 /**
- * Comentarios del formulario anónimo de heteroevaluación. No se copian al enviar: se leen aquí, al
- * analizar, y solo el texto. Nunca se lee el id de la respuesta, ni la asignación, ni nada que
+ * Comentarios del formulario anónimo de heteroevaluación y el comentario general de la
+ * autoevaluación y la coevaluación enviadas. No se copian al enviar: se leen aquí, al analizar, y
+ * solo el texto. El mínimo de evidencia sigue contando solo las encuestas de estudiantes. Nunca se lee el id de la respuesta, ni la asignación, ni nada que
  * permita ordenarlas por llegada; el orden es el de la huella SHA-256 del texto y el identificador
  * es la posición en ese orden.
  */
@@ -19,8 +20,15 @@ public class ComentariosFormularioProveedor implements ProveedorComentarios {
 
   private static final String COMENTARIOS =
       """
-      select comentario from respuestas_heteroevaluacion
-      where docente_id = ? and periodo_id = ? and comentario is not null and btrim(comentario) <> ''
+      select comentario from (
+          select comentario from respuestas_heteroevaluacion
+          where docente_id = ? and periodo_id = ?
+            and comentario is not null and btrim(comentario) <> ''
+          union all
+          select comentario_general from evaluaciones_formulario
+          where docente_id = ? and periodo_id = ? and estado = 'ENVIADA'
+            and comentario_general is not null and btrim(comentario_general) <> ''
+      ) todos
       order by encode(sha256(convert_to(comentario, 'UTF8')), 'hex'), comentario
       """;
 
@@ -40,7 +48,8 @@ public class ComentariosFormularioProveedor implements ProveedorComentarios {
   @Override
   public List<ComentarioFuente> comentarios(Long idDocente, Long idPeriodo) {
     List<String> textos =
-        jdbcTemplate.queryForList(COMENTARIOS, String.class, idDocente, idPeriodo);
+        jdbcTemplate.queryForList(
+            COMENTARIOS, String.class, idDocente, idPeriodo, idDocente, idPeriodo);
     List<ComentarioFuente> comentarios = new ArrayList<>(textos.size());
     for (int i = 0; i < textos.size(); i++) {
       comentarios.add(new ComentarioFuente((long) i + 1, textos.get(i)));

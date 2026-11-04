@@ -128,6 +128,15 @@ ambigüedad. La fuente de verdad es la resolución; el Excel v2 tiene errores (v
 - **Auditoría.** `entidad_id` guarda el docente evaluado, y el periodo se deduce de la fecha.
 - **Desglose del docente.** Mi evaluación muestra solo su autoevaluación por criterio. `GET
   /expedientes/propio` conserva `dimensiones`, valores ya ponderados que no revelan una fuente.
+- **Un comentario al final (V35).** Autoevaluación y coevaluación pasan de un comentario por
+  criterio a uno general en «Revisar y enviar», como el del estudiante. Ese comentario, solo de
+  formularios enviados, entra al análisis de la fuente FORMULARIO junto a los de estudiantes; el
+  mínimo de evidencia sigue contando solo encuestas de estudiantes. Esto cambia lo que decía V25
+  («no van al análisis»). Los comentarios por criterio anteriores se conservan en la base y la
+  pantalla los junta en el comentario general del borrador para no perderlos.
+- **Resumen del estudiante.** Las respuestas del formulario anónimo no se pueden recuperar desde el
+  servidor. Al enviar, el navegador guarda una copia solo para ese usuario; desde otro equipo se ve
+  un comprobante sin las respuestas.
 
 ## Heteroevaluación (HU-01)
 
