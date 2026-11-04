@@ -1,14 +1,16 @@
-import { RefreshCw } from 'lucide-react'
+import { ClipboardCheck, RefreshCw } from 'lucide-react'
 import robotSaludo from '../../../assets/ilustraciones/robot-saludo.svg'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { EtiquetaNivel } from '../../../shared/components/ui/EtiquetaNivel/EtiquetaNivel.jsx'
 import { MensajeNavegacion } from '../../../shared/components/ui/MensajeNavegacion/MensajeNavegacion.jsx'
+import { CifraPortada, Portada } from '../../../shared/components/ui/Portada/Portada.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { formatearNota, listarFuentes, textoFormula } from '../../../shared/utils/formatters.js'
 import { PanelSeguimientoPlan } from '../../actas/components/PanelSeguimientoPlan.jsx'
 import { PanelHallazgosPropios } from '../../analisis/components/PanelHallazgosPropios.jsx'
+import { useSesion } from '../../auth/sesionContext.js'
 import { PanelMiAutoevaluacion } from '../../formularios/components/PanelMiAutoevaluacion.jsx'
 import { obtenerConfiguracionEvaluacion } from '../../kpis/services/configuracionService.js'
 import { LineaTiempo } from '../../periodos/components/LineaTiempo.jsx'
@@ -22,6 +24,7 @@ import './MiEvaluacion.css'
  * individuales de cada fuente ni un promedio parcial.
  */
 export default function MiEvaluacion() {
+  const { usuario } = useSesion()
   const expediente = useFetch(obtenerExpedientePropio)
   const periodoNombre = expediente.datos?.periodo?.nombre
   const configuracion = useFetch(obtenerConfiguracionEvaluacion)
@@ -76,6 +79,28 @@ export default function MiEvaluacion() {
           />
         ) : (
           <>
+          <Portada
+            id="portada-docente"
+            icono={ClipboardCheck}
+            rotulo={`Tu evaluación ${periodo.nombre}`}
+            titulo={`Hola, ${usuario.nombreCompleto.split(' ')[0]}`}
+            detalle="Aquí ves tu proceso del periodo, tu resultado cuando llegue la reunión y tus compromisos."
+            robot={robotSaludo}
+          >
+            <div className="portada__cifras">
+              <CifraPortada
+                rotulo="Tu promedio"
+                valor={completo ? formatearNota(promedio.valor) : esperaReunion ? 'En tu cita' : 'Pendiente'}
+                nota={completo ? 'Sobre 5' : esperaReunion ? 'Lo verás en la reunión' : 'Faltan calificaciones'}
+              />
+              <CifraPortada
+                rotulo="Compromisos vigentes"
+                valor={compromisosVigentes.length}
+                nota={compromisosVigentes.length ? 'Revísalos abajo' : 'Sin compromisos abiertos'}
+              />
+              <CifraPortada rotulo="Periodo" valor={periodo.nombre} nota={periodo.esActivo === false ? 'Cerrado' : 'En curso'} />
+            </div>
+          </Portada>
           <LineaTiempo />
           <PanelProcesoPropio />
           <div className="rejilla mi-evaluacion__rejilla">
