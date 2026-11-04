@@ -53,6 +53,23 @@
 - Endpoints de análisis por docente, comentarios anonimizados y resumen agregado por programa.
 - Validación con 90 comentarios sintéticos etiquetados y métricas por criterio.
 - Instrucción `analisis-v2` contra inyección y prueba opcional con un proveedor real.
+- Expediente del docente en una tarjeta de perfil con la nota final y una tarjeta con pestañas:
+  Resultados, Análisis IA, Histórico y compromisos, y Proceso y acta.
+- Pestaña Análisis IA del expediente: resumen de los comentarios de estudiantes (sentimiento,
+  fortalezas y oportunidades), los comentarios al desplegar y el botón para solicitarlo desde ahí.
+- Al redactar el acta, las oportunidades de mejora del análisis aparecen como sugerencias de
+  compromiso con un botón «Agregar» que abre el compromiso ya escrito.
+- Análisis de un docente con una franja de estado (sin solicitar, analizando, listo para revisar,
+  publicado) y pestañas Resumen, Comentarios y Revisión.
+- Comentarios de estudiantes agrupados por tema; cada comentario va a un solo tema.
+- Panorama del análisis con chips de estado, filtros de facultad y programa, orden y búsqueda de
+  una palabra en los comentarios (`GET /analisis-ia/panorama/coincidencias`, solo conteos).
+- Ayuda de DocenteIA en un modal desde el botón de información de Análisis de comentarios.
+- «Mis evaluaciones» del estudiante con portada compacta (avance y cierre) y una tarjeta por
+  profesor, primero las pendientes.
+- Temas más mencionados de Estadísticas en pestañas (Fortalezas, Por mejorar) y páginas.
+- Semilla de desarrollo con comentarios para seis docentes y para el periodo 2026-1 de Julián
+  (tendencias); coevaluaciones y autoevaluaciones de la semilla enviadas por su formulario.
 
 ### Cambiado
 
@@ -86,11 +103,24 @@
 - El filtro de calidad (vacíos, cortos, duplicados, órdenes al modelo) también se aplica al CSV.
 - Los comentarios se envían ordenados por la huella del texto, no por orden de carga.
 - `temperature` es opcional en el proveedor chat-completions.
+- Estadísticas en una rejilla fija de tres columnas (dos en portátil, una en celular); las etapas
+  sin docentes se resumen en una línea y las tablas cortas comparten fila.
+- Inicio de coordinación y vicerrectoría con las tarjetas de docentes en dos columnas apiladas.
+- Las páginas de detalle llevan el regreso dentro de un encabezado más bajo.
+- La carga del CSV de evaluación de estudiantes queda oculta con `FUNCIONES.cargaCsvEstudiantes`;
+  `/importaciones` lleva a Inicio.
+- La coevaluación ya no muestra el análisis de IA.
+- Tendencias: sin periodo anterior se muestra un aviso en lugar de la lista.
+- Barras de desplazamiento delgadas y amarillas en toda la aplicación.
 
 ### Corregido
 
 - Tras salir e iniciar con otro rol ya no se abre el panel del rol anterior.
 - Las páginas ya no se desbordan en el celular; las tablas se apilan como tarjetas.
+- La barra de pasos del cuestionario ya no parpadea al desplazarse.
+- El análisis de los comentarios cargados se puede pedir con la recolección abierta; antes la
+  pantalla lo bloqueaba y el estado decía que había que esperar el cierre.
+- La lista de comentarios se recarga sola cuando el análisis termina.
 
 ## 0.3.3
 

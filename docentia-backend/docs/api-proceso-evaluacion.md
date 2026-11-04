@@ -117,3 +117,9 @@ trae `conTrazo`.
 docente del alcance, comentarios recibidos, estado del último análisis, si está publicado,
 fortalezas, oportunidades, descartados, por decidir, citas y citas verificadas, más los totales.
 Solo conteos: ningún texto de comentario o de hallazgo.
+
+`GET /analisis-ia/panorama/coincidencias?periodoId=&buscar=` (coordinación y vicerrectoría) busca
+una palabra en los comentarios de estudiantes del periodo (CSV, formulario anónimo y comentario
+general de los formularios enviados), sin distinguir mayúsculas ni tildes, y devuelve
+`[{idDocente, coincidencias}]` de los docentes del alcance que la tienen. Con menos de tres letras
+devuelve la lista vacía. Nunca devuelve el texto.
