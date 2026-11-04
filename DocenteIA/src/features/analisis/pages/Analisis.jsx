@@ -14,7 +14,9 @@ import { formatearFechaHora } from '../../../shared/utils/formatters.js'
 import { useSesion } from '../../auth/sesionContext.js'
 import { listarDocentes } from '../../docentes/services/docentesService.js'
 import { listarPeriodos } from '../../periodos/services/periodosService.js'
+import { ComentariosDocente } from '../components/ComentariosDocente.jsx'
 import { MensajeIA, RobotIA } from '../components/DocenteIA.jsx'
+import { ResultadoComentarios } from '../components/ResultadoComentarios.jsx'
 import { HallazgoBorrador } from '../components/HallazgoBorrador.jsx'
 import { PanoramaAnalisis } from '../components/PanoramaAnalisis.jsx'
 import {
@@ -216,6 +218,23 @@ function Borrador({ solicitud, puedeValidar, onValidado }) {
   )
 }
 
+/** Resultado arriba y comentarios abajo; tocar un tema filtra los comentarios por su criterio. */
+function VistaComentarios({ idDocente, periodoId, esCoordinador }) {
+  const [criterio, setCriterio] = useState(null)
+  return (
+    <>
+      <ResultadoComentarios
+        idDocente={idDocente}
+        periodoId={periodoId}
+        esCoordinador={esCoordinador}
+        criterioActivo={criterio}
+        onFiltrarCriterio={setCriterio}
+      />
+      <ComentariosDocente idDocente={idDocente} periodoId={periodoId} criterio={criterio} onCriterio={setCriterio} />
+    </>
+  )
+}
+
 function DetalleSolicitud({ idSolicitud, puedeValidar }) {
   const { solicitud, error, agotado, reanudar } = useSeguimientoSolicitud(idSolicitud)
 
@@ -373,13 +392,21 @@ export default function Analisis() {
               </div>
             )}
             <ErrorApi error={errorSolicitar} />
+            {/* Resultado del análisis y comentarios (contrato api-comentarios-ia); la key reinicia los
+                filtros al cambiar de docente o periodo. */}
+            <VistaComentarios
+              key={`${docenteId}-${periodoId}-${idSolicitud ?? 'sin'}`}
+              idDocente={docenteId}
+              periodoId={periodoId}
+              esCoordinador={esCoordinador}
+            />
             {idSolicitud ? (
               <DetalleSolicitud key={idSolicitud} idSolicitud={idSolicitud} puedeValidar={esCoordinador} />
             ) : (
-              <MensajeIA robot="esperando" tono="violeta" titulo="Todavía no he analizado a este docente en este periodo">
+              <MensajeIA robot="esperando" tono="violeta" titulo="Revisión de hallazgos">
                 <p>
                   {esCoordinador
-                    ? `Pídemelo con «Solicitar análisis». Necesito al menos ${MINIMO_ENCUESTAS} encuestas con comentario.`
+                    ? `Cuando pidas el análisis con «Solicitar análisis», aquí revisarás y publicarás cada hallazgo. Necesito al menos ${MINIMO_ENCUESTAS} encuestas con comentario.`
                     : 'La coordinación aún no lo ha solicitado.'}
                 </p>
               </MensajeIA>

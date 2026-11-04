@@ -13,6 +13,9 @@
   facultad. Todo también va al Excel.
 - «Docentes destacados» del Inicio abre un modal con quiénes son, con su programa, promedio y
   expediente.
+- Análisis de comentarios por docente con el contrato nuevo: estado con DocenteIA (los 7 estados,
+  con sondeo mientras está en curso), fortalezas y oportunidades con sus citas, tendencias y la
+  lista de comentarios anonimizados con filtros; tocar un tema filtra por su criterio.
 - Resumen de una evaluación enviada por el estudiante: sus respuestas desde el mismo equipo (copia
   local) o un comprobante desde otro.
 - Comentario general al final de autoevaluación y coevaluación (V35), que entra al análisis de
