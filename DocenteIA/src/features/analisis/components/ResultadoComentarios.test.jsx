@@ -140,20 +140,36 @@ describe('Resumen del análisis en el expediente', () => {
     expect(await screen.findByText('Demora mucho la retroalimentación de los parciales.')).toBeInTheDocument()
   })
 
-  it('sin análisis explica cuándo se puede pedir', async () => {
-    analisisService.obtenerAnalisisDocente.mockResolvedValue({
+  it('sin análisis la coordinación lo solicita desde el expediente', async () => {
+    const sinSolicitar = {
       ...COMPLETADO,
       estado: 'NO_DISPONIBLE_AUN',
-      motivo: 'VENTANA_ABIERTA',
-      mensaje: 'La recolección sigue abierta.',
+      motivo: 'SIN_SOLICITAR',
+      mensaje: 'Todavía no se ha solicitado el análisis.',
       resultado: null,
-    })
+    }
+    analisisService.obtenerAnalisisDocente.mockResolvedValue(sinSolicitar)
+    analisisService.solicitarAnalisis.mockResolvedValue({ idSolicitud: 9, estado: 'EN_COLA' })
+    render(
+      <MemoryRouter>
+        <ResumenAnalisisIA idDocente={1} periodoId={1} esCoordinador />
+      </MemoryRouter>,
+    )
+    expect(await screen.findByText('Todavía no se ha solicitado el análisis.')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Ver comentarios de estudiantes' })).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Solicitar análisis' }))
+    expect(analisisService.solicitarAnalisis).toHaveBeenCalledWith(1, 1)
+    expect(analisisService.obtenerAnalisisDocente).toHaveBeenCalledTimes(2)
+  })
+
+  it('la vicerrectoría no solicita el análisis desde el expediente', async () => {
+    analisisService.obtenerAnalisisDocente.mockResolvedValue({ ...COMPLETADO, estado: 'NO_DISPONIBLE_AUN', resultado: null })
     render(
       <MemoryRouter>
         <ResumenAnalisisIA idDocente={1} periodoId={1} />
       </MemoryRouter>,
     )
-    expect(await screen.findByText(/Se puede pedir cuando cierre la recolección/)).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Ver comentarios de estudiantes' })).not.toBeInTheDocument()
+    await screen.findByText('Todavía no hay análisis')
+    expect(screen.queryByRole('button', { name: 'Solicitar análisis' })).not.toBeInTheDocument()
   })
 })

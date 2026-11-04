@@ -186,6 +186,21 @@ class AnalisisComentariosTest extends PruebaIntegracion {
   }
 
   @Test
+  void conComentariosCargadosYLaRecoleccionAbiertaSoloFaltaSolicitarlo() throws Exception {
+    escenario.abrirEtapa(
+        periodo,
+        TipoEtapa.RECOLECCION_CALIFICACIONES,
+        BaseDatosPruebaConfig.HOY.minusDays(3),
+        BaseDatosPruebaConfig.HOY.plusDays(3));
+    escenario.cargarComentarios(docente, periodo, coordinador, List.of("Explica muy bien."));
+
+    analisis(coordinador, docente)
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.estado").value("NO_DISPONIBLE_AUN"))
+        .andExpect(jsonPath("$.motivo").value("SIN_SOLICITAR"));
+  }
+
+  @Test
   void elAnalisisDelFormularioCompletaConElModeloLocalYQuedaPendienteDeValidacion(
       CapturedOutput salida) throws Exception {
     responder(docente, periodo, COMENTARIOS);

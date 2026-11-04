@@ -55,7 +55,7 @@ function Tema({ tema, onFiltrar, activo }) {
  * Mientras está en cola o en proceso se vuelve a consultar sola. Las advertencias sensibles solo las ve
  * coordinación y nunca muestran texto.
  */
-export function ResultadoComentarios({ idDocente, periodoId, esCoordinador, criterioActivo, onFiltrarCriterio, onVersion }) {
+export function ResultadoComentarios({ idDocente, periodoId, esCoordinador, criterioActivo, onFiltrarCriterio, onVersion, compacto = false }) {
   const cargar = useCallback(() => obtenerAnalisisDocente(idDocente, periodoId), [idDocente, periodoId])
   const analisis = useFetch(cargar, [cargar])
   const datos = analisis.datos
@@ -88,8 +88,13 @@ export function ResultadoComentarios({ idDocente, periodoId, esCoordinador, crit
   const rotuloModelo = r?.tipoModelo === 'LLM' ? 'Propuesto por un modelo de lenguaje' : 'Análisis automático por reglas'
 
   return (
-    <section className="resultado-ia" aria-labelledby="resultado-ia-titulo">
+    <section
+      className={`resultado-ia${compacto ? ' resultado-ia--compacto' : ''}`}
+      {...(compacto ? { 'aria-label': 'Resumen del análisis' } : { 'aria-labelledby': 'resultado-ia-titulo' })}
+    >
+      {/* En la vista con pestañas el estado ya lo dice la franja de arriba: aquí solo van los rótulos. */}
       <div className="resultado-ia__cabecera">
+        {!compacto && (
         <div>
           <h2 id="resultado-ia-titulo">
             <Sparkles size={18} aria-hidden="true" />
@@ -102,6 +107,7 @@ export function ResultadoComentarios({ idDocente, periodoId, esCoordinador, crit
             {datos.generadoEn ? ` · ${formatearFechaHora(datos.generadoEn)}` : ''}
           </p>
         </div>
+        )}
         {r && (
           <div className="resultado-ia__rotulos">
             <span className="resultado-ia__rotulo">{rotuloModelo}</span>
@@ -116,12 +122,13 @@ export function ResultadoComentarios({ idDocente, periodoId, esCoordinador, crit
         )}
       </div>
 
-      {datos.estado !== 'COMPLETADO' && estado && (
+      {compacto && !r && <p className="resultado-ia__vacio">Todavía no hay resultados para mostrar.</p>}
+
+      {!compacto && datos.estado !== 'COMPLETADO' && estado && (
         <MensajeIA robot={estado.robot} tono={estado.tono} titulo={estado.titulo} role="status">
           <p>
             {datos.mensaje}
             {EN_CURSO.includes(datos.estado) ? ' La pantalla se actualiza sola.' : ''}
-            {datos.motivo === 'VENTANA_ABIERTA' ? ' El análisis del formulario se hace cuando cierra la recolección.' : ''}
             {r && EN_CURSO.includes(datos.estado) ? ' Mientras tanto ves la versión anterior.' : ''}
           </p>
         </MensajeIA>

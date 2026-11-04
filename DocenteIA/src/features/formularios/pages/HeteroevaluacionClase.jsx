@@ -1,6 +1,6 @@
-import { ChevronLeft, RefreshCw } from 'lucide-react'
+import { RefreshCw } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
@@ -43,15 +43,11 @@ export default function HeteroevaluacionClase() {
   return (
     <>
       <Encabezado
-        miga="Estudiante · Evaluación"
+        volver={{ a: '/evaluacion-profesores', texto: 'Mis evaluaciones' }}
         titulo={datos ? `Evaluación de ${datos.docente}` : 'Evaluación'}
         subtitulo={datos ? `${datos.curso} · Grupo ${datos.grupo}. Once ítems del Anexo 1.` : 'Once ítems del Anexo 1.'}
       />
       <div className="pagina">
-        <Link to="/evaluacion-profesores" className="enlace-volver">
-          <ChevronLeft size={16} aria-hidden="true" />
-          Volver a mis evaluaciones
-        </Link>
         {cargando && !datos && <Cargando texto="Cargando la evaluación" bloques={2} />}
         {error && (
           <EstadoVista

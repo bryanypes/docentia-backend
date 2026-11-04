@@ -95,3 +95,41 @@
   align-items: center;
   gap: 10px;
 }
+
+/* Encabezado de una página de detalle: el regreso va arriba del título y todo es más bajo. */
+.encabezado--compacto {
+  padding-top: 16px;
+  padding-bottom: 14px;
+}
+
+.encabezado--compacto .encabezado__titulo {
+  font-size: 25px;
+}
+
+.encabezado--compacto .encabezado__subtitulo {
+  margin-top: 4px;
+}
+
+.encabezado__volver {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 0 6px -4px;
+  padding: 2px 6px 2px 2px;
+  border-radius: var(--radio-pildora);
+  font-size: 12px;
+  font-weight: var(--peso-semi);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-azul);
+  text-decoration: none;
+}
+
+.encabezado__volver:hover {
+  background: var(--color-azul-suave);
+}
+
+.encabezado__volver:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+}

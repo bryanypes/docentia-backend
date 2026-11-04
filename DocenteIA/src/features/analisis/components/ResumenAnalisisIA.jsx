@@ -1,16 +1,21 @@
 import { ChevronDown, CircleCheck, ExternalLink, MessageSquareQuote, Sparkles, TriangleAlert } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
+import { ErrorApi } from '../../../shared/components/ui/ErrorApi/ErrorApi.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { ESTADO_ANALISIS } from '../estados.js'
-import { obtenerAnalisisDocente } from '../services/analisisService.js'
+import { obtenerAnalisisDocente, solicitarAnalisis } from '../services/analisisService.js'
 import { ComentariosDocente } from './ComentariosDocente.jsx'
 import { MensajeIA } from './DocenteIA.jsx'
 import './ResumenAnalisisIA.css'
 
 const MAXIMO_TEMAS = 3
+const SONDEO_MS = 4000
+const EN_CURSO = ['EN_COLA', 'EN_PROCESO']
+// Estados en los que la coordinación puede pedir el análisis desde aquí mismo.
+const SE_PUEDE_PEDIR = ['NO_DISPONIBLE_AUN', 'INSUFICIENTE', 'ERROR', 'SIN_COMENTARIOS']
 
 function ListaTemas({ titulo, Icono, tono, temas, vacio }) {
   return (
@@ -40,9 +45,10 @@ function ListaTemas({ titulo, Icono, tono, temas, vacio }) {
 /**
  * Resumen corto del análisis de los comentarios de los estudiantes: sentimiento, las principales
  * fortalezas y oportunidades, y un botón que despliega los comentarios. El detalle completo (citas,
- * tendencias, validación) vive en Análisis de comentarios.
+ * tendencias, validación) vive en Análisis de comentarios. La coordinación puede solicitarlo aquí;
+ * mientras se genera, el resumen se actualiza solo.
  */
-export function ResumenAnalisisIA({ idDocente, periodoId }) {
+export function ResumenAnalisisIA({ idDocente, periodoId, esCoordinador = false }) {
   const cargar = useCallback(
     () => (periodoId ? obtenerAnalisisDocente(idDocente, periodoId) : Promise.resolve(null)),
     [idDocente, periodoId],
@@ -52,6 +58,29 @@ export function ResumenAnalisisIA({ idDocente, periodoId }) {
   const [criterio, setCriterio] = useState(null)
   const datos = analisis.datos
   const r = datos?.resultado
+  const { recargar } = analisis
+  const [enviando, setEnviando] = useState(false)
+  const [errorSolicitar, setErrorSolicitar] = useState(null)
+
+  useEffect(() => {
+    if (!datos || !EN_CURSO.includes(datos.estado)) return undefined
+    const temporizador = setTimeout(recargar, SONDEO_MS)
+    return () => clearTimeout(temporizador)
+  }, [datos, recargar])
+
+  async function solicitar() {
+    setEnviando(true)
+    setErrorSolicitar(null)
+    try {
+      await solicitarAnalisis(idDocente, periodoId)
+      recargar()
+    } catch (error) {
+      setErrorSolicitar(error)
+    } finally {
+      setEnviando(false)
+    }
+  }
+  const puedePedir = esCoordinador && datos && !EN_CURSO.includes(datos.estado) && SE_PUEDE_PEDIR.includes(datos.estado)
   const enlace = `/analisis?docente=${encodeURIComponent(idDocente)}&periodo=${encodeURIComponent(periodoId ?? '')}`
 
   let contenido
@@ -71,7 +100,6 @@ export function ResumenAnalisisIA({ idDocente, periodoId }) {
       <MensajeIA robot={estado.robot} tono={estado.tono} tamano="compacto" titulo={estado.titulo} role="status">
         <p>
           {datos.mensaje}
-          {datos.motivo === 'VENTANA_ABIERTA' ? ' Se puede pedir cuando cierre la recolección de calificaciones.' : ''}
         </p>
       </MensajeIA>
     )
@@ -126,7 +154,13 @@ export function ResumenAnalisisIA({ idDocente, periodoId }) {
       tono="violeta"
     >
       {contenido}
+      <ErrorApi error={errorSolicitar} />
       <div className="resumen-ia__acciones">
+        {puedePedir && (
+          <Boton icono={Sparkles} onClick={solicitar} disabled={enviando}>
+            {enviando ? 'Solicitando…' : datos.estado === 'NO_DISPONIBLE_AUN' ? 'Solicitar análisis' : 'Solicitar de nuevo'}
+          </Boton>
+        )}
         {r && (
           <Boton
             variante="contorno"
