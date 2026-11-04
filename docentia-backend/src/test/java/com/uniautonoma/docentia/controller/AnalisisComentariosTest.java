@@ -393,6 +393,19 @@ class AnalisisComentariosTest extends PruebaIntegracion {
   }
 
   @Test
+  void sinPeriodoEs400YMasDeSesentaConsultasPorMinutoEs429() throws Exception {
+    mockMvc
+        .perform(
+            get("/analisis-comentarios/docentes/{id}", docente.getIdUsuario())
+                .with(como(coordinador)))
+        .andExpect(status().isBadRequest());
+    for (int i = 0; i < 60; i++) {
+      analisis(vicerrector, docente).andExpect(status().isOk());
+    }
+    analisis(vicerrector, docente).andExpect(status().isTooManyRequests());
+  }
+
+  @Test
   void elDocenteNoVeCrudosYOtraFacultadRecibe404() throws Exception {
     responder(docente, periodo, COMENTARIOS);
     solicitar(docente, periodo, "FORMULARIO");
