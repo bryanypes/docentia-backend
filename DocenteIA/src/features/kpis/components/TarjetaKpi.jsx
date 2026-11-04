@@ -43,7 +43,17 @@ function Comparacion({ indicador, periodoAnterior, conDecimales }) {
 }
 
 /** Indicador: ícono, qué mide, el número, una línea de comparación y la explicación en ⓘ. */
-export function TarjetaKpi({ icono: Icono, rotulo, valor, unidad, indicador, conDecimales = false, periodoAnterior, explicacion }) {
+export function TarjetaKpi({
+  icono: Icono,
+  rotulo,
+  valor,
+  unidad,
+  indicador,
+  conDecimales = false,
+  periodoAnterior,
+  explicacion,
+  accion,
+}) {
   return (
     <article className="tarjeta-kpi">
       <div className="tarjeta-kpi__cabecera">
@@ -58,6 +68,7 @@ export function TarjetaKpi({ icono: Icono, rotulo, valor, unidad, indicador, con
         {unidad && <span>{unidad}</span>}
       </div>
       <Comparacion indicador={indicador} periodoAnterior={periodoAnterior} conDecimales={conDecimales} />
+      {accion}
     </article>
   )
 }

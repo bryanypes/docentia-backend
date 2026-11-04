@@ -146,3 +146,30 @@
   font-size: 13px;
   font-weight: var(--peso-fuerte);
 }
+
+/* Acción al pie de la tarjeta (por ejemplo, ver quiénes son los destacados). */
+.tarjeta-kpi__accion {
+  display: inline-flex;
+  justify-self: start;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--color-azul);
+  font: inherit;
+  font-size: 13px;
+  font-weight: var(--peso-semi);
+  cursor: pointer;
+}
+
+.tarjeta-kpi__accion:hover {
+  text-decoration: underline;
+}
+
+.tarjeta-kpi__accion:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+  border-radius: 4px;
+}

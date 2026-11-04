@@ -1,10 +1,13 @@
-import { ArrowRight, Award, ChartColumnBig, ClipboardList, RefreshCw, RotateCcw, SlidersHorizontal, UserCheck } from 'lucide-react'
+import { ArrowRight, Award, ChartColumnBig, ClipboardList, Eye, RefreshCw, RotateCcw, SlidersHorizontal, UserCheck } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useCallback, useMemo, useState } from 'react'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
+import { BotonAccion } from '../../../shared/components/ui/BotonAccion/BotonAccion.jsx'
+import { EtiquetaNivel } from '../../../shared/components/ui/EtiquetaNivel/EtiquetaNivel.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { MensajeNavegacion } from '../../../shared/components/ui/MensajeNavegacion/MensajeNavegacion.jsx'
+import { Modal } from '../../../shared/components/ui/Modal/Modal.jsx'
 import { Portada } from '../../../shared/components/ui/Portada/Portada.jsx'
 import { useVentanaEtapa } from '../../../shared/components/layout/AppLayout/periodoContext.js'
 import { ETAPAS, FUENTE_DEL_ROL, ROLES } from '../../../shared/constants/dominio.js'
@@ -91,6 +94,9 @@ export default function Inicio() {
     [seguimiento.datos, miFuente, agrupacion, umbral, umbralDestacado],
   )
   const recoleccion = useVentanaEtapa(ETAPAS.RECOLECCION_CALIFICACIONES)
+  // Los destacados son la mención de honor medida con el umbral de destacados de los indicadores.
+  const destacados = umbralDestacado !== null && analisis ? analisis.honor : []
+  const [viendoDestacados, setViendoDestacados] = useState(false)
 
   function limpiar() {
     setPeriodoId(ACTIVO)
@@ -189,7 +195,21 @@ export default function Inicio() {
           Indicadores de {kpis.datos?.periodo.nombre ?? 'el periodo'}
           <span> · {alcance}</span>
         </h2>
-        <Indicadores kpis={kpis} esVicerrector={esVicerrector} mostrarCompletos={!viendoActivo} />
+        <Indicadores
+          kpis={kpis}
+          esVicerrector={esVicerrector}
+          mostrarCompletos={!viendoActivo}
+          onVerDestacados={destacados.length ? () => setViendoDestacados(true) : null}
+        />
+        {viendoDestacados && (
+          <ModalDestacados
+            destacados={destacados}
+            umbral={umbralDestacado}
+            alcance={alcance}
+            periodo={nombrePeriodo}
+            onCerrar={() => setViendoDestacados(false)}
+          />
+        )}
 
         {viendoActivo && <LineaTiempo />}
 
@@ -227,7 +247,7 @@ function Filtro({ id, etiqueta, valor, onCambiar, children }) {
  * En el periodo activo, "docentes con evaluación completa" ya lo cuenta el anillo de avance; solo se
  * muestra como tarjeta al consultar periodos anteriores, donde no hay seguimiento.
  */
-function Indicadores({ kpis, esVicerrector, mostrarCompletos }) {
+function Indicadores({ kpis, esVicerrector, mostrarCompletos, onVerDestacados }) {
   if (kpis.cargando) {
     return (
       <div className="inicio__tarjetas" role="status" aria-live="polite">
@@ -309,6 +329,14 @@ function Indicadores({ kpis, esVicerrector, mostrarCompletos }) {
         indicador={datos.docentesDestacados}
         periodoAnterior={periodoAnterior}
         explicacion={`Con promedio de ${formatearNota(umbralDestacado)} o más.`}
+        accion={
+          onVerDestacados && (
+            <button type="button" className="tarjeta-kpi__accion" onClick={onVerDestacados}>
+              <Eye size={15} aria-hidden="true" />
+              Ver quiénes son
+            </button>
+          )
+        }
       />
     </div>
   )
@@ -370,5 +398,38 @@ function Seguimiento({ seguimiento, configuracion, analisis, agrupacion, miFuent
         <ArrowRight size={18} aria-hidden="true" />
       </Link>
     </>
+  )
+}
+
+/** Docentes destacados del tablero (mismos filtros), con su programa, promedio y expediente. */
+function ModalDestacados({ destacados, umbral, alcance, periodo, onCerrar }) {
+  return (
+    <Modal
+      titulo="Docentes destacados"
+      descripcion={`Promedio de ${formatearNota(umbral)} o más · ${alcance}${periodo ? ` · ${periodo.replaceAll('-', '2011')}` : ''}`}
+      icono={Award}
+      ancho="pequeno"
+      onCerrar={onCerrar}
+    >
+      <ol className="destacados">
+        {destacados.map(({ docente, promedio }, i) => (
+          <li key={docente.idDocente} className="destacados__fila">
+            <span className="destacados__puesto" aria-hidden="true">
+              {i + 1}
+            </span>
+            <span className="destacados__datos">
+              <strong>{docente.nombreCompleto}</strong>
+              <span>
+                {docente.nombrePrograma}
+                {docente.nombreFacultad ? ` · ${docente.nombreFacultad}` : ''}
+              </span>
+            </span>
+            <span className="destacados__nota">{formatearNota(promedio.valor)}</span>
+            <EtiquetaNivel promedio={promedio} />
+            <BotonAccion tipo="ver" texto="Ver expediente" nombre={docente.nombreCompleto} a={`/docentes/${docente.idDocente}`} />
+          </li>
+        ))}
+      </ol>
+    </Modal>
   )
 }

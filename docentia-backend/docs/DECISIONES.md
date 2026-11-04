@@ -140,6 +140,10 @@ ambigüedad. La fuente de verdad es la resolución; el Excel v2 tiene errores (v
   ni endpoints; volver a mostrarlo es cambiar ese valor.
 - **Gestión por programa.** La coordinación ya no ve su facultad como filtro (es fija) y filtra por
   programa; la vicerrectoría conserva facultad y suma programa. Las agrupaciones son por programa.
+- **Auditoría en Usuarios.** El registro de auditoría ya no tiene entrada propia en el menú: es la
+  pestaña «Actividad» de Usuarios (`/usuarios?vista=actividad`). El endpoint no cambia.
+- **Facultades y programas.** Una sola página con una tarjeta por facultad y sus programas. La
+  página de programas se retiró; su ruta redirige.
 - **Resumen del estudiante.** Las respuestas del formulario anónimo no se pueden recuperar desde el
   servidor. Al enviar, el navegador guarda una copia solo para ese usuario; desde otro equipo se ve
   un comprobante sin las respuestas.

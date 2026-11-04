@@ -11,6 +11,8 @@
 - Estadísticas: «Lo que dicen los comentarios» con `GET /analisis-comentarios/resumen` (sentimiento,
   balance por criterio y temas) y, para la vicerrectoría, el embudo del proceso y el panorama por
   facultad. Todo también va al Excel.
+- «Docentes destacados» del Inicio abre un modal con quiénes son, con su programa, promedio y
+  expediente.
 - Resumen de una evaluación enviada por el estudiante: sus respuestas desde el mismo equipo (copia
   local) o un comprobante desde otro.
 - Comentario general al final de autoevaluación y coevaluación (V35), que entra al análisis de
@@ -59,6 +61,9 @@
   programa con la facultad como detalle.
 - Matrícula y cobertura de estudiantes ocultas en menú, paneles, cifras y Excel con el interruptor
   `FUNCIONES.coberturaEstudiantes` (el código y el backend siguen).
+- Facultades y programas en una sola página de tarjetas, con buscador, orden y edición en modales;
+  `/programas` lleva a `/facultades`.
+- Auditoría sale del menú y queda como pestaña «Actividad» de Usuarios; `/auditoria` lleva ahí.
 - El login ya no muestra el panel de usuarios de prueba; se escribe el correo de la cuenta.
 - El docente ve su nota, compromisos, hallazgos y acta del periodo en la reunión, no antes.
 - El acta se firma después de registrar la asistencia.

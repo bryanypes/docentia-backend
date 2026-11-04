@@ -67,4 +67,33 @@ describe('Inicio', () => {
     expect(kpisService.obtenerKpis).toHaveBeenLastCalledWith({ periodoId: null, facultadId: null, programaId: '7' })
     expect(screen.getByRole('heading', { name: 'Software · Toda la universidad' })).toBeInTheDocument()
   })
+
+  it('la cifra de destacados muestra quiénes son', async () => {
+    const docente = (id, nombre, valor) => ({
+      docente: { idDocente: id, nombreCompleto: nombre, nombrePrograma: 'Software', nombreFacultad: 'Ingeniería', idPrograma: 7 },
+      promedio: { estado: 'COMPLETO', valor, fuentesPendientes: [] },
+    })
+    docentesService.listarSeguimientoDocentes.mockResolvedValue({
+      periodo: { idPeriodo: 1, nombre: '2026-2' },
+      docentes: [docente(1, 'Ana Ruiz', 4.8), docente(2, 'Luis Paz', 4.0)],
+    })
+    configuracionService.obtenerConfiguracionEvaluacion.mockResolvedValue({ umbralCompromisos: 3.8 })
+    const indicador = { valor: 1, valorAnterior: null, variacion: null }
+    kpisService.obtenerKpis.mockResolvedValue({
+      periodo: { nombre: '2026-2' },
+      periodoAnterior: null,
+      umbralDestacado: 4.5,
+      docentesEvaluados: { valor: 2 },
+      promedioGeneral: { valor: 4.4 },
+      evaluacionesRealizadas: { valor: 6 },
+      docentesDestacados: indicador,
+    })
+    renderizarConSesion(<Inicio />, { rol: 'VICERRECTOR' })
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Ver quiénes son' }))
+    const modal = await screen.findByRole('dialog', { name: 'Docentes destacados' })
+    expect(within(modal).getByText('Ana Ruiz')).toBeInTheDocument()
+    expect(within(modal).queryByText('Luis Paz')).not.toBeInTheDocument()
+    expect(within(modal).getByRole('link', { name: /Ver expediente/ })).toHaveAttribute('href', '/docentes/1')
+  })
 })

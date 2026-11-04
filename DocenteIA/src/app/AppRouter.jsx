@@ -13,7 +13,6 @@ import Coevaluaciones from '../features/formularios/pages/Coevaluaciones.jsx'
 import EvaluacionProfesores from '../features/formularios/pages/EvaluacionProfesores.jsx'
 import HeteroevaluacionClase from '../features/formularios/pages/HeteroevaluacionClase.jsx'
 import MiAutoevaluacion from '../features/formularios/pages/MiAutoevaluacion.jsx'
-import Auditoria from '../features/auditoria/pages/Auditoria.jsx'
 import Matricula from '../features/heteroevaluacion/pages/Matricula.jsx'
 import Notificaciones from '../features/notificaciones/pages/Notificaciones.jsx'
 import PanelProgramas from '../features/kpis/pages/PanelProgramas.jsx'
@@ -28,7 +27,6 @@ import Facultades from '../features/facultades/pages/Facultades.jsx'
 import Importaciones from '../features/importaciones/pages/Importaciones.jsx'
 import Periodos from '../features/periodos/pages/Periodos.jsx'
 import Ponderaciones from '../features/ponderaciones/pages/Ponderaciones.jsx'
-import Programas from '../features/programas/pages/Programas.jsx'
 import FormularioUsuario from '../features/usuarios/pages/FormularioUsuario.jsx'
 import Usuarios from '../features/usuarios/pages/Usuarios.jsx'
 import { AppLayout } from '../shared/components/layout/AppLayout/AppLayout.jsx'
@@ -105,10 +103,10 @@ function RutasDocentia() {
 
               <Route element={<ProtectedRoute rolesPermitidos={[ROLES.VICERRECTOR]} />}>
                 <Route path="/periodos" element={<Periodos />} />
-                <Route path="/auditoria" element={<Auditoria />} />
+                <Route path="/auditoria" element={<Navigate to="/usuarios?vista=actividad" replace />} />
                 <Route path="/ponderaciones" element={<Ponderaciones />} />
                 <Route path="/facultades" element={<Facultades />} />
-                <Route path="/programas" element={<Programas />} />
+                <Route path="/programas" element={<Navigate to="/facultades" replace />} />
                 {/* Crear y editar se abren como modal sobre la lista */}
                 <Route path="/usuarios" element={<Usuarios />}>
                   <Route path="nuevo" element={<FormularioUsuario />} />
