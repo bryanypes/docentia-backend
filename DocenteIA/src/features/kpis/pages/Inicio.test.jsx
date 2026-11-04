@@ -44,7 +44,7 @@ describe('Inicio', () => {
     expect(screen.getAllByText('Cargando el seguimiento').length).toBeGreaterThan(0)
   })
 
-  it('muestra la mención de honor y filtra todo el tablero por carrera', async () => {
+  it('muestra la mención de honor y filtra todo el tablero por programa', async () => {
     const docente = (id, nombre, valor) => ({
       docente: { idDocente: id, nombreCompleto: nombre, nombrePrograma: 'Software', nombreFacultad: 'Ingeniería', idPrograma: 7 },
       promedio: { estado: 'COMPLETO', valor, fuentesPendientes: [] },
@@ -62,7 +62,7 @@ describe('Inicio', () => {
     expect(filas.map((f) => f.textContent)).toEqual([expect.stringContaining('Ana Ruiz'), expect.stringContaining('Eva Gil')])
     expect(within(honor).queryByText('Luis Paz')).not.toBeInTheDocument()
 
-    await userEvent.selectOptions(await screen.findByLabelText('Carrera'), '7')
+    await userEvent.selectOptions(await screen.findByLabelText('Programa'), '7')
     expect(docentesService.listarSeguimientoDocentes).toHaveBeenLastCalledWith(null, { periodoId: null, idPrograma: '7' })
     expect(kpisService.obtenerKpis).toHaveBeenLastCalledWith({ periodoId: null, facultadId: null, programaId: '7' })
     expect(screen.getByRole('heading', { name: 'Software · Toda la universidad' })).toBeInTheDocument()

@@ -248,3 +248,11 @@
   margin: 12px 0 0;
   font-size: 13.5px;
 }
+
+.datos-docente__detalle {
+  display: block;
+  margin-top: 2px;
+  font-size: 12px;
+  font-weight: var(--peso-normal);
+  color: var(--color-texto-tenue);
+}

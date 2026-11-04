@@ -182,8 +182,15 @@ export function PanelCompromisos({ titulo = 'Compromisos vigentes', compromisos,
 /** Fila de datos clave del docente (programa, facultad, periodo, estado). */
 export function DatosDocente({ docente, periodo, promedio }) {
   const datos = [
-    { clave: 'Programa', valor: docente.nombrePrograma },
-    { clave: 'Facultad', valor: docente.nombreFacultad },
+    {
+      clave: 'Programa',
+      valor: (
+        <>
+          {docente.nombrePrograma}
+          {docente.nombreFacultad && <span className="datos-docente__detalle">{docente.nombreFacultad}</span>}
+        </>
+      ),
+    },
     { clave: 'Periodo', valor: periodo?.nombre ?? 'Sin periodo activo' },
     { clave: 'Estado', valor: <EtiquetaNivel promedio={promedio} /> },
   ]

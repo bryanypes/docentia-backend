@@ -34,6 +34,7 @@ import Usuarios from '../features/usuarios/pages/Usuarios.jsx'
 import { AppLayout } from '../shared/components/layout/AppLayout/AppLayout.jsx'
 import { AvisosProvider } from '../shared/components/ui/Avisos/AvisosProvider.jsx'
 import { ROLES } from '../shared/constants/dominio.js'
+import { FUNCIONES } from '../shared/constants/funciones.js'
 import InicioPorRol from './InicioPorRol.jsx'
 import { PaginaNoEncontrada } from './PaginasSistema.jsx'
 import { ProtectedRoute } from './ProtectedRoute.jsx'
@@ -89,7 +90,10 @@ function RutasDocentia() {
                 <Route path="/docentes" element={<Docentes />} />
                 <Route path="/docentes/:idDocente" element={<ExpedienteDocente />} />
                 <Route path="/acciones-sugeridas" element={<AccionesSugeridas />} />
-                <Route path="/matricula" element={<Matricula />} />
+                <Route
+                  path="/matricula"
+                  element={FUNCIONES.coberturaEstudiantes ? <Matricula /> : <Navigate to="/inicio" replace />}
+                />
                 <Route path="/panel-programas" element={<PanelProgramas />} />
               </Route>
 

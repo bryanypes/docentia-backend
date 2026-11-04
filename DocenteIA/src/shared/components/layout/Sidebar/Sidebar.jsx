@@ -29,6 +29,7 @@ import '../../../../features/formularios/components/FormularioInstrumento.css'
 import { obtenerPendientesCoevaluacion } from '../../../../features/formularios/services/formulariosService.js'
 import { useFetch } from '../../../hooks/useFetch.js'
 import { ETIQUETA_ROL, ROLES } from '../../../constants/dominio.js'
+import { FUNCIONES } from '../../../constants/funciones.js'
 import { iniciales } from '../../../utils/formatters.js'
 import './Sidebar.css'
 
@@ -87,7 +88,9 @@ function ContadorCoevaluaciones() {
  */
 export function Sidebar({ id, movil = false, onCerrar, onNavegar }) {
   const { usuario, cerrarSesion } = useSesion()
-  const enlaces = NAVEGACION[usuario.rol] ?? []
+  const enlaces = (NAVEGACION[usuario.rol] ?? []).filter(
+    ({ ruta }) => FUNCIONES.coberturaEstudiantes || ruta !== '/matricula',
+  )
 
   return (
     <aside id={id} className="sidebar" aria-label="Menú principal">

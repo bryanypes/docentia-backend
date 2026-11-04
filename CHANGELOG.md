@@ -51,6 +51,11 @@
 - Cuestionarios más angostos; la barra de pasos queda fija y compacta bajo la barra superior del
   celular, y al cambiar de paso la página sube suave al inicio del paso.
 - Texto seleccionado en un azul lavanda suave en lugar del amarillo.
+- Gestión por programa: la coordinación filtra solo por programa, la vicerrectoría por facultad y
+  programa, y las agrupaciones de Inicio y Estadísticas son por programa. Las fichas muestran el
+  programa con la facultad como detalle.
+- Matrícula y cobertura de estudiantes ocultas en menú, paneles, cifras y Excel con el interruptor
+  `FUNCIONES.coberturaEstudiantes` (el código y el backend siguen).
 - El login ya no muestra el panel de usuarios de prueba; se escribe el correo de la cuenta.
 - El docente ve su nota, compromisos, hallazgos y acta del periodo en la reunión, no antes.
 - El acta se firma después de registrar la asistencia.
