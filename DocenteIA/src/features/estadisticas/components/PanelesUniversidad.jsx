@@ -6,10 +6,10 @@ import './PanelesUniversidad.css'
 const TONO_PASO = { completos: 'azul', cita: 'violeta', reunion: 'cielo', acta: 'turquesa' }
 
 /** Embudo del proceso: cuánto del camino de la evaluación al acta firmada ya se recorrió. */
-export function EmbudoProceso({ pasos }) {
+export function EmbudoProceso({ pasos, className = 'estadisticas__ancho' }) {
   return (
     <Panel
-      className="estadisticas__ancho"
+      className={`embudo-panel ${className}`}
       titulo="Del resultado al acta firmada"
       descripcion="De los docentes con evaluación completa, cuántos llegaron a cada paso."
       icono={Filter}
@@ -44,10 +44,10 @@ export function EmbudoProceso({ pasos }) {
 }
 
 /** Cada facultad en una fila: docentes, promedio, avance, bajo el umbral y actas firmadas. */
-export function PanoramaFacultades({ facultades, umbral, onElegir }) {
+export function PanoramaFacultades({ facultades, umbral, onElegir, className = 'estadisticas__ancho' }) {
   return (
     <Panel
-      className="estadisticas__ancho"
+      className={className}
       titulo="Panorama por facultad"
       descripcion={`Promedio y avance de cada facultad, cuántos docentes quedan bajo ${formatearNota(umbral)} y cuántas actas se firmaron. Pulsa una facultad para filtrar.`}
       icono={Building2}

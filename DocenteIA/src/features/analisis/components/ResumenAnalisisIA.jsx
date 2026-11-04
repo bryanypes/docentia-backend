@@ -42,7 +42,7 @@ function ListaTemas({ titulo, Icono, tono, temas, vacio }) {
  * fortalezas y oportunidades, y un botón que despliega los comentarios. El detalle completo (citas,
  * tendencias, validación) vive en Análisis de comentarios.
  */
-export function ResumenAnalisisIA({ idDocente, periodoId, className = '' }) {
+export function ResumenAnalisisIA({ idDocente, periodoId }) {
   const cargar = useCallback(
     () => (periodoId ? obtenerAnalisisDocente(idDocente, periodoId) : Promise.resolve(null)),
     [idDocente, periodoId],
@@ -115,7 +115,7 @@ export function ResumenAnalisisIA({ idDocente, periodoId, className = '' }) {
 
   return (
     <Panel
-      className={`resumen-ia ${className}`}
+      className="resumen-ia"
       titulo="Análisis IA de los comentarios de estudiantes"
       descripcion={
         r?.tipoModelo === 'LLM'

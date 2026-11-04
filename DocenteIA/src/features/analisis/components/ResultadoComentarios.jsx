@@ -170,7 +170,13 @@ export function ResultadoComentarios({ idDocente, periodoId, esCoordinador, crit
             </Panel>
           </div>
 
-          {r.tendencias.length > 0 && (
+          {/* Sin periodo anterior no hay con qué comparar: en vez de una lista de "Sin periodo anterior"
+              se dice una sola vez. */}
+          {!r.tendencias.some((t) => t.cambio !== 'SIN_REFERENCIA') ? (
+            <MensajeIA robot="esperando" tono="violeta" tamano="compacto" titulo="Todavía no puedo mostrar tendencias">
+              <p>No tengo información del periodo anterior de este docente, así que no puedo comparar cómo cambió cada tema.</p>
+            </MensajeIA>
+          ) : (
             <Panel titulo="Tendencias" descripcion="Cómo cambió cada tema frente al periodo anterior." icono={ArrowRight} tono="violeta">
               <ul className="resultado-ia__tendencias">
                 {r.tendencias.map((t) => {

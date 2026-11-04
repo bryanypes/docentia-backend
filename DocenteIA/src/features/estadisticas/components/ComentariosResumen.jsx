@@ -5,6 +5,7 @@ import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { obtenerResumenComentarios } from '../../analisis/services/analisisService.js'
+import { MensajeIA } from '../../analisis/components/DocenteIA.jsx'
 import './ComentariosResumen.css'
 
 const SENTIMIENTOS = [
@@ -150,10 +151,12 @@ export function ComentariosResumen({ periodoId, programaId, alcance, esCoordinad
         </EstadoVista>
       )}
       {datos && !datos.disponible && (
-        <EstadoVista
-          titulo="Todavía no hay suficientes análisis"
-          mensaje={`Para proteger el anonimato, el resumen aparece con al menos ${datos.minimoDocentes} docentes analizados en esta selección; hay ${datos.docentesConAnalisis}.`}
-        />
+        <MensajeIA robot="esperando" tono="violeta" tamano="compacto" titulo="Todavía no hay suficientes análisis">
+          <p>
+            Para proteger el anonimato, el resumen aparece con al menos {datos.minimoDocentes} docentes analizados en esta
+            selección; hay {datos.docentesConAnalisis}.
+          </p>
+        </MensajeIA>
       )}
       {datos?.disponible && datos.nComentarios === 0 && (
         <EstadoVista titulo="Sin comentarios útiles" mensaje="Los análisis de esta selección no tuvieron comentarios para resumir." />

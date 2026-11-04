@@ -178,3 +178,32 @@
   border-radius: 999px;
   background: var(--color-turquesa);
 }
+
+/* Dentro del mosaico el embudo va en una columna: los pasos quedan de dos en dos y sin flechas. */
+.estadisticas__mosaico .embudo {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.estadisticas__mosaico .embudo__paso::after {
+  display: none;
+}
+
+/* Con pocas filas, las tablas de comparación comparten fila: nombres que bajan de línea, barras y
+   celdas más angostas para que todo quepa sin desplazamiento lateral. */
+.estadisticas__rejilla > .panel:not(.estadisticas__ancho) .tabla th[scope='row'],
+.estadisticas__rejilla > .panel:not(.estadisticas__ancho) .tabla thead th {
+  white-space: normal;
+}
+
+.estadisticas__rejilla > .panel:not(.estadisticas__ancho) .tabla th,
+.estadisticas__rejilla > .panel:not(.estadisticas__ancho) .tabla td {
+  padding-inline: 8px;
+}
+
+.estadisticas__rejilla > .panel:not(.estadisticas__ancho) .estadisticas__medidor {
+  min-width: 96px;
+}
+
+.estadisticas__rejilla > .panel:not(.estadisticas__ancho) .panorama-facultades__avance > span {
+  width: 40px;
+}
