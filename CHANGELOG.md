@@ -67,6 +67,9 @@
 - Facultades y programas en una sola página de tarjetas, con buscador, orden y edición en modales;
   `/programas` lleva a `/facultades`.
 - Auditoría sale del menú y queda como pestaña «Actividad» de Usuarios; `/auditoria` lleva ahí.
+- Menú de la vicerrectoría en dos grupos: Seguimiento y Administración.
+- Coevaluaciones con chips de estado y su conteo, barra de filtros (docente, programa y estado)
+  pegada a la lista y una tarjeta por docente con su avance y acción.
 - El login ya no muestra el panel de usuarios de prueba; se escribe el correo de la cuenta.
 - El docente ve su nota, compromisos, hallazgos y acta del periodo en la reunión, no antes.
 - El acta se firma después de registrar la asistencia.
