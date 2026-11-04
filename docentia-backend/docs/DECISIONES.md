@@ -155,10 +155,10 @@ ambigüedad. La fuente de verdad es la resolución; el Excel v2 tiene errores (v
   `UNICO`, porque el CSV no trae grupo ni jornada. Una columna opcional `estado` admite RETIRADA.
 - **Cobertura.** Cuenta participación, nunca puntajes. Un estudiante cuenta una vez por cada asignación,
   y un retirado no cuenta.
-- **Comentarios hacia el análisis de IA: recortado.** Para usarlos habría que copiarlos a
-  `comentarios_estudiantes`, que tiene fecha y secuencia: un comentario copiado al llegar un envío
-  quedaría ligado en el tiempo a la participación de ese estudiante. Se guardan anónimos en la
-  respuesta y no van al análisis ni a ninguna pantalla.
+- **Comentarios hacia el análisis de IA.** En 0.3.3 se recortó: copiarlos a `comentarios_estudiantes`,
+  que tiene fecha y secuencia, los ligaba en el tiempo a la participación. Ahora no se copian: se leen de
+  la respuesta solo al analizar y con la recolección cerrada. Ver
+  [DECISIONES-ANALISIS-IA.md](DECISIONES-ANALISIS-IA.md).
 - **Profe David Melo.** No había cambios suyos en los repositorios; los cambios de usuarios y roles
   venían del PR #4.
 

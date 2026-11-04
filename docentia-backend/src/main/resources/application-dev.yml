@@ -5,7 +5,7 @@ docentia:
     contrasena-inicial: Docentia2026*
   ia:
     habilitado: true
-    proveedor: simulado
+    proveedor: local
     worker:
       habilitado: true
       intervalo-ms: 3000
