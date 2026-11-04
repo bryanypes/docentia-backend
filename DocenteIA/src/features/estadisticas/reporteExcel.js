@@ -71,7 +71,17 @@ function filaDocente({ docente, promedio, proceso, nivel }, numero) {
  * @param filas filas ya filtradas en la vista (unirDatos + filtrar)
  * @param r     resultado de calcular(filas)
  */
-export function hojasDelReporte({ filas, r, periodo, descripcionFiltros, nombreGrupo, conCobertura = true }) {
+export function hojasDelReporte({
+  filas,
+  r,
+  periodo,
+  descripcionFiltros,
+  nombreGrupo,
+  conCobertura = true,
+  embudo = null,
+  facultades = null,
+  comentarios = null,
+}) {
   const ultima = Math.max(PRIMERA_FILA, PRIMERA_FILA + filas.length - 1)
   const rango = (columna) => `Docentes!${columna}${PRIMERA_FILA}:${columna}${ultima}`
 
@@ -203,7 +213,67 @@ export function hojasDelReporte({ filas, r, periodo, descripcionFiltros, nombreG
     resumen.filas = resumen.filas.filter((fila) => fila[0] !== 'Respuesta de estudiantes')
   }
 
-  return [resumen, docentes, nivel, proceso, grupo, distribucion, fuentes]
+  const extra = []
+  if (embudo) {
+    extra.push({
+      nombre: 'Embudo',
+      columnas: [
+        { titulo: 'Paso', ancho: 26 },
+        { titulo: 'Docentes', ancho: 12, formato: 'entero' },
+        { titulo: 'De los evaluados', ancho: 16, formato: 'porcentaje' },
+      ],
+      filas: embudo.map((p, i) => [p.etiqueta, p.cantidad, { formula: `IFERROR(B${i + 2}/B$2,"")` }]),
+    })
+  }
+  if (facultades) {
+    extra.push({
+      nombre: 'Por facultad',
+      columnas: [
+        { titulo: 'Facultad', ancho: 40 },
+        { titulo: 'Docentes', ancho: 11, formato: 'entero' },
+        { titulo: 'Completos', ancho: 11, formato: 'entero' },
+        { titulo: 'Promedio', ancho: 11, formato: 'nota' },
+        { titulo: 'Avance', ancho: 11, formato: 'porcentaje' },
+        { titulo: 'Bajo el umbral', ancho: 14, formato: 'entero' },
+        { titulo: 'Reuniones', ancho: 11, formato: 'entero' },
+        { titulo: 'Actas firmadas', ancho: 14, formato: 'entero' },
+      ],
+      filas: facultades.map((f, i) => [
+        f.nombre,
+        f.docentes,
+        f.completos,
+        f.promedio,
+        { formula: `IFERROR(C${i + 2}/B${i + 2},"")` },
+        f.bajoUmbral,
+        f.reuniones,
+        f.actasFirmadas,
+      ]),
+    })
+  }
+  if (comentarios) {
+    extra.push({
+      nombre: 'Comentarios',
+      titulo: `Resumen de comentarios · ${comentarios.docentesConAnalisis} docentes analizados · ${comentarios.nComentarios} comentarios`,
+      columnas: [
+        { titulo: 'Tema', ancho: 48 },
+        { titulo: 'Criterio', ancho: 10 },
+        { titulo: 'Polaridad', ancho: 12 },
+        { titulo: 'Comentarios', ancho: 13, formato: 'entero' },
+        { titulo: 'Porcentaje', ancho: 12, formato: 'porcentaje' },
+        { titulo: 'Docentes', ancho: 11, formato: 'entero' },
+      ],
+      filas: comentarios.temas.map((t) => [
+        t.nombre,
+        t.criterio,
+        t.polaridad === 'POSITIVO' ? 'Fortaleza' : t.polaridad === 'NEGATIVO' ? 'Por mejorar' : 'Neutro',
+        t.frecuencia,
+        Number((t.porcentaje / 100).toFixed(4)),
+        t.docentes,
+      ]),
+    })
+  }
+
+  return [resumen, docentes, nivel, proceso, grupo, distribucion, fuentes, ...extra]
 }
 
 /** Nombre del archivo: estadisticas-docentia-2026-2-2026-11-03.xlsx */

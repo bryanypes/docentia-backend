@@ -8,6 +8,9 @@
   `periodoId` e `idPrograma` en `/docentes/seguimiento`) y mención de honor con las mejores notas.
 - Portada con DocenteIA en el Inicio del docente y del estudiante.
 - Celebración con DocenteIA cuando el estudiante envía su última evaluación del periodo.
+- Estadísticas: «Lo que dicen los comentarios» con `GET /analisis-comentarios/resumen` (sentimiento,
+  balance por criterio y temas) y, para la vicerrectoría, el embudo del proceso y el panorama por
+  facultad. Todo también va al Excel.
 - Resumen de una evaluación enviada por el estudiante: sus respuestas desde el mismo equipo (copia
   local) o un comprobante desde otro.
 - Comentario general al final de autoevaluación y coevaluación (V35), que entra al análisis de

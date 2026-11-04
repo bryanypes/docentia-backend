@@ -33,7 +33,9 @@ import { ChipProceso } from '../../proceso/components/ChipProceso.jsx'
 import { ESTADOS_PROCESO } from '../../proceso/estados.js'
 import { listarProcesos } from '../../proceso/services/procesoService.js'
 import { descargarXlsx } from '../../../shared/utils/xlsx.js'
-import { calcular, filtrar, unirDatos } from '../estadisticas.js'
+import { calcular, embudoDelProceso, filtrar, panoramaPorFacultad, unirDatos } from '../estadisticas.js'
+import { ComentariosResumen } from '../components/ComentariosResumen.jsx'
+import { EmbudoProceso, PanoramaFacultades } from '../components/PanelesUniversidad.jsx'
 import { hojasDelReporte, nombreDelReporte } from '../reporteExcel.js'
 import './Estadisticas.css'
 
@@ -104,6 +106,7 @@ export default function Estadisticas() {
   const { usuario } = useSesion()
   const esVicerrector = usuario.rol === ROLES.VICERRECTOR
   const [filtros, setFiltros] = useState(SIN_FILTROS)
+  const [resumenComentarios, setResumenComentarios] = useState(null)
   const [mostrar, setMostrar] = useState(TANDA_FILAS)
   const agruparPor = 'nombrePrograma'
 
@@ -133,6 +136,12 @@ export default function Estadisticas() {
   )
   const visibles = useMemo(() => filtrar(filas, filtros), [filas, filtros])
   const r = useMemo(() => calcular(visibles, { umbral, agruparPor }), [visibles, umbral, agruparPor])
+  const embudo = useMemo(() => embudoDelProceso(visibles), [visibles])
+  const facultadesPanorama = useMemo(() => panoramaPorFacultad(visibles, umbral), [visibles, umbral])
+  // El resumen de comentarios se pide por id de programa.
+  const idProgramaElegido = filtros.programa
+    ? (filas.find((f) => f.docente.nombrePrograma === filtros.programa)?.docente.idPrograma ?? null)
+    : null
 
   const cambiar = (campo, valor) =>
     setFiltros((actual) => ({
@@ -219,6 +228,9 @@ export default function Estadisticas() {
         descripcionFiltros,
         nombreGrupo,
         conCobertura: FUNCIONES.coberturaEstudiantes,
+        embudo,
+        facultades: esVicerrector ? facultadesPanorama : null,
+        comentarios: resumenComentarios,
       }),
     )
   }
@@ -551,7 +563,33 @@ export default function Estadisticas() {
               )}
             </Panel>
           </div>
+
+          {esVicerrector && (
+            <div className="estadisticas__rejilla">
+              <EmbudoProceso pasos={embudo} />
+              <PanoramaFacultades
+                facultades={facultadesPanorama}
+                umbral={umbral}
+                onElegir={(f) => fijar('facultad', String(f.idFacultad))}
+              />
+            </div>
+          )}
           </>
+        )}
+
+        {seguimiento.datos?.periodo && (
+          <ComentariosResumen
+            periodoId={seguimiento.datos.periodo.idPeriodo}
+            programaId={idProgramaElegido}
+            alcance={filtros.programa || (esVicerrector ? 'Toda la universidad' : 'Tu facultad')}
+            esCoordinador={!esVicerrector}
+            onDatos={setResumenComentarios}
+            avisoFacultad={
+              esVicerrector && filtros.facultad && !filtros.programa
+                ? 'El resumen de comentarios es de toda la universidad o de un programa: elige un programa para verlo solo en esta facultad.'
+                : null
+            }
+          />
         )}
       </div>
     </>

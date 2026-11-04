@@ -26,4 +26,19 @@ describe('hojasDelReporte', () => {
     const [, docentes] = hojasDelReporte({ filas: [FILA], r: calcular([FILA]), periodo: '2026-2', nombreGrupo: 'programa' })
     expect(titulos(docentes)).toContain('Matrículas')
   })
+
+  it('suma el embudo, las facultades y los temas de comentarios cuando llegan', () => {
+    const hojas = hojasDelReporte({
+      filas: [FILA],
+      r: calcular([FILA]),
+      periodo: '2026-2',
+      nombreGrupo: 'programa',
+      embudo: [{ etiqueta: 'Evaluación completa', cantidad: 4 }, { etiqueta: 'Acta firmada', cantidad: 1 }],
+      facultades: [{ nombre: 'Ingeniería', docentes: 4, completos: 4, promedio: 4.1, bajoUmbral: 1, reuniones: 2, actasFirmadas: 1 }],
+      comentarios: { docentesConAnalisis: 3, nComentarios: 30, temas: [{ nombre: 'Claridad', criterio: 'C2', polaridad: 'POSITIVO', frecuencia: 10, porcentaje: 33.3, docentes: 3 }] },
+    })
+    expect(hojas.map((h) => h.nombre)).toEqual(expect.arrayContaining(['Embudo', 'Por facultad', 'Comentarios']))
+    const temas = hojas.find((h) => h.nombre === 'Comentarios')
+    expect(temas.filas[0]).toEqual(['Claridad', 'C2', 'Fortaleza', 10, 0.333, 3])
+  })
 })

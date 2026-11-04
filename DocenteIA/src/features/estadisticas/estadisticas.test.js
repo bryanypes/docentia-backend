@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calcular, filtrar, unirDatos } from './estadisticas.js'
+import { calcular, embudoDelProceso, filtrar, panoramaPorFacultad, unirDatos } from './estadisticas.js'
 
 const docente = (id, programa, idFacultad = 1) => ({
   idDocente: id,
@@ -59,5 +59,40 @@ describe('estadísticas', () => {
     expect(filtrar(filas, { estado: 'FINALIZADO' }).map((f) => f.docente.idDocente)).toEqual([1])
     expect(filtrar(filas, { busqueda: 'docente 3' })).toHaveLength(1)
     expect(calcular(filtrar(filas, { programa: 'Software' })).promedioGeneral).toBe(3.8)
+  })
+})
+
+describe('estadísticas para la vicerrectoría', () => {
+  const fila = (idFacultad, valor, proceso = null) => ({
+    docente: { idDocente: Math.random(), nombreFacultad: `Facultad ${idFacultad}`, idFacultad },
+    promedio: valor === null ? { estado: 'PARCIAL' } : { estado: 'COMPLETO', valor },
+    proceso,
+  })
+
+  it('el embudo cuenta a cada docente en todos los pasos que ya pasó', () => {
+    const filas = [
+      fila(1, 4.5, { cita: { asistencia: 'ASISTIO' }, acta: { estado: 'FIRMADA' } }),
+      fila(1, 3.0, { cita: { asistencia: null } }),
+      fila(2, 4.0, null),
+      fila(2, null, { cita: {} }),
+    ]
+    expect(embudoDelProceso(filas).map((p) => [p.clave, p.cantidad, p.porcentaje])).toEqual([
+      ['completos', 3, 100],
+      ['cita', 2, 67],
+      ['reunion', 1, 33],
+      ['acta', 1, 33],
+    ])
+  })
+
+  it('el panorama por facultad da promedio, avance, bajo umbral y actas', () => {
+    const filas = [
+      fila(1, 4.6, { acta: { estado: 'FIRMADA' } }),
+      fila(1, 3.0, null),
+      fila(2, 4.2, null),
+      fila(2, null, null),
+    ]
+    const [primera, segunda] = panoramaPorFacultad(filas, 3.8)
+    expect(primera).toMatchObject({ nombre: 'Facultad 2', docentes: 2, completos: 1, promedio: 4.2, avance: 50, bajoUmbral: 0 })
+    expect(segunda).toMatchObject({ nombre: 'Facultad 1', promedio: 3.8, avance: 100, bajoUmbral: 1, actasFirmadas: 1 })
   })
 })

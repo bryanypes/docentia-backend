@@ -49,3 +49,13 @@ export function obtenerResultadoPropio() {
 export function obtenerPanorama(periodoId) {
   return api.get(`/analisis-ia/panorama${periodoId ? `?periodoId=${encodeURIComponent(periodoId)}` : ''}`)
 }
+
+/**
+ * Resumen agregado de los comentarios del periodo en el alcance (GET /analisis-comentarios/resumen).
+ * `programa` es opcional. Con pocos docentes analizados llega `disponible: false`.
+ */
+export function obtenerResumenComentarios({ periodo, programa }) {
+  const parametros = new URLSearchParams({ periodo })
+  if (programa) parametros.set('programa', programa)
+  return api.get(`/analisis-comentarios/resumen?${parametros}`)
+}
