@@ -99,6 +99,7 @@ docentia:
     modelo: ${DOCENTIA_IA_MODELO:}
     timeout-segundos: ${DOCENTIA_IA_TIMEOUT_SEGUNDOS:60}
     clave: ${DOCENTIA_IA_CLAVE:}
+    enviar-temperatura: ${DOCENTIA_IA_ENVIAR_TEMPERATURA:true}
     minimo-encuestas: 10
     worker:
       habilitado: ${DOCENTIA_IA_WORKER:true}
