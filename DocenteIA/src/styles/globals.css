@@ -441,3 +441,27 @@ textarea.campo__control {
     width: 100%;
   }
 }
+
+/* Barras de desplazamiento: delgadas y amarillas, con el color de la marca, en toda la aplicación. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-amarillo) transparent;
+}
+
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: var(--color-amarillo);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-amarillo-oscuro);
+}
