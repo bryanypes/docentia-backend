@@ -144,6 +144,39 @@ class KpiTest extends PruebaIntegracion {
   }
 
   @Test
+  void seFiltraPorProgramaDentroDelAlcance() throws Exception {
+    String software = julian.getPrograma().getIdPrograma().toString();
+    // Solo Julián en Software: 4.60 ahora y 4.00 en 2026-1.
+    mockMvc
+        .perform(get("/kpis").param("programaId", software).with(comoVicerrector()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.docentesEvaluados.valor").value(1))
+        .andExpect(jsonPath("$.promedioGeneral.valor").value(4.6))
+        .andExpect(jsonPath("$.promedioGeneral.valorAnterior").value(4.0))
+        .andExpect(jsonPath("$.evaluacionesRealizadas.valor").value(3))
+        .andExpect(jsonPath("$.docentesDestacados.valor").value(1));
+
+    // Un programa de otra facultad queda fuera del alcance, para el coordinador y para el filtro.
+    String leyes = escenario.crearPrograma("Leyes", derecho).getIdPrograma().toString();
+    mockMvc
+        .perform(
+            get("/kpis")
+                .param("programaId", leyes)
+                .with(comoCoordinador(ingenieria.getIdFacultad())))
+        .andExpect(status().isNotFound());
+    mockMvc
+        .perform(
+            get("/kpis")
+                .param("facultadId", ingenieria.getIdFacultad().toString())
+                .param("programaId", leyes)
+                .with(comoVicerrector()))
+        .andExpect(status().isNotFound());
+    mockMvc
+        .perform(get("/kpis").param("programaId", "999999").with(comoVicerrector()))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
   void elDocenteNoAccedeYLosFiltrosInexistentesRespondenNoEncontrado() throws Exception {
     mockMvc.perform(get("/kpis").with(como(julian))).andExpect(status().isForbidden());
     mockMvc

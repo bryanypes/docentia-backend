@@ -16,6 +16,7 @@ public interface IndicadoresRepository extends Repository<PromedioDocente, Long>
    * Resume los promedios completos de un periodo.
    *
    * @param idFacultad facultad del programa del docente, o nulo para toda la institución
+   * @param idPrograma programa del docente, o nulo para todos los del alcance
    * @param umbral promedio mínimo, inclusive, de un docente destacado
    */
   @Query(
@@ -30,14 +31,17 @@ public interface IndicadoresRepository extends Repository<PromedioDocente, Long>
           where p.id_periodo = :idPeriodo
             and p.estado = 'COMPLETO'
             and (cast(:idFacultad as bigint) is null or pr.id_facultad = :idFacultad)
+            and (cast(:idPrograma as bigint) is null or pr.id_programa = :idPrograma)
           """,
       nativeQuery = true)
-  ResumenPromedios resumirPromedios(Long idPeriodo, Long idFacultad, BigDecimal umbral);
+  ResumenPromedios resumirPromedios(
+      Long idPeriodo, Long idFacultad, Long idPrograma, BigDecimal umbral);
 
   /**
    * Cuenta las calificaciones registradas en un periodo, de cualquier fuente.
    *
    * @param idFacultad facultad del programa del docente, o nulo para toda la institución
+   * @param idPrograma programa del docente, o nulo para todos los del alcance
    */
   @Query(
       value =
@@ -48,9 +52,10 @@ public interface IndicadoresRepository extends Repository<PromedioDocente, Long>
           join programas pr on pr.id_programa = u.id_programa
           where c.id_periodo = :idPeriodo
             and (cast(:idFacultad as bigint) is null or pr.id_facultad = :idFacultad)
+            and (cast(:idPrograma as bigint) is null or pr.id_programa = :idPrograma)
           """,
       nativeQuery = true)
-  long contarCalificaciones(Long idPeriodo, Long idFacultad);
+  long contarCalificaciones(Long idPeriodo, Long idFacultad, Long idPrograma);
 
   /**
    * Resume cada programa: docentes activos, evaluados con promedio completo y su distribución. Solo

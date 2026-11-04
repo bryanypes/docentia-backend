@@ -1,8 +1,7 @@
-import { ArrowRight, Award, ChartColumnBig, ClipboardList, RefreshCw, UserCheck } from 'lucide-react'
+import { ArrowRight, Award, ChartColumnBig, ClipboardList, RefreshCw, RotateCcw, SlidersHorizontal, UserCheck } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import { useCallback, useMemo, useState } from 'react'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
-import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { MensajeNavegacion } from '../../../shared/components/ui/MensajeNavegacion/MensajeNavegacion.jsx'
@@ -13,9 +12,9 @@ import { formatearEntero, formatearNota } from '../../../shared/utils/formatters
 import { useSesion } from '../../auth/sesionContext.js'
 import { listarSeguimientoDocentes } from '../../docentes/services/docentesService.js'
 import { listarFacultades } from '../../facultades/services/facultadesService.js'
-import { PanelEtapas } from '../../periodos/components/PanelEtapas.jsx'
 import { listarPeriodos } from '../../periodos/services/periodosService.js'
-import { PanelAtencion, PanelAvance } from '../components/PanelesSeguimiento.jsx'
+import { listarProgramas } from '../../programas/services/programasService.js'
+import { PanelAtencion, PanelAvance, PanelHonor, PanelPorGrupo } from '../components/PanelesSeguimiento.jsx'
 import { AsistenteResumen } from '../components/AsistenteResumen.jsx'
 import { TarjetaKpi, TarjetaPromedio } from '../components/TarjetaKpi.jsx'
 import { LineaTiempo } from '../../periodos/components/LineaTiempo.jsx'
@@ -26,6 +25,7 @@ import './Inicio.css'
 
 const ACTIVO = ''
 const TODAS = ''
+const TODOS = ''
 
 export default function Inicio() {
   const { usuario } = useSesion()
@@ -33,44 +33,69 @@ export default function Inicio() {
 
   const [periodoId, setPeriodoId] = useState(ACTIVO)
   const [facultadId, setFacultadId] = useState(TODAS)
+  const [programaId, setProgramaId] = useState(TODOS)
 
   const periodos = useFetch(listarPeriodos)
   const facultades = useFetch(listarFacultades)
-  const cargarKpis = useCallback(
-    () => obtenerKpis({ periodoId, facultadId: esVicerrector ? facultadId : null }),
-    [periodoId, facultadId, esVicerrector],
+  // Las carreras se ofrecen según la facultad: la elegida por la vicerrectoría o la del coordinador.
+  const facultadPrograma = esVicerrector ? facultadId || null : usuario.idFacultad
+  const cargarProgramas = useCallback(() => listarProgramas(facultadPrograma), [facultadPrograma])
+  const programas = useFetch(cargarProgramas, [cargarProgramas])
+
+  const filtros = useMemo(
+    () => ({
+      periodoId: periodoId || null,
+      facultadId: esVicerrector ? facultadId || null : null,
+      programaId: programaId || null,
+    }),
+    [periodoId, facultadId, programaId, esVicerrector],
   )
+  const cargarKpis = useCallback(() => obtenerKpis(filtros), [filtros])
   const kpis = useFetch(cargarKpis, [cargarKpis])
   const cargarSeguimiento = useCallback(
-    () => listarSeguimientoDocentes(esVicerrector ? facultadId || null : null),
-    [facultadId, esVicerrector],
+    () =>
+      listarSeguimientoDocentes(filtros.facultadId, { periodoId: filtros.periodoId, idPrograma: filtros.programaId }),
+    [filtros],
   )
   const seguimiento = useFetch(cargarSeguimiento, [cargarSeguimiento])
   const configuracion = useFetch(obtenerConfiguracionEvaluacion)
 
   const listaFacultades = facultades.datos ?? []
+  const listaProgramas = programas.datos ?? []
   const nombreFacultad = esVicerrector
     ? (listaFacultades.find((f) => String(f.idFacultad) === facultadId)?.nombre ?? 'Toda la universidad')
     : (listaFacultades.find((f) => f.idFacultad === usuario.idFacultad)?.nombre ?? 'Tu facultad')
+  const nombrePrograma = listaProgramas.find((p) => String(p.idPrograma) === programaId)?.nombre
+  const alcance = nombrePrograma ? `${nombrePrograma} · ${nombreFacultad}` : nombreFacultad
   const periodoActivo = (periodos.datos ?? []).find((p) => p.esActivo)
   const viendoActivo = periodoId === ACTIVO || String(periodoActivo?.idPeriodo) === periodoId
+  const nombrePeriodo = seguimiento.datos?.periodo?.nombre ?? kpis.datos?.periodo.nombre ?? periodoActivo?.nombre
+  const hayFiltros = Boolean(periodoId || facultadId || programaId)
 
-  // El análisis del periodo activo lo comparten el asistente y los paneles de seguimiento.
   const miFuente = FUENTE_DEL_ROL[usuario.rol]
-  const agrupacion = esVicerrector ? 'facultad' : 'programa'
+  const agrupacion = esVicerrector && !facultadId ? 'facultad' : 'programa'
+  const umbral = configuracion.datos ? Number(configuracion.datos.umbralCompromisos) : null
+  const umbralDestacado = kpis.datos?.umbralDestacado ?? null
   const analisis = useMemo(
     () =>
-      seguimiento.datos?.periodo && configuracion.datos
+      seguimiento.datos?.periodo && umbral !== null
         ? analizarSeguimiento(
             seguimiento.datos.docentes,
             miFuente,
             agrupacion === 'facultad' ? 'nombreFacultad' : 'nombrePrograma',
-            Number(configuracion.datos.umbralCompromisos),
+            umbral,
+            umbralDestacado,
           )
         : null,
-    [seguimiento.datos, miFuente, agrupacion, configuracion.datos],
+    [seguimiento.datos, miFuente, agrupacion, umbral, umbralDestacado],
   )
   const recoleccion = useVentanaEtapa(ETAPAS.RECOLECCION_CALIFICACIONES)
+
+  function limpiar() {
+    setPeriodoId(ACTIVO)
+    setFacultadId(TODAS)
+    setProgramaId(TODOS)
+  }
 
   return (
     <>
@@ -79,68 +104,85 @@ export default function Inicio() {
         titulo="Resumen de la evaluación"
         subtitulo={
           esVicerrector
-            ? 'Cómo va la evaluación docente en toda la universidad o en la facultad que elijas.'
-            : 'Cómo va la evaluación docente en tu facultad y qué falta por hacer.'
+            ? 'Cómo va la evaluación docente en toda la universidad, una facultad o una carrera.'
+            : 'Cómo va la evaluación docente en tu facultad o en una de sus carreras, y qué falta por hacer.'
         }
       />
 
-      <div className="pagina">
+      <div className="pagina inicio">
         <MensajeNavegacion />
-        <section className="inicio__filtros" aria-label="Filtros del resumen">
-          <div className="inicio__campos">
-            <div className="campo">
-              <label htmlFor="filtro-periodo" className="rotulo">
-                Periodo académico
-              </label>
-              <select
-                id="filtro-periodo"
-                className="campo__control"
-                value={periodoId}
-                onChange={(e) => setPeriodoId(e.target.value)}
-              >
-                <option value={ACTIVO}>{periodoActivo ? `${periodoActivo.nombre} (activo)` : 'Periodo activo'}</option>
-                {(periodos.datos ?? [])
-                  .filter((p) => !p.esActivo)
-                  .map((p) => (
-                    <option key={p.idPeriodo} value={p.idPeriodo}>
-                      {p.nombre}
-                    </option>
-                  ))}
-              </select>
-            </div>
+
+        {/* Portada: dónde se está mirando y los filtros que cambian todo el tablero. */}
+        <section className="inicio__portada" aria-labelledby="inicio-alcance">
+          <div className="inicio__portada-texto">
+            <span className="inicio__portada-rotulo">
+              <SlidersHorizontal size={14} aria-hidden="true" />
+              Estás viendo
+            </span>
+            <h2 id="inicio-alcance" className="inicio__portada-titulo">
+              {alcance}
+            </h2>
+            <span className="inicio__portada-periodo">
+              Periodo {nombrePeriodo ?? '—'}
+              {viendoActivo ? <span className="inicio__vigente">Activo</span> : <span className="inicio__historico">Histórico</span>}
+            </span>
+          </div>
+
+          <div className="inicio__filtros" role="search" aria-label="Filtrar el tablero">
+            <Filtro id="filtro-periodo" etiqueta="Periodo" valor={periodoId} onCambiar={setPeriodoId}>
+              <option value={ACTIVO}>{periodoActivo ? `${periodoActivo.nombre} (activo)` : 'Periodo activo'}</option>
+              {(periodos.datos ?? [])
+                .filter((p) => !p.esActivo)
+                .map((p) => (
+                  <option key={p.idPeriodo} value={p.idPeriodo}>
+                    {p.nombre}
+                  </option>
+                ))}
+            </Filtro>
 
             {esVicerrector ? (
-              <div className="campo">
-                <label htmlFor="filtro-facultad" className="rotulo">
-                  Facultad
-                </label>
-                <select
-                  id="filtro-facultad"
-                  className="campo__control"
-                  value={facultadId}
-                  onChange={(e) => setFacultadId(e.target.value)}
-                >
-                  <option value={TODAS}>Todas las facultades</option>
-                  {listaFacultades.map((f) => (
-                    <option key={f.idFacultad} value={f.idFacultad}>
-                      {f.nombre}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <Filtro
+                id="filtro-facultad"
+                etiqueta="Facultad"
+                valor={facultadId}
+                onCambiar={(valor) => {
+                  setFacultadId(valor)
+                  setProgramaId(TODOS)
+                }}
+              >
+                <option value={TODAS}>Todas las facultades</option>
+                {listaFacultades.map((f) => (
+                  <option key={f.idFacultad} value={f.idFacultad}>
+                    {f.nombre}
+                  </option>
+                ))}
+              </Filtro>
             ) : (
-              <div className="campo">
-                <span className="rotulo rotulo--campo">Facultad</span>
-                <div className="inicio__fijo">
-                  <span>{nombreFacultad}</span>
-                  <span className="inicio__fijo-etiqueta">Tu facultad</span>
-                </div>
+              <div className="inicio__filtro">
+                <span className="inicio__filtro-etiqueta">Facultad</span>
+                <span className="inicio__filtro-fijo">{nombreFacultad}</span>
               </div>
+            )}
+
+            <Filtro id="filtro-programa" etiqueta="Carrera" valor={programaId} onCambiar={setProgramaId}>
+              <option value={TODOS}>Todas las carreras</option>
+              {listaProgramas.map((p) => (
+                <option key={p.idPrograma} value={p.idPrograma}>
+                  {p.nombre}
+                </option>
+              ))}
+            </Filtro>
+
+            {hayFiltros && (
+              <button type="button" className="inicio__limpiar" onClick={limpiar}>
+                <RotateCcw size={15} aria-hidden="true" />
+                Limpiar
+              </button>
             )}
           </div>
         </section>
 
-        {analisis && analisis.total > 0 && (
+        {viendoActivo && analisis && analisis.total > 0 && (
           <AsistenteResumen
             nombre={usuario.nombreCompleto}
             analisis={analisis}
@@ -149,36 +191,41 @@ export default function Inicio() {
           />
         )}
 
-        <LineaTiempo />
-
         <h2 className="inicio__seccion">
           Indicadores de {kpis.datos?.periodo.nombre ?? 'el periodo'}
-          <span> · {nombreFacultad}</span>
+          <span> · {alcance}</span>
         </h2>
         <Indicadores kpis={kpis} esVicerrector={esVicerrector} mostrarCompletos={!viendoActivo} />
 
-        <h2 className="inicio__seccion">
-          Seguimiento del periodo activo{seguimiento.datos?.periodo ? ` (${seguimiento.datos.periodo.nombre})` : ''}
-        </h2>
-        {viendoActivo ? (
-          <Seguimiento
-            seguimiento={seguimiento}
-            configuracion={configuracion}
-            analisis={analisis}
-            agrupacion={agrupacion}
-            miFuente={miFuente}
-          />
-        ) : (
-          <Aviso tipo="info" titulo="El seguimiento se calcula solo para el periodo activo">
-            El avance, los niveles y los docentes que requieren seguimiento corresponden a{' '}
-            {periodoActivo?.nombre ?? 'el periodo activo'}. Los indicadores de arriba sí son del periodo que
-            elegiste.
-          </Aviso>
-        )}
+        {viendoActivo && <LineaTiempo />}
 
-        <PanelEtapas />
+        <h2 className="inicio__seccion">
+          Docentes del periodo{nombrePeriodo ? ` ${nombrePeriodo}` : ''}
+          <span> · {alcance}</span>
+        </h2>
+        <Seguimiento
+          seguimiento={seguimiento}
+          configuracion={configuracion}
+          analisis={analisis}
+          agrupacion={agrupacion}
+          miFuente={miFuente}
+        />
       </div>
     </>
+  )
+}
+
+/** Lista desplegable de la barra de filtros, con su rótulo encima. */
+function Filtro({ id, etiqueta, valor, onCambiar, children }) {
+  return (
+    <div className="inicio__filtro">
+      <label htmlFor={id} className="inicio__filtro-etiqueta">
+        {etiqueta}
+      </label>
+      <select id={id} className="inicio__filtro-control" value={valor} onChange={(e) => onCambiar(e.target.value)}>
+        {children}
+      </select>
+    </div>
   )
 }
 
@@ -292,19 +339,28 @@ function Seguimiento({ seguimiento, configuracion, analisis, agrupacion, miFuent
     )
   }
   if (!seguimiento.datos?.periodo) {
-    return <EstadoVista titulo="No hay un periodo académico activo" mensaje="Cuando la vicerrectoría active uno, verás aquí el avance." />
+    return (
+      <EstadoVista
+        titulo="No hay un periodo académico activo"
+        mensaje="Elige un periodo en los filtros, o pide a la vicerrectoría que active uno."
+      />
+    )
   }
   // El seguimiento puede llegar antes que la configuración (el umbral); mientras tanto, cargando.
   if (!analisis) return <Cargando texto="Cargando el seguimiento" bloques={2} />
   if (analisis.total === 0) {
-    return <EstadoVista titulo="No hay docentes en este alcance" mensaje="Cuando se registren docentes activos aparecerán aquí." />
+    return <EstadoVista titulo="No hay docentes en esta selección" mensaje="Prueba con otra facultad o carrera." />
   }
 
   return (
     <>
+      <div className="inicio__rejilla inicio__rejilla--extremos">
+        <PanelAtencion analisis={analisis} />
+        <PanelHonor analisis={analisis} />
+      </div>
       <div className="inicio__rejilla">
         <PanelAvance analisis={analisis} miFuente={miFuente} periodo={seguimiento.datos.periodo} />
-        <PanelAtencion analisis={analisis} />
+        <PanelPorGrupo analisis={analisis} agrupacion={agrupacion} />
       </div>
       <Link to="/estadisticas" className="inicio__estadisticas">
         <span className="inicio__estadisticas-icono" aria-hidden="true">
