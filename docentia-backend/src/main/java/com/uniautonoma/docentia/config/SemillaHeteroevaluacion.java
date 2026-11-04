@@ -43,6 +43,7 @@ class SemillaHeteroevaluacion {
   private final PromedioService promedioService;
   private final CatalogoInstrumento catalogo;
   private final Clock reloj;
+  private final SemillaFormularios semillaFormularios;
 
   SemillaHeteroevaluacion(
       JdbcTemplate jdbcTemplate,
@@ -52,7 +53,9 @@ class SemillaHeteroevaluacion {
       CalificacionService calificacionService,
       PromedioService promedioService,
       CatalogoInstrumento catalogo,
-      Clock reloj) {
+      Clock reloj,
+      SemillaFormularios semillaFormularios) {
+    this.semillaFormularios = semillaFormularios;
     this.jdbcTemplate = jdbcTemplate;
     this.usuarioRepository = usuarioRepository;
     this.periodoRepository = periodoRepository;
@@ -166,12 +169,22 @@ class SemillaHeteroevaluacion {
         asignacion);
   }
 
+  /**
+   * Coordinación y autoevaluación entran por su formulario enviado, como en la aplicación; solo los
+   * estudiantes se registran directo.
+   */
   private void calificar(
       Usuario docente,
       PeriodoAcademico periodo,
       FuenteEvaluacion fuente,
       Usuario evaluador,
       String nota) {
+    if (fuente == FuenteEvaluacion.COORDINACION || fuente == FuenteEvaluacion.AUTOEVALUACION) {
+      TipoFormulario tipo =
+          fuente == FuenteEvaluacion.COORDINACION ? TipoFormulario.COEVAL : TipoFormulario.AUTO;
+      semillaFormularios.enviar(docente, periodo, tipo, evaluador, nota);
+      return;
+    }
     Calificacion calificacion = new Calificacion(docente, periodo, fuente);
     calificacion.registrar(notas(nota), null, evaluador);
     calificacionRepository.saveAndFlush(calificacion);

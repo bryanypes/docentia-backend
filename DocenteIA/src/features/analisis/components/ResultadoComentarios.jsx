@@ -55,7 +55,7 @@ function Tema({ tema, onFiltrar, activo }) {
  * Mientras está en cola o en proceso se vuelve a consultar sola. Las advertencias sensibles solo las ve
  * coordinación y nunca muestran texto.
  */
-export function ResultadoComentarios({ idDocente, periodoId, esCoordinador, criterioActivo, onFiltrarCriterio }) {
+export function ResultadoComentarios({ idDocente, periodoId, esCoordinador, criterioActivo, onFiltrarCriterio, onVersion }) {
   const cargar = useCallback(() => obtenerAnalisisDocente(idDocente, periodoId), [idDocente, periodoId])
   const analisis = useFetch(cargar, [cargar])
   const datos = analisis.datos
@@ -66,6 +66,12 @@ export function ResultadoComentarios({ idDocente, periodoId, esCoordinador, crit
     const temporizador = setTimeout(recargar, SONDEO_MS)
     return () => clearTimeout(temporizador)
   }, [datos, recargar])
+
+  // Avisa qué versión del resultado hay, para que la lista de comentarios se recargue al terminar.
+  const version = datos?.resultado ? `${datos.version}-${datos.generadoEn}` : null
+  useEffect(() => {
+    onVersion?.(version)
+  }, [version, onVersion])
 
   if (analisis.cargando && !datos) return <p className="resultado-ia__cargando">Consultando el análisis…</p>
   if (analisis.error) {
