@@ -16,6 +16,7 @@ import com.uniautonoma.docentia.entity.TipoEtapa;
 import com.uniautonoma.docentia.entity.Usuario;
 import com.uniautonoma.docentia.exception.DatosInvalidosException;
 import com.uniautonoma.docentia.exception.RecursoNoEncontradoException;
+import com.uniautonoma.docentia.repository.ComentarioEstudianteRepository;
 import com.uniautonoma.docentia.repository.PeriodoAcademicoRepository;
 import com.uniautonoma.docentia.repository.ProgramaRepository;
 import com.uniautonoma.docentia.repository.SolicitudAnalisisRepository;
@@ -60,6 +61,7 @@ public class AnalisisComentariosService {
   private final VentanaEtapaService ventanas;
   private final LimitadorSolicitudes limitador;
   private final AnalisisComentariosProperties propiedades;
+  private final ComentarioEstudianteRepository comentarioRepository;
 
   public AnalisisComentariosService(
       DocenteService docenteService,
@@ -69,7 +71,9 @@ public class AnalisisComentariosService {
       ResultadosAnalisisRepositorio resultados,
       VentanaEtapaService ventanas,
       LimitadorSolicitudes limitador,
-      AnalisisComentariosProperties propiedades) {
+      AnalisisComentariosProperties propiedades,
+      ComentarioEstudianteRepository comentarioRepository) {
+    this.comentarioRepository = comentarioRepository;
     this.docenteService = docenteService;
     this.periodoRepository = periodoRepository;
     this.programaRepository = programaRepository;
@@ -92,7 +96,7 @@ public class AnalisisComentariosService {
     Usuario docente = docenteService.buscarDocenteVisible(idDocente, sesion);
     PeriodoAcademico periodo = periodo(idPeriodo);
     Optional<SolicitudAnalisis> ultima = ultima(idDocente, idPeriodo);
-    Estado estado = estado(ultima, periodo);
+    Estado estado = estado(ultima, periodo, idDocente);
     Optional<Guardado> vigente = resultados.vigente(idDocente, idPeriodo);
     String estadoHallazgos =
         vigente
@@ -147,7 +151,7 @@ public class AnalisisComentariosService {
     PeriodoAcademico periodo = periodo(idPeriodo);
     Optional<Guardado> vigente = resultados.vigente(idDocente, idPeriodo);
     if (vigente.isEmpty()) {
-      Estado estado = estado(ultima(idDocente, idPeriodo), periodo);
+      Estado estado = estado(ultima(idDocente, idPeriodo), periodo, idDocente);
       return new ComentariosEstudiantesResponse(
           false,
           estado.codigo(),
@@ -317,9 +321,18 @@ public class AnalisisComentariosService {
 
   private record Estado(String codigo, String motivo, String mensaje) {}
 
-  private Estado estado(Optional<SolicitudAnalisis> ultima, PeriodoAcademico periodo) {
+  /**
+   * Sin solicitud, la recolección abierta solo frena a quien no tiene comentarios cargados: esos ya
+   * se pueden analizar; los del formulario esperan el cierre.
+   */
+  private Estado estado(
+      Optional<SolicitudAnalisis> ultima, PeriodoAcademico periodo, Long idDocente) {
     if (ultima.isEmpty()) {
-      return ventanas.haTerminado(periodo, TipoEtapa.RECOLECCION_CALIFICACIONES)
+      boolean hayCargados =
+          comentarioRepository.countByDocenteIdUsuarioAndPeriodoIdPeriodo(
+                  idDocente, periodo.getIdPeriodo())
+              > 0;
+      return hayCargados || ventanas.haTerminado(periodo, TipoEtapa.RECOLECCION_CALIFICACIONES)
           ? new Estado(
               "NO_DISPONIBLE_AUN", "SIN_SOLICITAR", "Todavía no se ha solicitado el análisis.")
           : new Estado(

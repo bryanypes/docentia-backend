@@ -1,4 +1,4 @@
-import { ChartColumnBig, ChevronLeft, FileSignature, History, PenLine, RefreshCw, Sparkles } from 'lucide-react'
+import { ChartColumnBig, FileSignature, History, PenLine, RefreshCw, Sparkles } from 'lucide-react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
 import { useVentanaEtapa } from '../../../shared/components/layout/AppLayout/periodoContext.js'
@@ -46,7 +46,7 @@ export default function ExpedienteDocente() {
 
   const encabezado = (
     <Encabezado
-      miga="Docentes · Expediente"
+      volver={{ a: '/docentes', texto: 'Docentes' }}
       titulo="Expediente del docente"
       subtitulo="Resultados, análisis de los comentarios de estudiantes, histórico, compromisos y acta."
     />
@@ -94,10 +94,6 @@ export default function ExpedienteDocente() {
     <>
       {encabezado}
       <div className="pagina">
-        <Link to="/docentes" className="enlace-volver">
-          <ChevronLeft size={16} aria-hidden="true" />
-          Volver al listado
-        </Link>
 
         {!periodo && (
           <Aviso tipo="alerta" titulo="No hay un periodo académico activo">
@@ -175,7 +171,11 @@ export default function ExpedienteDocente() {
                 <PanelCorrecciones idDocente={docente.idDocente} />
               </>
             )}
-            {pestana === 'analisis' && <ResumenAnalisisIA idDocente={docente.idDocente} periodoId={periodo?.idPeriodo} />}
+            {pestana === 'analisis' && <ResumenAnalisisIA
+                idDocente={docente.idDocente}
+                periodoId={periodo?.idPeriodo}
+                esCoordinador={usuario.rol === ROLES.COORDINADOR}
+              />}
             {pestana === 'historico' && (
               <div className="expediente-pestanas__columnas">
                 <PanelHistorico historico={historico} />
