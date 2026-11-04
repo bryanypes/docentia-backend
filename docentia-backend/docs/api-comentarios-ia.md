@@ -52,7 +52,7 @@ Respuestas: 202 en cola. 409 si ya hay una en curso, si la revisión de hallazgo
 | `INSUFICIENTE` | `POCAS_ENCUESTAS` | `mensaje`; no hay resultado | [analisis-insuficiente.json](ejemplos/ia/analisis-insuficiente.json) |
 | `ERROR` | null | `mensaje` y opción de volver a pedirlo | [analisis-error.json](ejemplos/ia/analisis-error.json) |
 | `SIN_COMENTARIOS` | `SIN_COMENTARIOS` o `TODOS_EXCLUIDOS` | No hubo comentarios útiles | [analisis-sin-comentarios.json](ejemplos/ia/analisis-sin-comentarios.json) |
-| `NO_DISPONIBLE_AUN` | `SIN_SOLICITAR` o `VENTANA_ABIERTA` | Aún no se pidió, o la recolección sigue abierta | [analisis-no-disponible-aun.json](ejemplos/ia/analisis-no-disponible-aun.json) |
+| `NO_DISPONIBLE_AUN` | `SIN_SOLICITAR` o `VENTANA_ABIERTA` | Aún no se pidió. `VENTANA_ABIERTA` solo si el docente no tiene comentarios cargados y la recolección sigue abierta: los cargados se analizan desde ya | [analisis-no-disponible-aun.json](ejemplos/ia/analisis-no-disponible-aun.json) |
 
 ### `resultado`
 
