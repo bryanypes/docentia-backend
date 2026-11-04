@@ -1,0 +1,23 @@
+{
+  "estado" : "SIN_COMENTARIOS",
+  "motivo" : "SIN_COMENTARIOS",
+  "mensaje" : "no hay comentarios abiertos para analizar",
+  "docenteId" : 8,
+  "nombreDocente" : "Docente Sin Comentarios",
+  "periodoId" : 1,
+  "nombrePeriodo" : "2026-2",
+  "programa" : {
+    "id" : 1,
+    "nombre" : "Ingeniería de Software"
+  },
+  "facultad" : {
+    "id" : 1,
+    "nombre" : "Ingeniería"
+  },
+  "fuente" : "FORMULARIO",
+  "idSolicitud" : 5,
+  "version" : null,
+  "generadoEn" : null,
+  "estadoHallazgos" : null,
+  "resultado" : null
+}
