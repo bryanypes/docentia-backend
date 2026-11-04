@@ -2,6 +2,7 @@ import { screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderizarConSesion } from '../../../pruebas/renderizarConSesion.jsx'
+import { PeriodoContext } from '../../../shared/components/layout/AppLayout/periodoContext.js'
 import { ApiError } from '../../../services/api.js'
 import * as docentesService from '../../docentes/services/docentesService.js'
 import * as periodosService from '../../periodos/services/periodosService.js'
@@ -57,6 +58,16 @@ function renderizar(rol = 'COORDINADOR') {
 describe('Analisis', () => {
   beforeEach(() => {
     vi.resetAllMocks()
+    // Vista de comentarios del contrato nuevo: por defecto aún no hay análisis.
+    analisisService.obtenerAnalisisDocente.mockResolvedValue({
+      estado: 'NO_DISPONIBLE_AUN',
+      motivo: 'SIN_SOLICITAR',
+      mensaje: 'Todavía no se ha solicitado el análisis.',
+      nombreDocente: 'Julián Camilo Hoyos',
+      nombrePeriodo: '2026-2',
+      resultado: null,
+    })
+    analisisService.listarComentariosDocente.mockResolvedValue({ disponible: false, motivo: 'SIN_SOLICITAR', total: 0, comentarios: [] })
     docentesService.listarDocentes.mockResolvedValue([
       { idDocente: 4, nombreCompleto: 'Julián Camilo Hoyos', nombrePrograma: 'Software' },
     ])
@@ -64,6 +75,24 @@ describe('Analisis', () => {
     analisisService.listarComentariosFiltrados.mockResolvedValue([
       { idComentario: 112, texto: 'Se viste mal.', categoria: 'APARIENCIA' },
     ])
+  })
+
+  it('con la recolección abierta se puede pedir el análisis de los comentarios ya cargados', async () => {
+    analisisService.listarSolicitudes.mockResolvedValue([])
+    const ventanas = [{ etapa: 'RECOLECCION_CALIFICACIONES', abierta: true, fechaCierre: '2026-11-20' }]
+    renderizarConSesion(
+      <PeriodoContext.Provider value={{ periodo: { idPeriodo: 2 }, ventanas, cargando: false }}>
+        <Analisis />
+      </PeriodoContext.Provider>,
+      { ruta: '/analisis?docente=4&periodo=2' },
+    )
+    expect(await screen.findByRole('button', { name: 'Solicitar análisis' })).toBeEnabled()
+    expect(screen.queryByRole('list', { name: 'Cuándo se puede pedir el análisis' })).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Cómo funciona el análisis y cuándo se puede pedir' }))
+    const guia = screen.getByRole('list', { name: 'Cuándo se puede pedir el análisis' })
+    expect(within(guia).getByText('Los estudiantes comentan')).toBeInTheDocument()
+    expect(within(guia).getByText(/cuando cierra la recolección, el/)).toBeInTheDocument()
+    expect(within(guia).getByText(/paso actual/)).toBeInTheDocument()
   })
 
   it('muestra el borrador con citas, comentario de origen y filtrados', async () => {

@@ -1,6 +1,8 @@
 package com.uniautonoma.docentia.dto;
 
+import com.uniautonoma.docentia.entity.AsistenciaCita;
 import com.uniautonoma.docentia.entity.Cita;
+import com.uniautonoma.docentia.entity.ConfirmacionCita;
 import com.uniautonoma.docentia.entity.EstadoFranja;
 import com.uniautonoma.docentia.entity.FranjaHoraria;
 import java.time.LocalDate;
@@ -33,8 +35,15 @@ public record FranjaResponse(
             : new Reserva(
                 citaActiva.getIdCita(),
                 citaActiva.getDocente().getIdUsuario(),
-                citaActiva.getDocente().getNombreCompleto()));
+                citaActiva.getDocente().getNombreCompleto(),
+                citaActiva.getConfirmacion(),
+                citaActiva.getAsistencia()));
   }
 
-  public record Reserva(Long idCita, Long idDocente, String nombreDocente) {}
+  public record Reserva(
+      Long idCita,
+      Long idDocente,
+      String nombreDocente,
+      ConfirmacionCita confirmacion,
+      AsistenciaCita asistencia) {}
 }

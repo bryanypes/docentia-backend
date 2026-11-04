@@ -1,0 +1,227 @@
+/* Análisis de un docente: franja de estado y una tarjeta con tres pestañas. */
+.analisis-docente {
+  display: grid;
+  gap: 14px;
+}
+
+.franja-ia {
+  --tono: var(--color-violeta);
+  --tono-fondo: var(--color-violeta-fondo);
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px 18px;
+  padding: 14px 18px;
+  border: 1px solid color-mix(in srgb, var(--tono) 30%, transparent);
+  border-left: 5px solid var(--tono);
+  border-radius: var(--radio-xl);
+  background: var(--tono-fondo);
+}
+
+.franja-ia--turquesa {
+  --tono: var(--color-turquesa);
+  --tono-fondo: var(--color-turquesa-fondo);
+}
+
+.franja-ia--coral {
+  --tono: var(--color-coral);
+  --tono-fondo: var(--color-coral-fondo);
+}
+
+.franja-ia--alerta {
+  --tono: var(--color-alerta-texto);
+  --tono-fondo: var(--color-alerta-fondo);
+}
+
+.franja-ia .robot-ia {
+  width: 52px;
+  height: 52px;
+}
+
+.franja-ia__texto {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.franja-ia__titulo {
+  font-size: 17px;
+  font-weight: var(--peso-fuerte);
+  color: var(--tono);
+}
+
+.franja-ia__texto p {
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--color-texto-secundario);
+}
+
+.franja-ia__meta {
+  font-size: 12px;
+  color: var(--color-texto-tenue);
+}
+
+.franja-ia__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px 12px;
+}
+
+.analisis-docente__tarjeta {
+  overflow: hidden;
+  border: 1px solid rgba(230, 223, 206, 0.7);
+  border-radius: 16px;
+  background: var(--color-superficie);
+  box-shadow:
+    0 1px 2px rgba(30, 30, 30, 0.04),
+    0 12px 28px -18px rgba(5, 54, 134, 0.28);
+}
+
+.analisis-docente__pestanas {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  padding: 0 14px;
+  border-bottom: 1px solid var(--color-borde);
+  background: var(--color-fondo);
+}
+
+.analisis-docente__pestana {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--alto-tactil);
+  margin-bottom: -1px;
+  padding: 0 16px;
+  border: 0;
+  border-bottom: 3px solid transparent;
+  background: none;
+  color: var(--color-texto-tenue);
+  font: inherit;
+  font-size: 14px;
+  font-weight: var(--peso-semi);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.analisis-docente__pestana:hover {
+  color: var(--color-azul);
+}
+
+.analisis-docente__pestana--activa {
+  border-bottom-color: var(--color-azul);
+  color: var(--color-azul);
+}
+
+.analisis-docente__pestana:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: -3px;
+}
+
+.analisis-docente__contador {
+  padding: 0 7px;
+  border-radius: var(--radio-pildora);
+  background: var(--color-violeta);
+  color: var(--color-superficie);
+  font-size: 12px;
+}
+
+.analisis-docente__contenido {
+  padding: 18px 20px 20px;
+}
+
+/* Dentro de la pestaña los paneles del resultado y de los comentarios pierden su marco. */
+.analisis-docente__contenido .comentarios-docente.panel {
+  padding: 0;
+  border: 0;
+  background: none;
+  box-shadow: none;
+}
+
+.revision-ia {
+  display: grid;
+  gap: 16px;
+}
+
+.revision-ia__nota,
+.revision-ia__vacio {
+  margin: 0;
+  font-size: 13.5px;
+  color: var(--color-texto-tenue);
+}
+
+.revision-ia__grupo {
+  --tono: var(--color-turquesa);
+  display: grid;
+  gap: 10px;
+}
+
+.revision-ia__grupo--coral {
+  --tono: var(--color-coral);
+}
+
+.revision-ia__grupo h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 15px;
+  font-weight: var(--peso-fuerte);
+  color: var(--tono);
+}
+
+.revision-ia__grupo h3 span {
+  padding: 0 8px;
+  border-radius: var(--radio-pildora);
+  background: color-mix(in srgb, var(--tono) 14%, transparent);
+  font-size: 12px;
+}
+
+.revision-ia__filtrados {
+  padding: 10px 14px;
+  border: 1px solid var(--color-borde-suave);
+  border-radius: var(--radio-md);
+  background: var(--color-fondo);
+}
+
+.revision-ia__filtrados > summary {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  font-size: 14px;
+  font-weight: var(--peso-semi);
+  cursor: pointer;
+}
+
+.revision-ia__filtrados > summary span {
+  flex-basis: 100%;
+  padding-left: 24px;
+  font-size: 12.5px;
+  font-weight: var(--peso-normal);
+  color: var(--color-texto-tenue);
+}
+
+.revision-ia__filtrados[open] > summary {
+  margin-bottom: 10px;
+}
+
+@media (max-width: 720px) {
+  .franja-ia {
+    grid-template-columns: auto minmax(0, 1fr);
+    padding: 12px 14px;
+  }
+
+  .franja-ia__acciones {
+    grid-column: 1 / -1;
+    justify-content: flex-start;
+  }
+
+  .analisis-docente__contenido {
+    padding: 14px;
+  }
+}

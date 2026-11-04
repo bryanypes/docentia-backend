@@ -11,6 +11,7 @@ import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.Programa;
 import com.uniautonoma.docentia.entity.ResultadoImportacion;
 import com.uniautonoma.docentia.entity.TipoEtapa;
+import com.uniautonoma.docentia.entity.TipoFormulario;
 import com.uniautonoma.docentia.entity.Usuario;
 import com.uniautonoma.docentia.repository.CalificacionRepository;
 import com.uniautonoma.docentia.repository.ComentarioEstudianteRepository;
@@ -63,6 +64,8 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
   private final FranjaHorariaRepository franjaRepository;
   private final CargadorClasesCampus cargadorClasesCampus;
   private final SemillaHeteroevaluacion semillaHeteroevaluacion;
+  private final SemillaComentarios semillaComentarios;
+  private final SemillaFormularios semillaFormularios;
 
   public CargadorDatosDesarrollo(
       FranjaHorariaRepository franjaRepository,
@@ -80,8 +83,12 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
       @Value("${docentia.desarrollo.contrasena-inicial}") String contrasenaInicial,
       TransactionTemplate transaccion,
       CargadorClasesCampus cargadorClasesCampus,
-      SemillaHeteroevaluacion semillaHeteroevaluacion) {
+      SemillaHeteroevaluacion semillaHeteroevaluacion,
+      SemillaComentarios semillaComentarios,
+      SemillaFormularios semillaFormularios) {
+    this.semillaFormularios = semillaFormularios;
     this.semillaHeteroevaluacion = semillaHeteroevaluacion;
+    this.semillaComentarios = semillaComentarios;
     this.transaccion = transaccion;
     this.importacionRepository = importacionRepository;
     this.comentarioRepository = comentarioRepository;
@@ -125,6 +132,8 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
         .ifPresent(periodo -> cargadorClasesCampus.cargarDemo(periodo, hash));
     // Igual que Campus: corre también sobre una base que ya tenía el seed.
     semillaHeteroevaluacion.cargarSiFalta(hash);
+    // Comentarios extra para ensayar el análisis; también sobre una base que ya tenía el seed.
+    semillaComentarios.cargarSiFalta();
   }
 
   private void sembrarCatalogoLocal(String hash) {
@@ -316,12 +325,22 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
     return periodoRepository.save(periodo);
   }
 
+  /**
+   * Coordinación y autoevaluación entran por su formulario enviado, como en la aplicación; solo los
+   * estudiantes se registran directo.
+   */
   private void calificar(
       Usuario docente,
       PeriodoAcademico periodo,
       FuenteEvaluacion fuente,
       Usuario evaluador,
       String nota) {
+    if (fuente == FuenteEvaluacion.COORDINACION || fuente == FuenteEvaluacion.AUTOEVALUACION) {
+      TipoFormulario tipo =
+          fuente == FuenteEvaluacion.COORDINACION ? TipoFormulario.COEVAL : TipoFormulario.AUTO;
+      semillaFormularios.enviar(docente, periodo, tipo, evaluador, nota);
+      return;
+    }
     Calificacion calificacion = new Calificacion(docente, periodo, fuente);
     calificacion.registrar(notasIguales(nota), null, evaluador);
     calificacionRepository.saveAndFlush(calificacion);

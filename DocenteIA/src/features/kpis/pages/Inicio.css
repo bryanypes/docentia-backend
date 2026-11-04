@@ -1,44 +1,120 @@
+.inicio__vigente,
+.inicio__historico {
+  padding: 2px 10px;
+  border-radius: var(--radio-pildora);
+  font-size: 11.5px;
+  font-weight: var(--peso-semi);
+}
+
+.inicio__vigente {
+  background: rgba(83, 196, 183, 0.25);
+  color: #c9f3ec;
+}
+
+.inicio__historico {
+  background: rgba(254, 251, 244, 0.16);
+}
+
+/* Barra de filtros sobre la portada: controles claros de cristal esmerilado. */
 .inicio__filtros {
-  padding: 16px 18px;
-  background: var(--color-superficie);
-  border: 1px solid var(--color-borde);
-  border-radius: var(--radio-xl);
-  box-shadow: var(--sombra-tarjeta);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px 12px;
+  padding: 12px;
+  border: 1px solid rgba(254, 251, 244, 0.16);
+  border-radius: var(--radio-lg);
+  background: rgba(254, 251, 244, 0.08);
+  backdrop-filter: blur(6px);
 }
 
-.inicio__campos {
+.inicio__filtro {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(196px, 1fr));
-  gap: var(--espacio-3);
+  flex: 1 1 200px;
+  gap: 5px;
+  min-width: 0;
 }
 
-.inicio__fijo {
+.inicio__filtro-etiqueta {
+  font-size: 11.5px;
+  font-weight: var(--peso-semi);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  opacity: 0.8;
+}
+
+.inicio__filtro-control,
+.inicio__filtro-fijo {
+  width: 100%;
+  min-height: var(--alto-tactil);
+  padding: 9px 12px;
+  border: 1px solid rgba(254, 251, 244, 0.3);
+  border-radius: var(--radio-md);
+  background-color: var(--color-superficie);
+  color: var(--color-texto);
+  font: inherit;
+  font-size: 14px;
+}
+
+.inicio__filtro-control {
+  cursor: pointer;
+}
+
+.inicio__filtro-control:focus-visible {
+  outline: 3px solid var(--color-foco-sobre-azul);
+  outline-offset: 2px;
+}
+
+.inicio__filtro-fijo {
   display: flex;
   align-items: center;
-  gap: var(--espacio-2);
-  min-height: var(--alto-tactil);
-  padding: 10px 11px;
-  background: var(--color-superficie-suave);
-  border: 1px solid var(--color-borde);
-  border-radius: var(--radio-md);
-  font-size: 13.5px;
-}
-
-.inicio__fijo > span:first-child {
-  min-width: 0;
   overflow: hidden;
+  background: rgba(254, 251, 244, 0.14);
+  color: var(--color-crema);
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.inicio__fijo-etiqueta {
-  margin-left: auto;
-  font-size: 11.5px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+.inicio__limpiar {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 6px;
+  min-height: var(--alto-tactil);
+  padding: 0 14px;
+  border: 1px solid rgba(254, 251, 244, 0.35);
+  border-radius: var(--radio-md);
+  background: transparent;
+  color: var(--color-crema);
+  font: inherit;
+  font-size: 13.5px;
   font-weight: var(--peso-semi);
-  color: var(--color-texto-tenue);
-  white-space: nowrap;
+  cursor: pointer;
+}
+
+.inicio__limpiar:hover {
+  background: rgba(254, 251, 244, 0.12);
+}
+
+.inicio__limpiar:focus-visible {
+  outline: 3px solid var(--color-foco-sobre-azul);
+  outline-offset: 2px;
+}
+
+/* Peores y mejores notas lado a lado, con la misma altura. */
+.inicio__rejilla--extremos {
+  align-items: stretch;
+}
+
+@media (max-width: 640px) {
+  .inicio__filtro {
+    flex-basis: 100%;
+  }
+
+  .inicio__limpiar {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 .inicio__tarjetas {
@@ -90,5 +166,135 @@
 @media (max-width: 640px) {
   .inicio__kpis {
     grid-template-columns: 1fr;
+  }
+}
+
+/* Acceso a la vista de estadísticas */
+.inicio__estadisticas {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 14px;
+  padding: 16px 18px;
+  border: 1px solid var(--color-violeta-borde);
+  border-radius: var(--radio-xl);
+  background: linear-gradient(120deg, var(--color-violeta-fondo), var(--color-cielo-fondo));
+  color: var(--color-texto);
+  text-decoration: none;
+  box-shadow: var(--sombra-tarjeta);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.inicio__estadisticas:hover {
+  color: var(--color-texto);
+  text-decoration: none;
+  transform: translateY(-1px);
+}
+
+.inicio__estadisticas:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 3px;
+}
+
+.inicio__estadisticas > span:nth-child(2) {
+  display: grid;
+  gap: 2px;
+}
+
+.inicio__estadisticas strong {
+  font-size: 15px;
+  color: var(--color-violeta);
+}
+
+.inicio__estadisticas > span:nth-child(2) > span {
+  font-size: 13px;
+  color: var(--color-texto-secundario);
+}
+
+.inicio__estadisticas-icono {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--color-superficie);
+  color: var(--color-violeta);
+}
+
+/* Modal de destacados */
+.destacados {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.destacados__fila {
+  display: grid;
+  grid-template-columns: 28px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 6px 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-borde-suave);
+  border-radius: var(--radio-lg);
+}
+
+.destacados__puesto {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-turquesa-fondo);
+  color: var(--color-turquesa);
+  font-size: 13px;
+  font-weight: var(--peso-fuerte);
+}
+
+.destacados__datos {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.destacados__datos span {
+  font-size: 12.5px;
+  color: var(--color-texto-tenue);
+}
+
+.destacados__nota {
+  font-size: 18px;
+  font-weight: var(--peso-fuerte);
+  color: var(--color-turquesa);
+}
+
+.destacados__fila > .etiqueta-nivel {
+  grid-column: 2;
+  justify-self: start;
+}
+
+.destacados__fila > .boton-accion {
+  grid-column: 3;
+}
+
+/* Docentes del periodo: dos columnas apiladas que se llenan desde arriba, sin huecos. */
+.inicio__columnas {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--espacio-4);
+  align-items: start;
+}
+
+.inicio__columna {
+  display: grid;
+  gap: var(--espacio-4);
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .inicio__columnas {
+    grid-template-columns: minmax(0, 1fr);
   }
 }

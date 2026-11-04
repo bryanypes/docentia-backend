@@ -52,4 +52,13 @@ public interface SolicitudAnalisisRepository extends JpaRepository<SolicitudAnal
   int marcarErrorHuerfanas(int maximo, String mensaje);
 
   long countByEstado(EstadoSolicitudAnalisis estado);
+
+  /** Solicitudes del periodo de varios docentes, de la más nueva a la más antigua. */
+  @Query(
+      """
+      select s from SolicitudAnalisis s
+      where s.periodo.idPeriodo = :idPeriodo and s.docente.idUsuario in :idsDocentes
+      order by s.idSolicitud desc
+      """)
+  List<SolicitudAnalisis> buscarDePeriodo(Long idPeriodo, Collection<Long> idsDocentes);
 }

@@ -1,0 +1,130 @@
+.firma {
+  display: grid;
+  gap: 12px;
+}
+
+.firma__modos {
+  display: inline-flex;
+  justify-self: start;
+  padding: 3px;
+  border-radius: var(--radio-pildora);
+  background: var(--color-superficie-suave);
+}
+
+.firma__modo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+  padding: 6px 16px;
+  border: 0;
+  border-radius: var(--radio-pildora);
+  background: transparent;
+  color: var(--color-texto-secundario);
+  font: inherit;
+  font-size: 13px;
+  font-weight: var(--peso-semi);
+  cursor: pointer;
+}
+
+.firma__modo--activo {
+  background: var(--color-superficie);
+  color: var(--color-azul);
+  box-shadow: var(--sombra-boton);
+}
+
+.firma__modo:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+.firma__escribir {
+  display: grid;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: var(--peso-semi);
+}
+
+.firma__marco {
+  position: relative;
+  border: 2px dashed var(--color-borde-control);
+  border-radius: var(--radio-lg);
+  background:
+    linear-gradient(var(--color-superficie), var(--color-superficie)) padding-box,
+    var(--color-fondo);
+  overflow: hidden;
+}
+
+.firma__marco--dibujo {
+  cursor: crosshair;
+}
+
+.firma__marco:focus-within {
+  border-color: var(--color-azul);
+}
+
+.firma__lienzo {
+  display: block;
+  width: 100%;
+  aspect-ratio: 560 / 190;
+  touch-action: none;
+}
+
+.firma__linea {
+  position: absolute;
+  right: 24px;
+  bottom: 34px;
+  left: 24px;
+  border-bottom: 1px solid var(--color-borde);
+  pointer-events: none;
+}
+
+.firma__guia {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 16px;
+  color: var(--color-texto-tenue);
+  font-size: 14px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.firma__acciones-lienzo {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.firma__confirmacion {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px;
+  border-radius: var(--radio-lg);
+  background: var(--color-rosa-fondo);
+  border: 1px solid var(--color-rosa-borde);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.firma__confirmacion input {
+  width: 18px;
+  height: 18px;
+  margin-top: 1px;
+  flex: 0 0 auto;
+}
+
+.firma__pie {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+@media (max-width: 520px) {
+  .firma__pie .boton {
+    flex: 1 1 100%;
+  }
+}

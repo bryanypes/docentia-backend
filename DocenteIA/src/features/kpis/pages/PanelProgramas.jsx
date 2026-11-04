@@ -6,6 +6,7 @@ import { Campo } from '../../../shared/components/ui/Campo/Campo.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
 import { ETIQUETA_ROL, NIVELES, ROLES } from '../../../shared/constants/dominio.js'
+import { FUNCIONES } from '../../../shared/constants/funciones.js'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { formatearNota } from '../../../shared/utils/formatters.js'
 import { useSesion } from '../../auth/sesionContext.js'
@@ -68,8 +69,8 @@ function Participacion() {
   if (!datos?.programas.length) return null
   return (
     <Panel titulo="Participación en formularios" descripcion="Solo conteos, sin puntajes.">
-      <div className="acciones__tabla">
-        <table className="tabla">
+      <div className="tabla-contenedor">
+        <table className="tabla tabla--apilable tabla--cifras">
           <thead>
             <tr>
               <th scope="col">Programa</th>
@@ -83,12 +84,12 @@ function Participacion() {
           <tbody>
             {datos.programas.map((p) => (
               <tr key={p.programa}>
-                <td>{p.programa}</td>
-                <td>{p.docentes}</td>
-                <td>{p.enviadas}</td>
-                <td>{p.borrador}</td>
-                <td>{p.sinIniciar}</td>
-                <td>{p.autoevaluacionesEnviadas}</td>
+                <td className="tabla__fuerte">{p.programa}</td>
+                <td data-etiqueta="Docentes">{p.docentes}</td>
+                <td data-etiqueta="Coevaluaciones enviadas">{p.enviadas}</td>
+                <td data-etiqueta="En borrador">{p.borrador}</td>
+                <td data-etiqueta="Sin iniciar">{p.sinIniciar}</td>
+                <td data-etiqueta="Autoevaluaciones enviadas">{p.autoevaluacionesEnviadas}</td>
               </tr>
             ))}
           </tbody>
@@ -117,6 +118,7 @@ export default function PanelProgramas() {
   const esVicerrector = usuario.rol === ROLES.VICERRECTOR
   const [periodoId, setPeriodoId] = useState('')
   const [facultadId, setFacultadId] = useState('')
+  const [programaId, setProgramaId] = useState('')
   const periodos = useFetch(listarPeriodos)
   const facultades = useFetch(() => (esVicerrector ? listarFacultades() : Promise.resolve([])), [esVicerrector])
   const cargar = useCallback(() => obtenerPanelProgramas({ periodoId, facultadId }), [periodoId, facultadId])
@@ -127,7 +129,7 @@ export default function PanelProgramas() {
       <Encabezado
         miga={`${ETIQUETA_ROL[usuario.rol]} · Panel por programa`}
         titulo="Panel por programa"
-        subtitulo="Cobertura, promedio y distribución por categoría. Cuenta los promedios completos; no identifica docentes."
+        subtitulo="Avance, promedio y distribución por categoría de cada programa. Cuenta los promedios completos; no identifica docentes."
       />
       <div className="pagina">
         <div className="panel-programas__filtros">
@@ -152,7 +154,10 @@ export default function PanelProgramas() {
                 id="facultadPanel"
                 className="campo__control"
                 value={facultadId}
-                onChange={(e) => setFacultadId(e.target.value)}
+                onChange={(e) => {
+                  setFacultadId(e.target.value)
+                  setProgramaId('')
+                }}
               >
                 <option value="">Toda la universidad</option>
                 {(facultades.datos ?? []).map((f) => (
@@ -163,6 +168,21 @@ export default function PanelProgramas() {
               </select>
             </Campo>
           )}
+          <Campo id="programaPanel" etiqueta="Programa">
+            <select
+              id="programaPanel"
+              className="campo__control"
+              value={programaId}
+              onChange={(e) => setProgramaId(e.target.value)}
+            >
+              <option value="">Todos los programas</option>
+              {(panel.datos?.programas ?? []).map((p) => (
+                <option key={p.idPrograma} value={p.idPrograma}>
+                  {p.programa}
+                </option>
+              ))}
+            </select>
+          </Campo>
         </div>
         {panel.cargando && !panel.datos && <Cargando texto="Cargando el panel" bloques={2} />}
         {panel.error && (
@@ -183,14 +203,16 @@ export default function PanelProgramas() {
               <EstadoVista titulo="Sin programas" mensaje="No hay docentes activos en este alcance." />
             )}
             <div className="rejilla">
-              {panel.datos.programas.map((fila) => (
-                <Panel key={fila.idPrograma} titulo={fila.programa} descripcion={fila.facultad}>
-                  <Fila fila={fila} />
-                </Panel>
-              ))}
+              {panel.datos.programas
+                .filter((fila) => !programaId || String(fila.idPrograma) === programaId)
+                .map((fila) => (
+                  <Panel key={fila.idPrograma} titulo={fila.programa} descripcion={fila.facultad}>
+                    <Fila fila={fila} />
+                  </Panel>
+                ))}
             </div>
             {esVicerrector && <Participacion />}
-            {esVicerrector && <CoberturaEstudiantes />}
+            {esVicerrector && FUNCIONES.coberturaEstudiantes && <CoberturaEstudiantes />}
           </>
         )}
       </div>
