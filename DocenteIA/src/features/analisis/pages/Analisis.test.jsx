@@ -77,7 +77,7 @@ describe('Analisis', () => {
     ])
   })
 
-  it('con la recolección abierta explica que aún no se puede pedir y bloquea el botón', async () => {
+  it('con la recolección abierta se puede pedir el análisis de los comentarios ya cargados', async () => {
     analisisService.listarSolicitudes.mockResolvedValue([])
     const ventanas = [{ etapa: 'RECOLECCION_CALIFICACIONES', abierta: true, fechaCierre: '2026-11-20' }]
     renderizarConSesion(
@@ -86,13 +86,13 @@ describe('Analisis', () => {
       </PeriodoContext.Provider>,
       { ruta: '/analisis?docente=4&periodo=2' },
     )
-    expect(await screen.findByRole('button', { name: 'Solicitar análisis' })).toBeDisabled()
+    expect(await screen.findByRole('button', { name: 'Solicitar análisis' })).toBeEnabled()
     expect(screen.queryByRole('list', { name: 'Cuándo se puede pedir el análisis' })).not.toBeInTheDocument()
     await userEvent.click(screen.getByRole('button', { name: 'Cómo funciona el análisis y cuándo se puede pedir' }))
     const guia = screen.getByRole('list', { name: 'Cuándo se puede pedir el análisis' })
     expect(within(guia).getByText('Los estudiantes comentan')).toBeInTheDocument()
-    expect(within(guia).getByText(/cierra el/)).toBeInTheDocument()
-    expect(screen.getByText('Disponible cuando cierre la recolección de calificaciones.')).toBeInTheDocument()
+    expect(within(guia).getByText(/cuando cierra la recolección, el/)).toBeInTheDocument()
+    expect(within(guia).getByText(/paso actual/)).toBeInTheDocument()
   })
 
   it('muestra el borrador con citas, comentario de origen y filtrados', async () => {

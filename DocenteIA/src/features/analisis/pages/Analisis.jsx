@@ -42,27 +42,28 @@ import {
 import './Analisis.css'
 
 /**
- * Cuándo se puede pedir el análisis, en tres pasos con el estado de cada uno: los estudiantes comentan
- * en su encuesta, cierra la recolección y la coordinación lo solicita.
+ * Cuándo se puede pedir el análisis, en tres pasos con el estado de cada uno: los estudiantes comentan,
+ * la coordinación lo solicita y revisa los hallazgos. Los comentarios ya cargados se analizan durante
+ * toda la revisión; solo los del formulario anónimo esperan a que cierre la recolección.
  */
 function GuiaAnalisis({ recoleccionAbierta, fechaCierre, solicitado, esCoordinador }) {
   const pasos = [
     {
       titulo: 'Los estudiantes comentan',
-      texto: 'Al final de su encuesta, cada estudiante escribe un comentario anónimo sobre el docente.',
-      estado: recoleccionAbierta ? 'actual' : 'hecho',
-    },
-    {
-      titulo: 'Cierra la recolección',
       texto: recoleccionAbierta
-        ? `Mientras sigue abierta no se analiza${fechaCierre ? `: cierra el ${formatearFecha(fechaCierre)}` : ''}.`
-        : `La recolección ya cerró${fechaCierre ? ` el ${formatearFecha(fechaCierre)}` : ''}.`,
-      estado: recoleccionAbierta ? 'pendiente' : 'hecho',
+        ? `Al final de su encuesta escriben un comentario anónimo. Los del formulario se suman al análisis cuando cierra la recolección${fechaCierre ? `, el ${formatearFecha(fechaCierre)}` : ''}.`
+        : 'Al final de su encuesta escriben un comentario anónimo. La recolección ya cerró.',
+      estado: 'hecho',
     },
     {
       titulo: esCoordinador ? 'Solicitas el análisis' : 'La coordinación lo solicita',
-      texto: `Por docente, con al menos ${MINIMO_ENCUESTAS} encuestas con comentario. Luego se revisa cada hallazgo antes de que el docente lo vea.`,
-      estado: recoleccionAbierta ? 'pendiente' : solicitado ? 'hecho' : 'actual',
+      texto: `Por docente, con al menos ${MINIMO_ENCUESTAS} encuestas con comentario. Se puede pedir de nuevo cuando lleguen más.`,
+      estado: solicitado ? 'hecho' : 'actual',
+    },
+    {
+      titulo: esCoordinador ? 'Revisas y publicas' : 'La coordinación revisa',
+      texto: 'Cada hallazgo se valida antes de que el docente lo vea.',
+      estado: solicitado ? 'actual' : 'pendiente',
     },
   ]
   return (
@@ -270,6 +271,8 @@ function Borrador({ solicitud, puedeValidar, onValidado }) {
 /** Resultado arriba y comentarios abajo; tocar un tema filtra los comentarios por su criterio. */
 function VistaComentarios({ idDocente, periodoId, esCoordinador }) {
   const [criterio, setCriterio] = useState(null)
+  // Cambia cuando el análisis termina o sale una versión nueva: la lista vuelve a pedir sus comentarios.
+  const [version, setVersion] = useState(null)
   return (
     <>
       <ResultadoComentarios
@@ -278,8 +281,15 @@ function VistaComentarios({ idDocente, periodoId, esCoordinador }) {
         esCoordinador={esCoordinador}
         criterioActivo={criterio}
         onFiltrarCriterio={setCriterio}
+        onVersion={setVersion}
       />
-      <ComentariosDocente idDocente={idDocente} periodoId={periodoId} criterio={criterio} onCriterio={setCriterio} />
+      <ComentariosDocente
+        key={version ?? 'sin-resultado'}
+        idDocente={idDocente}
+        periodoId={periodoId}
+        criterio={criterio}
+        onCriterio={setCriterio}
+      />
     </>
   )
 }
@@ -458,12 +468,11 @@ export default function Analisis() {
           <>
             {esCoordinador && (
               <div className="analisis__acciones">
-                <Boton onClick={solicitar} disabled={enviando || recoleccionAbierta || estaEnCurso(ultima.datos)}>
+                {/* Los comentarios ya cargados se analizan en cualquier momento de la revisión; el
+                    backend responde con el motivo si todavía no se puede. */}
+                <Boton onClick={solicitar} disabled={enviando || estaEnCurso(ultima.datos)}>
                   {enviando ? 'Solicitando…' : idSolicitud ? 'Solicitar un análisis nuevo' : 'Solicitar análisis'}
                 </Boton>
-                {recoleccionAbierta && (
-                  <span className="campo__ayuda">Disponible cuando cierre la recolección de calificaciones.</span>
-                )}
               </div>
             )}
             <ErrorApi error={errorSolicitar} />
