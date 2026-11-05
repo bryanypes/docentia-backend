@@ -102,7 +102,7 @@ y `GET /analisis-ia/resultados/propio` sin hallazgos.
 
 `ACTA_POR_FIRMAR` ya no se envía antes de habilitar el resultado.
 
-## Firma dibujada (V30)
+## Firma dibujada (V37)
 
 `POST /actas/{id}/firmas` recibe `{confirmacion, trazo}`. `trazo` es el PNG de la firma hecha en la
 página, como `data:image/png;base64,...`, de hasta 300 KB y 2000 px por lado, y con trazo visible.

@@ -55,8 +55,8 @@ FORMULARIO. Contrato: [api-comentarios-ia.md](api-comentarios-ia.md). Criterios:
 
 ## Persistencia
 
-- **V34, no V29.** V29 a V33 las usa el PR #6 de Verónica. Si este PR se fusiona antes, el #6 tiene que
-  renumerar sus migraciones o activar `spring.flyway.out-of-order`; si se fusiona después, nada cambia.
+- **V34 y V35.** El PR #6 de Verónica tenía V29 a V33; como V34 y V35 se fusionaron antes, sus
+  migraciones se renumeraron a V36–V40 sin cambiar su contenido. No tocan las tablas del análisis.
 - **Versiones.** Cada corrida completada crea una versión en `resultados_analisis_comentarios` y marca
   la anterior como reemplazada; no se borra. Un índice único parcial garantiza una sola vigente.
 - **Copia sin tiempo.** `comentarios_analizados` guarda índice, id de cita, huella, texto anonimizado,

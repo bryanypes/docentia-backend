@@ -11,7 +11,7 @@
 - Acta de compromiso y acta de retroalimentación, con el tipo en el PDF.
 - Agenda como calendario semanal: se arrastra para abrir franjas y cada reserva muestra su estado.
 - Columna y filtro de proceso en Docentes, y cobertura de estudiantes que respondieron.
-- Firma dibujada (o escrita) del acta en un modal; el trazo va en el PDF con su hash (V30).
+- Firma dibujada (o escrita) del acta en un modal; el trazo va en el PDF con su hash (V37).
 - Vista de Estadísticas con filtros y barras que actualizan todas las gráficas.
 - Panorama del análisis con IA: etapas, fortalezas y oportunidades, citas verificadas y filtrados.
 - Ver información de usuarios, facultades y programas; acciones con ícono de ver, editar y eliminar.
@@ -22,7 +22,7 @@
 - Reserva de cita desde un calendario de días disponibles, con modal para confirmar o cambiar.
 - Modal para agregar compromisos, con sugerencias y plazos rápidos.
 - La coordinación cancela o cambia de horario una cita desde la agenda; el docente recibe el
-  aviso y vuelve a confirmar (V33).
+  aviso y vuelve a confirmar (V40).
 - Mi perfil (`GET /sesiones/actual/perfil`): datos propios con facultad y programa por nombre; el
   cambio de contraseña voluntario es un modal con DocenteIA. El menú muestra el ícono de
   configuración en lugar de la llave.
@@ -51,7 +51,7 @@
 - Agenda con la semana o el día visible rotulado, tira de días, Ir a hoy, calendario del mes y
   línea de la hora actual.
 - Nombres de personas, programas, facultades y cursos con mayúscula inicial y tildes en las
-  palabras académicas (V31, V32).
+  palabras académicas (V38, V39).
 - Listas de Estadísticas y Usuarios en tandas con «Mostrar más» y tarjetas compactas en el celular.
 - El filtro de calidad (vacíos, cortos, duplicados, órdenes al modelo) también se aplica al CSV.
 - Los comentarios se envían ordenados por la huella del texto, no por orden de carga.

@@ -45,7 +45,7 @@ public class FirmaActa {
   @Column(nullable = false)
   private LocalDateTime fecha;
 
-  /** PNG del trazo dibujado en la página; nulo en firmas anteriores a V30. */
+  /** PNG del trazo dibujado en la página; nulo en firmas anteriores a V37. */
   @Column(columnDefinition = "bytea", updatable = false)
   private byte[] imagen;
 
