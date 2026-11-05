@@ -34,6 +34,22 @@ regla nueva las baja, la prueba falla.
 | Exclusiones correctas | 17 de 17 |
 | 2.000 comentarios | menos de 1 s en un portátil (650 a 810 ms en tres corridas) |
 
+## Con la muestra del modelo de lenguaje
+
+`conLaMuestraDelModeloDeLenguajeLasMetricasNoBajanNiFaltanCriterios` mide los mismos comentarios
+etiquetados, pero solo los que entrarían en la muestra. Con el tope real (150) entra todo el conjunto
+(73 útiles) y las cifras son las de arriba; para que de verdad se muestree se usa un tope menor.
+
+| Muestra | C2 | C3 | C4 | C5 | Polaridad |
+|---------|----|----|----|----|-----------|
+| Todos (73) | 0,97 | 0,92 | 1,00 | 1,00 | 0,89 |
+| 60 (la prueba) | 0,98 | 0,89 | 1,00 | 1,00 | 0,87 |
+| 40 | 0,97 | 0,86 | 1,00 | 1,00 | 0,83 |
+
+Con 40, C3 y la polaridad quedan un punto por debajo del umbral de regresión: el muestreo
+estratificado le da más peso a los casos raros, que son los difíciles. Todos los criterios presentes
+en el total aparecen en la muestra.
+
 ## Otras propiedades probadas
 
 | Propiedad | Prueba |

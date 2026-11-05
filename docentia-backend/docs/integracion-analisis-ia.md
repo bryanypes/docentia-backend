@@ -11,6 +11,8 @@ Guía para quien integre el análisis en estadísticas o en otra pantalla. El co
 | `resultados_analisis_comentarios` | Una fila por corrida: versión, `reemplazado`, `tipo_modelo`, resultado JSON | Procesador |
 | `comentarios_analizados` | Copia anonimizada de lo analizado, sin fechas ni ids de respuesta | Procesador |
 | `hallazgos_analisis` | Hallazgos propuestos y su revisión (E4) | Procesador, revisión |
+| `uso_ia` | Gasto del proveedor externo por llamada: tokens, huella, resultado; sin texto | Procesador |
+| `cache_respuestas_ia` | Respuesta del proveedor por huella de entrada | Procesador |
 | `respuestas_heteroevaluacion` | Respuesta anónima del formulario | Estudiante; el análisis solo la lee |
 
 El vigente de un docente y periodo es la fila con `reemplazado = false` (hay un índice único).
@@ -32,6 +34,13 @@ El vigente de un docente y periodo es la fila con `reemplazado = false` (hay un 
 - `temas[].frecuencia` de un docente = comentarios de `comentarios_analizados` con esa etiqueta.
 - `porcentaje` es sobre comentarios útiles, no sobre encuestas ni matriculados.
 
+## Ahorro de tokens
+
+- Las lecturas (`GET`) nunca llaman al proveedor; salen de lo guardado. Las estadísticas pueden
+  consultarse cuantas veces haga falta.
+- Una regeneración o una solicitud repetida con los mismos comentarios sale de la caché.
+- El gasto del periodo está en `GET /analisis-comentarios/uso` (vicerrectoría).
+
 ## Qué no hacer
 
 - No leer `respuestas_heteroevaluacion` para estadísticas de texto: se rompe la regla de recolección
@@ -41,3 +50,6 @@ El vigente de un docente y periodo es la fila con `reemplazado = false` (hay un 
 - No usar matrícula ni cobertura para el análisis: solo conteos de respuestas.
 - No buscar periodos por nombre; siempre por id.
 - No mostrarle al docente nada de estos endpoints; lo suyo es `/analisis-ia/resultados/propio`.
+- No disparar solicitudes o regeneraciones desde un proceso automático para "refrescar" datos: no hace
+  falta y consume presupuesto si los comentarios cambiaron.
+- No leer `cache_respuestas_ia` ni `uso_ia` para estadísticas de contenido.

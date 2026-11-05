@@ -243,6 +243,62 @@
               ]
             }
           }
+        },
+        {
+          "name": "GET /analisis-comentarios/uso",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/analisis-comentarios/uso?periodo={{periodoId}}",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "analisis-comentarios",
+                "uso"
+              ],
+              "query": [
+                {
+                  "key": "periodo",
+                  "value": "{{periodoId}}"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "POST /analisis-comentarios/docentes/{{docenteId}}/regeneracion",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\"periodoId\": {{periodoId}}, \"motivo\": \"Se corrigió la carga de respuestas\", \"fuente\": \"FORMULARIO\"}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{baseUrl}}/analisis-comentarios/docentes/{{docenteId}}/regeneracion",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "analisis-comentarios",
+                "docentes",
+                "{{docenteId}}",
+                "regeneracion"
+              ]
+            }
+          }
         }
       ]
     },
