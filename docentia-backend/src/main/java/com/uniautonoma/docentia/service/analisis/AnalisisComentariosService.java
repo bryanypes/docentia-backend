@@ -7,6 +7,7 @@ import com.uniautonoma.docentia.dto.AnalisisComentariosResponse.Referencia;
 import com.uniautonoma.docentia.dto.ComentariosEstudiantesResponse;
 import com.uniautonoma.docentia.dto.ComentariosEstudiantesResponse.Comentario;
 import com.uniautonoma.docentia.dto.ComentariosEstudiantesResponse.EtiquetaComentario;
+import com.uniautonoma.docentia.dto.ModelosAnalisisResponse;
 import com.uniautonoma.docentia.dto.ResumenComentariosResponse;
 import com.uniautonoma.docentia.dto.ResumenComentariosResponse.CriterioAgregado;
 import com.uniautonoma.docentia.dto.ResumenComentariosResponse.TemaAgregado;
@@ -64,6 +65,7 @@ public class AnalisisComentariosService {
   private final AnalisisComentariosProperties propiedades;
   private final UsoIaRepositorio usoRepositorio;
   private final AhorroIaProperties ahorro;
+  private final ModelosDisponibles modelos;
 
   public AnalisisComentariosService(
       DocenteService docenteService,
@@ -75,7 +77,9 @@ public class AnalisisComentariosService {
       LimitadorSolicitudes limitador,
       AnalisisComentariosProperties propiedades,
       UsoIaRepositorio usoRepositorio,
-      AhorroIaProperties ahorro) {
+      AhorroIaProperties ahorro,
+      ModelosDisponibles modelos) {
+    this.modelos = modelos;
     this.usoRepositorio = usoRepositorio;
     this.ahorro = ahorro;
     this.docenteService = docenteService;
@@ -323,6 +327,48 @@ public class AnalisisComentariosService {
         advertencias);
   }
 
+  /** Opciones de modelo para mostrar antes de pedir un análisis. */
+  public ModelosAnalisisResponse modelos(UsuarioSesion sesion) {
+    limitar(sesion);
+    boolean llm = modelos.hayExterno();
+    int total = ahorro.maxTokensEntrada() + ahorro.maxTokensSalida();
+    Long restantesHoy =
+        ahorro.presupuestoTokensDia() > 0
+            ? Math.max(
+                0, ahorro.presupuestoTokensDia() - usoRepositorio.tokensDelDia(ventanas.hoy()))
+            : null;
+    return new ModelosAnalisisResponse(
+        modelos.codigoPorDefecto(),
+        List.of(
+            new ModelosAnalisisResponse.Opcion(
+                "LOCAL",
+                "Modelo local por reglas",
+                true,
+                false,
+                "Lee y cuenta todos los comentarios sin salir del servidor. No consume tokens."),
+            new ModelosAnalisisResponse.Opcion(
+                "LLM",
+                "Modelo de lenguaje externo",
+                llm,
+                true,
+                llm
+                    ? "Redacta hallazgos y un resumen a partir de una muestra de hasta "
+                        + ahorro.maxComentariosLlm()
+                        + " comentarios anonimizados. Consume tokens del proveedor."
+                    : "No hay un modelo de lenguaje configurado en este ambiente.")),
+        llm,
+        llm ? modelos.nombreExterno() : null,
+        ahorro.maxComentariosLlm(),
+        ahorro.maxCaracteresComentario(),
+        new ModelosAnalisisResponse.Tokens(
+            ahorro.maxTokensEntrada(), ahorro.maxTokensSalida(), total),
+        restantesHoy,
+        "El modelo de lenguaje envía una muestra anonimizada a un proveedor externo y consume hasta "
+            + total
+            + " tokens por análisis nuevo. Si los comentarios no cambiaron, se reutiliza la"
+            + " respuesta guardada y no consume tokens.");
+  }
+
   /** Gasto agregado del proveedor externo en el periodo; nunca llama al proveedor. */
   public UsoIaResponse uso(Long idPeriodo, UsuarioSesion sesion) {
     limitar(sesion);
@@ -387,7 +433,7 @@ public class AnalisisComentariosService {
       case ERROR ->
           "PRESUPUESTO_AGOTADO".equals(motivo)
               ? new Estado("RECHAZADO_PRESUPUESTO", motivo, solicitud.getMensaje())
-              : new Estado("ERROR", null, solicitud.getMensaje());
+              : new Estado("ERROR", motivo, solicitud.getMensaje());
       case INSUFICIENTE -> {
         if ("SIN_COMENTARIOS".equals(motivo) || "TODOS_EXCLUIDOS".equals(motivo)) {
           yield new Estado("SIN_COMENTARIOS", motivo, solicitud.getMensaje());

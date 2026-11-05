@@ -61,6 +61,7 @@ public class AnalisisIaService {
   private final ResultadosAnalisisRepositorio resultados;
   private final AuditoriaService auditoria;
   private final AhorroIaProperties ahorro;
+  private final ModelosDisponibles modelos;
 
   public AnalisisIaService(
       SolicitudAnalisisRepository solicitudRepository,
@@ -74,8 +75,10 @@ public class AnalisisIaService {
       Anonimizador anonimizador,
       ResultadosAnalisisRepositorio resultados,
       AuditoriaService auditoria,
-      AhorroIaProperties ahorro) {
+      AhorroIaProperties ahorro,
+      ModelosDisponibles modelos) {
     this.ahorro = ahorro;
+    this.modelos = modelos;
     this.resultados = resultados;
     this.auditoria = auditoria;
     this.filtradoRepository = filtradoRepository;
@@ -153,6 +156,11 @@ public class AnalisisIaService {
             .orElseThrow(() -> new RecursoNoEncontradoException("Periodo académico no encontrado"));
     ventanaEtapaService.exigirEtapaAbierta(periodo, TipoEtapa.REVISION_HALLAZGOS);
     FuenteComentarios fuente = solicitud.fuenteOPorDefecto();
+    if (solicitud.pideLlm() && !modelos.hayExterno()) {
+      throw new ReglaNegocioException(
+          "No hay un modelo de lenguaje configurado en este ambiente (falta URL, modelo o clave)."
+              + " Usa el modelo local por reglas.");
+    }
     // Los comentarios del formulario solo se leen cuando ya nadie puede responder: así el momento
     // del análisis no permite asociar un comentario con quien acaba de enviar.
     if (fuente == FuenteComentarios.FORMULARIO
@@ -180,7 +188,7 @@ public class AnalisisIaService {
                 periodo,
                 usuarioRepository.getReferenceById(sesion.idUsuario()),
                 fuente,
-                solicitud.soloLocal(),
+                solicitud.modelo(),
                 motivoRegeneracion));
     auditoria.registrar(
         AccionAuditoria.SOLICITUD_ANALISIS, "SOLICITUD_ANALISIS", nueva.getIdSolicitud(), sesion);

@@ -56,7 +56,7 @@ public class SolicitudAnalisis {
   @Column(length = 30)
   private String motivo;
 
-  /** LOCAL fuerza el modelo por reglas; nulo usa el proveedor configurado. */
+  /** LOCAL o LLM según lo que se pidió; nulo usa el proveedor configurado por defecto. */
   @Column(length = 10, updatable = false)
   private String modeloSolicitado;
 
@@ -110,7 +110,7 @@ public class SolicitudAnalisis {
   }
 
   /**
-   * @param soloLocal fuerza el modelo local por reglas
+   * @param modeloPedido LOCAL, LLM o nulo para el configurado por defecto
    * @param motivoRegeneracion por qué se vuelve a generar; nulo si es la primera vez
    */
   public SolicitudAnalisis(
@@ -118,10 +118,10 @@ public class SolicitudAnalisis {
       PeriodoAcademico periodo,
       Usuario solicitante,
       FuenteComentarios fuente,
-      boolean soloLocal,
+      String modeloPedido,
       String motivoRegeneracion) {
     this(docente, periodo, solicitante, fuente);
-    this.modeloSolicitado = soloLocal ? "LOCAL" : null;
+    this.modeloSolicitado = modeloPedido;
     this.motivoRegeneracion = motivoRegeneracion;
   }
 
@@ -133,6 +133,14 @@ public class SolicitudAnalisis {
 
   public boolean esSoloLocal() {
     return "LOCAL".equals(modeloSolicitado);
+  }
+
+  public boolean pideLlm() {
+    return "LLM".equals(modeloSolicitado);
+  }
+
+  public String getModeloSolicitado() {
+    return modeloSolicitado;
   }
 
   public String getMotivoRegeneracion() {

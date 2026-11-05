@@ -299,6 +299,23 @@
               ]
             }
           }
+        },
+        {
+          "name": "GET /analisis-comentarios/modelos",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/analisis-comentarios/modelos",
+              "host": [
+                "{{baseUrl}}"
+              ],
+              "path": [
+                "analisis-comentarios",
+                "modelos"
+              ]
+            }
+          }
         }
       ]
     },
@@ -327,7 +344,7 @@
             },
             "body": {
               "mode": "raw",
-              "raw": "{\"docenteId\": {{docenteId}}, \"periodoId\": {{periodoId}}, \"fuente\": \"FORMULARIO\"}",
+              "raw": "{\"docenteId\": {{docenteId}}, \"periodoId\": {{periodoId}}, \"fuente\": \"FORMULARIO\", \"modelo\": \"LOCAL\"}",
               "options": {
                 "raw": {
                   "language": "json"

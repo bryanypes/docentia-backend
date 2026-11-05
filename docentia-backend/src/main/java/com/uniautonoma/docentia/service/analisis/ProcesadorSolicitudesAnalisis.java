@@ -87,6 +87,7 @@ public class ProcesadorSolicitudesAnalisis {
   private final AhorroIaProperties ahorro;
   private final UsoIaRepositorio uso;
   private final ModeloIA modeloLocal;
+  private final ModelosDisponibles modelos;
   private final InstruccionAnalisis instruccion;
   private final ModeloIA modelo;
   private final LectorRespuestaAnalisis lector;
@@ -106,6 +107,7 @@ public class ProcesadorSolicitudesAnalisis {
       VentanaEtapaService ventanas,
       AhorroIaProperties ahorro,
       UsoIaRepositorio uso,
+      ModelosDisponibles modelos,
       InstruccionAnalisis instruccion,
       ModeloIA modelo,
       LectorRespuestaAnalisis lector,
@@ -126,6 +128,7 @@ public class ProcesadorSolicitudesAnalisis {
     this.ahorro = ahorro;
     this.uso = uso;
     this.modeloLocal = new ModeloIALocal(analizador);
+    this.modelos = modelos;
     this.instruccion = instruccion;
     this.modelo = modelo;
     this.lector = lector;
@@ -237,7 +240,19 @@ public class ProcesadorSolicitudesAnalisis {
       avisar(solicitud, TipoNotificacion.ANALISIS_INSUFICIENTE);
       return Optional.empty();
     }
-    ModeloIA elegido = solicitud.esSoloLocal() ? modeloLocal : modelo;
+    ModeloIA elegido =
+        solicitud.esSoloLocal()
+            ? modeloLocal
+            : solicitud.pideLlm() ? modelos.externo().orElse(null) : modelo;
+    if (elegido == null) {
+      // Pidieron el modelo de lenguaje y ya no está configurado: no se cambia al local en silencio.
+      solicitud.marcarError(
+          "No hay un modelo de lenguaje configurado en este ambiente. Pide el análisis con el"
+              + " modelo local por reglas.",
+          "LLM_NO_DISPONIBLE");
+      avisar(solicitud, TipoNotificacion.ANALISIS_ERROR);
+      return Optional.empty();
+    }
     if ("REGLAS".equals(elegido.tipo())) {
       return Optional.of(
           new Preparado(
@@ -302,8 +317,8 @@ public class ProcesadorSolicitudesAnalisis {
       }
     }
     Muestra muestra = preparado.muestra();
-    String huella = huella(peticion);
-    String modeloConfigurado = nombreModelo();
+    String huella = huella(peticion, elegido);
+    String modeloConfigurado = nombreModelo(elegido);
     Optional<EnCache> enCache = uso.buscar(huella);
     if (enCache.isPresent()) {
       registrar(
@@ -389,9 +404,9 @@ public class ProcesadorSolicitudesAnalisis {
    * Huella de la llamada: proveedor, modelo, versión de la instrucción, topes y la entrada exacta
    * (ya anonimizada y ordenada por huella). Es un SHA-256: no permite reconstruir los comentarios.
    */
-  private String huella(PeticionAnalisis peticion) {
+  private String huella(PeticionAnalisis peticion, ModeloIA elegido) {
     return huella(
-        nombreModelo(),
+        nombreModelo(elegido),
         instruccion.version(),
         ahorro.maxComentariosLlm()
             + "|"
@@ -420,9 +435,14 @@ public class ProcesadorSolicitudesAnalisis {
     return PipelineAnalisis.hash(base.toString());
   }
 
-  private String nombreModelo() {
+  private String nombreModelo(ModeloIA elegido) {
     String nombre = propiedades.modelo();
-    return propiedades.proveedor() + ":" + (nombre == null || nombre.isBlank() ? "-" : nombre);
+    return proveedor(elegido) + ":" + (nombre == null || nombre.isBlank() ? "-" : nombre);
+  }
+
+  /** Con el local por defecto, el externo pedido por solicitud es chat-completions. */
+  private String proveedor(ModeloIA elegido) {
+    return modelos.esExternoAparte(elegido) ? "chat-completions" : propiedades.proveedor();
   }
 
   private boolean sinPresupuesto(Long idPeriodo, long estimado) {
@@ -447,8 +467,8 @@ public class ProcesadorSolicitudesAnalisis {
     uso.registrar(
         new Registro(
             preparado.idPeriodo(),
-            propiedades.proveedor(),
-            nombreModelo(),
+            proveedor(preparado.modelo()),
+            nombreModelo(preparado.modelo()),
             instruccion.version(),
             huella,
             muestra.disponibles(),
