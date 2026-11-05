@@ -82,6 +82,46 @@ FORMULARIO. Contrato: [api-comentarios-ia.md](api-comentarios-ia.md). Criterios:
 - **Programa y facultad.** Las respuestas por docente traen las dos.
 - **Tope.** Página de 50 como máximo y 60 consultas por usuario y minuto (429).
 
+## Ahorro de tokens
+
+Costos medidos y valores por defecto en [ANALISIS_IA_COSTOS.md](ANALISIS_IA_COSTOS.md).
+
+- **Medir primero.** Cada llamada al proveedor externo deja una fila en `uso_ia` (V35): tokens de
+  entrada, salida y caché que informa el proveedor (o estimados por caracteres, marcados), huella,
+  conteos, resultado y duración. Sin texto de comentarios ni personas. La fecha sale del reloj de la
+  aplicación, el mismo con que se mide el presupuesto diario.
+- **Híbrido.** El modelo local etiqueta y cuenta todo; el de lenguaje recibe solo una muestra y redacta
+  hallazgos y un resumen narrativo (`resultado.resumenNarrativo`). Los tokens casi no crecen con N.
+- **Muestreo estratificado determinista.** Estrato = descriptor y polaridad de la etiqueta principal
+  (o el sentimiento). Cada estrato tiene al menos un lugar; el resto se reparte en proporción. Dentro
+  del estrato manda la huella del texto, no la fecha ni el orden de llegada.
+- **Antes de muestrear** se quitan saludos y firmas y se descartan los casi duplicados y lo que queda
+  sin contenido.
+- **Citas por id.** La instrucción `analisis-v3` pide citar ids; el texto lo pone el sistema desde lo
+  enviado. Un id que no se envió no vale. El lector sigue aceptando el formato anterior
+  (`comentarioId` + `fragmento`), que usan los dobles de prueba de E1–E3.
+- **Los ids enviados son los mismos de antes** (posición en el formulario, id en el CSV), no un índice
+  nuevo: así las pruebas existentes y las citas guardadas siguen valiendo. En el formulario ya son
+  números cortos.
+- **Caché por huella** en `cache_respuestas_ia`. La huella incluye modelo, versión de la instrucción,
+  topes, temas y la entrada exacta. Con el modelo simulado de pruebas, la respuesta guardada trae
+  fragmentos anonimizados (formato anterior); con el proveedor real (formato compacto) solo trae ids.
+- **Concurrencia.** Una corrida por docente y periodo (índice único ya existente). Dos docentes con la
+  misma entrada en paralelo pueden llamar dos veces: es raro y la segunda guarda en caché sin error.
+- **Presupuesto.** Por día y por periodo; 0 lo apaga. Si no alcanza, la solicitud queda en ERROR con
+  `motivo: PRESUPUESTO_AGOTADO` y la consulta la muestra como `RECHAZADO_PRESUPUESTO`. No se cambia de
+  modelo solo: se pide con `"modelo": "LOCAL"`.
+- **Regenerar.** `POST /analisis-comentarios/docentes/{id}/regeneracion` con motivo (10 a 300
+  caracteres, se guarda en la solicitud) y enfriamiento de 60 minutos (429). El `POST` de E1 no cambia
+  ni tiene enfriamiento, para no romper el contrato; la caché y el presupuesto lo cubren igual.
+- **Ventana.** Las tendencias usan solo los agregados guardados de hasta 3 periodos anteriores
+  (por defecto 1); con varios se promedia el porcentaje de cada tema.
+- **Instrucción v3.** Más corta, esquema compacto (`h`, `t`, `x`, `c`, `r`), y conserva la defensa
+  contra inyección. Las solicitudes ya completadas conservan su versión.
+- **Errores del proveedor.** El registro guarda solo el código HTTP, no el cuerpo, que podría repetir
+  parte de la petición.
+- **Uso.** `GET /analisis-comentarios/uso` solo para vicerrectoría, desde `PoliticaComentarios`.
+
 ## Auditoría y avisos
 
 - **Auditoría.** Pedir un análisis registra `SOLICITUD_ANALISIS` con el id de la solicitud. Nunca el

@@ -64,6 +64,24 @@ flowchart LR
   V --> H[(hallazgos: pendientes de validación)]
 ```
 
+Con un proveedor externo:
+
+```mermaid
+flowchart LR
+  U[Comentarios útiles anonimizados] --> L[Modelo local: etiqueta y cuenta todos]
+  L --> MU[Muestra estratificada<br/>máx. 150, 300 caracteres, sin saludos ni casi duplicados]
+  MU --> HU[Huella SHA-256 de la entrada]
+  HU -- existe --> CA[(cache_respuestas_ia)]
+  HU -- no existe --> PR{Presupuesto}
+  PR -- no alcanza --> RZ[RECHAZADO_PRESUPUESTO<br/>ofrecer modelo local]
+  PR -- alcanza --> LLM[Modelo de lenguaje<br/>cita por id]
+  LLM --> CA
+  CA --> CI[Citas: el texto sale de lo enviado]
+  HU --> US[(uso_ia: tokens, sin texto)]
+```
+
+Las lecturas, el resumen y las tendencias salen de lo guardado y nunca llaman al proveedor.
+
 **Anonimato de la fuente FORMULARIO.** Los comentarios no se copian al enviarse. Se leen solo al
 analizar y solo cuando la recolección ya cerró, sin el UUID ni la asignación de la respuesta. La copia
 que queda no tiene fecha, secuencia ni id de respuesta, y su orden es el de la huella del texto: no hay

@@ -17,7 +17,7 @@
   "fuente" : "FORMULARIO",
   "idSolicitud" : 1,
   "version" : 1,
-  "generadoEn" : "2026-11-03T22:09:31.381451",
+  "generadoEn" : "2026-11-04T19:18:24.830275",
   "estadoHallazgos" : "PENDIENTE_VALIDACION",
   "resultado" : {
     "tipoModelo" : "REGLAS",
@@ -250,6 +250,19 @@
       "maximoPorLista" : 5,
       "umbralTendencia" : 10.0,
       "minimoRespuestas" : 5
-    }
+    },
+    "limitesAplicados" : {
+      "comentariosAnalizados" : 11,
+      "comentariosMuestreados" : 11,
+      "muestreado" : false,
+      "recortados" : 0,
+      "descartadosRelleno" : 0,
+      "maxComentariosModelo" : 150,
+      "maxCaracteresComentario" : 300,
+      "periodosReferencia" : [ ]
+    },
+    "desdeCache" : false,
+    "generadoEn" : "2026-11-04T19:18:26.286040500",
+    "resumenNarrativo" : null
   }
 }

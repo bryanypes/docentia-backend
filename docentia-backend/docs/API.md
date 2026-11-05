@@ -62,6 +62,8 @@ Contrato completo en [api-comentarios-ia.md](api-comentarios-ia.md).
 | `GET /analisis-comentarios/docentes/{docenteId}?periodo=` | Coordinador, vicerrector | Estado y resultado vigente; 404 fuera de alcance |
 | `GET /comentarios-estudiantes/docentes/{docenteId}?periodo=&criterio=&sentimiento=&page=&size=` | Coordinador, vicerrector | Comentarios anonimizados, máximo 50 por página |
 | `GET /analisis-comentarios/resumen?periodo=&programa=` | Coordinador, vicerrector | Agregado sin docentes; no disponible con menos de 3 |
+| `POST /analisis-comentarios/docentes/{docenteId}/regeneracion` | Coordinador, vicerrector | Con motivo; 429 durante el enfriamiento; pasa por la caché |
+| `GET /analisis-comentarios/uso?periodo=` | Vicerrector | Llamadas, caché, tokens y ahorro; sin texto |
 
 ## Errores
 
