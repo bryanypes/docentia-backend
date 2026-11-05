@@ -1,0 +1,255 @@
+{
+  "estado" : "COMPLETADO",
+  "motivo" : null,
+  "mensaje" : null,
+  "docenteId" : 1,
+  "nombreDocente" : "Ana María Ruiz",
+  "periodoId" : 1,
+  "nombrePeriodo" : "2026-2",
+  "programa" : {
+    "id" : 1,
+    "nombre" : "Ingeniería de Software"
+  },
+  "facultad" : {
+    "id" : 1,
+    "nombre" : "Ingeniería"
+  },
+  "fuente" : "FORMULARIO",
+  "idSolicitud" : 1,
+  "version" : 1,
+  "generadoEn" : "2026-11-03T22:09:31.381451",
+  "estadoHallazgos" : "PENDIENTE_VALIDACION",
+  "resultado" : {
+    "tipoModelo" : "REGLAS",
+    "versionModelo" : "reglas-1.0",
+    "versionLexicoOPrompt" : "lexico-2026.11-v1",
+    "nComentarios" : 11,
+    "nExcluidos" : {
+      "INSTRUCCION_SOSPECHOSA" : 1
+    },
+    "sentimientoGlobal" : {
+      "positivos" : 8,
+      "negativos" : 3,
+      "neutros" : 0,
+      "mixtos" : 0,
+      "indice" : 0.45
+    },
+    "temas" : [ {
+      "criterio" : "C2",
+      "descriptor" : "D05",
+      "nombre" : "Claridad al explicar ideas e instrucciones",
+      "polaridad" : "POSITIVO",
+      "frecuencia" : 4,
+      "porcentaje" : 36.36,
+      "intensidad" : 2.8,
+      "relevancia" : 15.2,
+      "recurrente" : true,
+      "citas" : [ {
+        "comentarioId" : 5,
+        "fragmento" : "Sus explicaciones son excelentes y muy claras"
+      }, {
+        "comentarioId" : 6,
+        "fragmento" : "Explica muy bien los temas y usa ejemplos claros"
+      } ]
+    }, {
+      "criterio" : "C4",
+      "descriptor" : "D09",
+      "nombre" : "Trato respetuoso y cordial",
+      "polaridad" : "POSITIVO",
+      "frecuencia" : 2,
+      "porcentaje" : 18.18,
+      "intensidad" : 2.65,
+      "relevancia" : 7.3,
+      "recurrente" : false,
+      "citas" : [ {
+        "comentarioId" : 3,
+        "fragmento" : "Es muy puntual y respetuoso con todos"
+      }, {
+        "comentarioId" : 11,
+        "fragmento" : "Es respetuoso y escucha a los estudiantes"
+      } ]
+    }, {
+      "criterio" : "C3",
+      "descriptor" : "D07",
+      "nombre" : "Retroalimentación sobre los resultados",
+      "polaridad" : "NEGATIVO",
+      "frecuencia" : 3,
+      "porcentaje" : 27.27,
+      "intensidad" : 1.2,
+      "relevancia" : 6.6,
+      "recurrente" : true,
+      "citas" : [ {
+        "comentarioId" : 1,
+        "fragmento" : "Demora mucho la retroalimentación de los parciales"
+      }, {
+        "comentarioId" : 10,
+        "fragmento" : "Las notas se demoran mucho en salir"
+      } ]
+    }, {
+      "criterio" : "C5",
+      "descriptor" : "D12",
+      "nombre" : "Uso de metodologías, herramientas y tecnologías",
+      "polaridad" : "POSITIVO",
+      "frecuencia" : 1,
+      "porcentaje" : 9.09,
+      "intensidad" : 3.1,
+      "relevancia" : 4.1,
+      "recurrente" : false,
+      "citas" : [ {
+        "comentarioId" : 6,
+        "fragmento" : "Explica muy bien los temas y usa ejemplos claros"
+      } ]
+    }, {
+      "criterio" : "C4",
+      "descriptor" : "D10",
+      "nombre" : "Atención a las necesidades de los estudiantes",
+      "polaridad" : "POSITIVO",
+      "frecuencia" : 1,
+      "porcentaje" : 9.09,
+      "intensidad" : 2.3,
+      "relevancia" : 3.3,
+      "recurrente" : false,
+      "citas" : [ {
+        "comentarioId" : 11,
+        "fragmento" : "Es respetuoso y escucha a los estudiantes"
+      } ]
+    }, {
+      "criterio" : "C3",
+      "descriptor" : "D06",
+      "nombre" : "Evaluaciones alineadas con lo enseñado",
+      "polaridad" : "NEGATIVO",
+      "frecuencia" : 1,
+      "porcentaje" : 9.09,
+      "intensidad" : 1.2,
+      "relevancia" : 2.2,
+      "recurrente" : false,
+      "citas" : [ {
+        "comentarioId" : 1,
+        "fragmento" : "Demora mucho la retroalimentación de los parciales"
+      } ]
+    } ],
+    "aspectos" : {
+      "fortalezas" : [ {
+        "criterio" : "C2",
+        "descriptor" : "D05",
+        "nombre" : "Claridad al explicar ideas e instrucciones",
+        "polaridad" : "POSITIVO",
+        "frecuencia" : 4,
+        "porcentaje" : 36.36,
+        "intensidad" : 2.8,
+        "relevancia" : 15.2,
+        "recurrente" : true,
+        "citas" : [ {
+          "comentarioId" : 5,
+          "fragmento" : "Sus explicaciones son excelentes y muy claras"
+        }, {
+          "comentarioId" : 6,
+          "fragmento" : "Explica muy bien los temas y usa ejemplos claros"
+        } ]
+      } ],
+      "oportunidades" : [ {
+        "criterio" : "C3",
+        "descriptor" : "D07",
+        "nombre" : "Retroalimentación sobre los resultados",
+        "polaridad" : "NEGATIVO",
+        "frecuencia" : 3,
+        "porcentaje" : 27.27,
+        "intensidad" : 1.2,
+        "relevancia" : 6.6,
+        "recurrente" : true,
+        "citas" : [ {
+          "comentarioId" : 1,
+          "fragmento" : "Demora mucho la retroalimentación de los parciales"
+        }, {
+          "comentarioId" : 10,
+          "fragmento" : "Las notas se demoran mucho en salir"
+        } ]
+      } ]
+    },
+    "tendencias" : [ {
+      "criterio" : "C2",
+      "descriptor" : "D05",
+      "polaridad" : "POSITIVO",
+      "porcentajeAnterior" : null,
+      "porcentajeActual" : 36.36,
+      "cambio" : "SIN_REFERENCIA"
+    }, {
+      "criterio" : "C4",
+      "descriptor" : "D09",
+      "polaridad" : "POSITIVO",
+      "porcentajeAnterior" : null,
+      "porcentajeActual" : 18.18,
+      "cambio" : "SIN_REFERENCIA"
+    }, {
+      "criterio" : "C3",
+      "descriptor" : "D07",
+      "polaridad" : "NEGATIVO",
+      "porcentajeAnterior" : null,
+      "porcentajeActual" : 27.27,
+      "cambio" : "SIN_REFERENCIA"
+    }, {
+      "criterio" : "C5",
+      "descriptor" : "D12",
+      "polaridad" : "POSITIVO",
+      "porcentajeAnterior" : null,
+      "porcentajeActual" : 9.09,
+      "cambio" : "SIN_REFERENCIA"
+    }, {
+      "criterio" : "C4",
+      "descriptor" : "D10",
+      "polaridad" : "POSITIVO",
+      "porcentajeAnterior" : null,
+      "porcentajeActual" : 9.09,
+      "cambio" : "SIN_REFERENCIA"
+    }, {
+      "criterio" : "C3",
+      "descriptor" : "D06",
+      "polaridad" : "NEGATIVO",
+      "porcentajeAnterior" : null,
+      "porcentajeActual" : 9.09,
+      "cambio" : "SIN_REFERENCIA"
+    } ],
+    "advertencias" : [ {
+      "tipo" : "INSTRUCCION_SOSPECHOSA",
+      "cantidad" : 1,
+      "mensaje" : "Hay comentarios que intentan dar órdenes al modelo; se excluyeron sin analizarlos."
+    } ],
+    "criterios" : [ {
+      "codigo" : "C2",
+      "nombre" : "Capacidad para ejecutar procesos de docencia",
+      "positivos" : 4,
+      "negativos" : 0,
+      "neutros" : 0,
+      "balance" : 1.0
+    }, {
+      "codigo" : "C3",
+      "nombre" : "Capacidad para evaluar procesos de docencia",
+      "positivos" : 0,
+      "negativos" : 4,
+      "neutros" : 0,
+      "balance" : -1.0
+    }, {
+      "codigo" : "C4",
+      "nombre" : "Sensibilidad social",
+      "positivos" : 3,
+      "negativos" : 0,
+      "neutros" : 0,
+      "balance" : 1.0
+    }, {
+      "codigo" : "C5",
+      "nombre" : "Creatividad, dinamismo e innovación",
+      "positivos" : 1,
+      "negativos" : 0,
+      "neutros" : 0,
+      "balance" : 1.0
+    } ],
+    "parametros" : {
+      "umbralRecurrencia" : 3,
+      "porcentajeRecurrencia" : 0.2,
+      "minimoRecurrencia" : 3,
+      "maximoPorLista" : 5,
+      "umbralTendencia" : 10.0,
+      "minimoRespuestas" : 5
+    }
+  }
+}
