@@ -14,6 +14,7 @@ import { PanelSeguimientoPlan } from '../../actas/components/PanelSeguimientoPla
 import { useSesion } from '../../auth/sesionContext.js'
 import { PanelCorrecciones } from '../../calificaciones/components/PanelCorrecciones.jsx'
 import { AvisoEtapaCerrada } from '../../periodos/components/AvisoEtapaCerrada.jsx'
+import { PanelProceso } from '../../proceso/components/PanelProceso.jsx'
 import {
   DatosDocente,
   PanelCompromisos,
@@ -137,6 +138,7 @@ export default function ExpedienteDocente() {
           <PanelCompromisos compromisos={compromisosVigentes} />
         </div>
 
+        {periodo && <PanelProceso idDocente={docente.idDocente} />}
         <PanelActa idDocente={docente.idDocente} />
         <PanelSeguimientoPlan idDocente={docente.idDocente} puedeMarcar={usuario.rol === ROLES.COORDINADOR} />
         <PanelCorrecciones idDocente={docente.idDocente} />

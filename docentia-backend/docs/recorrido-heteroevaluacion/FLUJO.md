@@ -30,7 +30,7 @@ Caso de esta demo (el que pide el contrato):
 
 Correo: `karen.mancilla@uniautonoma.edu.co`
 
-En Docker no aparecen atajos de cuentas: hay que escribir el correo.
+El login no tiene atajos de cuentas: hay que escribir el correo.
 
 ![Login de estudiante](imagenes/01-login-estudiante.png)
 

@@ -81,7 +81,7 @@ export default function Auditoria() {
         {datos?.contenido.length > 0 && (
           <Panel titulo={`${datos.totalElementos} registros`} icono={ScrollText}>
             <div className="acciones__tabla">
-              <table className="tabla">
+              <table className="tabla tabla--apilable">
                 <thead>
                   <tr>
                     <th scope="col">Fecha</th>
@@ -96,13 +96,13 @@ export default function Auditoria() {
                   {datos.contenido.map((r) => (
                     <tr key={r.id}>
                       <td>{formatearFechaHora(r.fecha)}</td>
-                      <td>{r.correo}</td>
-                      <td>{ACCIONES[r.accion] ?? r.accion}</td>
-                      <td>
+                      <td data-etiqueta="Usuario">{r.correo}</td>
+                      <td data-etiqueta="Acción">{ACCIONES[r.accion] ?? r.accion}</td>
+                      <td data-etiqueta="Entidad">
                         {r.entidad} {r.entidadId}
                       </td>
-                      <td>{r.ip}</td>
-                      <td>{r.resultado === 'EXITO' ? 'Éxito' : 'Fallo'}</td>
+                      <td data-etiqueta="IP">{r.ip}</td>
+                      <td data-etiqueta="Resultado">{r.resultado === 'EXITO' ? 'Éxito' : 'Fallo'}</td>
                     </tr>
                   ))}
                 </tbody>

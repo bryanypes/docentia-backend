@@ -42,3 +42,13 @@ export function reservarFranja(idFranja) {
 export function obtenerMiCita() {
   return api.get('/citas/mia')
 }
+
+/** La coordinación cancela una cita reservada; la franja queda libre. */
+export function cancelarCita(idCita) {
+  return api.post(`/citas/${encodeURIComponent(idCita)}/cancelacion`)
+}
+
+/** La coordinación mueve una cita a otra de sus franjas libres. */
+export function reprogramarCita(idCita, idFranja) {
+  return api.post(`/citas/${encodeURIComponent(idCita)}/reprogramacion`, { idFranja })
+}

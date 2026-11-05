@@ -1,4 +1,5 @@
-import { Award, ClipboardList, RefreshCw, UserCheck } from 'lucide-react'
+import { ArrowRight, Award, ChartColumnBig, ClipboardList, RefreshCw, UserCheck } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { useCallback, useMemo, useState } from 'react'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
 import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
@@ -14,12 +15,7 @@ import { listarSeguimientoDocentes } from '../../docentes/services/docentesServi
 import { listarFacultades } from '../../facultades/services/facultadesService.js'
 import { PanelEtapas } from '../../periodos/components/PanelEtapas.jsx'
 import { listarPeriodos } from '../../periodos/services/periodosService.js'
-import {
-  PanelAtencion,
-  PanelAvance,
-  PanelDistribucion,
-  PanelPorGrupo,
-} from '../components/PanelesSeguimiento.jsx'
+import { PanelAtencion, PanelAvance } from '../components/PanelesSeguimiento.jsx'
 import { AsistenteResumen } from '../components/AsistenteResumen.jsx'
 import { TarjetaKpi, TarjetaPromedio } from '../components/TarjetaKpi.jsx'
 import { LineaTiempo } from '../../periodos/components/LineaTiempo.jsx'
@@ -165,7 +161,13 @@ export default function Inicio() {
           Seguimiento del periodo activo{seguimiento.datos?.periodo ? ` (${seguimiento.datos.periodo.nombre})` : ''}
         </h2>
         {viendoActivo ? (
-          <Seguimiento seguimiento={seguimiento} analisis={analisis} agrupacion={agrupacion} miFuente={miFuente} />
+          <Seguimiento
+            seguimiento={seguimiento}
+            configuracion={configuracion}
+            analisis={analisis}
+            agrupacion={agrupacion}
+            miFuente={miFuente}
+          />
         ) : (
           <Aviso tipo="info" titulo="El seguimiento se calcula solo para el periodo activo">
             El avance, los niveles y los docentes que requieren seguimiento corresponden a{' '}
@@ -271,13 +273,19 @@ function Indicadores({ kpis, esVicerrector, mostrarCompletos }) {
   )
 }
 
-function Seguimiento({ seguimiento, analisis, agrupacion, miFuente }) {
-
+function Seguimiento({ seguimiento, configuracion, analisis, agrupacion, miFuente }) {
   if (seguimiento.cargando) return <Cargando texto="Cargando el seguimiento" bloques={2} />
-  if (seguimiento.error) {
+  const error = seguimiento.error ?? configuracion.error
+  if (error) {
     return (
-      <EstadoVista tipo="error" titulo="No fue posible cargar el seguimiento" mensaje={seguimiento.error.message}>
-        <Boton icono={RefreshCw} onClick={seguimiento.recargar}>
+      <EstadoVista tipo="error" titulo="No fue posible cargar el seguimiento" mensaje={error.message}>
+        <Boton
+          icono={RefreshCw}
+          onClick={() => {
+            seguimiento.recargar()
+            configuracion.recargar()
+          }}
+        >
           Intentar de nuevo
         </Boton>
       </EstadoVista>
@@ -286,6 +294,8 @@ function Seguimiento({ seguimiento, analisis, agrupacion, miFuente }) {
   if (!seguimiento.datos?.periodo) {
     return <EstadoVista titulo="No hay un periodo académico activo" mensaje="Cuando la vicerrectoría active uno, verás aquí el avance." />
   }
+  // El seguimiento puede llegar antes que la configuración (el umbral); mientras tanto, cargando.
+  if (!analisis) return <Cargando texto="Cargando el seguimiento" bloques={2} />
   if (analisis.total === 0) {
     return <EstadoVista titulo="No hay docentes en este alcance" mensaje="Cuando se registren docentes activos aparecerán aquí." />
   }
@@ -294,13 +304,21 @@ function Seguimiento({ seguimiento, analisis, agrupacion, miFuente }) {
     <>
       <div className="inicio__rejilla">
         <PanelAvance analisis={analisis} miFuente={miFuente} periodo={seguimiento.datos.periodo} />
-        <PanelDistribucion analisis={analisis} />
-      </div>
-      {/* Con un solo grupo, su promedio es el mismo promedio general: no se repite */}
-      <div className="inicio__rejilla">
         <PanelAtencion analisis={analisis} />
-        {analisis.porGrupo.length > 1 && <PanelPorGrupo analisis={analisis} agrupacion={agrupacion} />}
       </div>
+      <Link to="/estadisticas" className="inicio__estadisticas">
+        <span className="inicio__estadisticas-icono" aria-hidden="true">
+          <ChartColumnBig size={22} />
+        </span>
+        <span>
+          <strong>Ver todas las estadísticas</strong>
+          <span>
+            Niveles de desempeño, avance del proceso, promedios por {agrupacion}, respuesta de estudiantes y actas,
+            con filtros que actualizan todo a la vez.
+          </span>
+        </span>
+        <ArrowRight size={18} aria-hidden="true" />
+      </Link>
     </>
   )
 }
