@@ -4,7 +4,9 @@ import com.uniautonoma.docentia.config.IaProperties;
 import com.uniautonoma.docentia.dto.ComentarioFiltradoResponse;
 import com.uniautonoma.docentia.dto.SolicitudAnalisisRequest;
 import com.uniautonoma.docentia.dto.SolicitudAnalisisResponse;
+import com.uniautonoma.docentia.entity.AccionAuditoria;
 import com.uniautonoma.docentia.entity.EstadoSolicitudAnalisis;
+import com.uniautonoma.docentia.entity.FuenteComentarios;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.SolicitudAnalisis;
 import com.uniautonoma.docentia.entity.TipoEtapa;
@@ -18,6 +20,7 @@ import com.uniautonoma.docentia.repository.PeriodoAcademicoRepository;
 import com.uniautonoma.docentia.repository.SolicitudAnalisisRepository;
 import com.uniautonoma.docentia.repository.UsuarioRepository;
 import com.uniautonoma.docentia.security.UsuarioSesion;
+import com.uniautonoma.docentia.service.AuditoriaService;
 import com.uniautonoma.docentia.service.DocenteService;
 import com.uniautonoma.docentia.service.VentanaEtapaService;
 import java.util.EnumSet;
@@ -51,6 +54,8 @@ public class AnalisisIaService {
   private final ComentarioFiltradoRepository filtradoRepository;
   private final ProveedorComentarios proveedorComentarios;
   private final Anonimizador anonimizador;
+  private final ResultadosAnalisisRepositorio resultados;
+  private final AuditoriaService auditoria;
 
   public AnalisisIaService(
       SolicitudAnalisisRepository solicitudRepository,
@@ -61,7 +66,11 @@ public class AnalisisIaService {
       IaProperties propiedades,
       ComentarioFiltradoRepository filtradoRepository,
       ProveedorComentarios proveedorComentarios,
-      Anonimizador anonimizador) {
+      Anonimizador anonimizador,
+      ResultadosAnalisisRepositorio resultados,
+      AuditoriaService auditoria) {
+    this.resultados = resultados;
+    this.auditoria = auditoria;
     this.filtradoRepository = filtradoRepository;
     this.proveedorComentarios = proveedorComentarios;
     this.anonimizador = anonimizador;
@@ -97,6 +106,14 @@ public class AnalisisIaService {
             .findById(solicitud.periodoId())
             .orElseThrow(() -> new RecursoNoEncontradoException("Periodo académico no encontrado"));
     ventanaEtapaService.exigirEtapaAbierta(periodo, TipoEtapa.REVISION_HALLAZGOS);
+    FuenteComentarios fuente = solicitud.fuenteOPorDefecto();
+    // Los comentarios del formulario solo se leen cuando ya nadie puede responder: así el momento
+    // del análisis no permite asociar un comentario con quien acaba de enviar.
+    if (fuente == FuenteComentarios.FORMULARIO
+        && !ventanaEtapaService.haTerminado(periodo, TipoEtapa.RECOLECCION_CALIFICACIONES)) {
+      throw new ReglaNegocioException(
+          "Los comentarios del formulario se pueden analizar cuando cierre la recolección");
+    }
     solicitudRepository
         .findFirstByDocenteIdUsuarioAndPeriodoIdPeriodoAndEstadoIn(
             docente.getIdUsuario(), periodo.getIdPeriodo(), EN_CURSO)
@@ -113,7 +130,9 @@ public class AnalisisIaService {
     SolicitudAnalisis nueva =
         solicitudRepository.saveAndFlush(
             new SolicitudAnalisis(
-                docente, periodo, usuarioRepository.getReferenceById(sesion.idUsuario())));
+                docente, periodo, usuarioRepository.getReferenceById(sesion.idUsuario()), fuente));
+    auditoria.registrar(
+        AccionAuditoria.SOLICITUD_ANALISIS, "SOLICITUD_ANALISIS", nueva.getIdSolicitud(), sesion);
     return SolicitudAnalisisResponse.desde(nueva);
   }
 
@@ -137,6 +156,10 @@ public class AnalisisIaService {
    * no expone nada.
    */
   private Map<Long, String> comentariosEnviados(SolicitudAnalisis solicitud) {
+    var guardado = resultados.porSolicitud(solicitud.getIdSolicitud());
+    if (guardado.isPresent()) {
+      return resultados.textosPorCita(guardado.get().id());
+    }
     Set<Long> filtrados =
         new HashSet<>(filtradoRepository.idsFiltrados(solicitud.getIdSolicitud()));
     Map<Long, String> textos = new HashMap<>();
