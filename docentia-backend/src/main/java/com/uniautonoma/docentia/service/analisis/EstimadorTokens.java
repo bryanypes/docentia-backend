@@ -1,13 +1,14 @@
 package com.uniautonoma.docentia.service.analisis;
 
 /**
- * Estimación de tokens por caracteres, para topes y para cuando el proveedor no informa el uso. En
- * español con tokenizadores comunes rinde entre 3 y 4 caracteres por token; se usa 3,5 para no
- * quedarse corto. Es una aproximación: el número real lo da el proveedor.
+ * Estimación de tokens por caracteres, para topes y para cuando el proveedor no informa el uso. Se
+ * calibró con el proveedor probado: los comentarios en español y el JSON dieron unos 2,3 caracteres
+ * por token (ver docs/ANALISIS_IA_COSTOS.md). Es una aproximación: el número real lo da el
+ * proveedor.
  */
 public final class EstimadorTokens {
 
-  static final double CARACTERES_POR_TOKEN = 3.5;
+  static final double CARACTERES_POR_TOKEN = 2.3;
 
   private EstimadorTokens() {}
 
