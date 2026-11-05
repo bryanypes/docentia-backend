@@ -2,6 +2,7 @@ package com.uniautonoma.docentia.controller;
 
 import com.uniautonoma.docentia.dto.AnalisisComentariosResponse;
 import com.uniautonoma.docentia.dto.ComentariosEstudiantesResponse;
+import com.uniautonoma.docentia.dto.ModelosAnalisisResponse;
 import com.uniautonoma.docentia.dto.RegeneracionAnalisisRequest;
 import com.uniautonoma.docentia.dto.ResumenComentariosResponse;
 import com.uniautonoma.docentia.dto.SolicitudAnalisisResponse;
@@ -50,6 +51,13 @@ public class AnalisisComentariosController {
       @Valid @RequestBody RegeneracionAnalisisRequest pedido,
       @AuthenticationPrincipal UsuarioSesion sesion) {
     return analisisIaService.regenerar(docenteId, pedido, sesion);
+  }
+
+  /** Modelos que se pueden elegir al pedir un análisis y cuánto consume el externo. */
+  @GetMapping("/analisis-comentarios/modelos")
+  @PreAuthorize("@politicaComentarios.puedeRegenerar(authentication)")
+  public ModelosAnalisisResponse modelos(@AuthenticationPrincipal UsuarioSesion sesion) {
+    return servicio.modelos(sesion);
   }
 
   /** Gasto del proveedor externo en el periodo. */

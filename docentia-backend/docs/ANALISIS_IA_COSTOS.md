@@ -89,7 +89,12 @@ cuando el proveedor lo informa.
 | Banco: antes y después para N = 50, 200 y 1.000 | 6 | 145.381 |
 | Diagnóstico de la salida cortada (N = 50, tope 1.500) | 1 | 5.680 |
 | Comprobación con tope 4.000 (N = 50) | 1 | 6.454 |
-| **Total** | **8** | **157.515** |
+| Verificación con la muestra de 150 (de 1.000) y tope 4.000 | 1 | 12.343 |
+| **Total** | **9** | **169.858** |
+
+La verificación con 150 comentarios llegó completa (`finish_reason: stop`): 10.307 tokens de entrada,
+2.036 de salida, 10 hallazgos (5 fortalezas y 5 oportunidades) con 38 citas, todas de comentarios
+enviados, y un resumen de tres frases. Con 4.000 de tope sobra margen.
 
 ## Recomendación operativa
 

@@ -18,9 +18,11 @@ estudiante y cualquier otro rol reciben 403. Un docente de otra facultad, o inex
 | Campo | Valores | Notas |
 |-------|---------|-------|
 | `fuente` | `CSV`, `FORMULARIO` | Opcional; sin él es `CSV`, como antes |
-| `modelo` | `LOCAL` | Opcional; usa el modelo por reglas aunque haya proveedor externo (por ejemplo, sin presupuesto) |
+| `modelo` | `LOCAL`, `LLM` | Opcional. `LOCAL`: reglas, no consume tokens. `LLM`: modelo de lenguaje externo, consume tokens. Sin él se usa el configurado por defecto |
 
-Respuestas: 202 en cola. 409 si ya hay una en curso, si la revisión de hallazgos no está abierta o, con
+Respuestas: 202 en cola. 400 si `modelo` no es `LOCAL` ni `LLM`. 409 si se pide `LLM` y el
+ambiente no tiene un modelo de lenguaje configurado (nunca se cambia al local por su cuenta), si ya hay
+una en curso, si la revisión de hallazgos no está abierta o, con
 `FORMULARIO`, si la recolección sigue abierta. La respuesta de la solicitud trae además `fuente` y
 `motivo`.
 
@@ -54,6 +56,7 @@ Respuestas: 202 en cola. 409 si ya hay una en curso, si la revisión de hallazgo
 | `ERROR` | null | `mensaje` y opción de volver a pedirlo | [analisis-error.json](ejemplos/ia/analisis-error.json) |
 | `SIN_COMENTARIOS` | `SIN_COMENTARIOS` o `TODOS_EXCLUIDOS` | No hubo comentarios útiles | [analisis-sin-comentarios.json](ejemplos/ia/analisis-sin-comentarios.json) |
 | `NO_DISPONIBLE_AUN` | `SIN_SOLICITAR` o `VENTANA_ABIERTA` | Aún no se pidió, o la recolección sigue abierta | [analisis-no-disponible-aun.json](ejemplos/ia/analisis-no-disponible-aun.json) |
+| `ERROR` | `LLM_NO_DISPONIBLE` | Se pidió el modelo de lenguaje y no está configurado; ofrecer el local | — |
 | `RECHAZADO_PRESUPUESTO` | `PRESUPUESTO_AGOTADO` | `mensaje` y botón "Analizar con el modelo local" (`modelo: LOCAL`) | — |
 
 ### `resultado`
@@ -116,6 +119,38 @@ Campos: `disponible, motivo, periodoId, programa, docentesConAnalisis, minimoDoc
 nExcluidos, sentimientoGlobal{positivos, negativos, neutros, mixtos}, temas[{criterio, descriptor,
 nombre, polaridad, frecuencia, porcentaje, docentes}], criterios[{codigo, nombre, positivos, negativos,
 neutros}], advertencias{tipo: cantidad}`. Ejemplo: [resumen.json](ejemplos/ia/resumen.json).
+
+## Elegir el modelo
+
+`GET /analisis-comentarios/modelos` — coordinador y vicerrector. Para mostrar las opciones antes de
+confirmar el pedido.
+
+```json
+{
+  "porDefecto": "LOCAL",
+  "opciones": [
+    {"codigo": "LOCAL", "nombre": "Modelo local por reglas", "disponible": true, "consumeTokens": false, "descripcion": "..."},
+    {"codigo": "LLM", "nombre": "Modelo de lenguaje externo", "disponible": true, "consumeTokens": true, "descripcion": "..."}
+  ],
+  "llmDisponible": true,
+  "modeloLlm": "nombre-del-modelo",
+  "maxComentariosLlm": 150,
+  "maxCaracteresComentario": 300,
+  "tokensPorAnalisis": {"entradaMaxima": 16000, "salidaMaxima": 4000, "totalMaximo": 20000},
+  "tokensRestantesHoy": 500000,
+  "advertencia": "El modelo de lenguaje envía una muestra anonimizada a un proveedor externo y consume hasta 20000 tokens por análisis nuevo. ..."
+}
+```
+
+- Mostrar `advertencia` y `tokensPorAnalisis.totalMaximo` antes de confirmar `LLM`. No hay cifras en
+  dinero.
+- Si `llmDisponible` es falso, la opción `LLM` va deshabilitada con su `descripcion`.
+- `tokensRestantesHoy` es nulo si no hay presupuesto diario.
+- Medido con 150 comentarios: unos 10.300 tokens de entrada y 2.000 de salida (ver
+  [ANALISIS_IA_COSTOS.md](ANALISIS_IA_COSTOS.md)). Una respuesta desde la caché no consume nada.
+- Elegir `LLM` respeta la política de roles, el presupuesto y la caché igual que el modelo por
+  defecto. Si se pidió `LLM` y el proveedor deja de estar configurado antes de procesar, la solicitud
+  queda en `ERROR` con `motivo: LLM_NO_DISPONIBLE`.
 
 ## Regenerar
 
