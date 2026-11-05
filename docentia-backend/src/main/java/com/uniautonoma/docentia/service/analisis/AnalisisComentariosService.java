@@ -1,5 +1,6 @@
 package com.uniautonoma.docentia.service.analisis;
 
+import com.uniautonoma.docentia.config.AhorroIaProperties;
 import com.uniautonoma.docentia.config.AnalisisComentariosProperties;
 import com.uniautonoma.docentia.dto.AnalisisComentariosResponse;
 import com.uniautonoma.docentia.dto.AnalisisComentariosResponse.Referencia;
@@ -9,6 +10,7 @@ import com.uniautonoma.docentia.dto.ComentariosEstudiantesResponse.EtiquetaComen
 import com.uniautonoma.docentia.dto.ResumenComentariosResponse;
 import com.uniautonoma.docentia.dto.ResumenComentariosResponse.CriterioAgregado;
 import com.uniautonoma.docentia.dto.ResumenComentariosResponse.TemaAgregado;
+import com.uniautonoma.docentia.dto.UsoIaResponse;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.Programa;
 import com.uniautonoma.docentia.entity.SolicitudAnalisis;
@@ -60,6 +62,8 @@ public class AnalisisComentariosService {
   private final VentanaEtapaService ventanas;
   private final LimitadorSolicitudes limitador;
   private final AnalisisComentariosProperties propiedades;
+  private final UsoIaRepositorio usoRepositorio;
+  private final AhorroIaProperties ahorro;
 
   public AnalisisComentariosService(
       DocenteService docenteService,
@@ -69,7 +73,11 @@ public class AnalisisComentariosService {
       ResultadosAnalisisRepositorio resultados,
       VentanaEtapaService ventanas,
       LimitadorSolicitudes limitador,
-      AnalisisComentariosProperties propiedades) {
+      AnalisisComentariosProperties propiedades,
+      UsoIaRepositorio usoRepositorio,
+      AhorroIaProperties ahorro) {
+    this.usoRepositorio = usoRepositorio;
+    this.ahorro = ahorro;
     this.docenteService = docenteService;
     this.periodoRepository = periodoRepository;
     this.programaRepository = programaRepository;
@@ -315,6 +323,49 @@ public class AnalisisComentariosService {
         advertencias);
   }
 
+  /** Gasto agregado del proveedor externo en el periodo; nunca llama al proveedor. */
+  public UsoIaResponse uso(Long idPeriodo, UsuarioSesion sesion) {
+    limitar(sesion);
+    periodo(idPeriodo);
+    UsoIaRepositorio.Agregado a = usoRepositorio.agregado(idPeriodo);
+    long gastados = a.tokensEntrada() + a.tokensSalida();
+    double ahorroCache =
+        gastados + a.tokensAhorradosCache() == 0
+            ? 0
+            : redondear(100.0 * a.tokensAhorradosCache() / (gastados + a.tokensAhorradosCache()));
+    double ahorroMuestreo =
+        a.tokensEntradaSinTopes() == 0
+            ? 0
+            : redondear(
+                100.0
+                    * Math.max(0, a.tokensEntradaSinTopes() - a.tokensEntradaConTopes())
+                    / a.tokensEntradaSinTopes());
+    Double costo =
+        ahorro.precioMillonTokensEntrada() == null || ahorro.precioMillonTokensSalida() == null
+            ? null
+            : redondear(
+                a.tokensEntrada() / 1_000_000.0 * ahorro.precioMillonTokensEntrada()
+                    + a.tokensSalida() / 1_000_000.0 * ahorro.precioMillonTokensSalida());
+    return new UsoIaResponse(
+        idPeriodo,
+        a.llamadas(),
+        a.aciertosCache(),
+        a.rechazados(),
+        a.errores(),
+        a.tokensEntrada(),
+        a.tokensSalida(),
+        a.tokensCache(),
+        a.tokensAhorradosCache(),
+        ahorroCache,
+        ahorroMuestreo,
+        a.estimados(),
+        costo);
+  }
+
+  private static double redondear(double valor) {
+    return Math.round(valor * 100) / 100.0;
+  }
+
   private record Estado(String codigo, String motivo, String mensaje) {}
 
   private Estado estado(Optional<SolicitudAnalisis> ultima, PeriodoAcademico periodo) {
@@ -333,7 +384,10 @@ public class AnalisisComentariosService {
       case EN_COLA -> new Estado("EN_COLA", null, "El análisis está en cola.");
       case EN_PROCESO -> new Estado("EN_PROCESO", null, "El análisis se está generando.");
       case COMPLETADO -> new Estado("COMPLETADO", null, null);
-      case ERROR -> new Estado("ERROR", null, solicitud.getMensaje());
+      case ERROR ->
+          "PRESUPUESTO_AGOTADO".equals(motivo)
+              ? new Estado("RECHAZADO_PRESUPUESTO", motivo, solicitud.getMensaje())
+              : new Estado("ERROR", null, solicitud.getMensaje());
       case INSUFICIENTE -> {
         if ("SIN_COMENTARIOS".equals(motivo) || "TODOS_EXCLUIDOS".equals(motivo)) {
           yield new Estado("SIN_COMENTARIOS", motivo, solicitud.getMensaje());
