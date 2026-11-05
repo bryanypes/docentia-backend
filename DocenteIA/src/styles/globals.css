@@ -49,6 +49,9 @@ textarea {
 
 .solo-lectores {
   position: absolute;
+  /* Sin left quedaría en su posición estática: dentro de una fila con desplazamiento (el menú en el
+     celular) ensancharía la página. */
+  left: 0;
   width: 1px;
   height: 1px;
   overflow: hidden;
@@ -302,6 +305,31 @@ textarea.campo__control {
   color: var(--color-texto-apagado);
 }
 
+.pildora--turquesa {
+  background: var(--color-turquesa-fondo);
+  color: var(--color-turquesa);
+}
+
+.pildora--violeta {
+  background: var(--color-violeta-fondo);
+  color: var(--color-violeta);
+}
+
+.pildora--coral {
+  background: var(--color-coral-fondo);
+  color: var(--color-coral);
+}
+
+.pildora--cielo {
+  background: var(--color-cielo-fondo);
+  color: var(--color-cielo);
+}
+
+.pildora--rosa {
+  background: var(--color-rosa-fondo);
+  color: var(--color-rosa);
+}
+
 /* Formularios cortos en línea y acciones de una fila */
 .formulario-simple {
   display: flex;
@@ -325,4 +353,83 @@ textarea.campo__control {
 .tabla-contenedor,
 .docentes__desplazable {
   position: relative;
+}
+
+/* Tabla que en pantallas angostas se vuelve una lista de tarjetas: cada celda lleva su rótulo en
+   data-etiqueta, así no hay desplazamiento horizontal escondido. */
+@media (max-width: 720px) {
+  .tabla--apilable thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+  }
+
+  .tabla--apilable,
+  .tabla--apilable tbody,
+  .tabla--apilable tr,
+  .tabla--apilable th,
+  .tabla--apilable td {
+    display: block;
+    width: 100%;
+  }
+
+  .tabla--apilable tr {
+    margin-bottom: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--color-borde-suave);
+    border-radius: var(--radio-lg);
+    background: var(--color-superficie);
+  }
+
+  .tabla--apilable th,
+  .tabla--apilable td {
+    padding: 6px 0;
+    border: 0;
+    text-align: left;
+  }
+
+  .tabla--apilable td[data-etiqueta]::before {
+    content: attr(data-etiqueta);
+    display: block;
+    margin-bottom: 2px;
+    font-size: 11px;
+    font-weight: var(--peso-semi);
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--color-texto-tenue);
+  }
+
+  .tabla--apilable {
+    min-width: 0 !important;
+  }
+
+  /* Tablas de solo cifras: etiqueta y valor en la misma línea. */
+  .tabla--apilable.tabla--cifras td[data-etiqueta] {
+    display: flex;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 4px 0;
+    border-top: 1px dashed var(--color-borde-suave);
+  }
+
+  .tabla--apilable.tabla--cifras td[data-etiqueta]::before {
+    margin: 0;
+  }
+
+  .tabla-contenedor:has(.tabla--apilable) {
+    overflow: visible;
+    border: 0;
+    background: transparent;
+  }
+}
+
+/* Filtros de Docentes a todo el ancho en el celular. */
+@media (max-width: 720px) {
+  .docentes__selector,
+  .docentes__selector select {
+    flex: 1 1 100%;
+    width: 100%;
+  }
 }

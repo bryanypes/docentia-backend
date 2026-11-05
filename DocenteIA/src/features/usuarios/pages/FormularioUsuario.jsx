@@ -16,6 +16,7 @@ import { listarFacultades } from '../../facultades/services/facultadesService.js
 import { listarProgramas } from '../../programas/services/programasService.js'
 import { actualizarUsuario, crearUsuario, obtenerUsuario } from '../services/usuariosService.js'
 import './FormularioUsuario.css'
+import { useAvisos } from '../../../shared/components/ui/Avisos/avisosContext.js'
 
 /** En el orden en que más se usan: casi todas las cuentas nuevas son de docentes. */
 const ROLES_ORDENADOS = [ROLES.DOCENTE, ROLES.ESTUDIANTE, ROLES.COORDINADOR, ROLES.VICERRECTOR]
@@ -129,6 +130,7 @@ export default function FormularioUsuario() {
 }
 
 function Formulario({ guardado, registrarSalida }) {
+  const { confirmar } = useAvisos()
   const navegar = useNavigate()
   const { alGuardar } = useOutletContext() ?? {}
   const { usuario: sesion } = useSesion()
@@ -214,8 +216,18 @@ function Formulario({ guardado, registrarSalida }) {
     }
   }
 
-  function salir() {
-    if (hayCambios && !window.confirm('Tienes cambios sin guardar. ¿Salir sin guardarlos?')) return
+  async function salir() {
+    if (
+      hayCambios &&
+      !(await confirmar({
+        tipo: 'alerta',
+        titulo: '¿Salir sin guardar?',
+        mensaje: 'Tienes cambios sin guardar en este formulario.',
+        textoConfirmar: 'Salir sin guardar',
+        textoCancelar: 'Seguir editando',
+      }))
+    )
+      return
     navegar(...VOLVER_A_LISTA)
   }
   useEffect(() => {

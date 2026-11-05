@@ -1,7 +1,6 @@
 import { MessagesSquare, RefreshCw, ShieldOff } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import robotPensando from '../../../assets/ilustraciones/robot-pensando.svg'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
 import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
@@ -15,7 +14,9 @@ import { formatearFechaHora } from '../../../shared/utils/formatters.js'
 import { useSesion } from '../../auth/sesionContext.js'
 import { listarDocentes } from '../../docentes/services/docentesService.js'
 import { listarPeriodos } from '../../periodos/services/periodosService.js'
+import { MensajeIA, RobotIA } from '../components/DocenteIA.jsx'
 import { HallazgoBorrador } from '../components/HallazgoBorrador.jsx'
+import { PanoramaAnalisis } from '../components/PanoramaAnalisis.jsx'
 import {
   CATEGORIAS_FILTRO,
   ESTADOS_SOLICITUD,
@@ -40,36 +41,38 @@ function EstadoSolicitud({ solicitud, agotado, onReanudar }) {
   const { estado } = solicitud
   if (estaEnCurso(solicitud)) {
     return (
-      <div className="analisis__espera" role="status">
-        <img src={robotPensando} alt="" className="analisis__espera-robot" />
-        <div>
-          <strong>{ETIQUETA_SOLICITUD[estado]}…</strong>
-          <p className="campo__ayuda">
-            {agotado
-              ? 'Está tardando más de lo normal. Puedes seguir esperando o volver más tarde.'
-              : 'Se actualiza solo cada pocos segundos; puedes salir de la pantalla.'}
-          </p>
-          {agotado && (
+      <MensajeIA robot="pensando" tono="violeta" titulo={`${ETIQUETA_SOLICITUD[estado]}…`} role="status">
+        <p>
+          {agotado
+            ? 'Me está tomando más de lo normal. Puedes seguir esperando o volver más tarde.'
+            : 'Estoy leyendo los comentarios. La pantalla se actualiza sola; puedes salir y volver.'}
+        </p>
+        {agotado && (
+          <div>
             <Boton variante="contorno" onClick={onReanudar}>
               Seguir esperando
             </Boton>
-          )}
-        </div>
-      </div>
+          </div>
+        )}
+      </MensajeIA>
     )
   }
   if (estado === ESTADOS_SOLICITUD.INSUFICIENTE) {
     return (
-      <Aviso tipo="alerta" titulo="Evidencia insuficiente">
-        {solicitud.encuestasCerradas ?? 0} de {MINIMO_ENCUESTAS} encuestas con comentario. {solicitud.mensaje}
-      </Aviso>
+      <MensajeIA robot="error" tono="alerta" titulo="Evidencia insuficiente" role="status">
+        <p>
+          Llegaron {solicitud.encuestasCerradas ?? 0} de {MINIMO_ENCUESTAS} encuestas con comentario que necesito para
+          analizar.{' '}
+          {solicitud.mensaje}
+        </p>
+      </MensajeIA>
     )
   }
   if (estado === ESTADOS_SOLICITUD.ERROR) {
     return (
-      <Aviso tipo="error" titulo="No se pudo generar el análisis">
-        {solicitud.mensaje ?? 'Puedes volver a solicitarlo.'}
-      </Aviso>
+      <MensajeIA robot="error" tono="coral" titulo="No pude generar el análisis" role="alert">
+        <p>{solicitud.mensaje ?? 'Puedes volver a solicitarlo.'}</p>
+      </MensajeIA>
     )
   }
   return null
@@ -147,6 +150,8 @@ function Borrador({ solicitud, puedeValidar, onValidado }) {
   }
 
   const validados = borrador.hallazgos.filter((hallazgo) => hallazgo.estado === 'VALIDADO').length
+  const fortalezas = borrador.hallazgos.filter((hallazgo) => hallazgo.tipo === 'FORTALEZA').length
+  const oportunidades = borrador.hallazgos.length - fortalezas
   const publicada = borrador.estado === 'VALIDADO'
   const editable = puedeValidar && !publicada
 
@@ -157,12 +162,19 @@ function Borrador({ solicitud, puedeValidar, onValidado }) {
         descripcion={`Generado el ${formatearFechaHora(borrador.fechaGeneracion)} con ${borrador.modelo} (${borrador.versionInstruccion}). ${solicitud.comentariosEnviados} comentarios analizados.`}
         icono={MessagesSquare}
       >
-        <p>
-          <strong>
-            {validados} de {borrador.hallazgos.length} hallazgos validados.
-          </strong>{' '}
-          El docente no ve este borrador: solo verá lo que la coordinación valide y publique.
-        </p>
+        <MensajeIA
+          robot={publicada ? 'aprobada' : 'senala'}
+          tono={publicada ? 'turquesa' : 'azul'}
+          titulo={`Leí ${solicitud.comentariosEnviados} comentarios y encontré ${fortalezas} ${fortalezas === 1 ? 'fortaleza' : 'fortalezas'} y ${oportunidades} ${oportunidades === 1 ? 'oportunidad' : 'oportunidades'} de mejora.`}
+        >
+          <p>
+            <strong>
+              {validados} de {borrador.hallazgos.length} hallazgos validados.
+            </strong>{' '}
+            Cada uno cita palabras textuales de los estudiantes para que puedas verificarlo. El docente no ve este
+            borrador: solo lo que la coordinación valide y publique.
+          </p>
+        </MensajeIA>
         {publicada && <Aviso tipo="exito" titulo="Revisión publicada">El docente ya ve los hallazgos incluidos.</Aviso>}
         {editable && (
           <div className="analisis__acciones">
@@ -178,7 +190,13 @@ function Borrador({ solicitud, puedeValidar, onValidado }) {
         const hallazgos = borrador.hallazgos.filter((hallazgo) => hallazgo.tipo === tipo)
         if (hallazgos.length === 0) return null
         return (
-          <Panel key={tipo} titulo={nombre}>
+          <Panel
+            key={tipo}
+            titulo={nombre}
+            descripcion={`${hallazgos.length} ${hallazgos.length === 1 ? 'hallazgo' : 'hallazgos'} propuestos por DocenteIA`}
+            tono={tipo === 'FORTALEZA' ? 'turquesa' : 'coral'}
+            acciones={<RobotIA robot={tipo === 'FORTALEZA' ? 'aprobada' : 'senala'} />}
+          >
             {hallazgos.map((hallazgo) => (
               <HallazgoBorrador
                 key={hallazgo.idHallazgo}
@@ -291,7 +309,7 @@ export default function Analisis() {
               value={docenteId}
               onChange={(e) => cambiarFiltro('docente', e.target.value)}
             >
-              <option value="">Elige un docente</option>
+              <option value="">Todos · panorama</option>
               {(docentes.datos ?? []).map((docente) => (
                 <option key={docente.idDocente} value={docente.idDocente}>
                   {docente.nombreCompleto} · {docente.nombrePrograma}
@@ -317,11 +335,28 @@ export default function Analisis() {
           </Campo>
         </div>
 
+        <MensajeIA robot="saludo" titulo="Hola, soy DocenteIA" tamano={docenteId ? 'compacto' : 'normal'}>
+          <ol className="analisis__pasos-ia">
+            <li>
+              <span>1</span>Leo los comentarios abiertos de los estudiantes, ya anonimizados y sin los ofensivos.
+            </li>
+            <li>
+              <span>2</span>Los agrupo en fortalezas y oportunidades de mejora, citando sus palabras textuales.
+            </li>
+            <li>
+              <span>3</span>La coordinación revisa cada hallazgo y decide qué ve el docente.
+            </li>
+          </ol>
+        </MensajeIA>
+
         {!docenteId || !periodoId ? (
-          <EstadoVista
-            titulo="Elige un docente y un periodo"
-            mensaje="Verás el último análisis o podrás solicitar uno nuevo."
-          />
+          periodoId ? (
+            <PanoramaAnalisis periodoId={periodoId} onElegirDocente={(id) => cambiarFiltro('docente', id)} />
+          ) : (
+            <MensajeIA robot="esperando" tono="violeta" titulo="Elige un periodo para empezar">
+              <p>Te mostraré el panorama de todos los docentes y, si eliges uno, su análisis en detalle.</p>
+            </MensajeIA>
+          )
         ) : ultima.error ? (
           <EstadoVista tipo="error" titulo="No fue posible consultar el análisis" mensaje={ultima.error.message}>
             <Boton icono={RefreshCw} onClick={ultima.recargar}>Intentar de nuevo</Boton>
@@ -341,14 +376,13 @@ export default function Analisis() {
             {idSolicitud ? (
               <DetalleSolicitud key={idSolicitud} idSolicitud={idSolicitud} puedeValidar={esCoordinador} />
             ) : (
-              <EstadoVista
-                titulo="Sin análisis para este docente y periodo"
-                mensaje={
-                  esCoordinador
-                    ? `Solicítalo con el botón de arriba. Se necesitan al menos ${MINIMO_ENCUESTAS} encuestas con comentario.`
-                    : 'La coordinación aún no lo ha solicitado.'
-                }
-              />
+              <MensajeIA robot="esperando" tono="violeta" titulo="Todavía no he analizado a este docente en este periodo">
+                <p>
+                  {esCoordinador
+                    ? `Pídemelo con «Solicitar análisis». Necesito al menos ${MINIMO_ENCUESTAS} encuestas con comentario.`
+                    : 'La coordinación aún no lo ha solicitado.'}
+                </p>
+              </MensajeIA>
             )}
           </>
         )}

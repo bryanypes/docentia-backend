@@ -36,6 +36,31 @@
   color: var(--color-azul);
 }
 
+.panel__icono--turquesa {
+  background: var(--color-turquesa-fondo);
+  color: var(--color-turquesa);
+}
+
+.panel__icono--violeta {
+  background: var(--color-violeta-fondo);
+  color: var(--color-violeta);
+}
+
+.panel__icono--coral {
+  background: var(--color-coral-fondo);
+  color: var(--color-coral);
+}
+
+.panel__icono--cielo {
+  background: var(--color-cielo-fondo);
+  color: var(--color-cielo);
+}
+
+.panel__icono--rosa {
+  background: var(--color-rosa-fondo);
+  color: var(--color-rosa);
+}
+
 .panel__titulo {
   font-size: 16.5px;
   font-weight: var(--peso-fuerte);

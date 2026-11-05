@@ -172,3 +172,24 @@
 .evaluaciones-estudiante__item span {
   font-size: 13px;
 }
+
+.coevaluaciones__avance {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  white-space: nowrap;
+}
+
+.coevaluaciones__riel {
+  display: inline-flex;
+  width: 70px;
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--color-borde-suave);
+}
+
+.coevaluaciones__riel span {
+  border-radius: 999px;
+  background: var(--color-turquesa);
+}

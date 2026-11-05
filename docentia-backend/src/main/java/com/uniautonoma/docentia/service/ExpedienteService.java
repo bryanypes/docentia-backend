@@ -43,6 +43,7 @@ public class ExpedienteService {
   private final DocenteService docenteService;
   private final PeriodoAcademicoService periodoService;
   private final PromedioService promedioService;
+  private final ProcesoEvaluacionService procesoService;
 
   public ExpedienteService(
       UsuarioRepository usuarioRepository,
@@ -50,13 +51,15 @@ public class ExpedienteService {
       CompromisoRepository compromisoRepository,
       DocenteService docenteService,
       PeriodoAcademicoService periodoService,
-      PromedioService promedioService) {
+      PromedioService promedioService,
+      ProcesoEvaluacionService procesoService) {
     this.usuarioRepository = usuarioRepository;
     this.calificacionRepository = calificacionRepository;
     this.compromisoRepository = compromisoRepository;
     this.docenteService = docenteService;
     this.periodoService = periodoService;
     this.promedioService = promedioService;
+    this.procesoService = procesoService;
   }
 
   /**
@@ -101,15 +104,40 @@ public class ExpedienteService {
     Optional<EvaluacionPeriodo> evaluacion =
         periodoActivo.map(
             periodo -> promedioService.cargarEvaluacion(docente.getIdUsuario(), periodo));
+    // Hasta la reunión el docente sabe qué falta, pero no su nota (ni por dimensión).
+    boolean habilitado =
+        periodoActivo
+            .map(
+                periodo ->
+                    procesoService.resultadoHabilitado(
+                        docente.getIdUsuario(), periodo.getIdPeriodo()))
+            .orElse(true);
     return new ExpedientePropioResponse(
         DocenteResponse.desde(docente),
         periodoActivo.map(PeriodoResumenResponse::desde).orElse(null),
         periodoActivo
             .map(periodo -> promedioService.obtenerPromedio(docente.getIdUsuario(), periodo))
             .map(PromedioPonderadoResponse::sinValorSiEsParcial)
+            .map(promedio -> habilitado ? promedio : sinValor(promedio))
             .orElse(null),
-        evaluacion.map(this::listarResultadosPropios).orElse(List.of()),
-        listarCompromisosVigentes(docente.getIdUsuario()));
+        evaluacion
+            .map(this::listarResultadosPropios)
+            .map(
+                dimensiones ->
+                    habilitado ? dimensiones : dimensiones.stream().map(this::sinValor).toList())
+            .orElse(List.of()),
+        listarCompromisosVigentes(docente.getIdUsuario()),
+        habilitado);
+  }
+
+  private PromedioPonderadoResponse sinValor(PromedioPonderadoResponse promedio) {
+    return new PromedioPonderadoResponse(
+        promedio.estado(), null, promedio.fuentesPendientes(), null);
+  }
+
+  private ResultadoDimensionResponse sinValor(ResultadoDimensionResponse dimension) {
+    return new ResultadoDimensionResponse(
+        dimension.dimension(), dimension.nombre(), dimension.estado(), null);
   }
 
   private List<ResultadoDimensionResponse> listarResultadosPropios(EvaluacionPeriodo evaluacion) {

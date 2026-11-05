@@ -68,8 +68,8 @@ function Participacion() {
   if (!datos?.programas.length) return null
   return (
     <Panel titulo="Participación en formularios" descripcion="Solo conteos, sin puntajes.">
-      <div className="acciones__tabla">
-        <table className="tabla">
+      <div className="tabla-contenedor">
+        <table className="tabla tabla--apilable tabla--cifras">
           <thead>
             <tr>
               <th scope="col">Programa</th>
@@ -83,12 +83,12 @@ function Participacion() {
           <tbody>
             {datos.programas.map((p) => (
               <tr key={p.programa}>
-                <td>{p.programa}</td>
-                <td>{p.docentes}</td>
-                <td>{p.enviadas}</td>
-                <td>{p.borrador}</td>
-                <td>{p.sinIniciar}</td>
-                <td>{p.autoevaluacionesEnviadas}</td>
+                <td className="tabla__fuerte">{p.programa}</td>
+                <td data-etiqueta="Docentes">{p.docentes}</td>
+                <td data-etiqueta="Coevaluaciones enviadas">{p.enviadas}</td>
+                <td data-etiqueta="En borrador">{p.borrador}</td>
+                <td data-etiqueta="Sin iniciar">{p.sinIniciar}</td>
+                <td data-etiqueta="Autoevaluaciones enviadas">{p.autoevaluacionesEnviadas}</td>
               </tr>
             ))}
           </tbody>
