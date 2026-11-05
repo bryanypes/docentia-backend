@@ -60,6 +60,7 @@ class MatrizAutorizacionTest extends PruebaIntegracion {
       {"GET /analisis-comentarios/resumen", "CV"},
       {"POST /analisis-comentarios/docentes/{}/regeneracion", "CV"},
       {"GET /analisis-comentarios/uso", "V"},
+      {"GET /analisis-comentarios/modelos", "CV"},
       {"GET /comentarios-estudiantes/docentes/{}", "CV"},
       {"GET /auditoria", "V"},
       {"GET /autoevaluacion", "D"},
