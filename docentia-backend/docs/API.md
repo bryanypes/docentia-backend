@@ -65,6 +65,7 @@ Contrato completo en [api-comentarios-ia.md](api-comentarios-ia.md).
 | `GET /analisis-comentarios/resumen?periodo=&programa=` | Coordinador, vicerrector | Agregado sin docentes; no disponible con menos de 3 |
 | `POST /analisis-comentarios/docentes/{docenteId}/regeneracion` | Coordinador, vicerrector | Con motivo; 429 durante el enfriamiento; pasa por la caché |
 | `GET /analisis-comentarios/uso?periodo=` | Vicerrector | Llamadas, caché, tokens y ahorro; sin texto |
+| `GET /analisis-comentarios/modelos` | Coordinador, vicerrector | Modelos que se pueden elegir (`LOCAL`, `LLM`), tope de tokens y advertencia |
 
 ## Errores
 

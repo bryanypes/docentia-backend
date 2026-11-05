@@ -173,6 +173,55 @@ class AhorroTokensTest extends PruebaIntegracion {
   }
 
   @Test
+  void elegirLlmGastaTokensUnaVezYLuegoSaleDeLaCache() throws Exception {
+    mockMvc
+        .perform(get("/analisis-comentarios/modelos").with(como(coordinador)))
+        .andExpect(jsonPath("$.porDefecto").value("LLM"))
+        .andExpect(jsonPath("$.llmDisponible").value(true))
+        .andExpect(jsonPath("$.opciones[1].disponible").value(true))
+        .andExpect(jsonPath("$.opciones[1].consumeTokens").value(true))
+        .andExpect(jsonPath("$.maxComentariosLlm").value(150))
+        .andExpect(jsonPath("$.tokensPorAnalisis.totalMaximo").value(20000))
+        .andExpect(jsonPath("$.tokensRestantesHoy").value(500000))
+        .andExpect(
+            jsonPath("$.advertencia").value(org.hamcrest.Matchers.containsString("consume hasta")))
+        .andExpect(jsonPath("$.costoEstimado").doesNotExist());
+    responder(docente, periodo, AnalisisComentariosTest.COMENTARIOS);
+    solicitar(docente, periodo, "LLM").andExpect(status().isAccepted());
+    procesarCola();
+    solicitar(docente, periodo, "LLM").andExpect(status().isAccepted());
+    procesarCola();
+
+    verify(modelo, times(1)).analizar(any());
+    assertThat(usos()).containsExactly("LLAMADA", "ACIERTO_CACHE");
+    analisis(docente)
+        .andExpect(jsonPath("$.resultado.tipoModelo").value("LLM"))
+        .andExpect(jsonPath("$.resultado.desdeCache").value(true));
+    assertThat(
+            jdbcTemplate.queryForList(
+                "select modelo_solicitado from solicitudes_analisis order by id_solicitud",
+                String.class))
+        .containsExactly("LLM", "LLM");
+  }
+
+  @Test
+  void elegirLlmSinPresupuestoNoLlama() throws Exception {
+    jdbcTemplate.update(
+        "insert into uso_ia (fecha, id_periodo, proveedor, modelo, version_prompt, huella,"
+            + " comentarios_disponibles, comentarios_enviados, tokens_entrada, tokens_salida,"
+            + " resultado) values (?, ?, 'simulado', 'x', 'v', ?, 0, 0, 499000, 900, 'LLAMADA')",
+        BaseDatosPruebaConfig.HOY.atTime(9, 0),
+        periodo.getIdPeriodo(),
+        "1".repeat(64));
+    responder(docente, periodo, AnalisisComentariosTest.COMENTARIOS);
+    solicitar(docente, periodo, "LLM");
+    procesarCola();
+
+    analisis(docente).andExpect(jsonPath("$.estado").value("RECHAZADO_PRESUPUESTO"));
+    verify(modelo, never()).analizar(any());
+  }
+
+  @Test
   void otraEntradaSiLlama() throws Exception {
     responder(docente, periodo, AnalisisComentariosTest.COMENTARIOS);
     solicitar(docente, periodo, null);

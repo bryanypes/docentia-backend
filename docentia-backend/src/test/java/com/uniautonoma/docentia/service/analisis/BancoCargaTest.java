@@ -313,4 +313,95 @@ class BancoCargaTest {
             + " empiezaConLlave="
             + contenido.strip().startsWith("{"));
   }
+
+  /**
+   * Una sola llamada con la muestra de 150 comentarios (de 1.000 sintéticos) y la salida de 4.000,
+   * para ver la respuesta tal como la escribe el modelo. Solo con
+   * -Ddocentia.banco.verificacion=true.
+   */
+  @Test
+  void verificarRespuestaCompleta() throws Exception {
+    Assumptions.assumeTrue(Boolean.getBoolean("docentia.banco.verificacion") && hayProveedor());
+    Lexico lexico = Lexico.cargar("ia/lexico-v1.txt");
+    PipelineAnalisis pipeline =
+        new PipelineAnalisis(
+            new FiltroCalidad(lexico, 3),
+            new FiltroPorReglas(new ClassPathResource("filtros/reglas-comentarios.txt")),
+            new Anonimizador());
+    List<String> textos = GeneradorComentariosSinteticos.generar(1000);
+    List<Evaluado> entrada = new ArrayList<>();
+    for (int i = 0; i < textos.size(); i++) {
+      entrada.add(new Evaluado((long) i + 1, textos.get(i)));
+    }
+    Preparacion preparacion = pipeline.preparar(entrada, "Ana María Ruiz");
+    Salida salida =
+        new AnalizadorLocal(lexico, ValidacionAnalisisTest.PARAMETROS)
+            .analizar(preparacion.utiles(), null);
+    List<String> temas =
+        salida.resultado().temas().stream()
+            .limit(10)
+            .map(
+                t ->
+                    t.descriptor()
+                        + (t.polaridad().equals("POSITIVO") ? "+" : "-")
+                        + t.frecuencia())
+            .toList();
+    String v3 = InstruccionAnalisis.cargar().texto();
+    Muestra muestra =
+        new MuestreoParaModelo(150, 300, 16000)
+            .elegir(preparacion.utiles(), salida.etiquetados(), v3, temas);
+    String cuerpo = proveedor(4000).cuerpo(new PeticionAnalisis(v3, muestra.enviados(), temas));
+    long inicio = System.nanoTime();
+    JsonNode respuesta =
+        RestClient.builder()
+            .baseUrl(System.getenv("DOCENTIA_IA_URL_BASE"))
+            .defaultHeaders(h -> h.setBearerAuth(System.getenv("DOCENTIA_IA_CLAVE")))
+            .build()
+            .post()
+            .uri("/chat/completions")
+            .contentType(MediaType.APPLICATION_JSON)
+            .body(cuerpo)
+            .retrieve()
+            .body(JsonNode.class);
+    long ms = (System.nanoTime() - inicio) / 1_000_000;
+    String contenido = respuesta.at("/choices/0/message/content").asText("");
+    JsonNode uso = respuesta.path("usage");
+    System.out.println(
+        "VERIFICACION enviados="
+            + muestra.enviados().size()
+            + " recortados="
+            + muestra.recortados()
+            + " finish="
+            + respuesta.at("/choices/0/finish_reason").asText()
+            + " entrada="
+            + uso.path("prompt_tokens").asInt()
+            + " salida="
+            + uso.path("completion_tokens").asInt()
+            + " cache="
+            + uso.at("/prompt_tokens_details/cached_tokens").asInt(0)
+            + " ms="
+            + ms
+            + " caracteresRespuesta="
+            + contenido.length());
+    java.util.Set<Long> ids = new java.util.HashSet<>();
+    muestra.enviados().forEach(c -> ids.add(c.id()));
+    try {
+      LectorRespuestaAnalisis lector = new LectorRespuestaAnalisis();
+      for (LectorRespuestaAnalisis.HallazgoPropuesto h : lector.leer(contenido)) {
+        long validas = h.citas().stream().filter(c -> ids.contains(c.comentarioId())).count();
+        System.out.println(
+            "VERIFICACION_HALLAZGO "
+                + h.tipo()
+                + " | "
+                + h.texto()
+                + " | citas="
+                + h.citas().size()
+                + " validas="
+                + validas);
+      }
+      System.out.println("VERIFICACION_RESUMEN " + lector.resumen(contenido));
+    } catch (RuntimeException invalida) {
+      System.out.println("VERIFICACION_INVALIDA " + invalida.getMessage());
+    }
+  }
 }

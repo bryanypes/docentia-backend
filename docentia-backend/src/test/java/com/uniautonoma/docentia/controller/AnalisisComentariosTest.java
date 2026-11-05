@@ -164,6 +164,45 @@ class AnalisisComentariosTest extends PruebaIntegracion {
   }
 
   @Test
+  void conElLocalPorDefectoYSinProveedorPedirLlmEs409() throws Exception {
+    responder(docente, periodo, COMENTARIOS);
+    mockMvc
+        .perform(get("/analisis-comentarios/modelos").with(como(coordinador)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.porDefecto").value("LOCAL"))
+        .andExpect(jsonPath("$.llmDisponible").value(false))
+        .andExpect(jsonPath("$.modeloLlm").doesNotExist())
+        .andExpect(jsonPath("$.opciones[0].codigo").value("LOCAL"))
+        .andExpect(jsonPath("$.opciones[0].consumeTokens").value(false))
+        .andExpect(jsonPath("$.opciones[1].codigo").value("LLM"))
+        .andExpect(jsonPath("$.opciones[1].disponible").value(false));
+    mockMvc
+        .perform(get("/analisis-comentarios/modelos").with(como(docente)))
+        .andExpect(status().isForbidden());
+    for (String[] caso : new String[][] {{"LLM", "409"}, {"OTRO", "400"}}) {
+      mockMvc
+          .perform(
+              post("/analisis-ia/solicitudes")
+                  .with(como(coordinador))
+                  .contentType(MediaType.APPLICATION_JSON)
+                  .content(
+                      aJson(
+                          Map.of(
+                              "docenteId",
+                              docente.getIdUsuario(),
+                              "periodoId",
+                              periodo.getIdPeriodo(),
+                              "fuente",
+                              "FORMULARIO",
+                              "modelo",
+                              caso[0]))))
+          .andExpect(status().is(Integer.parseInt(caso[1])));
+    }
+    assertThat(jdbcTemplate.queryForObject("select count(*) from solicitudes_analisis", Long.class))
+        .isZero();
+  }
+
+  @Test
   void elFormularioSeAnalizaSoloConLaRecoleccionCerrada() throws Exception {
     escenario.abrirEtapa(
         periodo,

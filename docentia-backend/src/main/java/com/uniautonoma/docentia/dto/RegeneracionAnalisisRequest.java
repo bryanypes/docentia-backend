@@ -10,7 +10,7 @@ import jakarta.validation.constraints.Size;
  * Pedido explícito de volver a generar un análisis.
  *
  * @param motivo por qué se regenera; queda guardado en la solicitud
- * @param modelo LOCAL para usar el modelo por reglas; nulo usa el proveedor configurado
+ * @param modelo LOCAL o LLM; nulo usa el configurado por defecto
  */
 public record RegeneracionAnalisisRequest(
     @NotNull(message = "El periodo es obligatorio") Long periodoId,
@@ -18,4 +18,4 @@ public record RegeneracionAnalisisRequest(
         @Size(min = 10, max = 300, message = "El motivo debe tener entre 10 y 300 caracteres")
         String motivo,
     FuenteComentarios fuente,
-    @Pattern(regexp = "LOCAL", message = "El modelo solo puede ser LOCAL") String modelo) {}
+    @Pattern(regexp = "LOCAL|LLM", message = "El modelo debe ser LOCAL o LLM") String modelo) {}

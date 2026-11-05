@@ -61,6 +61,8 @@
   compacta, presupuesto por día y periodo, regeneración con motivo y enfriamiento, y endpoint de uso.
   Con 1.000 comentarios la llamada pasa de 81.840 a 10.307 tokens de entrada.
 - Salida máxima del proveedor en 4.000 tokens: con 1.500 la respuesta salía cortada.
+- Cada solicitud de análisis elige `modelo: LOCAL` o `LLM`; `GET /analisis-comentarios/modelos` dice
+  qué hay disponible y cuánto consume el modelo de lenguaje (V41).
 
 ### Corregido
 

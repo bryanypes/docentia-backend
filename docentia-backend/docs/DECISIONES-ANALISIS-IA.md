@@ -122,6 +122,20 @@ Costos medidos y valores por defecto en [ANALISIS_IA_COSTOS.md](ANALISIS_IA_COST
   parte de la petición.
 - **Uso.** `GET /analisis-comentarios/uso` solo para vicerrectoría, desde `PoliticaComentarios`.
 
+## Elegir el modelo por solicitud
+
+- **`modelo`: `LOCAL` o `LLM`.** Sin él, el configurado por defecto (`DOCENTIA_IA_PROVEEDOR`).
+- **El externo queda disponible aunque el defecto sea el local**, si el ambiente trae URL, modelo y
+  clave. Nunca se usa sin que lo pidan.
+- **Sin proveedor, `LLM` es 409** al pedir. Si deja de estar configurado entre el pedido y el
+  procesamiento, la solicitud queda en `ERROR` con `motivo: LLM_NO_DISPONIBLE`. No se cambia al local
+  en silencio.
+- **Mismas reglas.** Elegir `LLM` pasa por la política de roles (coordinador y vicerrector), el
+  presupuesto y la caché. En `uso_ia` queda como `chat-completions` aunque el defecto sea `local`.
+- **`GET /analisis-comentarios/modelos`** muestra las opciones, el defecto, el tope de comentarios, el
+  máximo de tokens por análisis, el presupuesto que queda hoy y una advertencia. Sin dinero.
+- **V41** amplía la restricción de `modelo_solicitado` a `LOCAL` y `LLM`.
+
 ## Auditoría y avisos
 
 - **Auditoría.** Pedir un análisis registra `SOLICITUD_ANALISIS` con el id de la solicitud. Nunca el
