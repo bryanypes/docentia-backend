@@ -12,6 +12,7 @@ import com.uniautonoma.docentia.service.analisis.local.CatalogoDescriptores;
 import com.uniautonoma.docentia.service.analisis.local.FiltroCalidad;
 import com.uniautonoma.docentia.service.analisis.local.FiltroCalidad.Evaluado;
 import com.uniautonoma.docentia.service.analisis.local.Lexico;
+import com.uniautonoma.docentia.service.analisis.local.MuestreoParaModelo;
 import com.uniautonoma.docentia.service.analisis.local.PipelineAnalisis;
 import com.uniautonoma.docentia.service.analisis.local.PipelineAnalisis.Preparacion;
 import com.uniautonoma.docentia.service.analisis.local.ResultadoAnalisis;
@@ -74,6 +75,13 @@ class ValidacionAnalisisTest {
 
   /** Métricas por criterio a nivel de comentario y exactitud de polaridad. */
   static Map<String, Object> medir() {
+    return medir(null);
+  }
+
+  /**
+   * @param soloEstos ids a evaluar (la muestra que vería el modelo de lenguaje); nulo = todos
+   */
+  static Map<String, Object> medir(Set<Long> soloEstos) {
     Preparacion[] preparacion = new Preparacion[1];
     Salida salida = correr(entrada(), preparacion);
     Map<Long, Etiquetado> predichos = new HashMap<>();
@@ -96,7 +104,7 @@ class ValidacionAnalisisTest {
         }
         continue;
       }
-      if (predicho == null) {
+      if (predicho == null || (soloEstos != null && !soloEstos.contains(id))) {
         continue;
       }
       Set<String> esperados = new HashSet<>();
@@ -154,6 +162,43 @@ class ValidacionAnalisisTest {
     assertThat(((Metricas) metricas.get("C5")).f1()).isGreaterThanOrEqualTo(0.95);
     assertThat((double) metricas.get("exactitudPolaridad")).isGreaterThanOrEqualTo(0.84);
     assertThat(metricas.get("exclusionesCorrectas")).isEqualTo("17 de 17");
+  }
+
+  @Test
+  void conLaMuestraDelModeloDeLenguajeLasMetricasNoBajanNiFaltanCriterios() {
+    Preparacion[] preparacion = new Preparacion[1];
+    Salida salida = correr(entrada(), preparacion);
+    // Muestra más chica que el conjunto, para que de verdad se muestree.
+    MuestreoParaModelo.Muestra muestra =
+        new MuestreoParaModelo(60, 300, 16000)
+            .elegir(preparacion[0].utiles(), salida.etiquetados(), "instrucción", List.of());
+    Set<Long> ids = new HashSet<>();
+    muestra.enviados().forEach(c -> ids.add(c.id()));
+    assertThat(muestra.muestreado()).isTrue();
+
+    Map<String, Object> metricas = medir(ids);
+    metricas.forEach(
+        (clave, valor) -> System.out.println("METRICA_MUESTRA " + clave + " = " + valor));
+    assertThat(((Metricas) metricas.get("C2")).f1()).isGreaterThanOrEqualTo(0.92);
+    assertThat(((Metricas) metricas.get("C3")).f1()).isGreaterThanOrEqualTo(0.87);
+    assertThat(((Metricas) metricas.get("C4")).f1()).isGreaterThanOrEqualTo(0.95);
+    assertThat(((Metricas) metricas.get("C5")).f1()).isGreaterThanOrEqualTo(0.95);
+    assertThat((double) metricas.get("exactitudPolaridad")).isGreaterThanOrEqualTo(0.84);
+    Set<String> todos = new HashSet<>();
+    Set<String> enMuestra = new HashSet<>();
+    salida
+        .etiquetados()
+        .forEach(
+            e ->
+                e.etiquetas()
+                    .forEach(
+                        x -> {
+                          todos.add(x.criterio());
+                          if (ids.contains(e.id())) {
+                            enMuestra.add(x.criterio());
+                          }
+                        }));
+    assertThat(enMuestra).containsAll(todos);
   }
 
   @Test
