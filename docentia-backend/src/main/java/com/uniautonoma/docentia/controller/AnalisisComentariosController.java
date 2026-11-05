@@ -2,14 +2,23 @@ package com.uniautonoma.docentia.controller;
 
 import com.uniautonoma.docentia.dto.AnalisisComentariosResponse;
 import com.uniautonoma.docentia.dto.ComentariosEstudiantesResponse;
+import com.uniautonoma.docentia.dto.RegeneracionAnalisisRequest;
 import com.uniautonoma.docentia.dto.ResumenComentariosResponse;
+import com.uniautonoma.docentia.dto.SolicitudAnalisisResponse;
+import com.uniautonoma.docentia.dto.UsoIaResponse;
 import com.uniautonoma.docentia.security.UsuarioSesion;
 import com.uniautonoma.docentia.service.analisis.AnalisisComentariosService;
+import com.uniautonoma.docentia.service.analisis.AnalisisIaService;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -21,9 +30,34 @@ import org.springframework.web.bind.annotation.RestController;
 public class AnalisisComentariosController {
 
   private final AnalisisComentariosService servicio;
+  private final AnalisisIaService analisisIaService;
 
-  public AnalisisComentariosController(AnalisisComentariosService servicio) {
+  public AnalisisComentariosController(
+      AnalisisComentariosService servicio, AnalisisIaService analisisIaService) {
     this.servicio = servicio;
+    this.analisisIaService = analisisIaService;
+  }
+
+  /**
+   * Vuelve a generar el análisis con un motivo. Respeta el enfriamiento y pasa por la caché: con
+   * los mismos comentarios no gasta tokens.
+   */
+  @PostMapping("/analisis-comentarios/docentes/{docenteId}/regeneracion")
+  @PreAuthorize("@politicaComentarios.puedeRegenerar(authentication)")
+  @ResponseStatus(HttpStatus.ACCEPTED)
+  public SolicitudAnalisisResponse regenerar(
+      @PathVariable Long docenteId,
+      @Valid @RequestBody RegeneracionAnalisisRequest pedido,
+      @AuthenticationPrincipal UsuarioSesion sesion) {
+    return analisisIaService.regenerar(docenteId, pedido, sesion);
+  }
+
+  /** Gasto del proveedor externo en el periodo. */
+  @GetMapping("/analisis-comentarios/uso")
+  @PreAuthorize("@politicaComentarios.puedeVerUso(authentication)")
+  public UsoIaResponse uso(
+      @RequestParam Long periodo, @AuthenticationPrincipal UsuarioSesion sesion) {
+    return servicio.uso(periodo, sesion);
   }
 
   @GetMapping("/analisis-comentarios/docentes/{docenteId}")
