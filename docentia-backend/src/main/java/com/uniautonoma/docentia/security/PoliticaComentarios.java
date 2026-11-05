@@ -18,6 +18,8 @@ public class PoliticaComentarios {
   static final Set<String> ANALISIS = Set.of("ROLE_COORDINADOR", "ROLE_VICERRECTOR");
   static final Set<String> COMENTARIOS = Set.of("ROLE_COORDINADOR", "ROLE_VICERRECTOR");
   static final Set<String> RESUMEN = Set.of("ROLE_COORDINADOR", "ROLE_VICERRECTOR");
+  static final Set<String> REGENERAR = Set.of("ROLE_COORDINADOR", "ROLE_VICERRECTOR");
+  static final Set<String> USO = Set.of("ROLE_VICERRECTOR");
 
   public boolean puedeVerAnalisis(Authentication autenticacion) {
     return tieneAlguno(autenticacion, ANALISIS);
@@ -29,6 +31,15 @@ public class PoliticaComentarios {
 
   public boolean puedeVerResumen(Authentication autenticacion) {
     return tieneAlguno(autenticacion, RESUMEN);
+  }
+
+  public boolean puedeRegenerar(Authentication autenticacion) {
+    return tieneAlguno(autenticacion, REGENERAR);
+  }
+
+  /** Gasto del proveedor externo: solo vicerrectoría. */
+  public boolean puedeVerUso(Authentication autenticacion) {
+    return tieneAlguno(autenticacion, USO);
   }
 
   private static boolean tieneAlguno(Authentication autenticacion, Set<String> permitidas) {

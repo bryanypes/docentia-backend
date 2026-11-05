@@ -56,6 +56,13 @@ public class SolicitudAnalisis {
   @Column(length = 30)
   private String motivo;
 
+  /** LOCAL fuerza el modelo por reglas; nulo usa el proveedor configurado. */
+  @Column(length = 10, updatable = false)
+  private String modeloSolicitado;
+
+  @Column(length = 300, updatable = false)
+  private String motivoRegeneracion;
+
   private Integer encuestasCerradas;
 
   private Integer comentariosEnviados;
@@ -100,6 +107,36 @@ public class SolicitudAnalisis {
       Usuario docente, PeriodoAcademico periodo, Usuario solicitante, FuenteComentarios fuente) {
     this(docente, periodo, solicitante);
     this.fuente = fuente;
+  }
+
+  /**
+   * @param soloLocal fuerza el modelo local por reglas
+   * @param motivoRegeneracion por qué se vuelve a generar; nulo si es la primera vez
+   */
+  public SolicitudAnalisis(
+      Usuario docente,
+      PeriodoAcademico periodo,
+      Usuario solicitante,
+      FuenteComentarios fuente,
+      boolean soloLocal,
+      String motivoRegeneracion) {
+    this(docente, periodo, solicitante, fuente);
+    this.modeloSolicitado = soloLocal ? "LOCAL" : null;
+    this.motivoRegeneracion = motivoRegeneracion;
+  }
+
+  /** Error con un motivo que la interfaz puede distinguir (por ejemplo PRESUPUESTO_AGOTADO). */
+  public void marcarError(String mensajeError, String motivoError) {
+    marcarError(mensajeError);
+    this.motivo = motivoError;
+  }
+
+  public boolean esSoloLocal() {
+    return "LOCAL".equals(modeloSolicitado);
+  }
+
+  public String getMotivoRegeneracion() {
+    return motivoRegeneracion;
   }
 
   /** Marca la solicitud como insuficiente indicando el motivo, para mostrar el estado preciso. */

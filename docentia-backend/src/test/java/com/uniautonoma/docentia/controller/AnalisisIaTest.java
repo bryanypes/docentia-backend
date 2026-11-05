@@ -92,7 +92,7 @@ class AnalisisIaTest extends PruebaIntegracion {
         .andExpect(jsonPath("$.encuestasCerradas").value(12))
         .andExpect(jsonPath("$.comentariosEnviados").value(12))
         .andExpect(jsonPath("$.borrador.modelo").value("simulado-determinista"))
-        .andExpect(jsonPath("$.borrador.versionInstruccion").value("analisis-v2"))
+        .andExpect(jsonPath("$.borrador.versionInstruccion").value("analisis-v3"))
         .andExpect(jsonPath("$.borrador.fechaGeneracion").exists())
         .andExpect(jsonPath("$.borrador.estado").value("PENDIENTE_VALIDACION"))
         .andExpect(jsonPath("$.borrador.hallazgos", hasSize(6)))

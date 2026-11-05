@@ -18,6 +18,7 @@ estudiante y cualquier otro rol reciben 403. Un docente de otra facultad, o inex
 | Campo | Valores | Notas |
 |-------|---------|-------|
 | `fuente` | `CSV`, `FORMULARIO` | Opcional; sin él es `CSV`, como antes |
+| `modelo` | `LOCAL` | Opcional; usa el modelo por reglas aunque haya proveedor externo (por ejemplo, sin presupuesto) |
 
 Respuestas: 202 en cola. 409 si ya hay una en curso, si la revisión de hallazgos no está abierta o, con
 `FORMULARIO`, si la recolección sigue abierta. La respuesta de la solicitud trae además `fuente` y
@@ -53,6 +54,7 @@ Respuestas: 202 en cola. 409 si ya hay una en curso, si la revisión de hallazgo
 | `ERROR` | null | `mensaje` y opción de volver a pedirlo | [analisis-error.json](ejemplos/ia/analisis-error.json) |
 | `SIN_COMENTARIOS` | `SIN_COMENTARIOS` o `TODOS_EXCLUIDOS` | No hubo comentarios útiles | [analisis-sin-comentarios.json](ejemplos/ia/analisis-sin-comentarios.json) |
 | `NO_DISPONIBLE_AUN` | `SIN_SOLICITAR` o `VENTANA_ABIERTA` | Aún no se pidió, o la recolección sigue abierta | [analisis-no-disponible-aun.json](ejemplos/ia/analisis-no-disponible-aun.json) |
+| `RECHAZADO_PRESUPUESTO` | `PRESUPUESTO_AGOTADO` | `mensaje` y botón "Analizar con el modelo local" (`modelo: LOCAL`) | — |
 
 ### `resultado`
 
@@ -71,6 +73,12 @@ Respuestas: 202 en cola. 409 si ya hay una en curso, si la revisión de hallazgo
 | `advertencias[]` | `{tipo, cantidad, mensaje}` |
 | `criterios[]` | `{codigo, nombre, positivos, negativos, neutros, balance}` |
 | `parametros` | Umbrales que se usaron |
+| `limitesAplicados` | `{comentariosAnalizados, comentariosMuestreados, muestreado, recortados, descartadosRelleno, maxComentariosModelo, maxCaracteresComentario, periodosReferencia[]}` |
+| `desdeCache` | `true` si la respuesta del modelo de lenguaje salió de la caché (no gastó tokens) |
+| `generadoEn` | Fecha y hora de la corrida, a nivel del resultado (nunca por comentario) |
+| `resumenNarrativo` | Resumen de 2 o 3 frases del modelo de lenguaje; nulo con el modelo local. Pendiente de validación como los hallazgos |
+
+Los resultados guardados antes de este cambio traen esos cuatro campos en nulo.
 
 Enums: `polaridad` POSITIVO, NEGATIVO, NEUTRO. `cambio` NUEVO, SE_MANTIENE, EN_AUMENTO,
 EN_DISMINUCION, SIN_REFERENCIA. Advertencias: SENSIBLE_ACOSO, SENSIBLE_AMENAZA,
@@ -109,6 +117,26 @@ nExcluidos, sentimientoGlobal{positivos, negativos, neutros, mixtos}, temas[{cri
 nombre, polaridad, frecuencia, porcentaje, docentes}], criterios[{codigo, nombre, positivos, negativos,
 neutros}], advertencias{tipo: cantidad}`. Ejemplo: [resumen.json](ejemplos/ia/resumen.json).
 
+## Regenerar
+
+`POST /analisis-comentarios/docentes/{docenteId}/regeneracion` — coordinador y vicerrector.
+
+```json
+{ "periodoId": 3, "motivo": "Se corrigió la carga de respuestas", "fuente": "FORMULARIO", "modelo": null }
+```
+
+202 con la solicitud. 400 sin motivo (10 a 300 caracteres). 429 si la última solicitud tiene menos de
+60 minutos. Si los comentarios no cambiaron, la corrida sale de la caché y no gasta tokens.
+
+## Uso del proveedor externo
+
+`GET /analisis-comentarios/uso?periodo=` — solo vicerrector.
+
+`{periodoId, llamadas, aciertosCache, rechazadosPresupuesto, errores, tokensEntrada, tokensSalida,
+tokensCacheProveedor, tokensAhorradosCache, ahorroCachePct, ahorroMuestreoPct, llamadasEstimadas,
+costoEstimado}`. Sin texto de comentarios ni docentes. `costoEstimado` es nulo si no hay precios
+configurados.
+
 ## Errores
 
 | Código | Cuándo |
@@ -127,3 +155,9 @@ neutros}], advertencias{tipo: cantidad}`. Ejemplo: [resumen.json](ejemplos/ia/re
 - **Advertencias graves.** `SENSIBLE_*` va destacado solo para coordinación, sin texto de comentarios.
 - **Citas.** Mostrar el `fragmento` tal cual; no reescribirlo.
 - **Datos sintéticos.** Los ejemplos usan comentarios inventados; no copiar sus textos a la interfaz.
+- **Muestreo.** Si `limitesAplicados.muestreado` es verdadero: "El modelo de lenguaje leyó
+  {comentariosMuestreados} de {comentariosAnalizados} comentarios; los conteos y temas incluyen todos".
+  No decir que se leyó todo.
+- **Caché.** Si `desdeCache` es verdadero: "Resultado reutilizado; los comentarios no cambiaron desde
+  la corrida anterior", junto a `generadoEn`.
+- **Regenerar.** El botón pide el motivo y muestra el 429 como "Podrás regenerar en una hora".

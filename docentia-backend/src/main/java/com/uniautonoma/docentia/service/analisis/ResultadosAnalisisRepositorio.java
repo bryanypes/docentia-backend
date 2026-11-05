@@ -145,6 +145,29 @@ public class ResultadosAnalisisRepositorio {
         .findFirst();
   }
 
+  /** Resultado vigente de un periodo anterior, con su id. */
+  public record Anterior(Long idPeriodo, ResultadoAnalisis resultado) {}
+
+  /**
+   * Resultados vigentes de los periodos anteriores más recientes, por fecha de inicio. Solo lee los
+   * agregados guardados: nunca vuelve a los comentarios de esos periodos.
+   */
+  public List<Anterior> anteriores(Long idDocente, Long idPeriodo, int cuantos) {
+    return jdbcTemplate.query(
+        """
+        select r.id_periodo, r.resultado from resultados_analisis_comentarios r
+        join periodos_academicos p on p.id_periodo = r.id_periodo
+        where r.id_docente = ? and not r.reemplazado
+          and p.fecha_inicio < (select fecha_inicio from periodos_academicos where id_periodo = ?)
+        order by p.fecha_inicio desc
+        limit ?
+        """,
+        (fila, n) -> new Anterior(fila.getLong(1), leer(fila.getString(2))),
+        idDocente,
+        idPeriodo,
+        cuantos);
+  }
+
   /** Resultado vigente del periodo anterior más reciente según sus fechas, para las tendencias. */
   public Optional<ResultadoAnalisis> anterior(Long idDocente, Long idPeriodo) {
     return jdbcTemplate
