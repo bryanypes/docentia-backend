@@ -274,7 +274,8 @@ class AnalisisComentariosTest extends PruebaIntegracion {
         jdbcTemplate.queryForList(
             "select resultado from resultados_analisis_comentarios order by id", String.class);
     assertThat(resultados).hasSize(2);
-    assertThat(resultados.get(0)).isEqualTo(resultados.get(1));
+    // La fecha de la corrida es lo único que puede cambiar.
+    assertThat(sinFecha(resultados.get(0))).isEqualTo(sinFecha(resultados.get(1)));
     assertThat(
             jdbcTemplate.queryForList(
                 "select r.id_docente || ':' || c.texto from comentarios_analizados c"
@@ -625,6 +626,10 @@ class AnalisisComentariosTest extends PruebaIntegracion {
             .andReturn()
             .getResponse()
             .getContentAsString());
+  }
+
+  private static String sinFecha(String json) {
+    return json.replaceAll("\"generadoEn\":\"[^\"]*\"", "");
   }
 
   private void escribir(Path archivo, String json) throws Exception {

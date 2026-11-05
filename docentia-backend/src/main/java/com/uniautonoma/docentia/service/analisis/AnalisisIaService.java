@@ -1,7 +1,9 @@
 package com.uniautonoma.docentia.service.analisis;
 
+import com.uniautonoma.docentia.config.AhorroIaProperties;
 import com.uniautonoma.docentia.config.IaProperties;
 import com.uniautonoma.docentia.dto.ComentarioFiltradoResponse;
+import com.uniautonoma.docentia.dto.RegeneracionAnalisisRequest;
 import com.uniautonoma.docentia.dto.SolicitudAnalisisRequest;
 import com.uniautonoma.docentia.dto.SolicitudAnalisisResponse;
 import com.uniautonoma.docentia.entity.AccionAuditoria;
@@ -11,6 +13,7 @@ import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.SolicitudAnalisis;
 import com.uniautonoma.docentia.entity.TipoEtapa;
 import com.uniautonoma.docentia.entity.Usuario;
+import com.uniautonoma.docentia.exception.DemasiadosIntentosException;
 import com.uniautonoma.docentia.exception.EtapaCerradaException;
 import com.uniautonoma.docentia.exception.RecursoNoEncontradoException;
 import com.uniautonoma.docentia.exception.ReglaNegocioException;
@@ -23,6 +26,7 @@ import com.uniautonoma.docentia.security.UsuarioSesion;
 import com.uniautonoma.docentia.service.AuditoriaService;
 import com.uniautonoma.docentia.service.DocenteService;
 import com.uniautonoma.docentia.service.VentanaEtapaService;
+import java.time.LocalDateTime;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -56,6 +60,7 @@ public class AnalisisIaService {
   private final Anonimizador anonimizador;
   private final ResultadosAnalisisRepositorio resultados;
   private final AuditoriaService auditoria;
+  private final AhorroIaProperties ahorro;
 
   public AnalisisIaService(
       SolicitudAnalisisRepository solicitudRepository,
@@ -68,7 +73,9 @@ public class AnalisisIaService {
       ProveedorComentarios proveedorComentarios,
       Anonimizador anonimizador,
       ResultadosAnalisisRepositorio resultados,
-      AuditoriaService auditoria) {
+      AuditoriaService auditoria,
+      AhorroIaProperties ahorro) {
+    this.ahorro = ahorro;
     this.resultados = resultados;
     this.auditoria = auditoria;
     this.filtradoRepository = filtradoRepository;
@@ -96,6 +103,45 @@ public class AnalisisIaService {
    */
   public SolicitudAnalisisResponse solicitar(
       SolicitudAnalisisRequest solicitud, UsuarioSesion sesion) {
+    return crear(solicitud, null, sesion);
+  }
+
+  /**
+   * Vuelve a generar el análisis de un docente y periodo, con motivo y con un enfriamiento entre
+   * regeneraciones. La corrida pasa por la caché: si los comentarios no cambiaron, no gasta tokens.
+   *
+   * @throws DemasiadosIntentosException si la última solicitud es más reciente que el enfriamiento
+   */
+  public SolicitudAnalisisResponse regenerar(
+      Long idDocente, RegeneracionAnalisisRequest pedido, UsuarioSesion sesion) {
+    docenteService.buscarDocenteVisible(idDocente, sesion);
+    solicitudRepository
+        .findByDocenteIdUsuarioAndPeriodoIdPeriodoOrderByIdSolicitudDesc(
+            idDocente, pedido.periodoId())
+        .stream()
+        .findFirst()
+        .map(SolicitudAnalisis::getFechaSolicitud)
+        .filter(
+            fecha ->
+                fecha != null
+                    && fecha.isAfter(
+                        LocalDateTime.now().minusMinutes(ahorro.enfriamientoRegeneracionMinutos())))
+        .ifPresent(
+            reciente -> {
+              throw new DemasiadosIntentosException(
+                  "Este análisis se generó hace poco. Puedes regenerarlo "
+                      + ahorro.enfriamientoRegeneracionMinutos()
+                      + " minutos después de la última solicitud");
+            });
+    return crear(
+        new SolicitudAnalisisRequest(
+            idDocente, pedido.periodoId(), pedido.fuente(), pedido.modelo()),
+        pedido.motivo().strip(),
+        sesion);
+  }
+
+  private SolicitudAnalisisResponse crear(
+      SolicitudAnalisisRequest solicitud, String motivoRegeneracion, UsuarioSesion sesion) {
     if (!propiedades.habilitado()) {
       throw new ServicioDeshabilitadoException(
           "El análisis de comentarios con IA está deshabilitado en este ambiente");
@@ -130,7 +176,12 @@ public class AnalisisIaService {
     SolicitudAnalisis nueva =
         solicitudRepository.saveAndFlush(
             new SolicitudAnalisis(
-                docente, periodo, usuarioRepository.getReferenceById(sesion.idUsuario()), fuente));
+                docente,
+                periodo,
+                usuarioRepository.getReferenceById(sesion.idUsuario()),
+                fuente,
+                solicitud.soloLocal(),
+                motivoRegeneracion));
     auditoria.registrar(
         AccionAuditoria.SOLICITUD_ANALISIS, "SOLICITUD_ANALISIS", nueva.getIdSolicitud(), sesion);
     return SolicitudAnalisisResponse.desde(nueva);

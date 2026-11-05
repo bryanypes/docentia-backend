@@ -100,6 +100,17 @@ docentia:
     timeout-segundos: ${DOCENTIA_IA_TIMEOUT_SEGUNDOS:60}
     clave: ${DOCENTIA_IA_CLAVE:}
     enviar-temperatura: ${DOCENTIA_IA_ENVIAR_TEMPERATURA:true}
+    # Ahorro de tokens del proveedor externo (docs/ANALISIS_IA_COSTOS.md). Presupuesto 0 = sin tope.
+    max-comentarios-llm: ${DOCENTIA_IA_MAX_COMENTARIOS_LLM:150}
+    max-caracteres-comentario: ${DOCENTIA_IA_MAX_CARACTERES_COMENTARIO:300}
+    max-tokens-entrada: ${DOCENTIA_IA_MAX_TOKENS_ENTRADA:16000}
+    max-tokens-salida: ${DOCENTIA_IA_MAX_TOKENS_SALIDA:4000}
+    presupuesto-tokens-dia: ${DOCENTIA_IA_PRESUPUESTO_TOKENS_DIA:500000}
+    presupuesto-tokens-periodo: ${DOCENTIA_IA_PRESUPUESTO_TOKENS_PERIODO:3000000}
+    enfriamiento-regeneracion-minutos: 60
+    periodos-referencia: 1
+    precio-millon-tokens-entrada: ${DOCENTIA_IA_PRECIO_MILLON_ENTRADA:}
+    precio-millon-tokens-salida: ${DOCENTIA_IA_PRECIO_MILLON_SALIDA:}
     minimo-encuestas: 10
     worker:
       habilitado: ${DOCENTIA_IA_WORKER:true}

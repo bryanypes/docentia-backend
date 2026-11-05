@@ -21,6 +21,9 @@ public class LectorRespuestaAnalisis {
 
   public List<HallazgoPropuesto> leer(String contenido) {
     JsonNode raiz = parsear(quitarCercoMarkdown(contenido));
+    if (raiz.has("h")) {
+      return leerCompacto(raiz.path("h"));
+    }
     JsonNode hallazgos = raiz.path("hallazgos");
     if (!hallazgos.isArray()) {
       throw new RespuestaInvalidaException("Falta la lista \"hallazgos\"");
@@ -31,6 +34,53 @@ public class LectorRespuestaAnalisis {
     List<HallazgoPropuesto> propuestos = new ArrayList<>();
     for (JsonNode hallazgo : hallazgos) {
       propuestos.add(leerHallazgo(hallazgo));
+    }
+    return propuestos;
+  }
+
+  /**
+   * Resumen narrativo del formato compacto, si vino.
+   *
+   * @return el texto, o nulo si no hay
+   */
+  public String resumen(String contenido) {
+    JsonNode r = parsear(quitarCercoMarkdown(contenido)).path("r");
+    if (!r.isTextual() || r.asText().isBlank()) {
+      return null;
+    }
+    String texto = r.asText().strip();
+    return texto.length() > LONGITUD_MAXIMA ? texto.substring(0, LONGITUD_MAXIMA) : texto;
+  }
+
+  /**
+   * Formato compacto {@code {"h":[{"t":"f","x":"...","c":[3,7]}]}}: el modelo cita por id y el
+   * texto de la cita lo pone el sistema desde lo que envió. Por eso el fragmento queda nulo aquí.
+   */
+  private List<HallazgoPropuesto> leerCompacto(JsonNode hallazgos) {
+    if (!hallazgos.isArray()) {
+      throw new RespuestaInvalidaException("Falta la lista \"h\"");
+    }
+    if (hallazgos.size() > MAXIMO_HALLAZGOS) {
+      throw new RespuestaInvalidaException("Hay más de " + MAXIMO_HALLAZGOS + " hallazgos");
+    }
+    List<HallazgoPropuesto> propuestos = new ArrayList<>();
+    for (JsonNode nodo : hallazgos) {
+      TipoHallazgo tipo =
+          switch (nodo.path("t").asText()) {
+            case "f" -> TipoHallazgo.FORTALEZA;
+            case "o" -> TipoHallazgo.OPORTUNIDAD_DE_MEJORA;
+            default -> throw new RespuestaInvalidaException("Tipo de hallazgo desconocido");
+          };
+      String texto = textoObligatorio(nodo.path("x"), "x");
+      JsonNode citas = nodo.path("c");
+      if (!citas.isArray()) {
+        throw new RespuestaInvalidaException("Cada hallazgo debe traer la lista \"c\"");
+      }
+      List<CitaPropuesta> propuestas = new ArrayList<>();
+      for (JsonNode cita : citas) {
+        propuestas.add(new CitaPropuesta(leerIdentificador(cita).orElse(null), null));
+      }
+      propuestos.add(new HallazgoPropuesto(tipo, texto, propuestas));
     }
     return propuestos;
   }
@@ -100,6 +150,7 @@ public class LectorRespuestaAnalisis {
 
   /**
    * @param comentarioId nulo si el modelo no dio un identificador numérico
+   * @param fragmento nulo en el formato compacto: el texto se toma del comentario citado
    */
   public record CitaPropuesta(Long comentarioId, String fragmento) {}
 

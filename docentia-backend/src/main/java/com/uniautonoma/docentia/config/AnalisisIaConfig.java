@@ -27,7 +27,11 @@ import org.springframework.web.client.RestClient;
 
 /** Piezas del análisis con IA. El modelo se elige con docentia.ia.proveedor. */
 @Configuration
-@EnableConfigurationProperties({IaProperties.class, AnalisisComentariosProperties.class})
+@EnableConfigurationProperties({
+  IaProperties.class,
+  AnalisisComentariosProperties.class,
+  AhorroIaProperties.class
+})
 public class AnalisisIaConfig {
 
   /** Modelo local por reglas: el de por defecto, sin red ni datos fuera de la institución. */
@@ -83,12 +87,13 @@ public class AnalisisIaConfig {
       prefix = "docentia.ia",
       name = "proveedor",
       havingValue = "chat-completions")
-  ModeloIA modeloIAChatCompletions(RestClient.Builder restClientBuilder, IaProperties propiedades) {
+  ModeloIA modeloIAChatCompletions(
+      RestClient.Builder restClientBuilder, IaProperties propiedades, AhorroIaProperties ahorro) {
     SimpleClientHttpRequestFactory fabrica = new SimpleClientHttpRequestFactory();
     fabrica.setConnectTimeout(Duration.ofSeconds(10));
     fabrica.setReadTimeout(Duration.ofSeconds(propiedades.timeoutSegundos()));
     return new ModeloIAChatCompletions(
-        restClientBuilder.clone().requestFactory(fabrica), propiedades);
+        restClientBuilder.clone().requestFactory(fabrica), propiedades, ahorro.maxTokensSalida());
   }
 
   /**

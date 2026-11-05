@@ -36,6 +36,9 @@ filas en disco. La app nunca expone ese orden y las respuestas se listan por UUI
 | IDOR entre facultades | Alcance por facultad en el servicio; 404 igual que inexistente | `AnalisisComentariosTest.elDocenteNoVeCrudosYOtraFacultadRecibe404` |
 | Deducir a un docente desde el resumen | El resumen no trae docentes y no se muestra con menos de 3 | `AnalisisComentariosTest.elResumenEsLaSumaYNoSeMuestraConPocosDocentes` |
 | Abuso de consulta | 60 consultas por usuario y minuto (429), página máxima de 50, 2.000 comentarios por corrida | `AnalisisComentariosTest.losComentariosSePaginanFiltranYTienenTope` |
+| Texto de comentarios en el registro de gasto o en logs | `uso_ia` solo guarda conteos, tokens y huella; los errores del proveedor se registran por código HTTP, sin cuerpo | `AhorroTokensTest.elUsoNoGuardaTextoNiPersonasYNadaVaAlRegistro`, `HuellaEntradaTest` |
+| Gasto descontrolado del proveedor | Muestra con tope, caché por huella, presupuesto por día y periodo, enfriamiento al regenerar; las lecturas nunca llaman | `AhorroTokensTest` |
+| Cita inventada por el modelo | Cita por id: el texto lo pone el sistema y un id no enviado queda sin verificar | `AhorroTokensTest.lasCitasPorIdSeResuelvenConElTextoEnviadoYUnIdInexistenteNoVale` |
 | Situación grave escondida en un comentario | Se excluye del análisis y queda una advertencia con la cantidad para coordinación | `ValidacionAnalisisTest` |
 
 ## Controles
