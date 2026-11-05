@@ -23,7 +23,7 @@ public record AhorroIaProperties(
     @DefaultValue("150") int maxComentariosLlm,
     @DefaultValue("300") int maxCaracteresComentario,
     @DefaultValue("16000") int maxTokensEntrada,
-    @DefaultValue("1500") int maxTokensSalida,
+    @DefaultValue("4000") int maxTokensSalida,
     @DefaultValue("500000") long presupuestoTokensDia,
     @DefaultValue("3000000") long presupuestoTokensPeriodo,
     @DefaultValue("60") int enfriamientoRegeneracionMinutos,

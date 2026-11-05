@@ -25,7 +25,7 @@ import org.springframework.web.client.RestClientResponseException;
 public class ModeloIAChatCompletions implements ModeloIA {
 
   static final String RUTA = "/chat/completions";
-  static final int SALIDA_POR_DEFECTO = 1500;
+  static final int SALIDA_POR_DEFECTO = 4000;
 
   private final RestClient restClient;
   private final String modelo;
