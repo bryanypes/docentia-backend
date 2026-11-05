@@ -20,9 +20,9 @@ import com.uniautonoma.docentia.PruebaIntegracion;
 import com.uniautonoma.docentia.dto.AsistenciaCitaRequest;
 import com.uniautonoma.docentia.dto.CompromisoActaRequest;
 import com.uniautonoma.docentia.dto.ConfirmacionCitaRequest;
-import com.uniautonoma.docentia.dto.ReprogramacionCitaRequest;
 import com.uniautonoma.docentia.dto.FirmaActaRequest;
 import com.uniautonoma.docentia.dto.NuevaActaRequest;
+import com.uniautonoma.docentia.dto.ReprogramacionCitaRequest;
 import com.uniautonoma.docentia.dto.TipoActaRequest;
 import com.uniautonoma.docentia.entity.Cita;
 import com.uniautonoma.docentia.entity.Clase;
@@ -271,7 +271,8 @@ class ProcesoEvaluacionTest extends PruebaIntegracion {
     reprogramar(cita, otra).andExpect(status().isConflict());
     proceso()
         .andExpect(jsonPath("$.estado").value("CITA_AGENDADA"))
-        .andExpect(jsonPath("$.hitos[*].titulo").value(hasItem("La coordinación cambió el horario")));
+        .andExpect(
+            jsonPath("$.hitos[*].titulo").value(hasItem("La coordinación cambió el horario")));
 
     mockMvc
         .perform(post("/citas/{id}/cancelacion", idNueva).with(como(docente)))

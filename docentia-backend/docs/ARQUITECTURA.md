@@ -10,7 +10,7 @@ flowchart TB
   S -- evento tras el commit --> NO[Notificaciones]
   NO --> DB
   W[Procesador de análisis] -- SKIP LOCKED --> DB
-  W --> IA[Modelo simulado o proveedor externo]
+  W --> IA[Modelo local por reglas o proveedor externo]
   M[Procesador de correo] -- SKIP LOCKED --> DB
   M --> SMTP[SMTP o Mailpit]
 ```
@@ -46,6 +46,46 @@ flowchart LR
 Las dos tablas se escriben en la misma transacción, pero ninguna columna las une. La participación solo
 impide el doble envío y mide la cobertura; la respuesta solo alimenta la nota del docente cuando hay al
 menos 5.
+
+## Análisis de comentarios
+
+```mermaid
+flowchart LR
+  CSV[(comentarios_estudiantes<br/>carga CSV)] --> I[Ingesta]
+  F[(respuestas_heteroevaluacion<br/>solo texto, con la recolección cerrada)] --> I
+  I --> N[Normalización y orden por huella]
+  N --> Q[Filtro de calidad<br/>vacíos, cortos, duplicados, órdenes al modelo]
+  Q --> E2[Filtro de contenido E2<br/>ofensivo, personal, grave]
+  E2 --> A[Anonimización<br/>nombres, correos, teléfonos, documentos, enlaces, docente]
+  A --> M[Modelo local o de lenguaje]
+  M --> V[Verificación de citas]
+  V --> G[(resultados_analisis_comentarios<br/>versión vigente y reemplazadas)]
+  A --> K[(comentarios_analizados<br/>texto anonimizado, huella, etiquetas)]
+  V --> H[(hallazgos: pendientes de validación)]
+```
+
+Con un proveedor externo:
+
+```mermaid
+flowchart LR
+  U[Comentarios útiles anonimizados] --> L[Modelo local: etiqueta y cuenta todos]
+  L --> MU[Muestra estratificada<br/>máx. 150, 300 caracteres, sin saludos ni casi duplicados]
+  MU --> HU[Huella SHA-256 de la entrada]
+  HU -- existe --> CA[(cache_respuestas_ia)]
+  HU -- no existe --> PR{Presupuesto}
+  PR -- no alcanza --> RZ[RECHAZADO_PRESUPUESTO<br/>ofrecer modelo local]
+  PR -- alcanza --> LLM[Modelo de lenguaje<br/>cita por id]
+  LLM --> CA
+  CA --> CI[Citas: el texto sale de lo enviado]
+  HU --> US[(uso_ia: tokens, sin texto)]
+```
+
+Las lecturas, el resumen y las tendencias salen de lo guardado y nunca llaman al proveedor.
+
+**Anonimato de la fuente FORMULARIO.** Los comentarios no se copian al enviarse. Se leen solo al
+analizar y solo cuando la recolección ya cerró, sin el UUID ni la asignación de la respuesta. La copia
+que queda no tiene fecha, secuencia ni id de respuesta, y su orden es el de la huella del texto: no hay
+forma de volver al momento del envío.
 
 ## Decisiones importantes
 

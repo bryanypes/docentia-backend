@@ -29,6 +29,14 @@
 - DocenteIA acompaña el análisis de comentarios: guía de tres pasos, resumen de lo encontrado y
   mensajes para cada estado de la solicitud.
 - Avisos como notificaciones flotantes y confirmaciones en modal en lugar de `window.confirm`.
+- Modelo local por reglas para analizar comentarios: léxico versionado, negaciones, intensificadores,
+  ironía, jerga y descriptores D02 a D12 por criterio. Es el proveedor por defecto y no usa red.
+- Análisis de los comentarios del formulario anónimo, solo con la recolección cerrada.
+- Resultado estructurado versionado: sentimiento, temas, fortalezas, oportunidades, tendencias contra
+  el periodo anterior, criterios y advertencias.
+- Endpoints de análisis por docente, comentarios anonimizados y resumen agregado por programa.
+- Validación con 90 comentarios sintéticos etiquetados y métricas por criterio.
+- Instrucción `analisis-v2` contra inyección y prueba opcional con un proveedor real.
 
 ### Cambiado
 
@@ -45,6 +53,14 @@
 - Nombres de personas, programas, facultades y cursos con mayúscula inicial y tildes en las
   palabras académicas (V31, V32).
 - Listas de Estadísticas y Usuarios en tandas con «Mostrar más» y tarjetas compactas en el celular.
+- El filtro de calidad (vacíos, cortos, duplicados, órdenes al modelo) también se aplica al CSV.
+- Los comentarios se envían ordenados por la huella del texto, no por orden de carga.
+- `temperature` es opcional en el proveedor chat-completions.
+- Ahorro de tokens con proveedor externo: medición en `uso_ia`, muestra estratificada de hasta 150
+  comentarios recortados a 300 caracteres, caché por huella, citas por id, instrucción `analisis-v3`
+  compacta, presupuesto por día y periodo, regeneración con motivo y enfriamiento, y endpoint de uso.
+  Con 1.000 comentarios la llamada pasa de 81.840 a 10.307 tokens de entrada.
+- Salida máxima del proveedor en 4.000 tokens: con 1.500 la respuesta salía cortada.
 
 ### Corregido
 

@@ -1,0 +1,23 @@
+{
+  "estado" : "NO_DISPONIBLE_AUN",
+  "motivo" : "SIN_SOLICITAR",
+  "mensaje" : "Todavía no se ha solicitado el análisis.",
+  "docenteId" : 10,
+  "nombreDocente" : "Docente No Disponible",
+  "periodoId" : 1,
+  "nombrePeriodo" : "2026-2",
+  "programa" : {
+    "id" : 1,
+    "nombre" : "Ingeniería de Software"
+  },
+  "facultad" : {
+    "id" : 1,
+    "nombre" : "Ingeniería"
+  },
+  "fuente" : null,
+  "idSolicitud" : null,
+  "version" : null,
+  "generadoEn" : null,
+  "estadoHallazgos" : null,
+  "resultado" : null
+}
