@@ -17,7 +17,8 @@ class AnalisisIaDeshabilitadoTest {
     // Con el interruptor apagado se rechaza antes de tocar la base, así que no hacen falta
     // repositorios.
     AnalisisIaService servicio =
-        new AnalisisIaService(null, null, null, null, null, apagado, null, null, null);
+        new AnalisisIaService(
+            null, null, null, null, null, apagado, null, null, null, null, null, null);
 
     assertThatThrownBy(() -> servicio.solicitar(new SolicitudAnalisisRequest(1L, 1L), null))
         .isInstanceOf(ServicioDeshabilitadoException.class)

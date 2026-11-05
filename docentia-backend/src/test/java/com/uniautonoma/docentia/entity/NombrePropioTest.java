@@ -19,7 +19,8 @@ class NombrePropioTest {
     assertThat(NombrePropio.normalizar("ELECTIVA II (OPTATIVA)"))
         .isEqualTo("Electiva II (Optativa)");
     assertThat(NombrePropio.normalizar("DE LA CRUZ")).isEqualTo("De la Cruz");
-    assertThat(NombrePropio.normalizar("INGENIERIA ELECTRONICA")).isEqualTo("Ingeniería Electrónica");
+    assertThat(NombrePropio.normalizar("INGENIERIA ELECTRONICA"))
+        .isEqualTo("Ingeniería Electrónica");
   }
 
   @Test

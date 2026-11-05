@@ -18,6 +18,7 @@ public final class NombrePropio {
       Set.of(
           "a", "al", "con", "de", "del", "e", "el", "en", "la", "las", "los", "o", "para", "por",
           "u", "y");
+
   /**
    * Palabras académicas que los sistemas de origen guardan sin tilde ("ADMINISTRACION"). Solo se
    * corrigen al normalizar un nombre en mayúsculas o minúsculas; la migración V32 aplica la misma
@@ -76,6 +77,7 @@ public final class NombrePropio {
           Map.entry("programacion", "programación"),
           Map.entry("academica", "académica"),
           Map.entry("academico", "académico"));
+
   private static final Pattern ROMANO = Pattern.compile("\\(?(I|II|III|IV|V|VI|VII|VIII|IX|X)\\)?");
   private static final Pattern ESPACIOS = Pattern.compile("\\s+");
 

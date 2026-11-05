@@ -37,6 +37,7 @@ class AnalisisIaTest extends PruebaIntegracion {
   @Autowired private ProcesadorSolicitudesAnalisis procesador;
   @Autowired private SolicitudAnalisisRepository solicitudRepository;
   @Autowired private EntityManager entityManager;
+  @Autowired private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
 
   private Facultad ingenieria;
   private PeriodoAcademico periodo;
@@ -91,7 +92,7 @@ class AnalisisIaTest extends PruebaIntegracion {
         .andExpect(jsonPath("$.encuestasCerradas").value(12))
         .andExpect(jsonPath("$.comentariosEnviados").value(12))
         .andExpect(jsonPath("$.borrador.modelo").value("simulado-determinista"))
-        .andExpect(jsonPath("$.borrador.versionInstruccion").value("analisis-v1"))
+        .andExpect(jsonPath("$.borrador.versionInstruccion").value("analisis-v3"))
         .andExpect(jsonPath("$.borrador.fechaGeneracion").exists())
         .andExpect(jsonPath("$.borrador.estado").value("PENDIENTE_VALIDACION"))
         .andExpect(jsonPath("$.borrador.hallazgos", hasSize(6)))
@@ -105,14 +106,20 @@ class AnalisisIaTest extends PruebaIntegracion {
                 everyItem(org.hamcrest.Matchers.is(true))))
         .andExpect(jsonPath("$.borrador.hallazgos[0].tipo").value("FORTALEZA"))
         .andExpect(jsonPath("$.borrador.hallazgos[0].citas[0].idComentario").isNumber())
-        // Lo que llegó al modelo ya no tenía el nombre ni el correo del estudiante.
-        .andExpect(
-            jsonPath("$.borrador.hallazgos[0].citas[0].fragmento")
-                .value("Me llamo [nombre], escribo desde [correo]"))
         .andExpect(
             jsonPath(
                 "$.borrador.hallazgos[*].citas[*].fragmento",
                 everyItem(not(containsString("Pedro")))));
+    // Lo que llegó al modelo ya no tenía el nombre ni el correo del estudiante.
+    assertThat(
+            jdbcTemplate.queryForList(
+                "select c.texto from comentarios_analizados c"
+                    + " join resultados_analisis_comentarios r on r.id = c.id_resultado"
+                    + " where r.id_solicitud = ?",
+                String.class,
+                id))
+        .contains("Me llamo [nombre], escribo desde [correo]. Explica con ejemplos reales")
+        .noneMatch(texto -> texto.contains("Pedro") || texto.contains("pedro@x.co"));
   }
 
   @Test
