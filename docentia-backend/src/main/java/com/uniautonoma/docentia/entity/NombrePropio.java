@@ -8,7 +8,7 @@ import java.util.regex.Pattern;
 /**
  * Nombres de personas, programas, facultades y cursos con mayúscula inicial. Campus y los CSV
  * suelen traerlos todo en mayúsculas o todo en minúsculas; solo esos se normalizan, para no tocar
- * uno ya bien escrito ("ELECTIVA I (Optativa)", "Ingeniería de Software"). La migración V31 aplica
+ * uno ya bien escrito ("ELECTIVA I (Optativa)", "Ingeniería de Software"). La migración V38 aplica
  * la misma regla a lo ya guardado.
  */
 public final class NombrePropio {
@@ -21,7 +21,7 @@ public final class NombrePropio {
 
   /**
    * Palabras académicas que los sistemas de origen guardan sin tilde ("ADMINISTRACION"). Solo se
-   * corrigen al normalizar un nombre en mayúsculas o minúsculas; la migración V32 aplica la misma
+   * corrigen al normalizar un nombre en mayúsculas o minúsculas; la migración V39 aplica la misma
    * lista a lo ya guardado.
    */
   private static final Map<String, String> TILDES =

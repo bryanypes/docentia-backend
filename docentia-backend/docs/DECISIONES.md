@@ -188,17 +188,17 @@ Contrato: [api-proceso-evaluacion.md](api-proceso-evaluacion.md).
 - **Dos actas.** `COMPROMISO` exige al menos un compromiso con plazo; `RETROALIMENTACION` es la
   constancia de que recibió la retroalimentación. Con la nota bajo el umbral siempre es de
   compromiso; por encima, la coordinación elige al crearla o la cambia antes de la primera firma.
-  Las actas anteriores a V29 toman el tipo según su nota.
+  Las actas anteriores a V36 toman el tipo según su nota.
 - **Firma en la reunión.** Además de las reglas anteriores, el acta se firma después de registrar la
   asistencia. El docente la firma desde su sesión, en Mi acta.
-- **Migración V29.** Agrega confirmación y asistencia a `citas` y `tipo` a `actas`. No se editó
+- **Migración V36.** Agrega confirmación y asistencia a `citas` y `tipo` a `actas`. No se editó
   ninguna migración anterior.
 
 ## Firma, inicio y estadísticas
 
 - **Firma dibujada.** Se firma en un modal con un lienzo (mouse, dedo o lápiz). Quien no puede
   dibujar escribe su nombre y se dibuja con letra manuscrita: el resultado es el mismo PNG. El
-  backend valida que sea un PNG con trazo, guarda su hash y lo imprime en el PDF (V30).
+  backend valida que sea un PNG con trazo, guarda su hash y lo imprime en el PDF (V37).
 - **Inicio único.** `/inicio` es la ruta principal de todos los roles y muestra el panel de cada uno.
   Solo cuando la sesión vence y entra la misma persona se vuelve a la pantalla anterior; tras un
   Salir nadie hereda la ruta del rol anterior.
