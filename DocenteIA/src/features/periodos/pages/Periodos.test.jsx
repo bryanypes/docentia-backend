@@ -1,8 +1,14 @@
-import { fireEvent, render, screen } from '@testing-library/react'
+import { fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { describe, expect, it, vi } from 'vitest'
+import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { renderizarConSesion } from '../../../pruebas/renderizarConSesion.jsx'
 import { ApiError } from '../../../services/api.js'
-import { FormularioPeriodo } from './Periodos.jsx'
+import { activarPeriodo, listarPeriodos } from '../services/periodosService.js'
+import Periodos, { FormularioPeriodo } from './Periodos.jsx'
+
+vi.mock('../services/periodosService.js')
+
+beforeEach(() => vi.clearAllMocks())
 
 function llenarDatos() {
   fireEvent.change(screen.getByLabelText('Nombre'), { target: { value: '2027-1' } })
@@ -48,5 +54,47 @@ describe('FormularioPeriodo', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Crear periodo' }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent('Ya existe un periodo académico con ese nombre')
+  })
+})
+
+describe('Periodos · activación', () => {
+  const PERIODOS = [
+    { idPeriodo: 1, nombre: '2026-2', fechaInicio: '2026-07-01', fechaFin: '2026-12-31', esActivo: true, etapas: [] },
+    { idPeriodo: 2, nombre: '2027-1', fechaInicio: '2027-02-01', fechaFin: '2027-06-05', esActivo: false, etapas: [] },
+  ]
+
+  async function pedirActivar() {
+    listarPeriodos.mockResolvedValue(PERIODOS)
+    renderizarConSesion(<Periodos />, { rol: 'VICERRECTOR' })
+    const tarjeta = (await screen.findByRole('heading', { name: '2027-1' })).closest('section')
+    await userEvent.click(within(tarjeta).getByRole('button', { name: 'Activar' }))
+    await userEvent.click(
+      within(await screen.findByRole('dialog', { name: '¿Activar 2027-1?' })).getByRole('button', { name: 'Activar' }),
+    )
+  }
+
+  it('si el periodo no tiene matrículas pide una segunda confirmación antes de activarlo', async () => {
+    activarPeriodo
+      .mockRejectedValueOnce(new ApiError(409, 'El periodo 2027-1 no tiene matrículas: confirma para activarlo igual'))
+      .mockResolvedValueOnce({})
+
+    await pedirActivar()
+    const aviso = await screen.findByRole('dialog', { name: '2027-1 no tiene matrículas' })
+    expect(aviso).toHaveTextContent('no tiene matrículas')
+    await userEvent.click(within(aviso).getByRole('button', { name: 'Activar de todos modos' }))
+
+    expect(activarPeriodo).toHaveBeenNthCalledWith(1, 2)
+    expect(activarPeriodo).toHaveBeenNthCalledWith(2, 2, true)
+  })
+
+  it('si no se confirma por segunda vez, el periodo no se activa ni se muestra error', async () => {
+    activarPeriodo.mockRejectedValueOnce(new ApiError(409, 'El periodo 2027-1 no tiene matrículas'))
+
+    await pedirActivar()
+    const aviso = await screen.findByRole('dialog', { name: '2027-1 no tiene matrículas' })
+    await userEvent.click(within(aviso).getByRole('button', { name: 'Cancelar' }))
+
+    expect(activarPeriodo).toHaveBeenCalledTimes(1)
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 })

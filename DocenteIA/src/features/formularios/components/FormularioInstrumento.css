@@ -131,6 +131,61 @@
   overflow-x: auto;
 }
 
+.coevaluaciones__filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 10px 12px;
+  margin-bottom: 12px;
+}
+
+.coevaluaciones__filtros-rotulo {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: var(--peso-semi);
+}
+
+.coevaluaciones__buscador {
+  display: inline-flex;
+  flex: 1 1 220px;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+  padding: 0 10px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+}
+
+.coevaluaciones__buscador input {
+  width: 100%;
+  min-height: 36px;
+  border: 0;
+  background: transparent;
+  font: inherit;
+}
+
+.coevaluaciones__selector {
+  display: grid;
+  gap: 4px;
+  font-size: 12px;
+}
+
+.coevaluaciones__selector select {
+  min-height: 36px;
+  padding: 0 8px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
+  background: #fff;
+  font: inherit;
+}
+
+.coevaluaciones__conteo {
+  margin: 0 0 10px;
+  font-size: 13px;
+}
+
 .menu__contador {
   min-width: 20px;
   margin-left: auto;

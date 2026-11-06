@@ -1,6 +1,7 @@
 package com.uniautonoma.docentia.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -9,10 +10,13 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.uniautonoma.docentia.EscenarioPrueba;
 import com.uniautonoma.docentia.PruebaIntegracion;
 import com.uniautonoma.docentia.dto.EtapaPeriodoRequest;
 import com.uniautonoma.docentia.dto.PeriodoAcademicoRequest;
+import com.uniautonoma.docentia.entity.Clase;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
+import com.uniautonoma.docentia.entity.Programa;
 import com.uniautonoma.docentia.entity.TipoEtapa;
 import com.uniautonoma.docentia.repository.PeriodoAcademicoRepository;
 import java.time.LocalDate;
@@ -20,6 +24,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.ResultActions;
 
 class PeriodoAcademicoControllerTest extends PruebaIntegracion {
@@ -28,6 +33,8 @@ class PeriodoAcademicoControllerTest extends PruebaIntegracion {
   private static final LocalDate FIN = LocalDate.of(2026, 12, 5);
 
   @Autowired private PeriodoAcademicoRepository periodoRepository;
+  @Autowired private EscenarioPrueba escenario;
+  @Autowired private JdbcTemplate jdbcTemplate;
 
   @Test
   void creaUnPeriodoInactivoConSusEtapas() throws Exception {
@@ -86,8 +93,7 @@ class PeriodoAcademicoControllerTest extends PruebaIntegracion {
     PeriodoAcademico anterior = new PeriodoAcademico("2026-1", LocalDate.of(2026, 2, 2), INICIO);
     anterior.setEsActivo(true);
     periodoRepository.saveAndFlush(anterior);
-    PeriodoAcademico nuevo =
-        periodoRepository.saveAndFlush(new PeriodoAcademico("2026-2", INICIO, FIN));
+    PeriodoAcademico nuevo = periodoConMatricula("2026-2");
 
     mockMvc
         .perform(
@@ -102,6 +108,80 @@ class PeriodoAcademicoControllerTest extends PruebaIntegracion {
         .andExpect(jsonPath("$.nombre").value("2026-2"));
     assertThat(periodoRepository.findAll().stream().filter(PeriodoAcademico::getEsActivo))
         .hasSize(1);
+  }
+
+  @Test
+  void activarUnPeriodoSinMatriculasExigeConfirmacion() throws Exception {
+    PeriodoAcademico anterior = periodoConMatricula("2026-2");
+    anterior.setEsActivo(true);
+    periodoRepository.saveAndFlush(anterior);
+    PeriodoAcademico vacio =
+        periodoRepository.saveAndFlush(new PeriodoAcademico("2027-1", INICIO, FIN));
+
+    mockMvc
+        .perform(
+            put("/periodos-academicos/{id}/activacion", vacio.getIdPeriodo())
+                .with(comoVicerrector()))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.mensaje").value(containsString("no tiene matrículas")));
+    mockMvc
+        .perform(get("/periodos-academicos/activo").with(comoVicerrector()))
+        .andExpect(jsonPath("$.nombre").value("2026-2"));
+
+    mockMvc
+        .perform(
+            put("/periodos-academicos/{id}/activacion", vacio.getIdPeriodo())
+                .param("confirmar", "true")
+                .with(comoVicerrector()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.esActivo").value(true));
+  }
+
+  @Test
+  void laActivacionYLaDesactivacionQuedanAuditadas() throws Exception {
+    PeriodoAcademico periodo = periodoConMatricula("2026-2");
+
+    mockMvc
+        .perform(
+            put("/periodos-academicos/{id}/activacion", periodo.getIdPeriodo())
+                .with(comoVicerrector()))
+        .andExpect(status().isOk());
+    mockMvc
+        .perform(
+            delete("/periodos-academicos/{id}/activacion", periodo.getIdPeriodo())
+                .with(comoVicerrector()))
+        .andExpect(status().isNoContent());
+
+    assertThat(auditadas("ACTIVACION_PERIODO", periodo.getIdPeriodo())).isEqualTo(1);
+    assertThat(auditadas("DESACTIVACION_PERIODO", periodo.getIdPeriodo())).isEqualTo(1);
+  }
+
+  @Test
+  void rechazaUnNombreQueSoloDifiereEnElCeroDelSemestre() throws Exception {
+    periodoRepository.save(new PeriodoAcademico("2026-2", INICIO, FIN));
+
+    crearPeriodo(new PeriodoAcademicoRequest("2026-02", INICIO, FIN, List.of()))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.mensaje").value(containsString("mismo semestre")));
+    crearPeriodo(new PeriodoAcademicoRequest("2027-1", INICIO, FIN, List.of()))
+        .andExpect(status().isCreated());
+  }
+
+  @Test
+  void unPeriodoParecidoYaExistenteSigueEditandoseSinCambiarSuNombre() throws Exception {
+    periodoRepository.save(new PeriodoAcademico("2026-2", INICIO, FIN));
+    PeriodoAcademico duplicado =
+        periodoRepository.saveAndFlush(new PeriodoAcademico("2026-02", INICIO, FIN));
+    EtapaPeriodoRequest etapa =
+        new EtapaPeriodoRequest(TipoEtapa.RECOLECCION_CALIFICACIONES, INICIO, INICIO.plusDays(7));
+
+    mockMvc
+        .perform(
+            put("/periodos-academicos/{id}", duplicado.getIdPeriodo())
+                .with(comoVicerrector())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(aJson(new PeriodoAcademicoRequest("2026-02", INICIO, FIN, List.of(etapa)))))
+        .andExpect(status().isOk());
   }
 
   @Test
@@ -145,6 +225,30 @@ class PeriodoAcademicoControllerTest extends PruebaIntegracion {
         .andExpect(jsonPath("$.etapas[0].fechaApertura").value("2026-08-10"));
 
     periodoRepository.flush();
+  }
+
+  private PeriodoAcademico periodoConMatricula(String nombre) {
+    Programa programa =
+        escenario.crearPrograma("Software", escenario.crearFacultad("Ingeniería"));
+    PeriodoAcademico periodo =
+        periodoRepository.saveAndFlush(new PeriodoAcademico(nombre, INICIO, FIN));
+    Clase clase =
+        escenario.crearClase(
+            periodo,
+            escenario.crearCurso("ISW-101", "Programación web", programa),
+            "A",
+            escenario.crearDocente("Docente Uno", programa));
+    escenario.matricular(clase, escenario.crearEstudiante("Estudiante Uno", programa));
+    return periodo;
+  }
+
+  private long auditadas(String accion, Long idPeriodo) {
+    return jdbcTemplate.queryForObject(
+        "select count(*) from auditoria where accion = ? and entidad = 'PERIODO'"
+            + " and entidad_id = ? and resultado = 'EXITO'",
+        Long.class,
+        accion,
+        idPeriodo);
   }
 
   private ResultActions crearPeriodo(PeriodoAcademicoRequest solicitud) throws Exception {
