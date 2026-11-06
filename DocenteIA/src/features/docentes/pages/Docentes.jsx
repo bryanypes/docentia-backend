@@ -35,6 +35,16 @@ function cumpleEstado(promedio, estado, miFuente) {
   return Boolean(miFuente) && promedio.fuentesPendientes.includes(miFuente)
 }
 
+/** Solo se ordena por el puntaje que se ve (promedio completo); los demás van al final, por nombre. */
+function compararPorPuntaje(a, b) {
+  const puntajeA = a.promedio?.estado === 'COMPLETO' ? Number(a.promedio.valor) : null
+  const puntajeB = b.promedio?.estado === 'COMPLETO' ? Number(b.promedio.valor) : null
+  if (puntajeA !== null && puntajeB !== null && puntajeA !== puntajeB) return puntajeB - puntajeA
+  if (puntajeA !== null && puntajeB === null) return -1
+  if (puntajeA === null && puntajeB !== null) return 1
+  return a.docente.nombreCompleto.localeCompare(b.docente.nombreCompleto, 'es')
+}
+
 /**
  * Una sola etiqueta por fila: el nivel si está completa; si no, cuántas faltan (o que falta la tuya,
  * que es lo accionable). Qué fuentes faltan se ve al pasar el mouse y lo leen los lectores de pantalla.
@@ -88,14 +98,16 @@ export default function Docentes() {
 
   const filas = useMemo(() => {
     const termino = normalizarTexto(busqueda.trim())
-    return lista.filter(
-      ({ docente, promedio }) =>
-        (!programa || docente.nombrePrograma === programa) &&
-        cumpleEstado(promedio, estado, miFuente) &&
-        (!estadoProceso || procesoPorDocente.get(docente.idDocente)?.estado === estadoProceso) &&
-        (!termino ||
-          normalizarTexto(`${docente.nombreCompleto} ${docente.correo} ${docente.nombrePrograma}`).includes(termino)),
-    )
+    return lista
+      .filter(
+        ({ docente, promedio }) =>
+          (!programa || docente.nombrePrograma === programa) &&
+          cumpleEstado(promedio, estado, miFuente) &&
+          (!estadoProceso || procesoPorDocente.get(docente.idDocente)?.estado === estadoProceso) &&
+          (!termino ||
+            normalizarTexto(`${docente.nombreCompleto} ${docente.correo} ${docente.nombrePrograma}`).includes(termino)),
+      )
+      .sort(compararPorPuntaje)
   }, [lista, programa, estado, estadoProceso, procesoPorDocente, miFuente, busqueda])
 
   function limpiarFiltros() {
@@ -142,6 +154,7 @@ export default function Docentes() {
               <span className="docentes__alcance">
                 Alcance: {alcance}
                 {periodo ? ` · Periodo ${periodo.nombre}` : ' · Sin periodo activo'}
+                {' · Ordenados por puntaje, de mayor a menor'}
               </span>
             </div>
             <span className="docentes__conteo" aria-live="polite">
