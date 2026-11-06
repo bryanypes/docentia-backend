@@ -22,6 +22,11 @@ const ACCIONES = {
   PUBLICACION_HALLAZGOS: 'Publicación de hallazgos',
   DESCARTE_HALLAZGO: 'Descarte de hallazgo',
   CAMBIO_VENTANA: 'Cambio de ventana',
+  ACTIVACION_PERIODO: 'Activación de periodo',
+  DESACTIVACION_PERIODO: 'Desactivación de periodo',
+  ENVIO_FORMULARIO: 'Envío de formulario',
+  ENVIO_HETEROEVALUACION: 'Envío de heteroevaluación',
+  IMPORTACION_MATRICULA: 'Importación de matrícula',
 }
 
 function consultar({ desde, hasta, accion, usuario, pagina }) {
