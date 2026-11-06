@@ -129,7 +129,16 @@ migración V10 juntó las tres etapas de calificación en la recolección (de la
 Las etapas siguen siendo opcionales al crear el periodo; una etapa sin fechas cuenta como cerrada.
 Las fechas son inclusivas y se comparan contra la fecha de Colombia.
 
-Solo hay un periodo activo: activar uno desactiva el anterior (sin cambios).
+Solo hay un periodo activo: activar uno desactiva el anterior.
+
+`PUT /api/periodos-academicos/{id}/activacion` responde `409` si el periodo no tiene matrículas
+activas, porque los estudiantes dejarían de ver a sus profesores (las clases y matrículas cuelgan
+de un periodo). Con `?confirmar=true` se activa de todos modos; hace falta para arrancar un semestre
+nuevo, ya que la matrícula solo se importa con el periodo activo. Activar y desactivar quedan en
+la auditoría (`ACTIVACION_PERIODO`, `DESACTIVACION_PERIODO`).
+
+Crear o renombrar un periodo con un nombre que solo difiere en el cero del semestre de otro
+(`2026-02` y `2026-2`) responde `409`. Editar un periodo sin cambiar su nombre sigue permitido.
 
 ### `GET /api/periodos-academicos/activo/ventanas`
 
