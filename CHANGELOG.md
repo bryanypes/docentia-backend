@@ -4,6 +4,8 @@
 
 ### Agregado
 
+- Docentes ordenados por puntaje, de mayor a menor; quienes no tienen promedio completo van al final.
+- Coevaluaciones con búsqueda y filtros por programa y estado; la enviada se muestra como «Realizada».
 - Estado general del proceso por docente, con línea de pasos y trazabilidad para coordinación,
   vicerrectoría y el propio docente.
 - Confirmación o declinación de la cita por el docente; declinar libera la franja.
@@ -64,6 +66,12 @@
 
 ### Corregido
 
+- Activar un periodo sin matrículas deja a los estudiantes sin profesores; ahora pide una
+  confirmación explícita (`?confirmar=true`) y la pantalla de Periodos la solicita.
+- No se puede crear ni renombrar un periodo con el mismo semestre en otro formato (`2026-02` y
+  `2026-2`).
+- La auditoría registra la activación y desactivación de periodos y los envíos de heteroevaluación
+  rechazados; las acciones de envío de formulario, heteroevaluación y matrícula ya tienen etiqueta.
 - Tras salir e iniciar con otro rol ya no se abre el panel del rol anterior.
 - Las páginas ya no se desbordan en el celular; las tablas se apilan como tarjetas.
 
