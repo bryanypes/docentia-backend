@@ -69,20 +69,11 @@ const NAVEGACION = {
     { ruta: '/auditoria', etiqueta: 'Auditoría', Icono: ScrollText },
   ],
   [ROLES.ADMINISTRADOR]: [
-    { ruta: '/inicio', etiqueta: 'Inicio', Icono: LayoutDashboard },
-    { ruta: '/estadisticas', etiqueta: 'Estadísticas', Icono: ChartColumnBig },
-    { ruta: '/docentes', etiqueta: 'Docentes', Icono: Users },
-    { ruta: '/importaciones', etiqueta: 'Cargas de estudiantes', Icono: FileUp },
-    { ruta: '/matricula', etiqueta: 'Matrícula y cobertura', Icono: GraduationCap },
-    { ruta: '/analisis', etiqueta: 'Análisis de comentarios', Icono: MessagesSquare },
-    { ruta: '/acciones-sugeridas', etiqueta: 'Acciones sugeridas', Icono: Lightbulb },
-    { ruta: '/panel-programas', etiqueta: 'Panel por programa', Icono: ChartColumn },
     { ruta: '/periodos', etiqueta: 'Periodos', Icono: CalendarRange },
     { ruta: '/ponderaciones', etiqueta: 'Ponderaciones', Icono: Scale },
     { ruta: '/facultades', etiqueta: 'Facultades', Icono: Building2 },
     { ruta: '/programas', etiqueta: 'Programas', Icono: BookOpen },
     { ruta: '/usuarios', etiqueta: 'Usuarios', Icono: UserCog },
-    { ruta: '/auditoria', etiqueta: 'Auditoría', Icono: ScrollText },
   ],
 }
 
