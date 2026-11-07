@@ -74,7 +74,7 @@ public class HeteroevaluacionController {
   }
 
   @GetMapping("/cobertura-heteroevaluacion")
-  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR', 'ADMINISTRADOR')")
   public CoberturaHeteroevaluacionResponse cobertura(
       @RequestParam(required = false) Long periodo,
       @RequestParam(defaultValue = "0") int page,
@@ -84,7 +84,7 @@ public class HeteroevaluacionController {
   }
 
   @PostMapping(value = "/matriculas/csv", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR', 'ADMINISTRADOR')")
   public ResponseEntity<ResultadoMatriculaResponse> importar(
       @RequestPart("archivo") MultipartFile archivo,
       @AuthenticationPrincipal UsuarioSesion sesion) {
@@ -103,7 +103,7 @@ public class HeteroevaluacionController {
   }
 
   @GetMapping("/matriculas/plantilla")
-  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR', 'ADMINISTRADOR')")
   public ResponseEntity<String> plantilla() {
     return ResponseEntity.ok()
         .contentType(new MediaType("text", "csv", java.nio.charset.StandardCharsets.UTF_8))
