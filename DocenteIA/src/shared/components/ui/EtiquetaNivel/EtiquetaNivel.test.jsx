@@ -22,7 +22,7 @@ describe('EtiquetaNivel', () => {
   })
 
   it('sin categoría nombra las fuentes que faltan', () => {
-    render(<EtiquetaNivel promedio={{ estado: 'SIN_NOTA', categoria: null, evaluadoresPendientes: ['AUTOEVALUACION'] }} />)
+    render(<EtiquetaNivel promedio={{ estado: 'SIN_NOTA', categoria: null, fuentesPendientes: ['AUTOEVALUACION'] }} />)
     expect(screen.getByText('Pendiente: Autoevaluación')).toBeInTheDocument()
   })
 })

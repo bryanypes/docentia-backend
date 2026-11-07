@@ -2,7 +2,7 @@ import { ArrowRight } from 'lucide-react'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { Cargando } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
-import { ETIQUETA_EVALUADOR } from '../../../shared/constants/dominio.js'
+import { ETIQUETA_FUENTE } from '../../../shared/constants/dominio.js'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { formatearFechaHora, formatearNota } from '../../../shared/utils/formatters.js'
 import { listarCorrecciones } from '../services/calificacionesService.js'
@@ -45,7 +45,7 @@ export function PanelCorrecciones({ idDocente }) {
           {correcciones.datos.map((c) => (
             <li key={c.idCorreccion} className="correcciones__item">
               <div className="correcciones__cabecera">
-                <span className="pildora pildora--info">{ETIQUETA_EVALUADOR[c.fuente] ?? c.fuente}</span>
+                <span className="pildora pildora--info">{ETIQUETA_FUENTE[c.fuente] ?? c.fuente}</span>
                 <span className="correcciones__periodo">Periodo {c.nombrePeriodo}</span>
                 <time className="correcciones__fecha" dateTime={c.fechaCorreccion}>
                   {formatearFechaHora(c.fechaCorreccion)}

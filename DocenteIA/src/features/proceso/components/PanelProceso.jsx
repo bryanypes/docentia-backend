@@ -5,7 +5,7 @@ import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
 import { ROLES } from '../../../shared/constants/dominio.js'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
-import { formatearFecha, listarEvaluadores } from '../../../shared/utils/formatters.js'
+import { formatearFecha, listarFuentes } from '../../../shared/utils/formatters.js'
 import { formatearHora, hoyEnColombia } from '../../agenda/franjas.js'
 import { useSesion } from '../../auth/sesionContext.js'
 import {
@@ -81,7 +81,7 @@ export function PanelProceso({ idDocente, onCambio }) {
         <div>
           <dt>Evaluaciones</dt>
           <dd>
-            {datos.evaluadoresPendientes.length === 0 ? 'Las tres completas' : `Falta ${listarEvaluadores(datos.evaluadoresPendientes)}`}
+            {datos.fuentesPendientes.length === 0 ? 'Las tres completas' : `Falta ${listarFuentes(datos.fuentesPendientes)}`}
           </dd>
         </div>
         {cobertura && (

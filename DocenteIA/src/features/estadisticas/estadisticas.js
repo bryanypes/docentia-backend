@@ -2,7 +2,7 @@ import { NIVELES } from '../../shared/constants/dominio.js'
 import { nivelDeNota } from '../../shared/utils/formatters.js'
 import { ORDEN_ESTADOS } from '../proceso/estados.js'
 
-export const EVALUADORES = ['ESTUDIANTES', 'COORDINACION', 'AUTOEVALUACION']
+export const FUENTES = ['ESTUDIANTES', 'COORDINACION', 'AUTOEVALUACION']
 
 /** Intervalos del histograma de promedios, de medio punto. */
 export const INTERVALOS = [1, 1.5, 2, 2.5, 3, 3.5, 4, 4.5].map((desde) => ({
@@ -76,9 +76,9 @@ export function calcular(filas, { umbral = 3.8, agruparPor = 'nombrePrograma' } 
     cantidad: filas.filter((f) => f.proceso?.estado === clave).length,
   }))
 
-  const pendientesPorEvaluador = EVALUADORES.map((evaluador) => ({
-    evaluador,
-    cantidad: filas.filter((f) => f.promedio?.evaluadoresPendientes?.includes(evaluador)).length,
+  const pendientesPorFuente = FUENTES.map((fuente) => ({
+    fuente,
+    cantidad: filas.filter((f) => f.promedio?.fuentesPendientes?.includes(fuente)).length,
   }))
 
   const histograma = INTERVALOS.map((intervalo, i) => ({
@@ -129,7 +129,7 @@ export function calcular(filas, { umbral = 3.8, agruparPor = 'nombrePrograma' } 
     cobertura: { ...cobertura, porcentaje: cobertura.esperadas ? Math.round((cobertura.respondidas / cobertura.esperadas) * 100) : null },
     porNivel,
     porEstado,
-    pendientesPorEvaluador,
+    pendientesPorFuente,
     histograma,
     porGrupo,
     actas: {

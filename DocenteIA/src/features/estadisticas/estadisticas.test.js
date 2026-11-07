@@ -9,13 +9,13 @@ const docente = (id, programa, idFacultad = 1) => ({
   idFacultad,
   nombreFacultad: `Facultad ${idFacultad}`,
 })
-const completo = (valor) => ({ estado: 'COMPLETO', valor, evaluadoresPendientes: [] })
+const completo = (valor) => ({ estado: 'COMPLETO', valor, fuentesPendientes: [] })
 
 const SEGUIMIENTO = [
   { docente: docente(1, 'Software'), promedio: completo(4.7) },
   { docente: docente(2, 'Software'), promedio: completo(2.9) },
   { docente: docente(3, 'Electrónica', 2), promedio: completo(3.9) },
-  { docente: docente(4, 'Electrónica', 2), promedio: { estado: 'PARCIAL', valor: null, evaluadoresPendientes: ['ESTUDIANTES'] } },
+  { docente: docente(4, 'Electrónica', 2), promedio: { estado: 'PARCIAL', valor: null, fuentesPendientes: ['ESTUDIANTES'] } },
 ]
 const PROCESOS = [
   { docente: { idDocente: 1 }, estado: 'FINALIZADO', coberturaEstudiantes: { respondidas: 8, esperadas: 10 }, acta: { tipo: 'RETROALIMENTACION', estado: 'FIRMADA' }, cita: { activa: true, asistencia: 'ASISTIO' } },
@@ -39,7 +39,7 @@ describe('estadísticas', () => {
     expect(r.porNivel.find((n) => n.codigo === 'MUY_ALTO').cantidad).toBe(1)
     expect(r.porNivel.find((n) => n.codigo === 'BAJO').cantidad).toBe(1)
     expect(r.porEstado.find((e) => e.estado === 'FINALIZADO').cantidad).toBe(1)
-    expect(r.pendientesPorEvaluador.find((p) => p.evaluador === 'ESTUDIANTES').cantidad).toBe(1)
+    expect(r.pendientesPorFuente.find((p) => p.fuente === 'ESTUDIANTES').cantidad).toBe(1)
     expect(r.actas).toMatchObject({ firmadas: 1, retroalimentacion: 1, sinActa: 2 })
     expect(r.citas).toMatchObject({ agendadas: 2, asistieron: 1 })
     expect(r.histograma.reduce((a, b) => a + b.cantidad, 0)).toBe(3)

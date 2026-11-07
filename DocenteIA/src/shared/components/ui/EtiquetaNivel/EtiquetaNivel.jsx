@@ -1,4 +1,4 @@
-import { listarEvaluadores } from '../../../utils/formatters.js'
+import { listarFuentes } from '../../../utils/formatters.js'
 import './EtiquetaNivel.css'
 
 /** Chip con la categoría de desempeño que entrega el backend (código y etiqueta). */
@@ -13,13 +13,13 @@ export function ChipCategoria({ categoria, sufijo = '' }) {
 }
 
 /**
- * Píldora con el estado de un promedio: la categoría si existe (parcial si faltan evaluadores) o
- * "Pendiente" con los evaluadores que faltan. Nunca depende solo del color.
+ * Píldora con el estado de un promedio: la categoría si existe (parcial si faltan fuentes) o
+ * "Pendiente" con las fuentes que faltan. Nunca depende solo del color.
  */
 export function EtiquetaNivel({ promedio }) {
   if (!promedio) return <span className="etiqueta-nivel etiqueta-nivel--neutro">Sin periodo activo</span>
   if (!promedio.categoria) {
-    const faltan = listarEvaluadores(promedio.evaluadoresPendientes)
+    const faltan = listarFuentes(promedio.fuentesPendientes)
     return (
       <span className="etiqueta-nivel etiqueta-nivel--pendiente">
         Pendiente{faltan ? `: ${faltan}` : ''}

@@ -12,7 +12,7 @@ const PROCESO = {
   docente: { idDocente: 4, nombreCompleto: 'Nora Muñoz' },
   estado: 'ASISTENCIA_CONFIRMADA',
   paso: 5,
-  evaluadoresPendientes: [],
+  fuentesPendientes: [],
   coberturaEstudiantes: { respondidas: 18, esperadas: 25, minimoRespuestas: 5, origenNota: 'FORMULARIO' },
   cita: {
     idCita: 3,

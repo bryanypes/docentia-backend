@@ -6,7 +6,7 @@ import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista
 import { EtiquetaNivel } from '../../../shared/components/ui/EtiquetaNivel/EtiquetaNivel.jsx'
 import { MensajeNavegacion } from '../../../shared/components/ui/MensajeNavegacion/MensajeNavegacion.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
-import { formatearNota, listarEvaluadores, textoFormula } from '../../../shared/utils/formatters.js'
+import { formatearNota, listarFuentes, textoFormula } from '../../../shared/utils/formatters.js'
 import { PanelSeguimientoPlan } from '../../actas/components/PanelSeguimientoPlan.jsx'
 import { PanelHallazgosPropios } from '../../analisis/components/PanelHallazgosPropios.jsx'
 import { PanelMiAutoevaluacion } from '../../formularios/components/PanelMiAutoevaluacion.jsx'
@@ -109,7 +109,7 @@ export default function MiEvaluacion() {
                   ? 'Tus tres evaluaciones están completas. Tu nota, tus compromisos y el acta se te muestran en la reunión de retroalimentación, cuando la coordinación registre tu asistencia.'
                   : completo
                   ? 'Promedio ponderado del periodo. Incluye la evaluación de tus estudiantes y las evaluaciones institucionales, que se reportan únicamente dentro de este promedio.'
-                  : `Tu promedio estará disponible cuando se registre la calificación de ${listarEvaluadores(promedio.evaluadoresPendientes)}.`}
+                  : `Tu promedio estará disponible cuando se registre la calificación de ${listarFuentes(promedio.fuentesPendientes)}.`}
               </p>
 
               <div className="mi-evaluacion__fuentes">
