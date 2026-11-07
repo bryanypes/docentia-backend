@@ -124,7 +124,7 @@ public class PeriodoAcademicoController {
    * @param confirmar acepta activar el periodo aunque no tenga matrículas
    * @return el periodo activado
    */
-  @PreAuthorize("hasRole('ADMINISTRADOR')")
+  @PreAuthorize("hasAnyRole('VICERRECTOR', 'ADMINISTRADOR')")
   @PutMapping("/{idPeriodo}/activacion")
   public PeriodoAcademicoResponse activarPeriodo(
       @PathVariable Long idPeriodo,
@@ -140,7 +140,7 @@ public class PeriodoAcademicoController {
    *
    * @param idPeriodo identificador del periodo
    */
-  @PreAuthorize("hasRole('ADMINISTRADOR')")
+  @PreAuthorize("hasAnyRole('VICERRECTOR', 'ADMINISTRADOR')")
   @DeleteMapping("/{idPeriodo}/activacion")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void desactivarPeriodo(

@@ -178,7 +178,7 @@ class PeriodoAcademicoControllerTest extends PruebaIntegracion {
     mockMvc
         .perform(
             put("/periodos-academicos/{id}", duplicado.getIdPeriodo())
-                .with(comoVicerrector())
+                .with(comoAdministrador())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(aJson(new PeriodoAcademicoRequest("2026-02", INICIO, FIN, List.of(etapa)))))
         .andExpect(status().isOk());
