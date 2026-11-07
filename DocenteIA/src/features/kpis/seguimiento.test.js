@@ -3,7 +3,7 @@ import { analizarSeguimiento } from './seguimiento.js'
 
 const docente = (nombre, valor) => ({
   docente: { nombreFacultad: 'F', nombrePrograma: nombre },
-  promedio: { estado: 'COMPLETO', valor, fuentesPendientes: [] },
+  promedio: { estado: 'COMPLETO', valor, evaluadoresPendientes: [] },
 })
 
 describe('analizarSeguimiento', () => {
