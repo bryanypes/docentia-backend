@@ -36,7 +36,7 @@ export default function ExpedienteDocente() {
     <Encabezado
       miga="Docentes · Expediente"
       titulo="Expediente del docente"
-      subtitulo="Calificación por evaluador, resultado por dimensión, histórico y compromisos vigentes."
+      subtitulo="Calificación por fuente, resultado por dimensión, histórico y compromisos vigentes."
     />
   )
 

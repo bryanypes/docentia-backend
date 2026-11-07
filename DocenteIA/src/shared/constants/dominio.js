@@ -1,6 +1,5 @@
 export const ROLES = {
   VICERRECTOR: 'VICERRECTOR',
-  ADMINISTRADOR: 'ADMINISTRADOR',
   COORDINADOR: 'COORDINADOR',
   DOCENTE: 'DOCENTE',
   ESTUDIANTE: 'ESTUDIANTE',
@@ -8,13 +7,12 @@ export const ROLES = {
 
 export const ETIQUETA_ROL = {
   VICERRECTOR: 'Vicerrectoría',
-  ADMINISTRADOR: 'Administración',
   COORDINADOR: 'Coordinación',
   DOCENTE: 'Docente',
   ESTUDIANTE: 'Estudiante',
 }
 
-export const ETIQUETA_EVALUADOR = {
+export const ETIQUETA_FUENTE = {
   ESTUDIANTES: 'Estudiantes',
   COORDINACION: 'Coordinación',
   AUTOEVALUACION: 'Autoevaluación',

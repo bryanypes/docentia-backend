@@ -7,9 +7,9 @@ import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { BotonAccion } from '../../../shared/components/ui/BotonAccion/BotonAccion.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { EtiquetaNivel } from '../../../shared/components/ui/EtiquetaNivel/EtiquetaNivel.jsx'
-import { ETIQUETA_EVALUADOR, FUENTE_DEL_ROL, ROLES } from '../../../shared/constants/dominio.js'
+import { ETIQUETA_FUENTE, FUENTE_DEL_ROL, ROLES } from '../../../shared/constants/dominio.js'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
-import { formatearNota, iniciales, listarEvaluadores, normalizarTexto } from '../../../shared/utils/formatters.js'
+import { formatearNota, iniciales, listarFuentes, normalizarTexto } from '../../../shared/utils/formatters.js'
 import { useSesion } from '../../auth/sesionContext.js'
 import { listarFacultades } from '../../facultades/services/facultadesService.js'
 import { ChipProceso } from '../../proceso/components/ChipProceso.jsx'
@@ -32,7 +32,17 @@ function cumpleEstado(promedio, estado, miFuente) {
   if (!promedio) return false
   if (estado === ESTADOS.COMPLETOS) return promedio.estado === 'COMPLETO'
   if (estado === ESTADOS.INCOMPLETOS) return promedio.estado !== 'COMPLETO'
-  return Boolean(miFuente) && (promedio.evaluadoresPendientes ?? []).includes(miFuente)
+  return Boolean(miFuente) && promedio.fuentesPendientes.includes(miFuente)
+}
+
+/** Solo se ordena por el puntaje que se ve (promedio completo); los demás van al final, por nombre. */
+function compararPorPuntaje(a, b) {
+  const puntajeA = a.promedio?.estado === 'COMPLETO' ? Number(a.promedio.valor) : null
+  const puntajeB = b.promedio?.estado === 'COMPLETO' ? Number(b.promedio.valor) : null
+  if (puntajeA !== null && puntajeB !== null && puntajeA !== puntajeB) return puntajeB - puntajeA
+  if (puntajeA !== null && puntajeB === null) return -1
+  if (puntajeA === null && puntajeB !== null) return 1
+  return a.docente.nombreCompleto.localeCompare(b.docente.nombreCompleto, 'es')
 }
 
 /**
@@ -41,8 +51,8 @@ function cumpleEstado(promedio, estado, miFuente) {
  */
 function EstadoEvaluacion({ promedio, faltaMia }) {
   if (!promedio || promedio.estado === 'COMPLETO') return <EtiquetaNivel promedio={promedio} />
-  const faltan = (promedio.evaluadoresPendientes ?? []).length
-  const detalle = `Falta: ${listarEvaluadores(promedio.evaluadoresPendientes ?? [])}`
+  const faltan = promedio.fuentesPendientes.length
+  const detalle = `Falta: ${listarFuentes(promedio.fuentesPendientes)}`
   return (
     <span className={`pildora ${faltaMia ? 'pildora--info' : 'pildora--alerta'}`} title={detalle}>
       {faltaMia ? 'Falta tu calificación' : `Pendiente · faltan ${faltan}`}
@@ -79,8 +89,8 @@ export default function Docentes() {
   const facultades = useFetch(() => (esVicerrector ? listarFacultades() : Promise.resolve([])), [esVicerrector])
 
   const periodo = seguimiento.datos?.periodo ?? null
-  const lista = useMemo(() => (seguimiento.datos?.docentes ?? []).filter(Boolean), [seguimiento.datos])
-  const programas = useMemo(() => [...new Set(lista.filter(d => d?.docente).map(({ docente }) => docente?.nombrePrograma).filter(Boolean))].sort(), [lista])
+  const lista = useMemo(() => seguimiento.datos?.docentes ?? [], [seguimiento.datos])
+  const programas = useMemo(() => [...new Set(lista.map(({ docente }) => docente.nombrePrograma))].sort(), [lista])
   const faltanMias = useMemo(
     () => lista.filter(({ promedio }) => cumpleEstado(promedio, ESTADOS.FALTA_MI_NOTA, miFuente)).length,
     [lista, miFuente],
@@ -88,14 +98,16 @@ export default function Docentes() {
 
   const filas = useMemo(() => {
     const termino = normalizarTexto(busqueda.trim())
-    return lista.filter(
-      ({ docente, promedio }) =>
-        (!programa || docente.nombrePrograma === programa) &&
-        cumpleEstado(promedio, estado, miFuente) &&
-        (!estadoProceso || procesoPorDocente.get(docente.idDocente)?.estado === estadoProceso) &&
-        (!termino ||
-          normalizarTexto(`${docente.nombreCompleto} ${docente.correo} ${docente.nombrePrograma}`).includes(termino)),
-    )
+    return lista
+      .filter(
+        ({ docente, promedio }) =>
+          (!programa || docente.nombrePrograma === programa) &&
+          cumpleEstado(promedio, estado, miFuente) &&
+          (!estadoProceso || procesoPorDocente.get(docente.idDocente)?.estado === estadoProceso) &&
+          (!termino ||
+            normalizarTexto(`${docente.nombreCompleto} ${docente.correo} ${docente.nombrePrograma}`).includes(termino)),
+      )
+      .sort(compararPorPuntaje)
   }, [lista, programa, estado, estadoProceso, procesoPorDocente, miFuente, busqueda])
 
   function limpiarFiltros() {
@@ -118,14 +130,14 @@ export default function Docentes() {
       />
 
       <div className="pagina">
-        {periodo && faltanMias > 0 && estado !== ESTADOS.FALTA_MI_NOTA && miFuente && (
+        {periodo && faltanMias > 0 && estado !== ESTADOS.FALTA_MI_NOTA && (
           <div className="docentes__pendientes" role="status">
             <img src={robotSenala} alt="" className="docentes__pendientes-robot" />
             <span className="docentes__pendientes-texto">
               <strong>
                 {faltanMias === 1 ? '1 docente espera' : `${faltanMias} docentes esperan`} tu calificación
               </strong>{' '}
-              de {ETIQUETA_EVALUADOR[miFuente]?.toLowerCase()} en {periodo.nombre}.
+              de {ETIQUETA_FUENTE[miFuente]?.toLowerCase()} en {periodo.nombre}.
             </span>
             <Boton variante="contorno" onClick={() => setEstado(ESTADOS.FALTA_MI_NOTA)}>
               Ver solo esos
@@ -142,6 +154,7 @@ export default function Docentes() {
               <span className="docentes__alcance">
                 Alcance: {alcance}
                 {periodo ? ` · Periodo ${periodo.nombre}` : ' · Sin periodo activo'}
+                {' · Ordenados por puntaje, de mayor a menor'}
               </span>
             </div>
             <span className="docentes__conteo" aria-live="polite">
