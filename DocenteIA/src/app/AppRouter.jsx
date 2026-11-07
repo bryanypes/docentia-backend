@@ -99,7 +99,7 @@ function RutasDocentia() {
                 <Route path="/coevaluaciones/:idDocente" element={<CoevaluacionDocente />} />
               </Route>
 
-              <Route element={<ProtectedRoute rolesPermitidos={[ROLES.VICERRECTOR]} />}>
+              <Route element={<ProtectedRoute rolesPermitidos={[ROLES.ADMINISTRADOR]} />}>
                 <Route path="/periodos" element={<Periodos />} />
                 <Route path="/auditoria" element={<Auditoria />} />
                 <Route path="/ponderaciones" element={<Ponderaciones />} />

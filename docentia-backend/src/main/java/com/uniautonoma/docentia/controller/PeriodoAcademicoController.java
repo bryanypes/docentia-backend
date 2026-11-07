@@ -89,7 +89,7 @@ public class PeriodoAcademicoController {
    * @param solicitud datos del periodo
    * @return el periodo creado, todavía inactivo
    */
-  @PreAuthorize("hasRole('VICERRECTOR')")
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public PeriodoAcademicoResponse crearPeriodo(
@@ -104,7 +104,7 @@ public class PeriodoAcademicoController {
    * @param solicitud datos nuevos
    * @return el periodo actualizado
    */
-  @PreAuthorize("hasRole('VICERRECTOR')")
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   @PutMapping("/{idPeriodo}")
   public PeriodoAcademicoResponse actualizarPeriodo(
       @PathVariable Long idPeriodo,
@@ -121,7 +121,7 @@ public class PeriodoAcademicoController {
    * @param idPeriodo identificador del periodo
    * @return el periodo activado
    */
-  @PreAuthorize("hasRole('VICERRECTOR')")
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   @PutMapping("/{idPeriodo}/activacion")
   public PeriodoAcademicoResponse activarPeriodo(@PathVariable Long idPeriodo) {
     return periodoService.activarPeriodo(idPeriodo);
@@ -132,7 +132,7 @@ public class PeriodoAcademicoController {
    *
    * @param idPeriodo identificador del periodo
    */
-  @PreAuthorize("hasRole('VICERRECTOR')")
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   @DeleteMapping("/{idPeriodo}/activacion")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void desactivarPeriodo(@PathVariable Long idPeriodo) {

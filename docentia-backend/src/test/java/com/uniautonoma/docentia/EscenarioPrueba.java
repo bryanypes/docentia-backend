@@ -164,6 +164,10 @@ public class EscenarioPrueba {
     return usuarioRepository.save(Usuario.crearVicerrector(nombre, correoDe(nombre), HASH));
   }
 
+  public Usuario crearAdministrador(String nombre) {
+    return usuarioRepository.save(Usuario.crearAdministrador(nombre, correoDe(nombre), HASH));
+  }
+
   public PeriodoAcademico crearPeriodoActivo(String nombre) {
     PeriodoAcademico periodo = crearPeriodo(nombre, LocalDate.of(2026, 8, 3));
     // La recolección cubre todo el periodo, así que incluye el día fijo de las pruebas.

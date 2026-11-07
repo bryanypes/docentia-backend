@@ -20,7 +20,7 @@ public class PanoramaAnalisisController {
   }
 
   @GetMapping("/analisis-ia/panorama")
-  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR', 'ADMINISTRADOR')")
   public PanoramaAnalisisResponse panorama(
       @RequestParam(required = false) Long periodoId,
       @RequestParam(required = false) Long idFacultad,
