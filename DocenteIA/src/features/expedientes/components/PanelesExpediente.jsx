@@ -2,7 +2,7 @@ import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
 import { BarraNota } from '../../../shared/components/ui/BarraNota/BarraNota.jsx'
 import { EtiquetaNivel } from '../../../shared/components/ui/EtiquetaNivel/EtiquetaNivel.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
-import { ETIQUETA_FUENTE, ORIGEN_FUENTE } from '../../../shared/constants/dominio.js'
+import { ETIQUETA_EVALUADOR, ORIGEN_FUENTE } from '../../../shared/constants/dominio.js'
 import {
   formatearFecha,
   formatearNota,
@@ -44,7 +44,7 @@ export function PanelFuentes({ notasPorFuente, promedio, descripcion, children }
         {notasPorFuente.map((f) => (
           <li key={f.fuente} className="fuentes__fila">
             <span className="fuentes__nombre">
-              <strong>{ETIQUETA_FUENTE[f.fuente]}</strong>
+              <strong>{ETIQUETA_EVALUADOR[f.fuente]}</strong>
               <span>{f.nota === null ? 'Sin registrar' : ORIGEN_FUENTE[f.fuente]}</span>
             </span>
             <span className="fuentes__peso">{formatearPeso(f.peso)}</span>
