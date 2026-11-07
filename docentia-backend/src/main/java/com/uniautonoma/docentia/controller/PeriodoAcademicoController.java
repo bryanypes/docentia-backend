@@ -98,7 +98,8 @@ public class PeriodoAcademicoController {
   }
 
   /**
-   * Actualiza un periodo y sus etapas.
+   * Actualiza un periodo y sus etapas. Solo el ADMINISTRADOR puede hacer cambios;
+   * el VICERRECTOR puede visualizar.
    *
    * @param idPeriodo identificador del periodo
    * @param solicitud datos nuevos
@@ -116,7 +117,7 @@ public class PeriodoAcademicoController {
   }
 
   /**
-   * Activa un periodo; el que estuviera activo deja de estarlo.
+   * Activa un periodo; el que estuviera activo deja de estarlo. Solo el ADMINISTRADOR.
    *
    * @param idPeriodo identificador del periodo
    * @return el periodo activado
@@ -128,7 +129,7 @@ public class PeriodoAcademicoController {
   }
 
   /**
-   * Desactiva un periodo.
+   * Desactiva un periodo. Solo el ADMINISTRADOR.
    *
    * @param idPeriodo identificador del periodo
    */
