@@ -14,7 +14,7 @@ export const ETIQUETA_ROL = {
   ESTUDIANTE: 'Estudiante',
 }
 
-export const ETIQUETA_FUENTE = {
+export const ETIQUETA_EVALUADOR = {
   ESTUDIANTES: 'Estudiantes',
   COORDINACION: 'Coordinación',
   AUTOEVALUACION: 'Autoevaluación',

@@ -1,7 +1,7 @@
 import { NIVELES } from '../../shared/constants/dominio.js'
 import { nivelDeNota } from '../../shared/utils/formatters.js'
 
-export const FUENTES = ['ESTUDIANTES', 'COORDINACION', 'AUTOEVALUACION']
+export const EVALUADORES = ['ESTUDIANTES', 'COORDINACION', 'AUTOEVALUACION']
 
 /**
  * Resume el seguimiento del periodo activo (GET /docentes/seguimiento) en lo que el tablero muestra.
@@ -11,8 +11,8 @@ export const FUENTES = ['ESTUDIANTES', 'COORDINACION', 'AUTOEVALUACION']
 export function analizarSeguimiento(docentes, miFuente, agruparPor, umbral) {
   const total = docentes.length
   const completos = docentes.filter((d) => d.promedio?.estado === 'COMPLETO')
-  const faltanPorFuente = Object.fromEntries(
-    FUENTES.map((f) => [f, docentes.filter((d) => d.promedio?.fuentesPendientes?.includes(f)).length]),
+  const faltanPorEvaluador = Object.fromEntries(
+    EVALUADORES.map((e) => [e, docentes.filter((d) => d.promedio?.evaluadoresPendientes?.includes(e)).length]),
   )
 
   // Rango legible de cada nivel, para la leyenda: "desde 4,6", "3,8 a 4,6", "menos de 2,2".
@@ -45,5 +45,5 @@ export function analizarSeguimiento(docentes, miFuente, agruparPor, umbral) {
     .map((g) => ({ ...g, promedio: Math.round((g.suma / g.cantidad) * 100 + 1e-9) / 100 }))
     .sort((a, b) => b.promedio - a.promedio)
 
-  return { total, umbral, completos: completos.length, faltanPorFuente, faltaMia: faltanPorFuente[miFuente] ?? 0, porNivel, atencion, porGrupo }
+  return { total, umbral, completos: completos.length, faltanPorEvaluador, faltaMia: faltanPorEvaluador[miFuente] ?? 0, porNivel, atencion, porGrupo }
 }

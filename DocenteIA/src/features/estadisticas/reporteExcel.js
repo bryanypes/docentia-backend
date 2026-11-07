@@ -1,4 +1,4 @@
-import { ETIQUETA_FUENTE, NIVELES } from '../../shared/constants/dominio.js'
+import { ETIQUETA_EVALUADOR, NIVELES } from '../../shared/constants/dominio.js'
 import { formatearFecha } from '../../shared/utils/formatters.js'
 import { formatearHora } from '../agenda/franjas.js'
 import { ESTADOS_PROCESO, ETIQUETA_ASISTENCIA, ETIQUETA_CONFIRMACION, ETIQUETA_TIPO_ACTA } from '../proceso/estados.js'
@@ -41,7 +41,7 @@ function filaDocente({ docente, promedio, proceso, nivel }, numero) {
     completo ? Number(promedio.valor) : null,
     etiquetaNivel(nivel),
     completo ? 'Completa' : 'Incompleta',
-    (promedio?.fuentesPendientes ?? []).map((f) => ETIQUETA_FUENTE[f] ?? f).join(', '),
+    (promedio?.evaluadoresPendientes ?? []).map((f) => ETIQUETA_EVALUADOR[f] ?? f).join(', '),
     proceso ? (ESTADOS_PROCESO[proceso.estado]?.etiqueta ?? proceso.estado) : '',
     cobertura?.respondidas ?? null,
     cobertura?.esperadas ?? null,
@@ -182,7 +182,7 @@ export function hojasDelReporte({ filas, r, periodo, descripcionFiltros, nombreG
       { titulo: 'Fuente', ancho: 24 },
       { titulo: 'Docentes sin ella', ancho: 16, formato: 'entero' },
     ],
-    filas: r.pendientesPorFuente.map((p) => [ETIQUETA_FUENTE[p.fuente] ?? p.fuente, p.cantidad]),
+    filas: r.pendientesPorEvaluador.map((p) => [ETIQUETA_EVALUADOR[p.evaluador] ?? p.evaluador, p.cantidad]),
   }
 
   return [resumen, docentes, nivel, proceso, grupo, distribucion, fuentes]

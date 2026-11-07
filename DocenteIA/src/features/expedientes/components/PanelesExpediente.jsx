@@ -2,12 +2,12 @@ import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
 import { BarraNota } from '../../../shared/components/ui/BarraNota/BarraNota.jsx'
 import { EtiquetaNivel } from '../../../shared/components/ui/EtiquetaNivel/EtiquetaNivel.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
-import { ETIQUETA_FUENTE, ORIGEN_FUENTE } from '../../../shared/constants/dominio.js'
+import { ETIQUETA_EVALUADOR, ORIGEN_FUENTE } from '../../../shared/constants/dominio.js'
 import {
   formatearFecha,
   formatearNota,
   formatearPeso,
-  listarFuentes,
+  listarEvaluadores,
   nivelDeNota,
   textoFormula,
 } from '../../../shared/utils/formatters.js'
@@ -35,16 +35,16 @@ export function ValorPromedio({ promedio, tamano = 'grande' }) {
   )
 }
 
-/** Nota de cada fuente con su peso y el promedio ponderado. Solo para coordinación y vicerrectoría. */
+/** Nota de cada evaluador con su peso y el promedio ponderado. Solo para coordinación y vicerrectoría. */
 export function PanelFuentes({ notasPorFuente, promedio, descripcion, children }) {
   return (
-    <Panel titulo="Calificación por fuente" descripcion={descripcion}>
+    <Panel titulo="Calificación por evaluador" descripcion={descripcion}>
       <p className="fuentes__formula">{textoFormula(pesosDe(notasPorFuente))}</p>
       <ul className="fuentes">
         {notasPorFuente.map((f) => (
           <li key={f.fuente} className="fuentes__fila">
             <span className="fuentes__nombre">
-              <strong>{ETIQUETA_FUENTE[f.fuente]}</strong>
+              <strong>{ETIQUETA_EVALUADOR[f.fuente]}</strong>
               <span>{f.nota === null ? 'Sin registrar' : ORIGEN_FUENTE[f.fuente]}</span>
             </span>
             <span className="fuentes__peso">{formatearPeso(f.peso)}</span>
@@ -58,7 +58,7 @@ export function PanelFuentes({ notasPorFuente, promedio, descripcion, children }
       </div>
       {promedio?.estado === 'PARCIAL' && (
         <Aviso tipo="alerta" titulo="Promedio parcial">
-          Falta {listarFuentes(promedio.fuentesPendientes)}. Se calculó con las fuentes disponibles y puede cambiar.
+          Falta {listarEvaluadores(promedio.evaluadoresPendientes)}. Se calculó con los evaluadores disponibles y podría cambiar.
         </Aviso>
       )}
       {promedio?.estado === 'SIN_NOTA' && <p className="fuentes__nota-pie">Aún no hay calificaciones registradas.</p>}

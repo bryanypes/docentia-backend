@@ -21,7 +21,7 @@ import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { EtiquetaNivel } from '../../../shared/components/ui/EtiquetaNivel/EtiquetaNivel.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
-import { ETIQUETA_FUENTE, NIVELES, ROLES } from '../../../shared/constants/dominio.js'
+import { ETIQUETA_EVALUADOR, NIVELES, ROLES } from '../../../shared/constants/dominio.js'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { formatearNota } from '../../../shared/utils/formatters.js'
 import { useSesion } from '../../auth/sesionContext.js'
@@ -310,7 +310,7 @@ export default function Estadisticas() {
 
         <div className="estadisticas__cifras">
           <Cifra icono={Users} rotulo="Docentes" valor={r.total} detalle={`${r.completos} con evaluación completa`} />
-          <Cifra icono={Layers} rotulo="Avance" valor={porcentaje(r.avance)} detalle="Con las tres fuentes" tono="turquesa" />
+          <Cifra icono={Layers} rotulo="Avance" valor={porcentaje(r.avance)} detalle="Con las tres evaluaciones" tono="turquesa" />
           <Cifra
             icono={Sigma}
             rotulo="Promedio"
@@ -412,18 +412,18 @@ export default function Estadisticas() {
               </div>
             </Panel>
 
-            <Panel titulo="Calificaciones que faltan" descripcion="Docentes a los que les falta cada fuente." icono={Layers} tono="coral">
+            <Panel titulo="Calificaciones que faltan" descripcion="Docentes a los que les falta cada evaluador." icono={Layers} tono="coral">
               <ul className="estadisticas__barras">
-                {r.pendientesPorFuente.map((p) => (
+                {r.pendientesPorEvaluador.map((p) => (
                   <BarraFiltro
-                    key={p.fuente}
-                    etiqueta={ETIQUETA_FUENTE[p.fuente]}
+                    key={p.evaluador}
+                    etiqueta={ETIQUETA_EVALUADOR[p.evaluador]}
                     valor={p.cantidad}
                     maximo={maxPendiente}
                     texto={`${p.cantidad} de ${r.total}`}
                     tono="coral"
                     activa={false}
-                    onClick={() => fijar('estado', p.fuente === 'AUTOEVALUACION' ? 'PENDIENTE_AUTOEVALUACION' : 'EVALUACIONES_EN_CURSO')}
+                    onClick={() => fijar('estado', p.evaluador === 'AUTOEVALUACION' ? 'PENDIENTE_AUTOEVALUACION' : 'EVALUACIONES_EN_CURSO')}
                   />
                 ))}
               </ul>
