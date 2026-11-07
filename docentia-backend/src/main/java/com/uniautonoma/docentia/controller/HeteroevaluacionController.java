@@ -68,7 +68,19 @@ public class HeteroevaluacionController {
       @PathVariable Long idAsignacion,
       @RequestBody EnvioEstudianteRequest solicitud,
       @AuthenticationPrincipal UsuarioSesion sesion) {
-    heteroevaluacion.enviar(idAsignacion, solicitud, sesion);
+    try {
+      heteroevaluacion.enviar(idAsignacion, solicitud, sesion);
+    } catch (RuntimeException rechazo) {
+      auditoria.registrar(
+          AccionAuditoria.ENVIO_HETEROEVALUACION,
+          "ASIGNACION",
+          idAsignacion,
+          sesion.idUsuario(),
+          sesion.correo(),
+          sesion.rol().name(),
+          AuditoriaService.FALLO);
+      throw rechazo;
+    }
     auditoria.registrar(AccionAuditoria.ENVIO_HETEROEVALUACION, "ASIGNACION", idAsignacion, sesion);
     return Map.of("estado", "ENVIADA");
   }

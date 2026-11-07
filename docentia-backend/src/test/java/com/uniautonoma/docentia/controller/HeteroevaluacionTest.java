@@ -119,6 +119,27 @@ class HeteroevaluacionTest extends PruebaIntegracion {
     return enviar(estudiante, todos(valor), null);
   }
 
+  @Test
+  void elEnvioRechazadoQuedaAuditadoComoFallo() throws Exception {
+    long inexistente = 987655L;
+
+    mockMvc
+        .perform(
+            post(LISTA + "/{id}/enviar", inexistente)
+                .with(como(estudiantes.get(0)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(aJson(Map.of("respuestas", todos(4)))))
+        .andExpect(status().isNotFound());
+
+    assertThat(
+            jdbcTemplate.queryForObject(
+                "select count(*) from auditoria where accion = 'ENVIO_HETEROEVALUACION'"
+                    + " and entidad_id = ? and resultado = 'FALLO'",
+                Long.class,
+                inexistente))
+        .isEqualTo(1);
+  }
+
   private com.uniautonoma.docentia.entity.Calificacion estudiantesDe(Usuario quien) {
     entityManager.flush();
     entityManager.clear();
