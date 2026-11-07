@@ -60,7 +60,7 @@ public record UsuarioSesion(
   }
 
   /**
-   * El vicerrector y el admin alcanzan todas las facultades. El coordinador solo la suya.
+   * El vicerrector y el administrador alcanzan todas las facultades. El coordinador solo la suya.
    * El docente no consulta información de facultades, así que para él siempre es falso.
    */
   public boolean tieneAlcanceSobreFacultad(Long idFacultadConsultada) {

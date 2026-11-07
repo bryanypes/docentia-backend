@@ -179,6 +179,17 @@ class ExpedienteDocenteTest extends PruebaIntegracion {
         .andExpect(status().isForbidden());
   }
 
+  @Test
+  void elAdministradorTambiénPuedeVerElExpedienteDeUnDocente() throws Exception {
+    escenario.registrarCalificacion(
+        docente, periodoActivo, FuenteEvaluacion.COORDINACION, notas("4.0", "3.0", "5.0", "4.0", "4.5"));
+    
+    mockMvc
+        .perform(get("/expedientes/{id}", docente.getIdUsuario()).with(comoAdministrador()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.docente.nombreCompleto").value("Julian Hoyos"));
+  }
+
   private ResultActions consultarComoCoordinador() throws Exception {
     return mockMvc.perform(
         get("/expedientes/{id}", docente.getIdUsuario())

@@ -335,7 +335,8 @@ class HeteroevaluacionTest extends PruebaIntegracion {
   }
 
   @Test
-  void elCsvNoPisaLaFuenteQueYaVieneDelFormulario() throws Exception {
+  void elCsvNoSePermiteQuandoLaHeteroevaluacionDelFormularioYaEstaActiva()
+      throws Exception {
     for (int i = 0; i < 5; i++) {
       enviar(estudiantes.get(i), 5).andExpect(status().isOk());
     }
@@ -345,13 +346,21 @@ class HeteroevaluacionTest extends PruebaIntegracion {
                 + docente.getCorreo()
                 + ";2.0;2.0;2.0;2.0;2.0;Bien\n")
             .getBytes(StandardCharsets.UTF_8);
+    // Cuando la heteroevaluación del formulario está activa (hay matriculas), el CSV debe bloquearse
+    // con 409
     mockMvc
         .perform(
             multipart("/importaciones/csv")
                 .file(new MockMultipartFile("archivo", "e.csv", "text/csv", csv))
                 .with(como(coordinador)))
-        .andExpect(status().isOk());
+        .andExpect(status().isConflict())
+        .andExpect(
+            jsonPath("$.mensaje")
+                .value(
+                    containsString(
+                        "La heteroevaluación del estudiante ya está recopilando")));
 
+    // Las notas del formulario se mantienen
     assertThat(estudiantesDe(docente).getOrigen()).isEqualTo(OrigenCalificacion.FORMULARIO);
     assertThat(estudiantesDe(docente).getNotaFuente()).isEqualByComparingTo("5");
   }
