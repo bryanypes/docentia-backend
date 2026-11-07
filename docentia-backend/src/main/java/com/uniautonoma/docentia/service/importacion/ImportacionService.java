@@ -17,6 +17,7 @@ import com.uniautonoma.docentia.exception.EtapaCerradaException;
 import com.uniautonoma.docentia.exception.ReglaNegocioException;
 import com.uniautonoma.docentia.repository.ComentarioEstudianteRepository;
 import com.uniautonoma.docentia.repository.ImportacionRepository;
+import com.uniautonoma.docentia.repository.MatriculaRepository;
 import com.uniautonoma.docentia.repository.UsuarioRepository;
 import com.uniautonoma.docentia.security.UsuarioSesion;
 import com.uniautonoma.docentia.service.CalificacionService;
@@ -68,6 +69,7 @@ public class ImportacionService {
   private final CalificacionService calificacionService;
   private final PeriodoAcademicoService periodoService;
   private final VentanaEtapaService ventanaEtapaService;
+  private final MatriculaRepository matriculaRepository;
   private final PlantillaMapeoService plantillaService;
   private final ResolutorMapeo resolutorMapeo = new ResolutorMapeo();
 
@@ -82,6 +84,7 @@ public class ImportacionService {
       CalificacionService calificacionService,
       PeriodoAcademicoService periodoService,
       VentanaEtapaService ventanaEtapaService,
+      MatriculaRepository matriculaRepository,
       ApplicationEventPublisher eventos) {
     this.eventos = eventos;
     this.plantillaService = plantillaService;
@@ -94,6 +97,7 @@ public class ImportacionService {
     this.calificacionService = calificacionService;
     this.periodoService = periodoService;
     this.ventanaEtapaService = ventanaEtapaService;
+    this.matriculaRepository = matriculaRepository;
   }
 
   /**
@@ -139,6 +143,7 @@ public class ImportacionService {
       MultipartFile archivo, String mapeoJson, String nombrePlantilla, UsuarioSesion sesion) {
     PeriodoAcademico periodo = periodoService.exigirPeriodoActivo();
     ventanaEtapaService.exigirEtapaAbierta(periodo, TipoEtapa.RECOLECCION_CALIFICACIONES);
+    validarQueHeteroroevaluacionNoEsteActiva(periodo);
     Analisis analisis = analizar(archivo, mapeoJson, nombrePlantilla, sesion);
     avisarSiYaSeImporto(analisis, periodo);
     ReporteImportacionResponse reporte = analisis.reporte();
@@ -458,6 +463,20 @@ public class ImportacionService {
           List.copyOf(errores),
           docentes,
           List.copyOf(avisos));
+    }
+  }
+
+  private void validarQueHeteroroevaluacionNoEsteActiva(PeriodoAcademico periodo) {
+    long matriculosActivas =
+        matriculaRepository.countByPeriodoIdAndEsActivaTrue(periodo.getIdPeriodo());
+    if (matriculosActivas > 0) {
+      throw new EtapaCerradaException(
+          "La heteroevaluación del estudiante ya está recopilando datos desde el formulario;"
+              + " el CSV no es válido en este periodo.",
+          TipoEtapa.RECOLECCION_CALIFICACIONES,
+          null,
+          null,
+          java.time.LocalDate.now());
     }
   }
 }

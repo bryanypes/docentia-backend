@@ -23,11 +23,10 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
- * Administración de usuarios: rol y vínculo a facultad o programa. La hace la vicerrectoría porque
- * todavía no existe un rol de administrador.
+ * Administración de usuarios: rol y vínculo a facultad o programa. La hace la administración.
  */
 @RestController
-@PreAuthorize("hasRole('VICERRECTOR')")
+@PreAuthorize("hasAnyRole('VICERRECTOR', 'ADMINISTRADOR')")
 @RequestMapping("/usuarios")
 public class UsuarioController {
 
@@ -66,6 +65,7 @@ public class UsuarioController {
    * @return el usuario creado
    */
   @PostMapping
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   @ResponseStatus(HttpStatus.CREATED)
   public UsuarioResponse crearUsuario(@Valid @RequestBody UsuarioRequest solicitud) {
     return usuarioService.crearUsuario(solicitud);
@@ -79,6 +79,7 @@ public class UsuarioController {
    * @return el usuario actualizado
    */
   @PutMapping("/{idUsuario}")
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   public UsuarioResponse actualizarUsuario(
       @PathVariable Long idUsuario, @Valid @RequestBody UsuarioRequest solicitud) {
     return usuarioService.actualizarUsuario(idUsuario, solicitud);
@@ -89,10 +90,11 @@ public class UsuarioController {
    *
    * @param idUsuario identificador del usuario
    * @param solicitud estado nuevo
-   * @param sesion vicerrectoría que hace el cambio; no puede desactivarse a sí misma
+   * @param sesion administración que hace el cambio; no puede desactivarse a sí misma
    * @return el usuario con su estado nuevo
    */
   @PatchMapping("/{idUsuario}/estado")
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   public UsuarioResponse cambiarEstado(
       @PathVariable Long idUsuario,
       @Valid @RequestBody EstadoUsuarioRequest solicitud,

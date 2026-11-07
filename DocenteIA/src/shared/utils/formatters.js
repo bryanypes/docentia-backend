@@ -1,4 +1,4 @@
-import { ETIQUETA_FUENTE, NIVELES } from '../constants/dominio.js'
+import { ETIQUETA_EVALUADOR, NIVELES } from '../constants/dominio.js'
 
 const formatoNota = new Intl.NumberFormat('es-CO', {
   minimumFractionDigits: 2,
@@ -76,7 +76,7 @@ export function porcentajeNota(valor) {
 
 /** ["COORDINACION", "AUTOEVALUACION"] → "Coordinación y Autoevaluación" */
 export function listarFuentes(fuentes = []) {
-  const nombres = fuentes.map((fuente) => ETIQUETA_FUENTE[fuente] ?? fuente)
+  const nombres = fuentes.map((fuente) => ETIQUETA_EVALUADOR[fuente] ?? fuente)
   if (nombres.length <= 1) return nombres.join('')
   return `${nombres.slice(0, -1).join(', ')} y ${nombres.at(-1)}`
 }

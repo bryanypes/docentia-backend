@@ -68,6 +68,13 @@ const NAVEGACION = {
     { ruta: '/usuarios', etiqueta: 'Usuarios', Icono: UserCog },
     { ruta: '/auditoria', etiqueta: 'Auditoría', Icono: ScrollText },
   ],
+  [ROLES.ADMINISTRADOR]: [
+    { ruta: '/periodos', etiqueta: 'Periodos', Icono: CalendarRange },
+    { ruta: '/ponderaciones', etiqueta: 'Ponderaciones', Icono: Scale },
+    { ruta: '/facultades', etiqueta: 'Facultades', Icono: Building2 },
+    { ruta: '/programas', etiqueta: 'Programas', Icono: BookOpen },
+    { ruta: '/usuarios', etiqueta: 'Usuarios', Icono: UserCog },
+  ],
 }
 
 function ContadorCoevaluaciones() {

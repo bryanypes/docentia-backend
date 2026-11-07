@@ -141,7 +141,7 @@ class UsuarioControllerTest extends PruebaIntegracion {
     mockMvc
         .perform(
             put("/usuarios/{id}", docente.getIdUsuario())
-                .with(comoVicerrector())
+                .with(comoAdministrador())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     aJson(
@@ -157,8 +157,10 @@ class UsuarioControllerTest extends PruebaIntegracion {
         .andExpect(jsonPath("$.nombreFacultad").value("Derecho"))
         .andExpect(jsonPath("$.idPrograma").doesNotExist());
 
+    // Vicerrector puede listar usuarios (lectura)
     mockMvc
         .perform(get("/usuarios").param("rol", "COORDINADOR").with(comoVicerrector()))
+        .andExpect(status().isOk())
         .andExpect(jsonPath("$[*].nombreCompleto", contains("Julian Hoyos")));
   }
 
@@ -167,22 +169,26 @@ class UsuarioControllerTest extends PruebaIntegracion {
     mockMvc
         .perform(
             put("/usuarios/{id}", 999_999)
-                .with(comoVicerrector())
+                .with(comoAdministrador())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(aJson(solicitud("x@prueba.co", Rol.VICERRECTOR, null, null))))
         .andExpect(status().isNotFound());
   }
 
   @Test
-  void soloElVicerrectorAdministraUsuarios() throws Exception {
+  void soloElAdministradorAdministraUsuarios() throws Exception {
     Usuario docente = escenario.crearDocente("Julian Hoyos", software);
     RequestPostProcessor coordinador = comoCoordinador(ingenieria.getIdFacultad());
+    RequestPostProcessor vicerrector = comoVicerrector();
 
+    // Lectura bloqueada para coordinadores, docentes y estudiantes
     mockMvc.perform(get("/usuarios").with(coordinador)).andExpect(status().isForbidden());
     mockMvc.perform(get("/usuarios").with(como(docente))).andExpect(status().isForbidden());
     mockMvc
         .perform(get("/usuarios").with(como(escenario.crearEstudiante("Karen Mancilla", software))))
         .andExpect(status().isForbidden());
+    
+    // Escritura bloqueada para coordinadores
     mockMvc
         .perform(
             post("/usuarios")
@@ -191,7 +197,76 @@ class UsuarioControllerTest extends PruebaIntegracion {
                 .content(
                     aJson(solicitud("y@prueba.co", Rol.DOCENTE, null, software.getIdPrograma()))))
         .andExpect(status().isForbidden());
+    
+    // Escritura bloqueada incluso para vicerrector
+    mockMvc
+        .perform(
+            post("/usuarios")
+                .with(vicerrector)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    aJson(solicitud("z@prueba.co", Rol.DOCENTE, null, software.getIdPrograma()))))
+        .andExpect(status().isForbidden());
+    
     mockMvc.perform(get("/usuarios")).andExpect(status().isUnauthorized());
+  }
+
+  @Test
+  void elAdministradorCreaUnUsuarioDeCadaRol() throws Exception {
+    crearComoAdministrador(solicitud("coord@prueba.co", Rol.COORDINADOR, ingenieria.getIdFacultad(), null))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.rol").value("COORDINADOR"))
+        .andExpect(jsonPath("$.nombreFacultad").value("Ingeniería"));
+    crearComoAdministrador(solicitud("docente@prueba.co", Rol.DOCENTE, null, software.getIdPrograma()))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.nombrePrograma").value("Ingeniería de Software"));
+    crearComoAdministrador(solicitud("admin@prueba.co", Rol.ADMINISTRADOR, null, null))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.rol").value("ADMINISTRADOR"));
+  }
+
+  @Test
+  void elVicerrectorNoCreaNiModificaUsuarios() throws Exception {
+    mockMvc
+        .perform(
+            post("/usuarios")
+                .with(comoVicerrector())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    aJson(solicitud("z@prueba.co", Rol.DOCENTE, null, software.getIdPrograma()))))
+        .andExpect(status().isForbidden());
+    Usuario existente = escenario.crearDocente("Carlos López", software);
+    mockMvc
+        .perform(
+            put("/usuarios/{id}", existente.getIdUsuario())
+                .with(comoVicerrector())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    aJson(solicitud("z@prueba.co", Rol.COORDINADOR, ingenieria.getIdFacultad(), null))))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void elAdministradorModificaYChangiaEstadoDeUsuarios() throws Exception {
+    Usuario docente = escenario.crearDocente("Julian Hoyos", software);
+    mockMvc
+        .perform(
+            put("/usuarios/{id}", docente.getIdUsuario())
+                .with(comoAdministrador())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    aJson(
+                        new UsuarioRequest(
+                            "Julian Hoyos Modificado",
+                            docente.getCorreo(),
+                            Rol.COORDINADOR,
+                            derecho.getIdFacultad(),
+                            null,
+                            null))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.nombreCompleto").value("Julian Hoyos Modificado"))
+        .andExpect(jsonPath("$.rol").value("COORDINADOR"))
+        .andExpect(jsonPath("$.nombreFacultad").value("Derecho"));
   }
 
   @Test
@@ -240,7 +315,15 @@ class UsuarioControllerTest extends PruebaIntegracion {
   private ResultActions crear(UsuarioRequest solicitud) throws Exception {
     return mockMvc.perform(
         post("/usuarios")
-            .with(comoVicerrector())
+            .with(comoAdministrador())
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(aJson(solicitud)));
+  }
+
+  private ResultActions crearComoAdministrador(UsuarioRequest solicitud) throws Exception {
+    return mockMvc.perform(
+        post("/usuarios")
+            .with(comoAdministrador())
             .contentType(MediaType.APPLICATION_JSON)
             .content(aJson(solicitud)));
   }

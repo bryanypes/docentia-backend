@@ -14,6 +14,8 @@ import com.uniautonoma.docentia.BaseDatosPruebaConfig;
 import com.uniautonoma.docentia.EscenarioPrueba;
 import com.uniautonoma.docentia.PruebaIntegracion;
 import com.uniautonoma.docentia.entity.Calificacion;
+import com.uniautonoma.docentia.entity.Clase;
+import com.uniautonoma.docentia.entity.Curso;
 import com.uniautonoma.docentia.entity.Facultad;
 import com.uniautonoma.docentia.entity.FuenteEvaluacion;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
@@ -301,6 +303,29 @@ class ImportacionCsvTest extends PruebaIntegracion {
   private MockMultipartFile archivo(String contenido) {
     return new MockMultipartFile(
         "archivo", "evaluacion.csv", "text/csv", contenido.getBytes(StandardCharsets.UTF_8));
+  }
+
+  @Test
+  void noSeImportaCSVSiLaHeteroevaluacionDelFormularioYaEstaActiva() throws Exception {
+    // Simular que HU-01 (heteroevaluación) está activa: crear clase y matricular estudiante
+    Usuario estudiante = escenario.crearEstudiante("Est Uno", escenario.obtenerPrograma());
+    Curso curso =
+        escenario.crearCurso("ALG", "Algoritmos", escenario.obtenerPrograma());
+    var clase = escenario.crearClase(periodo, curso, "01", julian);
+    escenario.matricular(clase, estudiante);
+
+    // Intentar importar CSV → debe fallar con 409
+    enviar("/importaciones/csv", csvValido(), como(coordinador))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.etapa").value("RECOLECCION_CALIFICACIONES"))
+        .andExpect(
+            jsonPath("$.mensaje")
+                .value(
+                    containsString(
+                        "La heteroevaluación del estudiante ya está recopilando")));
+
+    // No se guardó nada
+    assertThat(importacionRepository.count()).isZero();
   }
 
   private ResultActions enviar(String ruta, MockMultipartFile archivo, RequestPostProcessor quien)

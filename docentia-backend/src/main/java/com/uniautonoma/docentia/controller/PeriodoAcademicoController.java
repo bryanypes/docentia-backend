@@ -90,7 +90,7 @@ public class PeriodoAcademicoController {
    * @param solicitud datos del periodo
    * @return el periodo creado, todavía inactivo
    */
-  @PreAuthorize("hasRole('VICERRECTOR')")
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public PeriodoAcademicoResponse crearPeriodo(
@@ -99,13 +99,14 @@ public class PeriodoAcademicoController {
   }
 
   /**
-   * Actualiza un periodo y sus etapas.
+   * Actualiza un periodo y sus etapas. Solo el ADMINISTRADOR puede hacer cambios;
+   * el VICERRECTOR puede visualizar.
    *
    * @param idPeriodo identificador del periodo
    * @param solicitud datos nuevos
    * @return el periodo actualizado
    */
-  @PreAuthorize("hasRole('VICERRECTOR')")
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   @PutMapping("/{idPeriodo}")
   public PeriodoAcademicoResponse actualizarPeriodo(
       @PathVariable Long idPeriodo,
@@ -117,13 +118,13 @@ public class PeriodoAcademicoController {
   }
 
   /**
-   * Activa un periodo; el que estuviera activo deja de estarlo.
+   * Activa un periodo; el que estuviera activo deja de estarlo. Solo el ADMINISTRADOR.
    *
    * @param idPeriodo identificador del periodo
    * @param confirmar acepta activar el periodo aunque no tenga matrículas
    * @return el periodo activado
    */
-  @PreAuthorize("hasRole('VICERRECTOR')")
+  @PreAuthorize("hasAnyRole('VICERRECTOR', 'ADMINISTRADOR')")
   @PutMapping("/{idPeriodo}/activacion")
   public PeriodoAcademicoResponse activarPeriodo(
       @PathVariable Long idPeriodo,
@@ -135,11 +136,11 @@ public class PeriodoAcademicoController {
   }
 
   /**
-   * Desactiva un periodo.
+   * Desactiva un periodo. Solo el ADMINISTRADOR.
    *
    * @param idPeriodo identificador del periodo
    */
-  @PreAuthorize("hasRole('VICERRECTOR')")
+  @PreAuthorize("hasAnyRole('VICERRECTOR', 'ADMINISTRADOR')")
   @DeleteMapping("/{idPeriodo}/activacion")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void desactivarPeriodo(

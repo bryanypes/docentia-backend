@@ -8,7 +8,7 @@ const GUARDADA = { pesoEstudiantes: 50, pesoCoordinacion: 30, pesoAutoevaluacion
 describe('FormularioPonderacion', () => {
   it('solo deja guardar si los pesos suman 100', async () => {
     const onGuardar = vi.fn().mockResolvedValue()
-    render(<FormularioPonderacion guardada={GUARDADA} onGuardar={onGuardar} />)
+    render(<FormularioPonderacion guardada={GUARDADA} onGuardar={onGuardar} esAdmin={true} />)
     const estudiantes = screen.getByLabelText('Estudiantes (%)')
 
     await userEvent.clear(estudiantes)

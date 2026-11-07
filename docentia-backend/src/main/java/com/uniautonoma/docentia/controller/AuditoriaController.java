@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /** Consulta de la auditoría, de solo lectura. */
 @RestController
-@PreAuthorize("hasRole('VICERRECTOR')")
+@PreAuthorize("hasAnyRole('VICERRECTOR', 'ADMINISTRADOR')")
 @RequestMapping("/auditoria")
 public class AuditoriaController {
 

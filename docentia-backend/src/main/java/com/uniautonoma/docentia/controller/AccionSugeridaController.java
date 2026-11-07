@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /** Acciones institucionales sugeridas por categoría de desempeño. */
 @RestController
-@PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
+@PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR', 'ADMINISTRADOR')")
 @RequestMapping("/acciones-sugeridas")
 public class AccionSugeridaController {
 

@@ -7,7 +7,7 @@ import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { BotonAccion } from '../../../shared/components/ui/BotonAccion/BotonAccion.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { EtiquetaNivel } from '../../../shared/components/ui/EtiquetaNivel/EtiquetaNivel.jsx'
-import { ETIQUETA_FUENTE, FUENTE_DEL_ROL, ROLES } from '../../../shared/constants/dominio.js'
+import { ETIQUETA_EVALUADOR, FUENTE_DEL_ROL, ROLES } from '../../../shared/constants/dominio.js'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { formatearNota, iniciales, listarFuentes, normalizarTexto } from '../../../shared/utils/formatters.js'
 import { useSesion } from '../../auth/sesionContext.js'
@@ -137,7 +137,7 @@ export default function Docentes() {
               <strong>
                 {faltanMias === 1 ? '1 docente espera' : `${faltanMias} docentes esperan`} tu calificación
               </strong>{' '}
-              de {ETIQUETA_FUENTE[miFuente]?.toLowerCase()} en {periodo.nombre}.
+              de {ETIQUETA_EVALUADOR[miFuente]?.toLowerCase()} en {periodo.nombre}.
             </span>
             <Boton variante="contorno" onClick={() => setEstado(ESTADOS.FALTA_MI_NOTA)}>
               Ver solo esos

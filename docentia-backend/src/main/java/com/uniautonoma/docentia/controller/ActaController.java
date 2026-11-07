@@ -123,7 +123,7 @@ public class ActaController {
 
   @PostMapping("/{idActa}/correcciones")
   @ResponseStatus(HttpStatus.CREATED)
-  @PreAuthorize("hasRole('VICERRECTOR')")
+  @PreAuthorize("hasAnyRole('VICERRECTOR', 'ADMINISTRADOR')")
   public ActaResponse corregir(
       @PathVariable Long idActa,
       @Valid @RequestBody CorreccionActaRequest solicitud,
