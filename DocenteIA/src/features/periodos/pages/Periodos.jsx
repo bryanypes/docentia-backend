@@ -298,21 +298,21 @@ export default function Periodos() {
             titulo={periodo.nombre}
             descripcion={`${formatearFecha(periodo.fechaInicio)} – ${formatearFecha(periodo.fechaFin)}`}
             acciones={
-              esAdmin && (
-                <div className="periodos__acciones">
-                  {periodo.esActivo && <span className="pildora pildora--exito">Activo</span>}
+              <div className="periodos__acciones">
+                {periodo.esActivo && <span className="pildora pildora--exito">Activo</span>}
+                {esAdmin && (
                   <Boton variante="contorno" icono={Pencil} onClick={() => setEnEdicion(periodo)}>
                     Editar
                   </Boton>
-                  <Boton
-                    variante={periodo.esActivo ? 'contorno' : 'primario'}
-                    icono={periodo.esActivo ? PowerOff : Power}
-                    onClick={() => cambiarActivacion(periodo, activo)}
-                  >
-                    {periodo.esActivo ? 'Desactivar' : 'Activar'}
-                  </Boton>
-                </div>
-              )
+                )}
+                <Boton
+                  variante={periodo.esActivo ? 'contorno' : 'primario'}
+                  icono={periodo.esActivo ? PowerOff : Power}
+                  onClick={() => cambiarActivacion(periodo, activo)}
+                >
+                  {periodo.esActivo ? 'Desactivar' : 'Activar'}
+                </Boton>
+              </div>
             }
           >
             <EtapasDe periodo={periodo} ventanas={ventanas} />
