@@ -39,7 +39,7 @@ import { PaginaNoEncontrada } from './PaginasSistema.jsx'
 import { ProtectedRoute } from './ProtectedRoute.jsx'
 import { RUTA_CAMBIO_CONTRASENA, rutaInicioDelRol } from './rutasPorRol.js'
 
-const GESTION = [ROLES.COORDINADOR, ROLES.VICERRECTOR]
+const GESTION = [ROLES.COORDINADOR, ROLES.VICERRECTOR, ROLES.ADMINISTRADOR]
 
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim() ?? ''
 
