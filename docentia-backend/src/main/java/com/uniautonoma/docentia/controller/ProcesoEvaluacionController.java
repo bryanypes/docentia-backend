@@ -39,7 +39,7 @@ public class ProcesoEvaluacionController {
 
   /** Proceso de los docentes del alcance en el periodo activo. */
   @GetMapping("/procesos-evaluacion")
-  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR', 'ADMINISTRADOR')")
   public List<ProcesoEvaluacionResponse> listar(
       @RequestParam(required = false) Long idFacultad,
       @AuthenticationPrincipal UsuarioSesion sesion) {
@@ -55,7 +55,7 @@ public class ProcesoEvaluacionController {
 
   /** Proceso de un docente con su línea de tiempo. */
   @GetMapping("/procesos-evaluacion/{idDocente}")
-  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR', 'ADMINISTRADOR')")
   public ProcesoEvaluacionResponse obtener(
       @PathVariable Long idDocente, @AuthenticationPrincipal UsuarioSesion sesion) {
     return procesoService.obtener(idDocente, sesion);

@@ -58,7 +58,7 @@ public class FormularioController {
   }
 
   @GetMapping("/coevaluacion/pendientes")
-  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR', 'ADMINISTRADOR')")
   public PendientesFormularioResponse pendientes(
       @RequestParam(required = false) Long periodo, @AuthenticationPrincipal UsuarioSesion sesion) {
     return formularioService.pendientes(periodo, sesion);

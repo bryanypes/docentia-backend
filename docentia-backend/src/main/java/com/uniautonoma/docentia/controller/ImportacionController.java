@@ -91,7 +91,7 @@ public class ImportacionController {
    * @return cargas de la más reciente a la más antigua
    */
   @GetMapping
-  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR', 'ADMINISTRADOR')")
   public List<ImportacionResponse> listarImportaciones(
       @RequestParam(required = false) Long idPeriodo,
       @AuthenticationPrincipal UsuarioSesion sesion) {
