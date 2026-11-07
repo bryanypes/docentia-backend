@@ -11,6 +11,8 @@ import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { formatearFecha } from '../../../shared/utils/formatters.js'
 import { ApiError } from '../../../services/api.js'
+import { ROLES } from '../../../shared/constants/dominio.js'
+import { useSesion } from '../../auth/sesionContext.js'
 import { ETAPAS_PERIODO, validarFechasPeriodo } from '../etapas.js'
 import {
   activarPeriodo,
@@ -196,6 +198,8 @@ function EtapasDe({ periodo, ventanas }) {
 
 export default function Periodos() {
   const { confirmar } = useAvisos()
+  const { usuario: sesion } = useSesion()
+  const esAdmin = sesion.rol === ROLES.ADMINISTRADOR
   const periodos = useFetch(listarPeriodos)
   const { ventanas, recargar: recargarActivo } = usePeriodoActivo()
   const [enEdicion, setEnEdicion] = useState(null)
@@ -294,19 +298,21 @@ export default function Periodos() {
             titulo={periodo.nombre}
             descripcion={`${formatearFecha(periodo.fechaInicio)} – ${formatearFecha(periodo.fechaFin)}`}
             acciones={
-              <div className="periodos__acciones">
-                {periodo.esActivo && <span className="pildora pildora--exito">Activo</span>}
-                <Boton variante="contorno" icono={Pencil} onClick={() => setEnEdicion(periodo)}>
-                  Editar
-                </Boton>
-                <Boton
-                  variante={periodo.esActivo ? 'contorno' : 'primario'}
-                  icono={periodo.esActivo ? PowerOff : Power}
-                  onClick={() => cambiarActivacion(periodo, activo)}
-                >
-                  {periodo.esActivo ? 'Desactivar' : 'Activar'}
-                </Boton>
-              </div>
+              esAdmin && (
+                <div className="periodos__acciones">
+                  {periodo.esActivo && <span className="pildora pildora--exito">Activo</span>}
+                  <Boton variante="contorno" icono={Pencil} onClick={() => setEnEdicion(periodo)}>
+                    Editar
+                  </Boton>
+                  <Boton
+                    variante={periodo.esActivo ? 'contorno' : 'primario'}
+                    icono={periodo.esActivo ? PowerOff : Power}
+                    onClick={() => cambiarActivacion(periodo, activo)}
+                  >
+                    {periodo.esActivo ? 'Desactivar' : 'Activar'}
+                  </Boton>
+                </div>
+              )
             }
           >
             <EtapasDe periodo={periodo} ventanas={ventanas} />

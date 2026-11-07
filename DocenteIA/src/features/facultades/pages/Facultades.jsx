@@ -8,6 +8,8 @@ import { ErrorApi } from '../../../shared/components/ui/ErrorApi/ErrorApi.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
+import { ROLES } from '../../../shared/constants/dominio.js'
+import { useSesion } from '../../auth/sesionContext.js'
 import { ModalAlcance } from '../components/ModalAlcance.jsx'
 import { AvisoFlotante } from '../../../shared/components/ui/Avisos/AvisoFlotante.jsx'
 import { useAvisos } from '../../../shared/components/ui/Avisos/avisosContext.js'
@@ -20,6 +22,8 @@ import {
 
 export default function Facultades() {
   const { confirmar } = useAvisos()
+  const { usuario: sesion } = useSesion()
+  const esAdmin = sesion.rol === ROLES.ADMINISTRADOR
   const facultades = useFetch(listarFacultades)
   const [enEdicion, setEnEdicion] = useState(null)
   const [viendo, setViendo] = useState(null)
@@ -84,14 +88,19 @@ export default function Facultades() {
                 value={nombre}
                 maxLength={120}
                 onChange={(e) => setNombre(e.target.value)}
+                disabled={!esAdmin}
                 required
               />
             </Campo>
-            <Boton type="submit">{enEdicion ? 'Guardar cambios' : 'Crear facultad'}</Boton>
-            {enEdicion && (
-              <Boton variante="contorno" onClick={() => editar(null)}>
-                Cancelar
-              </Boton>
+            {esAdmin && (
+              <>
+                <Boton type="submit">{enEdicion ? 'Guardar cambios' : 'Crear facultad'}</Boton>
+                {enEdicion && (
+                  <Boton variante="contorno" onClick={() => editar(null)}>
+                    Cancelar
+                  </Boton>
+                )}
+              </>
             )}
           </form>
         </Panel>
@@ -121,8 +130,12 @@ export default function Facultades() {
                     <td>
                       <div className="acciones-fila">
                         <BotonAccion tipo="ver" nombre={facultad.nombre} onClick={() => setViendo(facultad)} />
-                        <BotonAccion tipo="editar" nombre={facultad.nombre} onClick={() => editar(facultad)} />
-                        <BotonAccion tipo="eliminar" nombre={facultad.nombre} onClick={() => eliminar(facultad)} />
+                        {esAdmin && (
+                          <>
+                            <BotonAccion tipo="editar" nombre={facultad.nombre} onClick={() => editar(facultad)} />
+                            <BotonAccion tipo="eliminar" nombre={facultad.nombre} onClick={() => eliminar(facultad)} />
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>

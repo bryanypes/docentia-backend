@@ -33,6 +33,7 @@ export default function Usuarios() {
   const { confirmar } = useAvisos()
   const navegar = useNavigate()
   const { usuario: sesion } = useSesion()
+  const esAdmin = sesion.rol === ROLES.ADMINISTRADOR
   const [rol, setRol] = useState(TODOS)
   const [viendo, setViendo] = useState(null)
   const [busqueda, setBusqueda] = useState('')
@@ -93,9 +94,11 @@ export default function Usuarios() {
         titulo="Usuarios y roles"
         subtitulo="Cada persona tiene un solo rol. La coordinación queda vinculada a una facultad y el docente a un programa."
       >
-        <Boton icono={UserPlus} onClick={() => navegar('/usuarios/nuevo', { state: { conservarFoco: true } })}>
-          Nuevo usuario
-        </Boton>
+        {esAdmin && (
+          <Boton icono={UserPlus} onClick={() => navegar('/usuarios/nuevo', { state: { conservarFoco: true } })}>
+            Nuevo usuario
+          </Boton>
+        )}
       </Encabezado>
 
       <div className="pagina">
@@ -207,13 +210,15 @@ export default function Usuarios() {
                       <td>
                         <div className="usuarios__acciones">
                           <BotonAccion tipo="ver" nombre={u.nombreCompleto} onClick={() => setViendo(u)} />
-                          <BotonAccion
-                            tipo="editar"
-                            nombre={u.nombreCompleto}
-                            a={`/usuarios/${u.idUsuario}`}
-                            state={{ conservarFoco: true }}
-                          />
-                          {!esPropio && (
+                          {esAdmin && (
+                            <BotonAccion
+                              tipo="editar"
+                              nombre={u.nombreCompleto}
+                              a={`/usuarios/${u.idUsuario}`}
+                              state={{ conservarFoco: true }}
+                            />
+                          )}
+                          {esAdmin && !esPropio && (
                             <button
                               type="button"
                               className={`usuarios__accion${u.esActivo ? ' usuarios__accion--peligro' : ''}`}

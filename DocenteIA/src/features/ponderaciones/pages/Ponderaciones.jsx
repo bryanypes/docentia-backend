@@ -9,6 +9,8 @@ import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { guardarPonderacionActiva, obtenerPonderacionActiva } from '../services/ponderacionesService.js'
 import { AvisoFlotante } from '../../../shared/components/ui/Avisos/AvisoFlotante.jsx'
+import { ROLES } from '../../../shared/constants/dominio.js'
+import { useSesion } from '../../auth/sesionContext.js'
 
 const FUENTES = [
   { campo: 'pesoEstudiantes', etiqueta: 'Estudiantes' },
@@ -17,7 +19,7 @@ const FUENTES = [
 ]
 const NOMBRES_CAMPOS = Object.fromEntries(FUENTES.map(({ campo, etiqueta }) => [campo, etiqueta]))
 
-export function FormularioPonderacion({ guardada, onGuardar }) {
+export function FormularioPonderacion({ guardada, onGuardar, esAdmin = false }) {
   const [pesos, setPesos] = useState(() =>
     Object.fromEntries(FUENTES.map(({ campo }) => [campo, String(guardada[campo])])),
   )
@@ -59,15 +61,19 @@ export function FormularioPonderacion({ guardada, onGuardar }) {
       <p className={`pildora pildora--${sumaCorrecta ? 'exito' : 'error'}`} role="status">
         Suma: {suma.toLocaleString('es-CO')} %
       </p>
-      <Boton type="submit" disabled={!sumaCorrecta || enviando}>
-        {enviando ? 'Guardando…' : 'Guardar ponderación'}
-      </Boton>
+      {esAdmin && (
+        <Boton type="submit" disabled={!sumaCorrecta || enviando}>
+          {enviando ? 'Guardando…' : 'Guardar ponderación'}
+        </Boton>
+      )}
       <ErrorApi error={error} nombresCampos={NOMBRES_CAMPOS} />
     </form>
   )
 }
 
 export default function Ponderaciones() {
+  const { usuario: sesion } = useSesion()
+  const esAdmin = sesion.rol === ROLES.ADMINISTRADOR
   const ponderacion = useFetch(obtenerPonderacionActiva)
   const [resultado, setResultado] = useState(null)
   const [version, setVersion] = useState(0)
@@ -106,7 +112,7 @@ export default function Ponderaciones() {
             descripcion={datos.esPredeterminada ? 'Usa los pesos predeterminados.' : 'Usa pesos configurados.'}
             icono={Scale}
           >
-            <FormularioPonderacion key={version} guardada={datos} onGuardar={guardar} />
+            <FormularioPonderacion key={version} guardada={datos} onGuardar={guardar} esAdmin={esAdmin} />
           </Panel>
         )}
       </div>
