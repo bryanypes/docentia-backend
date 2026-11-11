@@ -145,7 +145,25 @@ class AnalisisIaTest extends PruebaIntegracion {
         .andExpect(jsonPath("$.mensaje", containsString("en curso")));
 
     procesarCola();
-    solicitar(julian).andExpect(status().isAccepted());
+    // Con el resultado listo, la siguiente es una regeneración: una hora después y con motivo.
+    entityManager.flush();
+    jdbcTemplate.update(
+        "update solicitudes_analisis set fecha_solicitud = fecha_solicitud - interval '61 minutes'");
+    entityManager.clear();
+    mockMvc
+        .perform(
+            post("/analisis-ia/solicitudes")
+                .with(como(coordinador))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    aJson(
+                        new SolicitudAnalisisRequest(
+                            julian.getIdUsuario(),
+                            periodo.getIdPeriodo(),
+                            null,
+                            null,
+                            "Llegaron comentarios nuevos"))))
+        .andExpect(status().isAccepted());
     mockMvc
         .perform(
             get("/analisis-ia/solicitudes")

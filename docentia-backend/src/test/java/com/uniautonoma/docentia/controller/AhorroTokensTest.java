@@ -106,12 +106,18 @@ class AhorroTokensTest extends PruebaIntegracion {
     }
   }
 
+  /**
+   * Pide el análisis como lo haría coordinación una hora después de la solicitud anterior: estas
+   * pruebas miden la caché y el presupuesto, no el enfriamiento, que tiene su propia prueba.
+   */
   private ResultActions solicitar(Usuario quien, PeriodoAcademico enPeriodo, String modeloPedido)
       throws Exception {
+    pasarEnfriamiento();
     Map<String, Object> cuerpo = new HashMap<>();
     cuerpo.put("docenteId", quien.getIdUsuario());
     cuerpo.put("periodoId", enPeriodo.getIdPeriodo());
     cuerpo.put("fuente", "FORMULARIO");
+    cuerpo.put("motivo", "Repetir el análisis en la prueba");
     if (modeloPedido != null) {
       cuerpo.put("modelo", modeloPedido);
     }
@@ -120,6 +126,13 @@ class AhorroTokensTest extends PruebaIntegracion {
             .with(como(coordinador))
             .contentType(MediaType.APPLICATION_JSON)
             .content(aJson(cuerpo)));
+  }
+
+  private void pasarEnfriamiento() {
+    entityManager.flush();
+    jdbcTemplate.update(
+        "update solicitudes_analisis set fecha_solicitud = fecha_solicitud - interval '61 minutes'");
+    entityManager.clear();
   }
 
   private void procesarCola() {
@@ -284,6 +297,54 @@ class AhorroTokensTest extends PruebaIntegracion {
         .andExpect(jsonPath("$.estado").value("COMPLETADO"))
         .andExpect(jsonPath("$.resultado.tipoModelo").value("REGLAS"));
     verify(modelo, never()).analizar(any());
+  }
+
+  @Test
+  void pedirOtroAnalisisPorSolicitudesExigeMotivoYRespetaElEnfriamiento() throws Exception {
+    responder(docente, periodo, AnalisisComentariosTest.COMENTARIOS);
+    pedir(null).andExpect(status().isAccepted());
+    procesarCola();
+
+    pedir(null).andExpect(status().isBadRequest()).andExpect(jsonPath("$.errores.motivo").exists());
+    pedir("Se corrigió la carga de respuestas").andExpect(status().isTooManyRequests());
+
+    pasarEnfriamiento();
+    pedir("corto").andExpect(status().isBadRequest());
+    pedir("Se corrigió la carga de respuestas").andExpect(status().isAccepted());
+    assertThat(
+            jdbcTemplate.queryForList(
+                "select motivo_regeneracion from solicitudes_analisis order by id_solicitud",
+                String.class))
+        .containsExactly(null, "Se corrigió la carga de respuestas");
+  }
+
+  @Test
+  void trasUnErrorSePuedeReintentarSinEsperar() throws Exception {
+    responder(docente, periodo, AnalisisComentariosTest.COMENTARIOS);
+    pedir(null).andExpect(status().isAccepted());
+    procesarCola();
+    entityManager.flush();
+    jdbcTemplate.update("update solicitudes_analisis set estado = 'ERROR'");
+    entityManager.clear();
+
+    pedir(null).andExpect(status().isAccepted());
+  }
+
+  /** Pedido directo, sin simular el paso del tiempo; motivo nulo = no se envía. */
+  private ResultActions pedir(String motivo) throws Exception {
+    Map<String, Object> cuerpo = new HashMap<>();
+    cuerpo.put("docenteId", docente.getIdUsuario());
+    cuerpo.put("periodoId", periodo.getIdPeriodo());
+    cuerpo.put("fuente", "FORMULARIO");
+    cuerpo.put("modelo", "LOCAL");
+    if (motivo != null) {
+      cuerpo.put("motivo", motivo);
+    }
+    return mockMvc.perform(
+        post("/analisis-ia/solicitudes")
+            .with(como(coordinador))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(aJson(cuerpo)));
   }
 
   @Test

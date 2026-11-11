@@ -59,7 +59,7 @@ Contrato completo en [api-comentarios-ia.md](api-comentarios-ia.md).
 
 | Método y ruta | Roles | Respuesta |
 |---------------|-------|-----------|
-| `POST /analisis-ia/solicitudes` | Coordinador | Campo nuevo opcional `fuente`: `CSV` (por defecto) o `FORMULARIO`; 409 con la recolección abierta |
+| `POST /analisis-ia/solicitudes` | Coordinador | Campo nuevo opcional `fuente`: `CSV` (por defecto) o `FORMULARIO`; 409 con la recolección abierta. Si el docente ya tiene un análisis COMPLETADO en el periodo, exige `motivo` (400 sin él) y respeta el enfriamiento (429), igual que la regeneración |
 | `GET /analisis-comentarios/docentes/{docenteId}?periodo=` | Coordinador, vicerrector | Estado y resultado vigente; 404 fuera de alcance |
 | `GET /comentarios-estudiantes/docentes/{docenteId}?periodo=&criterio=&sentimiento=&page=&size=` | Coordinador, vicerrector | Comentarios anonimizados, máximo 50 por página |
 | `GET /analisis-comentarios/resumen?periodo=&programa=` | Coordinador, vicerrector | Agregado sin docentes; no disponible con menos de 3 |
