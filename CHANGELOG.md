@@ -1,6 +1,39 @@
 # Cambios
 
-## Sin publicar
+## 0.4.0 (preparada, sin etiqueta ni publicar)
+
+### Resumen
+
+0.4.0 cierra el ciclo de la Resolución 074 sobre lo publicado en 0.3.x: el motor de la resolución
+(0.3.0), los formularios AUTO y COEVAL del Anexo 1 (0.3.2) y la heteroevaluación anónima de estudiantes
+(0.3.3). Sobre esa base agrega:
+
+- **Proceso completo hasta el acta:** cita con confirmación, asistencia registrada por coordinación,
+  acta de compromiso o de retroalimentación, firma dibujada con su hash en el PDF y trazabilidad.
+- **Análisis de comentarios de estudiantes** con selector de modelo: `LOCAL` (reglas, sin red ni costo,
+  por defecto) o `LLM` (proveedor externo opcional), incluida la fuente del formulario anónimo una vez
+  cerrada la recolección.
+- **Ahorro de tokens** con el proveedor externo: muestra de 150 comentarios, caché por huella,
+  presupuesto por día y periodo, y regeneración con motivo y espera de una hora.
+- **Cuestionarios por pasos** para docentes y estudiantes, estadísticas con exportación a Excel y
+  agenda en calendario.
+- **Operación:** primer vicerrector desde el entorno, aviso sin Google en `prod`, runbook de despliegue,
+  consultas de verificación y pruebas E2E al día.
+
+### Migraciones
+
+Ocho nuevas, de V34 a V41. V29 a V33 no existen: eran de una rama que se renumeró a V36–V40.
+
+| Versión | Qué hace |
+|---------|----------|
+| V34 | Resultado versionado del análisis de comentarios y copia anonimizada de lo analizado |
+| V35 | Medición del gasto del proveedor externo (`uso_ia`) y caché de sus respuestas |
+| V36 | Confirmación y asistencia de la cita, y tipo de acta |
+| V37 | Trazo de la firma y su hash |
+| V38 | Nombres con mayúscula inicial (datos) |
+| V39 | Tildes en palabras académicas de los nombres (datos) |
+| V40 | Cita cancelada o movida por la coordinación |
+| V41 | Modelo pedido en cada solicitud de análisis (`LOCAL` o `LLM`) |
 
 ### Agregado
 
@@ -29,7 +62,7 @@
 - Descarga de Estadísticas en Excel (.xlsx): resumen con fórmulas que se recalculan al filtrar la
   hoja Docentes, y hojas por desempeño, proceso, programa o facultad, distribución y fuentes.
 - Certificado de firma electrónica en el PDF del acta, con el logo institucional y los datos del
-  docente.
+  docente. El archivo del logo lo pone la institución en el servidor; no está en el repositorio.
 - Reserva de cita desde un calendario de días disponibles, con modal para confirmar o cambiar.
 - Modal para agregar compromisos, con sugerencias y plazos rápidos.
 - La coordinación cancela o cambia de horario una cita desde la agenda; el docente recibe el
