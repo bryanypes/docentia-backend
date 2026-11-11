@@ -28,8 +28,10 @@ SPRING_PROFILES_ACTIVE=dev ./mvnw spring-boot:run
 DOCENTIA_API_URL=http://localhost:8080 npm run dev
 ```
 
-El frontend vive en el repositorio `DocenteIA`. La carpeta `DocenteIA/` del monorepo es la copia que usa
-Docker y se sincroniza en cada versión. `docentia-docker` reúne el backend y el frontend de cada versión publicada.
+La fuente del frontend es la carpeta `DocenteIA/` de este monorepo: ahí se desarrolla, la prueba el CI y
+la construye Docker. El repositorio `DocenteIA` es un espejo que se actualiza al publicar una versión.
+`docentia-docker` reúne backend y frontend de una versión publicada; hoy está en 0.3.2 y no tiene la
+heteroevaluación ni el modelo local, así que no sirve para desplegar.
 
 ## Usuarios de demo
 
@@ -138,6 +140,7 @@ La CSP de `nginx.conf` ya permite `accounts.google.com`. Pruebas: `SesionGoogleC
 
 | Síntoma | Causa y solución |
 |---------|------------------|
+| `access a socket in a way forbidden` o `ports are not available` en Windows | El puerto está reservado por Hyper-V/WSL. `netsh interface ipv4 show excludedportrange protocol=tcp` y elige en `.env` puertos fuera de esos rangos |
 | `port is already allocated` | Copia `.env.example` como `.env` y cambia `API_PORT`, `WEB_PORT`, `POSTGRES_PORT` o `MAILPIT_PORT` |
 | La API no arranca en `prod` | Falta `DOCENTIA_JWT_SECRETO` o tiene un valor de desarrollo |
 | La firma responde 409 | Falta la cita, el promedio no está completo o la etapa está cerrada; el mensaje lo dice |

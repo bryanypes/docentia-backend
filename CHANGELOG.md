@@ -47,6 +47,9 @@
 
 ### Cambiado
 
+- Documentación alineada con el código: puertos (con Mailpit y los puertos reservados de Windows),
+  roles existentes, migraciones (V1–V28 y V34–V41), umbral de compromisos como decisión pendiente,
+  mínimos de 5 y 10, y limitaciones que ya no aplicaban.
 - SEGURIDAD.md documenta los roles, las rutas sin sesión, la contraseña temporal y qué va al log;
   `MatrizAutorizacionTest` fija la lista de rutas públicas, rechaza cualquier ruta nueva bajo
   `/sesiones/` sin sesión y prueba la contraseña temporal en todas las rutas.
