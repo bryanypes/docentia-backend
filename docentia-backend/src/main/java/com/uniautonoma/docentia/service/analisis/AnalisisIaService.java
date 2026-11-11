@@ -112,6 +112,7 @@ public class AnalisisIaService {
    */
   public SolicitudAnalisisResponse solicitar(
       SolicitudAnalisisRequest solicitud, UsuarioSesion sesion) {
+    exigirHabilitado();
     docenteService.buscarDocenteVisible(solicitud.docenteId(), sesion);
     Optional<SolicitudAnalisis> anterior =
         ultimaSolicitud(solicitud.docenteId(), solicitud.periodoId());
@@ -168,12 +169,17 @@ public class AnalisisIaService {
     }
   }
 
-  private SolicitudAnalisisResponse crear(
-      SolicitudAnalisisRequest solicitud, String motivoRegeneracion, UsuarioSesion sesion) {
+  /** Con el interruptor apagado se rechaza antes de tocar la base. */
+  private void exigirHabilitado() {
     if (!propiedades.habilitado()) {
       throw new ServicioDeshabilitadoException(
           "El análisis de comentarios con IA está deshabilitado en este ambiente");
     }
+  }
+
+  private SolicitudAnalisisResponse crear(
+      SolicitudAnalisisRequest solicitud, String motivoRegeneracion, UsuarioSesion sesion) {
+    exigirHabilitado();
     Usuario docente = docenteService.buscarDocenteVisible(solicitud.docenteId(), sesion);
     PeriodoAcademico periodo =
         periodoRepository
