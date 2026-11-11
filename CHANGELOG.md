@@ -4,6 +4,8 @@
 
 ### Agregado
 
+- Runbook del despliegue de 0.4.0 en OPERACION.md (diagnóstico, respaldo, ensayo de V34–V41 sobre una
+  copia, despliegue, verificación y vuelta atrás) y `docs/consultas-verificacion.sql`, solo lectura.
 - `docs/sustentacion/`: resumen ejecutivo y guía técnica con arquitectura, modelo de datos, flujo,
   anonimato, análisis de comentarios, seguridad, usuarios de demostración y guion por rol.
 - Primer usuario en producción: con `DOCENTIA_BOOTSTRAP_EMAIL`, `_NOMBRE` y `_CONTRASENA` (opcional) se
