@@ -92,7 +92,119 @@ sh scripts/respaldar.sh respaldo.dump
 sh scripts/restaurar.sh respaldo.dump
 ```
 
-Restaurar reemplaza la base y reinicia la API.
+Restaurar reemplaza la base y reinicia la API. Los dos scripts usan el `docker compose` de la carpeta
+donde se corren; para otro proyecto de Compose, exporta antes `COMPOSE_PROJECT_NAME`.
+
+## Despliegue de 0.4.0 (sábado 14 de noviembre de 2026)
+
+Pasa el servidor de 0.3.3 (migración V28) a 0.4.0 (V41). Las migraciones nuevas son V34 a V41: agregan
+tablas y columnas, normalizan mayúsculas y tildes de nombres (V38 y V39) y no borran filas. No tienen
+vuelta atrás: el retorno es restaurar el respaldo.
+
+Se hace el sábado porque la recolección de 2026-2 cierra el viernes 13 y nadie debería estar enviando
+formularios. Duración estimada: 1 hora, más el ensayo.
+
+**Por confirmar antes de empezar** (no está en el repositorio): carpeta del despliegue en el servidor,
+versión que corre hoy, perfil activo y quién tiene acceso. Lo que sigue supone que el servidor corre el
+`docker-compose.yml` de este repositorio.
+
+### 0. Antes del sábado
+
+- [ ] `develop` con CI verde, `release/0.4.0` revisada y la decisión de publicarla (fusión a `main` y
+      etiqueta `v0.4.0`). Sin etiqueta no se despliega.
+- [ ] El PR #8 cerrado sin fusionar: trae V29 a V33, que en `develop` son V36 a V40.
+- [ ] Copia de las variables nuevas para el `.env` del servidor: compara `.env.example` de 0.3.3 y de
+      0.4.0. Nuevas: `DOCENTIA_IA_ENVIAR_TEMPERATURA`, `DOCENTIA_BOOTSTRAP_*` (vacías: ya hay usuarios) y,
+      si los estudiantes van a entrar, `DOCENTIA_GOOGLE_CLIENT_ID` y `VITE_GOOGLE_CLIENT_ID`.
+
+### 1. Diagnóstico (solo lectura)
+
+En la carpeta del despliegue:
+
+```bash
+git describe --tags                       # versión desplegada
+grep SPRING_PROFILES_ACTIVE .env          # debe ser prod
+docker compose exec -T db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'   < docentia-backend/docs/consultas-verificacion.sql > antes.txt
+```
+
+En `antes.txt`: la última migración debe ser 28, `migraciones_v29_a_v33` 0, `migraciones_fallidas` 0 y
+`usuarios_de_demo` 0. **Si algo no coincide, no se despliega**: V29–V33 aplicadas romperían Flyway, y
+usuarios de demo o el perfil `dev` significan cuentas con contraseña pública en producción.
+
+### 2. Respaldo
+
+```bash
+docker compose stop web                    # nadie entra mientras tanto
+sh scripts/respaldar.sh respaldo-0.3.3-$(date +%Y%m%d-%H%M).dump
+docker compose exec -T db pg_restore --list < respaldo-0.3.3-*.dump | head   # el archivo se lee
+docker tag docentia-api:latest docentia-api:0.3.3
+docker tag docentia-web:latest docentia-web:0.3.3
+```
+
+Copia el `.dump` fuera del servidor antes de seguir.
+
+### 3. Ensayo de las migraciones sobre una copia
+
+En otra carpeta del mismo servidor (o en otra máquina con Docker), con otro proyecto de Compose y
+otros puertos, para no tocar la base real:
+
+```bash
+git clone -b v0.4.0 https://github.com/bryanypes/docentia-backend.git ensayo && cd ensayo
+cp .env.example .env    # POSTGRES_PORT, API_PORT, WEB_PORT y MAILPIT_PORT libres;
+                        # SPRING_PROFILES_ACTIVE=prod y un DOCENTIA_JWT_SECRETO de prueba
+export COMPOSE_PROJECT_NAME=docentia-ensayo
+docker compose up -d --wait db mailpit
+sh scripts/restaurar.sh ../respaldo-0.3.3-*.dump   # sin contenedor de api, su stop/start no hace nada
+docker compose up -d --build --wait api
+docker compose logs api | grep -E "Migrating|Successfully applied"
+docker compose exec -T db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'   < docentia-backend/docs/consultas-verificacion.sql > ensayo.txt
+```
+
+Debe decir `Successfully applied 8 migrations … now at version v41`, la API quedar `healthy` y la
+sección 7 de `ensayo.txt` tener los mismos conteos que `antes.txt`. Al terminar:
+`docker compose down -v` en la carpeta del ensayo.
+
+> **Ensayado en local el 11 de noviembre de 2026** con los mismos scripts: base de 0.3.3 con la semilla
+> (V28), `respaldar.sh` (150 KB), `restaurar.sh` en un stack de `develop` con perfil `prod`: 8 migraciones
+> aplicadas, API `UP` y los diez conteos de la sección 7 iguales. La vuelta atrás (restaurar el mismo
+> respaldo en 0.3.3) dejó V28, la API `UP` y descartó lo escrito después del respaldo. Con datos reales
+> del servidor **no se ha ensayado**: ese es el paso 3.
+
+### 4. Despliegue
+
+```bash
+git fetch --tags && git checkout v0.4.0
+# .env: agrega las variables nuevas del paso 0
+docker compose build
+docker compose up -d --wait
+docker compose logs api | grep -E "Successfully applied|Started DocentiaApplication|ERROR|WARN"
+```
+
+### 5. Verificación
+
+- [ ] `curl -s http://localhost:8080/api/actuator/health/readiness` responde `UP`.
+- [ ] `consultas-verificacion.sql` → `despues.txt`: última migración 41 y conteos iguales a `antes.txt`.
+- [ ] La web abre y vicerrectoría entra; **Periodos** muestra las etapas con sus fechas.
+- [ ] Coordinación entra; **Análisis de comentarios** lista los modelos (`LOCAL` por defecto).
+- [ ] El log no tiene `ERROR`. Si falta Google, aparece el aviso `Falta DOCENTIA_GOOGLE_CLIENT_ID`.
+- [ ] `docker compose start web` si se detuvo en el paso 2.
+
+### 6. Vuelta atrás
+
+Si la verificación falla y no se resuelve en la primera hora:
+
+```bash
+docker compose down                         # sin -v: conserva el volumen hasta restaurar
+git checkout v0.3.3
+docker tag docentia-api:0.3.3 docentia-api:latest
+docker tag docentia-web:0.3.3 docentia-web:latest
+docker compose up -d --wait db
+sh scripts/restaurar.sh respaldo-0.3.3-*.dump
+docker compose up -d --wait
+```
+
+Lo que se haya escrito en la base después del respaldo se pierde; por eso la web queda detenida hasta
+terminar la verificación.
 
 ## Salud
 
