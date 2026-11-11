@@ -99,6 +99,41 @@ curl http://localhost:8080/api/actuator/health/readiness
 curl http://localhost:8080/api/actuator/health/liveness
 ```
 
+## Inicio de sesión con Google
+
+Fuera de `dev` los estudiantes no tienen contraseña utilizable: la matrícula por CSV les asigna una
+aleatoria que nadie conoce. **Sin Google ningún estudiante puede entrar a evaluar.** El personal puede
+entrar con correo y contraseña.
+
+| Qué | Dónde | Nota |
+|-----|-------|------|
+| Cliente OAuth 2.0 tipo **Aplicación web** | Google Cloud Console de la universidad | No se usa el secreto `GOCSPX-…`; solo el Client ID |
+| Orígenes de JavaScript autorizados | Mismo cliente | La URL pública exacta de la web, con esquema y sin barra final (por ejemplo `https://docentia.uniautonoma.edu.co`; **por confirmar** la URL real). `http://localhost:5173` solo para pruebas |
+| `DOCENTIA_GOOGLE_CLIENT_ID` | `.env` del servidor, servicio `api` | La API valida que el token venga para ese cliente |
+| `VITE_GOOGLE_CLIENT_ID` | `.env` del servidor, **argumento de build** del servicio `web` | Mismo valor. Se incrusta al compilar: cambiarlo exige `docker compose build web` |
+
+La API acepta el token de Google solo si:
+
+1. la firma y la audiencia (`DOCENTIA_GOOGLE_CLIENT_ID`) son válidas,
+2. el correo está verificado por Google (`email_verified`),
+3. el correo termina en `@uniautonoma.edu.co`, y
+4. ese correo ya existe y está activo en DOCENTIA (el estudiante entra por la matrícula, el personal
+   lo crea vicerrectoría).
+
+En cualquier otro caso responde 401 con el mismo mensaje que una contraseña errada.
+
+**Si falta la configuración:**
+
+| Falta | Qué pasa |
+|-------|----------|
+| `VITE_GOOGLE_CLIENT_ID` | La pantalla de inicio no muestra el botón de Google |
+| `DOCENTIA_GOOGLE_CLIENT_ID` | `POST /api/sesiones/google` responde **503** "El inicio de sesión con Google no está configurado en este ambiente". Con el perfil `prod`, la API escribe al arrancar un aviso `Falta DOCENTIA_GOOGLE_CLIENT_ID: los estudiantes no podrán iniciar sesión…` |
+| El origen en Google Cloud | Google rechaza el botón con `origin_mismatch` en el navegador; la API no recibe nada |
+
+La CSP de `nginx.conf` ya permite `accounts.google.com`. Pruebas: `SesionGoogleControllerTest`,
+`SesionGoogleSinConfiguracionTest`, `ValidacionProduccionTest`. Con un cliente real de la universidad
+**no se ha probado**: queda por confirmar en el ensayo del despliegue.
+
 ## Solución de problemas
 
 | Síntoma | Causa y solución |
