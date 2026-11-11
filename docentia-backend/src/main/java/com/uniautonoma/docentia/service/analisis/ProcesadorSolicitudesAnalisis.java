@@ -172,7 +172,7 @@ public class ProcesadorSolicitudesAnalisis {
         }
       }
     } catch (RuntimeException inesperada) {
-      LOG.error("Falló el análisis de la solicitud {}", idSolicitud, inesperada);
+      LOG.error("Falló el análisis de la solicitud {}: {}", idSolicitud, describir(inesperada));
       marcarError(idSolicitud);
     }
     return true;
@@ -735,4 +735,25 @@ public class ProcesadorSolicitudesAnalisis {
       ModeloIA modelo,
       Muestra muestra,
       Long idPeriodo) {}
+
+  /**
+   * Tipos de la cadena de causas y el punto donde ocurrió, sin mensajes: el mensaje de un error de
+   * base de datos o de un proveedor puede repetir la fila o la petición, con texto de comentarios.
+   */
+  static String describir(Throwable error) {
+    StringBuilder texto = new StringBuilder();
+    Throwable actual = error;
+    for (int nivel = 0; actual != null && nivel < 5; nivel++) {
+      if (nivel > 0) {
+        texto.append(" <- ");
+      }
+      texto.append(actual.getClass().getName());
+      StackTraceElement[] pila = actual.getStackTrace();
+      if (pila.length > 0) {
+        texto.append(" en ").append(pila[0]);
+      }
+      actual = actual.getCause() == actual ? null : actual.getCause();
+    }
+    return texto.toString();
+  }
 }
