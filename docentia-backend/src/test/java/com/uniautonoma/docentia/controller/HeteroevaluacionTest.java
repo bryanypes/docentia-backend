@@ -302,7 +302,10 @@ class HeteroevaluacionTest extends PruebaIntegracion {
     String idRespuesta =
         jdbcTemplate.queryForObject(
             "select id::text from respuestas_heteroevaluacion", String.class);
-    assertThat(salida.getAll()).doesNotContain(idRespuesta).doesNotContain("Comentario de prueba");
+    assertThat(salida.getAll())
+        .doesNotContain(idRespuesta)
+        .doesNotContain("Comentario de prueba")
+        .doesNotContain(estudiantes.get(0).getCorreo());
     assertThat(
             jdbcTemplate.queryForObject(
                 "select count(*) from auditoria where entidad_id::text = ? or entidad = ?",
