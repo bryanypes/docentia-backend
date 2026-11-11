@@ -44,7 +44,8 @@ obligatorio de la autoevaluación y de la coevaluación.
 
 ## Decisiones pendientes
 
-Fuentes faltantes, umbral de 3,8 frente a 4,00 y regla de corrección de actas. Ver
+Fuentes faltantes, umbral de 3,8 frente a 4,00, regla de corrección de actas, docentes con menos de
+5 respuestas y los mínimos de 5 y 10. Ver
 [DECISIONES.md](DECISIONES.md).
 
 ## Criterios de aceptación de I5 e I11
