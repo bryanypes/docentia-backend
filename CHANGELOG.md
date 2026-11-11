@@ -42,6 +42,9 @@
 
 ### Cambiado
 
+- SEGURIDAD.md documenta los roles, las rutas sin sesión, la contraseña temporal y qué va al log;
+  `MatrizAutorizacionTest` fija la lista de rutas públicas, rechaza cualquier ruta nueva bajo
+  `/sesiones/` sin sesión y prueba la contraseña temporal en todas las rutas.
 - El login ya no muestra el panel de usuarios de prueba; se escribe el correo de la cuenta.
 - El docente ve su nota, compromisos, hallazgos y acta del periodo en la reunión, no antes.
 - El acta se firma después de registrar la asistencia.
@@ -68,6 +71,8 @@
 
 ### Corregido
 
+- Un error inesperado al procesar un análisis ya no vuelca su mensaje al log: se registran el tipo
+  y el lugar, porque el mensaje de un error de base de datos puede repetir texto de comentarios.
 - Pedir otro análisis con `POST /analisis-ia/solicitudes` cuando el docente ya tiene uno completado
   ya no evita el enfriamiento de 60 minutos ni el motivo: se trata como una regeneración. Tras un
   error o evidencia insuficiente se puede reintentar sin esperar. La pantalla pide el motivo.
