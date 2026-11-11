@@ -7,6 +7,8 @@
 - Primer usuario en producción: con `DOCENTIA_BOOTSTRAP_EMAIL`, `_NOMBRE` y `_CONTRASENA` (opcional) se
   crea una sola vez un vicerrector si la tabla de usuarios está vacía, con contraseña temporal y sin
   nada sensible en el log (`docs/OPERACION.md`).
+- Con el perfil `prod` y sin `DOCENTIA_GOOGLE_CLIENT_ID`, la API avisa al arrancar que los estudiantes
+  no podrán iniciar sesión. OPERACION.md explica la configuración de Google y qué pasa si falta.
 - Docentes ordenados por puntaje, de mayor a menor; quienes no tienen promedio completo van al final.
 - Coevaluaciones con búsqueda y filtros por programa y estado; la enviada se muestra como «Realizada».
 - Estado general del proceso por docente, con línea de pasos y trazabilidad para coordinación,
