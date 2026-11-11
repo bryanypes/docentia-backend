@@ -93,21 +93,23 @@ Si la base arranca vacía, el seed de Campus (`campus-clases-demo.json`) tambié
 Martín Valencia y Francisco Ramírez como docentes, y a Karen Mancilla y Andrea Nieto como
 estudiantes, todos con la misma contraseña.
 
-Además quedan el periodo 2026-1 cerrado y el 2026-2 activo. En 2026-2, Julián Hoyos y Diana
-Astaiza tienen las tres fuentes (estudiantes, coordinación y vicerrectoría), así que su promedio
-sale completo; los demás docentes siguen sin calificar y su promedio sale incompleto.
+Además quedan el periodo 2026-1 cerrado y el 2026-2 activo. En 2026-2 la nota de cada docente sale de
+tres fuentes: estudiantes (50 %), coordinación (30 %) y autoevaluación (20 %). Con las tres quedan
+COMPLETO: Camilo Vidal 4,75 (muy alto), Julián Hoyos 4,34 y Diana Astaiza 4,31 (alto), Laura Demo 3,50
+(aceptable), Nora Muñoz 2,85 (bajo) y Ramiro Paz 1,90 (muy bajo). Los demás quedan SIN_NOTA.
 
 Las etapas de 2026-2 son: recolección de calificaciones del 28 de septiembre al 13 de noviembre,
 revisión de hallazgos del 13 de octubre al 20 de noviembre, agenda de citas del 13 de octubre al 27 de
-noviembre y firma de actas del 30 de noviembre al 4 de diciembre. **En desarrollo las etapas se
-solapan a propósito** para poder demostrar todo el flujo antes de la entrega del 6 de noviembre; en
-producción las define la vicerrectoría. Cada acción solo se puede hacer dentro de su etapa; fuera de
-ella la API responde 409. Si hace falta probar otra fecha, se cambian las etapas desde la pantalla de
-periodos.
+noviembre y firma de actas del 13 de octubre al 4 de diciembre. **En desarrollo las etapas se solapan a
+propósito** para poder demostrar todo el flujo; en producción las define la vicerrectoría. Cada acción
+solo se puede hacer dentro de su etapa; fuera de ella la API responde 409. Si hace falta probar otra
+fecha, se cambian las etapas desde la pantalla de periodos.
 
-En 2026-2 también hay comentarios de estudiantes, como si vinieran del CSV: Julián tiene 13 (dos
-son ofensivos o sobre su persona, para probar el filtro) y Diana 6, así que su análisis con IA sale
-"evidencia insuficiente".
+En 2026-2 también hay comentarios de estudiantes, como si vinieran del CSV: Julián tiene 13 (dos son
+ofensivos o sobre su persona, para probar el filtro) y Diana 6, así que su análisis sale "evidencia
+insuficiente". Para la heteroevaluación, Laura Demo tiene 4 respuestas del formulario (una menos que el
+mínimo) y `estudiante.demo5` tiene dos evaluaciones pendientes: al enviar una, Laura llega a 5 y su nota
+de estudiantes pasa a salir del formulario.
 
 Para las citas de retroalimentación, el coordinador de Ingeniería tiene franjas abiertas el 9 de
 noviembre (8:00 a 10:00) y el 10 de noviembre (14:00 a 15:00), y la coordinadora de Derecho una el 9
