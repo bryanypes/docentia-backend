@@ -19,11 +19,14 @@ estudiante y cualquier otro rol reciben 403. Un docente de otra facultad, o inex
 |-------|---------|-------|
 | `fuente` | `CSV`, `FORMULARIO` | Opcional; sin él es `CSV`, como antes |
 | `modelo` | `LOCAL`, `LLM` | Opcional. `LOCAL`: reglas, no consume tokens. `LLM`: modelo de lenguaje externo, consume tokens. Sin él se usa el configurado por defecto |
+| `motivo` | Texto de 10 a 300 caracteres | Obligatorio solo si el docente ya tiene un análisis COMPLETADO en el periodo: pedir otro es regenerar |
 
 Respuestas: 202 en cola. 400 si `modelo` no es `LOCAL` ni `LLM`. 409 si se pide `LLM` y el
 ambiente no tiene un modelo de lenguaje configurado (nunca se cambia al local por su cuenta), si ya hay
 una en curso, si la revisión de hallazgos no está abierta o, con
-`FORMULARIO`, si la recolección sigue abierta. La respuesta de la solicitud trae además `fuente` y
+`FORMULARIO`, si la recolección sigue abierta. Con un análisis COMPLETADO previo: 400 sin `motivo` y 429 si
+no ha pasado el enfriamiento (`docentia.ia.enfriamiento-regeneracion-minutos`, 60) desde la última
+solicitud. Tras ERROR o INSUFICIENTE se puede volver a pedir sin motivo ni espera. La respuesta de la solicitud trae además `fuente` y
 `motivo`.
 
 ## Análisis de un docente
