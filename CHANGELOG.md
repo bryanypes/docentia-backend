@@ -4,6 +4,8 @@
 
 ### Agregado
 
+- `docs/sustentacion/`: resumen ejecutivo y guía técnica con arquitectura, modelo de datos, flujo,
+  anonimato, análisis de comentarios, seguridad, usuarios de demostración y guion por rol.
 - Primer usuario en producción: con `DOCENTIA_BOOTSTRAP_EMAIL`, `_NOMBRE` y `_CONTRASENA` (opcional) se
   crea una sola vez un vicerrector si la tabla de usuarios está vacía, con contraseña temporal y sin
   nada sensible en el log (`docs/OPERACION.md`).
