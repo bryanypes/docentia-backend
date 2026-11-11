@@ -79,6 +79,8 @@
 
 ### Corregido
 
+- Las pruebas E2E siguen la interfaz nueva (expediente, acta con firma dibujada, asistencia a la cita,
+  cuestionarios por pasos) y abren las etapas para el día en que corren: pasan las 11.
 - Un error inesperado al procesar un análisis ya no vuelca su mensaje al log: se registran el tipo
   y el lugar, porque el mensaje de un error de base de datos puede repetir texto de comentarios.
 - Pedir otro análisis con `POST /analisis-ia/solicitudes` cuando el docente ya tiene uno completado
