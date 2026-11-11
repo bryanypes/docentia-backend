@@ -37,6 +37,8 @@ import {
 } from '../services/analisisService.js'
 import './Analisis.css'
 
+const MOTIVO_MINIMO = 10
+
 function EstadoSolicitud({ solicitud, agotado, onReanudar }) {
   const { estado } = solicitud
   if (estaEnCurso(solicitud)) {
@@ -257,6 +259,7 @@ export default function Analisis() {
   const [solicitudNueva, setSolicitudNueva] = useState(null)
   const [errorSolicitar, setErrorSolicitar] = useState(null)
   const [enviando, setEnviando] = useState(false)
+  const [motivo, setMotivo] = useState('')
 
   const cargarUltima = useCallback(
     () =>
@@ -272,18 +275,26 @@ export default function Analisis() {
 
   function cambiarFiltro(nombre, valor) {
     setErrorSolicitar(null)
+    setMotivo('')
     const nuevos = new URLSearchParams(parametros)
     if (valor) nuevos.set(nombre, valor)
     else nuevos.delete(nombre)
     setParametros(nuevos, { replace: true, state: { conservarFoco: true } })
   }
 
+  // Si ya hay un análisis, pedir otro es regenerarlo: lleva motivo (10 a 300 caracteres).
+  const pideMotivo = Boolean(idSolicitud)
+  const motivoListo = motivo.trim().length >= MOTIVO_MINIMO
+
   async function solicitar() {
     setEnviando(true)
     setErrorSolicitar(null)
     try {
-      const nueva = await solicitarAnalisis(docenteId, periodoId)
+      const nueva = pideMotivo
+        ? await solicitarAnalisis(docenteId, periodoId, motivo.trim())
+        : await solicitarAnalisis(docenteId, periodoId)
       setSolicitudNueva({ clave, id: nueva.idSolicitud })
+      setMotivo('')
     } catch (error) {
       setErrorSolicitar(error)
       // Ya había una en curso: se muestra esa.
@@ -367,7 +378,25 @@ export default function Analisis() {
           <>
             {esCoordinador && (
               <div className="analisis__acciones">
-                <Boton onClick={solicitar} disabled={enviando || estaEnCurso(ultima.datos)}>
+                {pideMotivo && (
+                  <Campo
+                    id="motivoAnalisis"
+                    etiqueta="Motivo para pedir otro análisis"
+                    ayuda="Entre 10 y 300 caracteres. Debe pasar una hora desde la última solicitud."
+                  >
+                    <input
+                      id="motivoAnalisis"
+                      className="campo__control"
+                      value={motivo}
+                      maxLength={300}
+                      onChange={(e) => setMotivo(e.target.value)}
+                    />
+                  </Campo>
+                )}
+                <Boton
+                  onClick={solicitar}
+                  disabled={enviando || estaEnCurso(ultima.datos) || (pideMotivo && !motivoListo)}
+                >
                   {enviando ? 'Solicitando…' : idSolicitud ? 'Solicitar un análisis nuevo' : 'Solicitar análisis'}
                 </Boton>
               </div>

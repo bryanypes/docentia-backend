@@ -68,6 +68,9 @@
 
 ### Corregido
 
+- Pedir otro análisis con `POST /analisis-ia/solicitudes` cuando el docente ya tiene uno completado
+  ya no evita el enfriamiento de 60 minutos ni el motivo: se trata como una regeneración. Tras un
+  error o evidencia insuficiente se puede reintentar sin esperar. La pantalla pide el motivo.
 - Activar un periodo sin matrículas deja a los estudiantes sin profesores; ahora pide una
   confirmación explícita (`?confirmar=true`) y la pantalla de Periodos la solicita.
 - No se puede crear ni renombrar un periodo con el mismo semestre en otro formato (`2026-02` y
