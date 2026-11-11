@@ -71,6 +71,7 @@ comentarios de más de 1.000 caracteres se recortan y se advierte `TRUNCADO`.
 ## Mínimos
 
 - Menos de 10 encuestas (o respuestas del formulario): INSUFICIENTE, sin resultado.
-- FORMULARIO exige además el mínimo de 5 respuestas de la heteroevaluación.
+- FORMULARIO exige además el mínimo de 5 respuestas de la heteroevaluación; como 10 es mayor, el
+  mínimo efectivo del formulario es 10.
 - Con menos de 5 comentarios útiles se advierte `POCOS_COMENTARIOS`.
 - El resumen agregado necesita al menos 3 docentes con análisis.

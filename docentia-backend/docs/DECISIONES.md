@@ -9,8 +9,10 @@ ambigüedad. La fuente de verdad es la resolución; el Excel v2 tiene errores (v
 | # | Tema | Decisión aplicada | Quién la confirma |
 |---|------|-------------------|-------------------|
 | P1 | Fuentes faltantes (Art. 3) | Se renormaliza entre las fuentes disponibles y el promedio queda PARCIAL con las faltantes expuestas. Sin ninguna fuente queda SIN_NOTA, nunca 0. | Vicerrectoría |
-| P2 | Umbral de compromisos | 3,8 por defecto, que es el inicio de la categoría Alto. El requerimiento original decía 4,00. Es configurable con `DOCENTIA_COMPROMISOS_UMBRAL`. | Vicerrectoría |
+| P2 | Umbral de compromisos | **Pendiente.** El código aplica 3,8 (inicio de la categoría Alto), configurable con `DOCENTIA_COMPROMISOS_UMBRAL`. El backlog del equipo y el requerimiento original dicen 4,00. Mientras no se decida, queda 3,8. | Vicerrectoría |
 | P3 | Quién corrige un acta firmada | Solo Vicerrectoría, con motivo. Configurable con `DOCENTIA_ACTAS_ROL_CORRECTOR`. | Vicerrectoría |
+| P4 | Docentes con menos de 5 respuestas de estudiantes | Sin decisión. Hoy no reciben nota de estudiantes del formulario; si no hay CSV de respaldo quedan PARCIAL y el acta no se firma. Opciones: cargar CSV, ampliar la ventana o renormalizar sin estudiantes | Vicerrectoría |
+| P5 | Mínimos | 5 respuestas para la nota de estudiantes (`DOCENTIA_HETEROEVALUACION_MINIMO`) y 10 para el análisis de comentarios del formulario (`docentia.ia.minimo-encuestas`). Aplicado; falta confirmarlo | Vicerrectoría |
 
 ## Motor
 

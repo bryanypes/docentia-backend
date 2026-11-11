@@ -15,6 +15,13 @@ flowchart TB
   M --> SMTP[SMTP o Mailpit]
 ```
 
+## Datos
+
+PostgreSQL 16 con Flyway: 36 migraciones, de V1 a V28 y de V34 a V41. V29 a V33 no existen: eran de una
+rama que se renumeró a V36–V40 antes de fusionarse (ver DECISIONES-ANALISIS-IA.md). Hibernate solo
+valida el esquema (`ddl-auto: validate`). Roles en `usuarios.rol`: `VICERRECTOR`, `COORDINADOR`,
+`DOCENTE` y `ESTUDIANTE`.
+
 ## Modelo del instrumento
 
 ```mermaid
