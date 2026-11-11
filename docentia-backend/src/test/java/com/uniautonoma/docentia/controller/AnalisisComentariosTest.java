@@ -148,6 +148,30 @@ class AnalisisComentariosTest extends PruebaIntegracion {
                         fuente))));
   }
 
+  /** Una hora después y con motivo: con un resultado ya generado, pedir otro es regenerar. */
+  private ResultActions solicitarOtraVez(Usuario quien, PeriodoAcademico enPeriodo, String fuente)
+      throws Exception {
+    entityManager.flush();
+    jdbcTemplate.update(
+        "update solicitudes_analisis set fecha_solicitud = fecha_solicitud - interval '61 minutes'");
+    entityManager.clear();
+    return mockMvc.perform(
+        post("/analisis-ia/solicitudes")
+            .with(como(coordinador))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(
+                aJson(
+                    Map.of(
+                        "docenteId",
+                        quien.getIdUsuario(),
+                        "periodoId",
+                        enPeriodo.getIdPeriodo(),
+                        "fuente",
+                        fuente,
+                        "motivo",
+                        "Se corrigió la carga de respuestas"))));
+  }
+
   private void procesarCola() {
     while (procesador.procesarSiguiente()) {
       // procesa todo lo pendiente
@@ -363,7 +387,7 @@ class AnalisisComentariosTest extends PruebaIntegracion {
     responder(docente, periodo, COMENTARIOS);
     solicitar(docente, periodo, "FORMULARIO");
     procesarCola();
-    solicitar(docente, periodo, "FORMULARIO").andExpect(status().isAccepted());
+    solicitarOtraVez(docente, periodo, "FORMULARIO").andExpect(status().isAccepted());
     // Mientras corre la nueva, sigue a la vista la vigente.
     analisis(coordinador, docente)
         .andExpect(jsonPath("$.estado").value("EN_COLA"))

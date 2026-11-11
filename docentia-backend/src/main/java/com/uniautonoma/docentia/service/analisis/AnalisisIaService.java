@@ -13,6 +13,7 @@ import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.SolicitudAnalisis;
 import com.uniautonoma.docentia.entity.TipoEtapa;
 import com.uniautonoma.docentia.entity.Usuario;
+import com.uniautonoma.docentia.exception.DatosInvalidosException;
 import com.uniautonoma.docentia.exception.DemasiadosIntentosException;
 import com.uniautonoma.docentia.exception.EtapaCerradaException;
 import com.uniautonoma.docentia.exception.RecursoNoEncontradoException;
@@ -32,6 +33,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -103,10 +105,31 @@ public class AnalisisIaService {
    *     existe
    * @throws EtapaCerradaException si la revisión de hallazgos no está abierta en ese periodo
    * @throws ReglaNegocioException si ya hay una solicitud en curso para el docente y el periodo
+   * @throws DatosInvalidosException si el docente ya tiene un análisis en el periodo y falta el
+   *     motivo
+   * @throws DemasiadosIntentosException si el docente ya tiene un análisis más reciente que el
+   *     enfriamiento
    */
   public SolicitudAnalisisResponse solicitar(
       SolicitudAnalisisRequest solicitud, UsuarioSesion sesion) {
-    return crear(solicitud, null, sesion);
+    docenteService.buscarDocenteVisible(solicitud.docenteId(), sesion);
+    Optional<SolicitudAnalisis> anterior =
+        ultimaSolicitud(solicitud.docenteId(), solicitud.periodoId());
+    if (anterior.isEmpty() || anterior.get().getEstado() != EstadoSolicitudAnalisis.COMPLETADO) {
+      // Sin resultado previo no hay nada que regenerar: primera vez, en curso (409 en crear) o
+      // reintento tras un error o evidencia insuficiente, como pedir LOCAL sin presupuesto.
+      return crear(solicitud, null, sesion);
+    }
+    // Con un resultado ya generado, pedir otro es regenerar: mismas reglas que /regeneracion,
+    // para que este endpoint no sirva de atajo al enfriamiento.
+    String motivo = solicitud.motivo() == null ? "" : solicitud.motivo().strip();
+    if (motivo.isEmpty()) {
+      throw new DatosInvalidosException(
+          "El docente ya tiene un análisis en este periodo; indica el motivo para pedir otro",
+          "motivo");
+    }
+    exigirEnfriamiento(anterior.get());
+    return crear(solicitud, motivo, sesion);
   }
 
   /**
@@ -118,29 +141,31 @@ public class AnalisisIaService {
   public SolicitudAnalisisResponse regenerar(
       Long idDocente, RegeneracionAnalisisRequest pedido, UsuarioSesion sesion) {
     docenteService.buscarDocenteVisible(idDocente, sesion);
-    solicitudRepository
-        .findByDocenteIdUsuarioAndPeriodoIdPeriodoOrderByIdSolicitudDesc(
-            idDocente, pedido.periodoId())
-        .stream()
-        .findFirst()
-        .map(SolicitudAnalisis::getFechaSolicitud)
-        .filter(
-            fecha ->
-                fecha != null
-                    && fecha.isAfter(
-                        LocalDateTime.now().minusMinutes(ahorro.enfriamientoRegeneracionMinutos())))
-        .ifPresent(
-            reciente -> {
-              throw new DemasiadosIntentosException(
-                  "Este análisis se generó hace poco. Puedes regenerarlo "
-                      + ahorro.enfriamientoRegeneracionMinutos()
-                      + " minutos después de la última solicitud");
-            });
+    ultimaSolicitud(idDocente, pedido.periodoId()).ifPresent(this::exigirEnfriamiento);
     return crear(
         new SolicitudAnalisisRequest(
             idDocente, pedido.periodoId(), pedido.fuente(), pedido.modelo()),
         pedido.motivo().strip(),
         sesion);
+  }
+
+  private Optional<SolicitudAnalisis> ultimaSolicitud(Long idDocente, Long idPeriodo) {
+    return solicitudRepository
+        .findByDocenteIdUsuarioAndPeriodoIdPeriodoOrderByIdSolicitudDesc(idDocente, idPeriodo)
+        .stream()
+        .findFirst();
+  }
+
+  /** Entre dos solicitudes del mismo docente y periodo debe pasar el enfriamiento configurado. */
+  private void exigirEnfriamiento(SolicitudAnalisis anterior) {
+    LocalDateTime fecha = anterior.getFechaSolicitud();
+    int minutos = ahorro.enfriamientoRegeneracionMinutos();
+    if (fecha != null && fecha.isAfter(LocalDateTime.now().minusMinutes(minutos))) {
+      throw new DemasiadosIntentosException(
+          "Este análisis se generó hace poco. Puedes regenerarlo "
+              + minutos
+              + " minutos después de la última solicitud");
+    }
   }
 
   private SolicitudAnalisisResponse crear(

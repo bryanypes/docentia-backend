@@ -120,6 +120,25 @@ describe('Analisis', () => {
     expect(await screen.findByText('En cola…')).toBeInTheDocument()
   })
 
+  it('pedir otro análisis exige motivo y muestra la espera del backend', async () => {
+    analisisService.listarSolicitudes.mockResolvedValue([COMPLETADO])
+    analisisService.obtenerSolicitud.mockResolvedValue(COMPLETADO)
+    analisisService.solicitarAnalisis.mockRejectedValue(
+      new ApiError(429, 'Este análisis se generó hace poco. Puedes regenerarlo 60 minutos después de la última solicitud'),
+    )
+    renderizar()
+
+    const boton = await screen.findByRole('button', { name: 'Solicitar un análisis nuevo' })
+    expect(boton).toBeDisabled()
+    await userEvent.type(screen.getByLabelText('Motivo para pedir otro análisis'), 'Corto')
+    expect(boton).toBeDisabled()
+    await userEvent.type(screen.getByLabelText('Motivo para pedir otro análisis'), ' pero suficiente')
+    await userEvent.click(boton)
+
+    expect(analisisService.solicitarAnalisis).toHaveBeenCalledWith('4', '2', 'Corto pero suficiente')
+    expect(await screen.findByText(/60 minutos después/)).toBeInTheDocument()
+  })
+
   it('la vicerrectoría consulta pero no solicita ni valida', async () => {
     analisisService.listarSolicitudes.mockResolvedValue([COMPLETADO])
     analisisService.obtenerSolicitud.mockResolvedValue(COMPLETADO)
