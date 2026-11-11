@@ -56,6 +56,11 @@ docentia:
     minutos-vigencia: 480
   google:
     client-id: ${DOCENTIA_GOOGLE_CLIENT_ID:}
+  # Primer usuario fuera de dev (docs/OPERACION.md): crea un VICERRECTOR solo si no hay usuarios.
+  bootstrap:
+    email: ${DOCENTIA_BOOTSTRAP_EMAIL:}
+    nombre: ${DOCENTIA_BOOTSTRAP_NOMBRE:}
+    contrasena: ${DOCENTIA_BOOTSTRAP_CONTRASENA:}
   # Orígenes exactos, separados por coma, que pueden llamar al API desde otro dominio. Vacío = sin
   # CORS (el frontend va en el mismo origen o detrás de un proxy, como Vite en desarrollo).
   cors:
