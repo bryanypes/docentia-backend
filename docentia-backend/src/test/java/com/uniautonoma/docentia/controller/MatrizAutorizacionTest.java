@@ -1,6 +1,7 @@
 package com.uniautonoma.docentia.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.request;
 
 import com.uniautonoma.docentia.EscenarioPrueba;
@@ -8,6 +9,8 @@ import com.uniautonoma.docentia.PruebaIntegracion;
 import com.uniautonoma.docentia.entity.Facultad;
 import com.uniautonoma.docentia.entity.Programa;
 import com.uniautonoma.docentia.entity.Usuario;
+import com.uniautonoma.docentia.security.UsuarioSesion;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -17,6 +20,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.CsvSource;
 import org.junit.jupiter.params.provider.MethodSource;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -255,6 +259,78 @@ class MatrizAutorizacionTest extends PruebaIntegracion {
       assertThat(estado).isNotEqualTo(401);
     } else {
       assertThat(estado).as(endpoint).isEqualTo(401);
+    }
+  }
+
+  /** Lo público es una lista cerrada: agregar una ruta sin sesión exige cambiar esta prueba. */
+  @Test
+  void lasRutasPublicasSonSoloLasDeEntradaYVerificacion() {
+    assertThat(
+            MATRIZ.entrySet().stream()
+                .filter(fila -> fila.getValue().equals("P"))
+                .map(Map.Entry::getKey))
+        .containsExactlyInAnyOrder(
+            "POST /sesiones", "POST /sesiones/google", "GET /verificacion-actas/{}");
+  }
+
+  /** Nada bajo /sesiones/ queda abierto por un comodín: solo las dos rutas de entrada. */
+  @ParameterizedTest(name = "{0} {1} sin sesión")
+  @CsvSource({
+    "POST, /sesiones/iniciar",
+    "POST, /sesiones/actual",
+    "POST, /sesiones/google/extra",
+    "POST, /sesiones/actual/contrasena",
+    "GET, /sesiones/actual/perfil",
+    "PUT, /sesiones/actual/contrasena",
+    "GET, /actuator/env",
+    "GET, /actuator/metrics",
+    "GET, /actuator/heapdump",
+    "GET, /swagger-ui.html",
+    "GET, /v3/api-docs"
+  })
+  void loQueNoEsPublicoPideSesion(String verbo, String ruta) throws Exception {
+    int estado =
+        mockMvc
+            .perform(
+                request(HttpMethod.valueOf(verbo), ruta)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content("{}"))
+            .andReturn()
+            .getResponse()
+            .getStatus();
+    assertThat(estado).as("%s %s", verbo, ruta).isEqualTo(401);
+  }
+
+  /** Con la contraseña temporal solo se lee la sesión y se cambia la clave, con cualquier rol. */
+  @ParameterizedTest(name = "{0} con contraseña temporal")
+  @MethodSource("endpoints")
+  void conContrasenaTemporalSoloSeCambiaLaClave(String endpoint) throws Exception {
+    if (MATRIZ.get(endpoint).equals("P")) {
+      return;
+    }
+    for (Usuario usuario : List.of(docente, coordinador, vicerrector, estudiante)) {
+      UsuarioSesion sesion = UsuarioSesion.desde(usuario);
+      UsuarioSesion temporal =
+          new UsuarioSesion(
+              sesion.idUsuario(),
+              sesion.nombreCompleto(),
+              sesion.correo(),
+              sesion.rol(),
+              sesion.idFacultad(),
+              sesion.idPrograma(),
+              true);
+      int estado =
+          mockMvc
+              .perform(peticion(endpoint).with(authentication(temporal.aAutenticacion())))
+              .andReturn()
+              .getResponse()
+              .getStatus();
+      if (endpoint.equals("GET /sesiones/actual")
+          || endpoint.equals("PUT /sesiones/actual/contrasena")) {
+        assertThat(estado).as("%s para %s", endpoint, usuario.getRol()).isNotIn(401, 403);
+      } else {
+        assertThat(estado).as("%s para %s", endpoint, usuario.getRol()).isIn(400, 403, 415);
+      }
     }
   }
 }

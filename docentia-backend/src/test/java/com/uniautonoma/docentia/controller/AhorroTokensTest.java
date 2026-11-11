@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.clearInvocations;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -345,6 +346,22 @@ class AhorroTokensTest extends PruebaIntegracion {
             .with(como(coordinador))
             .contentType(MediaType.APPLICATION_JSON)
             .content(aJson(cuerpo)));
+  }
+
+  @Test
+  void unFalloInesperadoDelAnalisisNoVuelcaComentariosAlRegistro(CapturedOutput salida)
+      throws Exception {
+    responder(docente, periodo, AnalisisComentariosTest.COMENTARIOS);
+    String trozo = AnalisisComentariosTest.COMENTARIOS.get(0);
+    // Un error de base de datos puede traer la fila en su mensaje; aquí se imita con el texto.
+    doThrow(new IllegalStateException("Failing row contains (" + trozo + ")"))
+        .when(modelo)
+        .analizar(any());
+    solicitar(docente, periodo, null).andExpect(status().isAccepted());
+    procesarCola();
+
+    analisis(docente).andExpect(jsonPath("$.estado").value("ERROR"));
+    assertThat(salida.getAll()).contains("IllegalStateException").doesNotContain(trozo);
   }
 
   @Test
