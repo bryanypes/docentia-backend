@@ -271,7 +271,14 @@ docker compose logs api | grep -E "Successfully applied|Started DocentiaApplicat
 
 ### 6. Vuelta atrás
 
-Si la verificación falla y no se resuelve en la primera hora:
+**Cuándo aplicarla** (cualquiera de estas, y que no se resuelva en la primera hora):
+
+- La API no arranca o no llega a `UP` en `/api/actuator/health/readiness`.
+- El log muestra `Migration of schema … failed` o `Application run failed`.
+- Los conteos de la sección 7 de `consultas-verificacion.sql` no coinciden con los de antes.
+- Nadie puede iniciar sesión con su contraseña, o una pantalla principal responde 5xx de forma repetida.
+
+Un aviso de Google o de SMTP sin configurar **no** es motivo de vuelta atrás: se corrige con la variable.
 
 ```bash
 docker compose down                         # sin -v: conserva el volumen hasta restaurar
@@ -285,6 +292,10 @@ docker compose up -d --wait
 
 Lo que se haya escrito en la base después del respaldo se pierde; por eso la web queda detenida hasta
 terminar la verificación.
+
+**Probado el 12 de noviembre de 2026:** sobre el respaldo de v0.3.3, restaurar en una base limpia y
+levantar la imagen de 0.3.3 tomó 19 s; la base volvió a V28 (`Schema is up to date`) y las sumas md5 de
+notas, ventanas, respuestas y actas quedaron idénticas al respaldo.
 
 ## Salud
 
