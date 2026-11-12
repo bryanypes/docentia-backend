@@ -1,34 +1,9 @@
 import { GoogleOAuthProvider } from '@react-oauth/google'
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
-import CambiarContrasena from '../features/auth/pages/CambiarContrasena.jsx'
-import MiPerfil from '../features/perfil/pages/MiPerfil.jsx'
 import Login from '../features/auth/pages/Login.jsx'
 import { SesionProvider } from '../features/auth/SesionProvider.jsx'
 import { useSesion } from '../features/auth/sesionContext.js'
-import AccionesSugeridas from '../features/actas/pages/AccionesSugeridas.jsx'
-import VerificarActa from '../features/actas/pages/VerificarActa.jsx'
-import MiActa from '../features/actas/pages/MiActa.jsx'
-import CoevaluacionDocente from '../features/formularios/pages/CoevaluacionDocente.jsx'
-import Coevaluaciones from '../features/formularios/pages/Coevaluaciones.jsx'
-import EvaluacionProfesores from '../features/formularios/pages/EvaluacionProfesores.jsx'
-import HeteroevaluacionClase from '../features/formularios/pages/HeteroevaluacionClase.jsx'
-import MiAutoevaluacion from '../features/formularios/pages/MiAutoevaluacion.jsx'
-import Auditoria from '../features/auditoria/pages/Auditoria.jsx'
-import Notificaciones from '../features/notificaciones/pages/Notificaciones.jsx'
-import PanelProgramas from '../features/kpis/pages/PanelProgramas.jsx'
-import Agenda from '../features/agenda/pages/Agenda.jsx'
-import MiCita from '../features/agenda/pages/MiCita.jsx'
-import Analisis from '../features/analisis/pages/Analisis.jsx'
-import Docentes from '../features/docentes/pages/Docentes.jsx'
-import Estadisticas from '../features/estadisticas/pages/Estadisticas.jsx'
-import ExpedienteDocente from '../features/expedientes/pages/ExpedienteDocente.jsx'
-import MiEvaluacion from '../features/expedientes/pages/MiEvaluacion.jsx'
-import Facultades from '../features/facultades/pages/Facultades.jsx'
-import Periodos from '../features/periodos/pages/Periodos.jsx'
-import Ponderaciones from '../features/ponderaciones/pages/Ponderaciones.jsx'
-import Programas from '../features/programas/pages/Programas.jsx'
-import FormularioUsuario from '../features/usuarios/pages/FormularioUsuario.jsx'
-import Usuarios from '../features/usuarios/pages/Usuarios.jsx'
 import { AppLayout } from '../shared/components/layout/AppLayout/AppLayout.jsx'
 import { AvisosProvider } from '../shared/components/ui/Avisos/AvisosProvider.jsx'
 import { ROLES } from '../shared/constants/dominio.js'
@@ -38,6 +13,34 @@ import { ProtectedRoute } from './ProtectedRoute.jsx'
 import RecuperarContrasena from '../features/auth/pages/RecuperarContrasena.jsx'
 import Presentacion from '../features/presentacion/Presentacion.jsx'
 import { RUTA_CAMBIO_CONTRASENA, rutaInicioDelRol } from './rutasPorRol.js'
+
+// Cada pantalla se descarga al abrirla: la carga inicial solo trae el login y el marco.
+const CambiarContrasena = lazy(() => import('../features/auth/pages/CambiarContrasena.jsx'))
+const MiPerfil = lazy(() => import('../features/perfil/pages/MiPerfil.jsx'))
+const AccionesSugeridas = lazy(() => import('../features/actas/pages/AccionesSugeridas.jsx'))
+const VerificarActa = lazy(() => import('../features/actas/pages/VerificarActa.jsx'))
+const MiActa = lazy(() => import('../features/actas/pages/MiActa.jsx'))
+const CoevaluacionDocente = lazy(() => import('../features/formularios/pages/CoevaluacionDocente.jsx'))
+const Coevaluaciones = lazy(() => import('../features/formularios/pages/Coevaluaciones.jsx'))
+const EvaluacionProfesores = lazy(() => import('../features/formularios/pages/EvaluacionProfesores.jsx'))
+const HeteroevaluacionClase = lazy(() => import('../features/formularios/pages/HeteroevaluacionClase.jsx'))
+const MiAutoevaluacion = lazy(() => import('../features/formularios/pages/MiAutoevaluacion.jsx'))
+const Auditoria = lazy(() => import('../features/auditoria/pages/Auditoria.jsx'))
+const Notificaciones = lazy(() => import('../features/notificaciones/pages/Notificaciones.jsx'))
+const PanelProgramas = lazy(() => import('../features/kpis/pages/PanelProgramas.jsx'))
+const Agenda = lazy(() => import('../features/agenda/pages/Agenda.jsx'))
+const MiCita = lazy(() => import('../features/agenda/pages/MiCita.jsx'))
+const Analisis = lazy(() => import('../features/analisis/pages/Analisis.jsx'))
+const Docentes = lazy(() => import('../features/docentes/pages/Docentes.jsx'))
+const Estadisticas = lazy(() => import('../features/estadisticas/pages/Estadisticas.jsx'))
+const ExpedienteDocente = lazy(() => import('../features/expedientes/pages/ExpedienteDocente.jsx'))
+const MiEvaluacion = lazy(() => import('../features/expedientes/pages/MiEvaluacion.jsx'))
+const Facultades = lazy(() => import('../features/facultades/pages/Facultades.jsx'))
+const Periodos = lazy(() => import('../features/periodos/pages/Periodos.jsx'))
+const Ponderaciones = lazy(() => import('../features/ponderaciones/pages/Ponderaciones.jsx'))
+const Programas = lazy(() => import('../features/programas/pages/Programas.jsx'))
+const FormularioUsuario = lazy(() => import('../features/usuarios/pages/FormularioUsuario.jsx'))
+const Usuarios = lazy(() => import('../features/usuarios/pages/Usuarios.jsx'))
 
 const GESTION = [ROLES.COORDINADOR, ROLES.VICERRECTOR]
 
@@ -55,6 +58,7 @@ function RutasDocentia() {
     <BrowserRouter>
       <SesionProvider>
         <AvisosProvider>
+        <Suspense fallback={null}>
         <Routes>
           <Route path="/" element={<RedirigirAlInicio />} />
           <Route path="/login" element={<Login />} />
@@ -124,6 +128,7 @@ function RutasDocentia() {
             </Route>
           </Route>
         </Routes>
+        </Suspense>
         </AvisosProvider>
       </SesionProvider>
     </BrowserRouter>

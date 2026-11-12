@@ -1,6 +1,7 @@
 import { GraduationCap, Menu } from 'lucide-react'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Outlet, useLocation } from 'react-router-dom'
+import { Cargando } from '../../ui/EstadoVista/EstadoVista.jsx'
 import { Campana } from '../../../../features/notificaciones/components/Campana.jsx'
 import {
   obtenerPeriodoActivo,
@@ -158,7 +159,9 @@ export function AppLayout() {
           <Campana />
           {/* Si una pantalla falla, el menú sigue y el error queda en el área de contenido. */}
           <LimiteError key={pathname} enLinea>
-            <Outlet />
+            <Suspense fallback={<Cargando texto="Cargando la página" bloques={2} />}>
+              <Outlet />
+            </Suspense>
           </LimiteError>
         </main>
       </div>
