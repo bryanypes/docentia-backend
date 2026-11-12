@@ -452,3 +452,20 @@
 .instrumento--estudiante .pregunta__opcion {
   padding: 6px 4px;
 }
+
+/* Acento de marca en el avance del cuestionario */
+.cuestionario__relleno {
+  background: linear-gradient(90deg, var(--color-azul), #1857a8 70%, var(--color-amarillo));
+  transition: width var(--transicion-media);
+}
+
+.cuestionario__cabecera {
+  border-radius: var(--radio-xl);
+  box-shadow: var(--sombra-elevada);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cuestionario__relleno {
+    transition: none;
+  }
+}
