@@ -146,3 +146,41 @@
   font-size: 13px;
   font-weight: var(--peso-fuerte);
 }
+
+/* Tarjetas con la elevación y el acento de la presentación */
+.tarjeta-kpi {
+  position: relative;
+  overflow: hidden;
+  border-color: var(--color-borde-suave);
+  border-radius: var(--radio-xl);
+  box-shadow: var(--sombra-tarjeta);
+  transition: transform var(--transicion-rapida), box-shadow var(--transicion-rapida);
+  animation: entrar-suave var(--transicion-media) both;
+}
+
+.tarjeta-kpi::before {
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: linear-gradient(90deg, var(--color-azul), var(--color-amarillo));
+  content: '';
+  opacity: 0.85;
+}
+
+.tarjeta-kpi:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--sombra-elevada);
+}
+
+.tarjeta-kpi__icono {
+  border-radius: 12px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tarjeta-kpi,
+  .tarjeta-kpi:hover {
+    animation: none;
+    transition: none;
+    transform: none;
+  }
+}
