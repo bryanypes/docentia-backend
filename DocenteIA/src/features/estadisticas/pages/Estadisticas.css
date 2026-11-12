@@ -437,6 +437,10 @@
 }
 
 @media (max-width: 720px) {
+  .estadisticas__mosaico {
+    columns: 1;
+  }
+
   .estadisticas__medidor {
     min-width: 0;
   }

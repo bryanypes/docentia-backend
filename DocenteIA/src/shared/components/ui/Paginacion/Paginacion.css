@@ -5,6 +5,7 @@
   justify-content: space-between;
   gap: 0.5rem 1rem;
   margin-top: 0.75rem;
+  color: var(--color-texto-secundario);
   font-size: 0.9rem;
 }
 
@@ -15,10 +16,18 @@
 }
 
 .paginacion__tamano select {
-  padding: 0.25rem 0.4rem;
-  border: 1px solid var(--color-borde, #e6dfce);
-  border-radius: 0.5rem;
+  min-height: 36px;
+  padding: 0.3rem 0.55rem;
+  color: var(--color-texto);
+  border: 1px solid var(--color-borde-control);
+  border-radius: var(--radio-md);
   background: var(--color-superficie, #ffffff);
+  font: inherit;
+}
+
+.paginacion__tamano select:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
 }
 
 .paginacion__botones {
@@ -29,4 +38,15 @@
 
 .paginacion__pagina {
   white-space: nowrap;
+}
+
+@media (max-width: 520px) {
+  .paginacion {
+    align-items: stretch;
+  }
+
+  .paginacion__tamano,
+  .paginacion__botones {
+    justify-content: space-between;
+  }
 }

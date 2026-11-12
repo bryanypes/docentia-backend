@@ -85,7 +85,7 @@ export default function Inicio() {
         }
       />
 
-      <div className="pagina">
+      <div className="pagina inicio">
         <MensajeNavegacion />
         <section className="inicio__filtros" aria-label="Filtros del resumen">
           <div className="inicio__campos">

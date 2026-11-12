@@ -220,6 +220,7 @@
 }
 
 .datos-docente__item {
+  min-width: 0;
   padding: 10px 12px;
   background: var(--color-superficie);
   border: 1px solid var(--color-borde-suave);
@@ -232,8 +233,10 @@
 }
 
 .datos-docente__item dd {
+  min-width: 0;
   margin: 0;
   font-size: 13.5px;
+  overflow-wrap: anywhere;
   font-weight: var(--peso-semi);
 }
 
@@ -247,4 +250,10 @@
 .fuentes__accion {
   margin: 12px 0 0;
   font-size: 13.5px;
+}
+
+@media (max-width: 520px) {
+  .datos-docente {
+    grid-template-columns: minmax(0, 1fr);
+  }
 }

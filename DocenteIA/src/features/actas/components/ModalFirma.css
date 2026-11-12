@@ -109,6 +109,14 @@
   line-height: 1.4;
 }
 
+.firma__alcance {
+  padding: 9px 11px;
+  border-left: 3px solid var(--color-azul-claro);
+  border-radius: 0 var(--radio-sm) var(--radio-sm) 0;
+  background: var(--color-azul-fondo);
+  color: var(--color-azul);
+}
+
 .firma__confirmacion input {
   width: 18px;
   height: 18px;

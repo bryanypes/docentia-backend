@@ -43,7 +43,7 @@ import org.springframework.stereotype.Component;
  * el docente lo descarga. El hash impreso es el del contenido; el del archivo se guarda aparte.
  *
  * <p>El logo institucional se lee de {@code docentia.actas.logo}; si el archivo no existe, el acta
- * sale sin logo. El archivo oficial no está en el repositorio: lo pone la institución.
+ * sale sin logo.
  */
 @Component
 public class GeneradorPdfActa {
@@ -199,7 +199,7 @@ public class GeneradorPdfActa {
       documento.add(subtitulo("Firmas electrónicas", seccion));
       documento.add(firmas(acta, texto, fuerte, rotulo, pequena));
 
-      documento.add(subtitulo("Certificado de firma electrónica", seccion));
+      documento.add(subtitulo("Constancia de firmas y verificación", seccion));
       documento.add(certificado(acta, codigo, hashContenido, texto, fuerte, pequena));
       documento.close();
     } catch (DocumentException excepcion) {
@@ -267,7 +267,6 @@ public class GeneradorPdfActa {
       pie.add(new Chunk(firma.getNombre() + "\n", fuerte));
       pie.add(new Chunk(firma.getCorreo() + "\n", texto));
       pie.add(new Chunk("Fecha: " + firma.getFecha().format(FORMATO_FECHA) + "\n", texto));
-      pie.add(new Chunk("IP: " + firma.getIp(), texto));
       if (firma.getHashImagen() != null) {
         pie.add(
             new Chunk("\nFirma dibujada en DOCENTIA · SHA-256 " + firma.getHashImagen(), pequena));
@@ -284,7 +283,7 @@ public class GeneradorPdfActa {
     return tabla;
   }
 
-  /** Recuadro que certifica cómo y dónde se firmó, con lo necesario para verificarlo. */
+  /** Recuadro con el registro de firmas y los datos para verificar la integridad del acta. */
   private PdfPTable certificado(
       Acta acta, String codigo, String hashContenido, Font texto, Font fuerte, Font pequena)
       throws DocumentException {
@@ -302,15 +301,16 @@ public class GeneradorPdfActa {
     cuerpo.setLeading(13);
     cuerpo.add(
         new Chunk(
-            "La Corporación Universitaria Autónoma del Cauca certifica, por medio de DOCENTIA, que "
+            "DOCENTIA registra que "
                 + acta.getDocente().getNombreCompleto()
                 + " ("
                 + acta.getDocente().getCorreo()
                 + ") y la coordinación firmaron esta acta en la plataforma, después de la reunión de"
                 + " retroalimentación del periodo "
                 + acta.getPeriodo().getNombre()
-                + ". Cada firma se dibujó en la página y quedó sellada con su hash; el acta no se"
-                + " puede modificar después de firmada.\n",
+                + ". DOCENTIA conserva el trazo, la identidad de la cuenta, la fecha y el hash de"
+                + " cada firma. Este registro no incluye un certificado digital criptográfico; las"
+                + " versiones firmadas se conservan y cualquier corrección crea una nueva versión.\n",
             texto));
     cuerpo.add(new Chunk("Código de verificación: ", fuerte));
     cuerpo.add(new Chunk(codigo + "\n", fuerte));
