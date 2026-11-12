@@ -45,13 +45,6 @@ public class FirmaActa {
   @Column(nullable = false)
   private LocalDateTime fecha;
 
-  /** PNG del trazo dibujado en la página; nulo en firmas anteriores a V30. */
-  @Column(columnDefinition = "bytea", updatable = false)
-  private byte[] imagen;
-
-  @Column(length = 64, updatable = false)
-  private String hashImagen;
-
   protected FirmaActa() {}
 
   public FirmaActa(
@@ -69,21 +62,6 @@ public class FirmaActa {
     this.correo = correo;
     this.ip = ip;
     this.fecha = fecha;
-  }
-
-  /** Adjunta el trazo con su hash. Solo al crear la firma. */
-  public FirmaActa conTrazo(byte[] png, String hash) {
-    this.imagen = png;
-    this.hashImagen = hash;
-    return this;
-  }
-
-  public byte[] getImagen() {
-    return imagen;
-  }
-
-  public String getHashImagen() {
-    return hashImagen;
   }
 
   public Rol getRol() {

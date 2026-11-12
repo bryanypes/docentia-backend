@@ -76,10 +76,6 @@ public class EvaluacionFormulario {
   @Column(name = "texto", nullable = false, length = 1000)
   private Map<Long, String> comentarios = new HashMap<>();
 
-  /** Comentario general del formulario, al final; es el que va al análisis de comentarios. */
-  @Column(name = "comentario_general", length = 1000)
-  private String comentarioGeneral;
-
   protected EvaluacionFormulario() {}
 
   public EvaluacionFormulario(
@@ -95,15 +91,11 @@ public class EvaluacionFormulario {
     this.instrumentoVersion = instrumentoVersion;
   }
 
-  public void reemplazar(
-      Map<Long, Short> nuevasRespuestas,
-      Map<Long, String> nuevosComentarios,
-      String nuevoComentarioGeneral) {
+  public void reemplazar(Map<Long, Short> nuevasRespuestas, Map<Long, String> nuevosComentarios) {
     respuestas.clear();
     respuestas.putAll(nuevasRespuestas);
     comentarios.clear();
     comentarios.putAll(nuevosComentarios);
-    comentarioGeneral = nuevoComentarioGeneral;
   }
 
   public void enviar(BigDecimal valorFuente, LocalDateTime ahora) {
@@ -150,10 +142,6 @@ public class EvaluacionFormulario {
 
   public Map<Long, Short> getRespuestas() {
     return respuestas;
-  }
-
-  public String getComentarioGeneral() {
-    return comentarioGeneral;
   }
 
   public Map<Long, String> getComentarios() {

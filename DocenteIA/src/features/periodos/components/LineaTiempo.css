@@ -1,272 +1,32 @@
-/* Recorrido de las etapas del periodo: un paso por etapa, unidos por una línea. Terminada en
-   turquesa, abierta en azul, próxima en gris; la vigente lleva el anillo amarillo de la marca. */
-.linea-tiempo {
-  --tamano-marca: 60px;
-  display: grid;
-  gap: 14px;
-  padding: 20px 22px 16px;
-  border: 1px solid var(--color-borde-suave);
-  border-radius: var(--radio-xl);
-  background: var(--color-superficie);
-  box-shadow: var(--sombra-tarjeta);
-}
-
-.linea-tiempo__cabecera {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 4px 12px;
-}
-
-.linea-tiempo__titulo {
-  margin: 0;
-  font-size: 17px;
-  font-weight: var(--peso-fuerte);
-  color: var(--color-azul);
-}
-
-.linea-tiempo__resumen {
-  font-size: 13px;
-  font-weight: var(--peso-semi);
-  color: var(--color-texto-tenue);
-}
-
 .linea-tiempo__etapas {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: 12px;
-  margin: 0;
+  gap: 10px;
+  margin: 0 0 6px;
   padding: 0;
   list-style: none;
 }
 
 .linea-tiempo__etapa {
-  --tono: var(--color-texto-apagado);
-  --tono-fondo: var(--color-fondo);
-  position: relative;
   display: grid;
-  justify-items: center;
-  gap: 12px;
-  text-align: center;
-}
-
-.linea-tiempo__etapa--terminada {
-  --tono: var(--color-turquesa);
-  --tono-fondo: var(--color-turquesa-fondo);
-}
-
-.linea-tiempo__etapa--abierta {
-  --tono: var(--color-azul);
-  --tono-fondo: var(--color-azul-suave);
-}
-
-/* Línea hacia el paso siguiente, del color del paso en que empieza. */
-.linea-tiempo__etapa:not(:last-child)::after {
-  content: '';
-  position: absolute;
-  top: calc(var(--tamano-marca) / 2 - 2px);
-  left: calc(50% + var(--tamano-marca) / 2 + 8px);
-  right: calc(-50% + var(--tamano-marca) / 2 + 8px - 12px);
-  height: 4px;
-  border-radius: 2px;
-  background: var(--color-borde);
-}
-
-.linea-tiempo__etapa--terminada:not(:last-child)::after {
-  background: var(--color-turquesa);
-}
-
-.linea-tiempo__etapa--abierta:not(:last-child)::after {
-  background: linear-gradient(90deg, var(--color-azul), var(--color-borde));
-}
-
-.linea-tiempo__marca {
-  position: relative;
-  z-index: 1;
-}
-
-.linea-tiempo__icono {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: var(--tamano-marca);
-  height: var(--tamano-marca);
-  border: 3px solid var(--tono);
-  border-radius: 50%;
-  background: var(--tono-fondo);
-  color: var(--tono);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.linea-tiempo__etapa--terminada .linea-tiempo__icono {
-  background: var(--color-turquesa);
-  color: #fff;
-}
-
-.linea-tiempo__etapa--abierta .linea-tiempo__icono {
-  background: var(--color-azul);
-  color: var(--color-crema);
-}
-
-.linea-tiempo__etapa--proxima .linea-tiempo__icono,
-.linea-tiempo__etapa--sin .linea-tiempo__icono {
-  border-style: dashed;
-}
-
-.linea-tiempo__etapa--vigente .linea-tiempo__icono {
-  box-shadow:
-    0 0 0 5px var(--color-superficie),
-    0 0 0 9px var(--color-amarillo);
-  animation: etapa-vigente 2.4s ease-in-out infinite;
-}
-
-@keyframes etapa-vigente {
-  50% {
-    transform: scale(1.06);
-  }
-}
-
-.linea-tiempo__texto {
-  display: grid;
-  justify-items: center;
-  gap: 4px;
-  max-width: 260px;
-}
-
-.linea-tiempo__paso {
-  font-size: 11.5px;
-  font-weight: var(--peso-semi);
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: var(--tono);
-}
-
-.linea-tiempo__nombre {
-  margin: 0;
-  font-size: 16px;
-  font-weight: var(--peso-fuerte);
-  line-height: 1.25;
-  color: var(--color-texto);
-}
-
-.linea-tiempo__semanas {
-  font-size: 13.5px;
-  font-weight: var(--peso-semi);
-  color: var(--color-texto-secundario);
-}
-
-.linea-tiempo__fechas {
-  font-size: 13.5px;
-  line-height: 1.4;
-  color: var(--color-texto-secundario);
-}
-
-.linea-tiempo__estados {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 6px;
-  margin-top: 4px;
-}
-
-.linea-tiempo__estado {
-  padding: 3px 10px;
-  border-radius: var(--radio-pildora);
-  background: var(--tono-fondo);
-  color: var(--tono);
-  font-size: 12px;
-  font-weight: var(--peso-semi);
-}
-
-.linea-tiempo__estado--vigente {
-  background: var(--color-amarillo);
-  color: var(--color-azul-oscuro, #10244a);
-}
-
-.linea-tiempo__progreso {
-  display: grid;
-  gap: 4px;
-  width: 100%;
-  margin-top: 4px;
+  align-content: start;
+  justify-items: start;
+  gap: 2px;
+  padding: 10px 12px;
+  border-top: 3px solid var(--color-borde-suave);
   font-size: 12.5px;
-  font-weight: var(--peso-semi);
-  color: var(--color-azul);
 }
 
-.linea-tiempo__riel {
-  display: block;
-  height: 6px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: var(--color-azul-suave);
+.linea-tiempo__etapa strong {
+  font-size: 13.5px;
 }
 
-.linea-tiempo__relleno {
-  display: block;
-  height: 100%;
-  border-radius: 999px;
-  background: var(--color-azul);
+.linea-tiempo__etapa--vigente {
+  border-top-color: #e3c924;
 }
 
-.linea-tiempo__nota {
-  margin: 0;
-  padding-top: 10px;
-  border-top: 1px solid var(--color-borde-suave);
-  font-size: 13px;
-  color: var(--color-texto-tenue);
-}
-
-/* En pantallas angostas el recorrido va de arriba abajo, con la línea a la izquierda. */
-@media (max-width: 860px) {
-  .linea-tiempo {
-    --tamano-marca: 52px;
-    padding: 16px;
-  }
-
+@media (max-width: 800px) {
   .linea-tiempo__etapas {
-    grid-template-columns: minmax(0, 1fr);
-    gap: 0;
-  }
-
-  .linea-tiempo__etapa {
-    grid-template-columns: var(--tamano-marca) minmax(0, 1fr);
-    justify-items: start;
-    align-items: start;
-    gap: 14px;
-    padding-bottom: 20px;
-    text-align: left;
-  }
-
-  .linea-tiempo__etapa:last-child {
-    padding-bottom: 0;
-  }
-
-  .linea-tiempo__etapa:not(:last-child)::after {
-    top: calc(var(--tamano-marca) + 6px);
-    bottom: 6px;
-    left: calc(var(--tamano-marca) / 2 - 2px);
-    right: auto;
-    width: 4px;
-    height: auto;
-  }
-
-  .linea-tiempo__etapa--abierta:not(:last-child)::after {
-    background: linear-gradient(180deg, var(--color-azul), var(--color-borde));
-  }
-
-  .linea-tiempo__texto {
-    justify-items: start;
-    max-width: none;
-  }
-
-  .linea-tiempo__estados {
-    justify-content: flex-start;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .linea-tiempo__etapa--vigente .linea-tiempo__icono {
-    animation: none;
+    grid-template-columns: 1fr;
   }
 }

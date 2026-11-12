@@ -143,29 +143,32 @@
   border-radius: var(--radio-pildora);
 }
 
-.coevaluaciones__avance {
-  display: inline-flex;
+.evaluaciones-estudiante {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.evaluaciones-estudiante__item {
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 8px;
-  white-space: nowrap;
+  justify-content: space-between;
+  gap: 8px 12px;
+  padding: 12px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-md);
 }
 
-.coevaluaciones__riel {
-  display: inline-flex;
-  width: 70px;
-  height: 8px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: var(--color-borde-suave);
+.evaluaciones-estudiante__item div {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  flex: 1 1 200px;
 }
 
-.coevaluaciones__riel span {
-  border-radius: 999px;
-  background: var(--color-turquesa);
-}
-
-/* Avance del estudiante sobre la portada. */
-.instrumento__contador {
-  justify-self: end;
-  font-size: 12px;
+.evaluaciones-estudiante__item span {
+  font-size: 13px;
 }

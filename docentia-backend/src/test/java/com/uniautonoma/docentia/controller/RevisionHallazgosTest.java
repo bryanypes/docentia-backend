@@ -103,7 +103,7 @@ class RevisionHallazgosTest extends PruebaIntegracion {
         .andExpect(
             jsonPath("$[*].accion", contains("GENERADO", "INCLUIDO", "EDITADO", "DESCARTADO")))
         .andExpect(jsonPath("$[0].modelo").value("simulado-determinista"))
-        .andExpect(jsonPath("$[0].versionInstruccion").value("analisis-v2"))
+        .andExpect(jsonPath("$[0].versionInstruccion").value("analisis-v1"))
         .andExpect(jsonPath("$[0].nombreUsuario").doesNotExist())
         .andExpect(jsonPath("$[3].nombreUsuario").value("Marta Ruiz"))
         .andExpect(jsonPath("$[3].motivo").value("No aporta"));

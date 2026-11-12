@@ -1,6 +1,6 @@
-import { RefreshCw } from 'lucide-react'
+import { ChevronLeft, RefreshCw } from 'lucide-react'
 import { useCallback } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
@@ -26,11 +26,15 @@ export default function CoevaluacionDocente() {
   return (
     <>
       <Encabezado
-        volver={{ a: '/coevaluaciones', texto: 'Coevaluaciones' }}
+        miga="Coordinación · Coevaluación"
         titulo={datos ? `Coevaluación de ${datos.nombreDocente}` : 'Coevaluación'}
         subtitulo="Seis ítems del Anexo 1. El docente nunca ve estos puntajes."
       />
       <div className="pagina">
+        <Link to="/coevaluaciones" className="enlace-volver">
+          <ChevronLeft size={16} aria-hidden="true" />
+          Volver a coevaluaciones
+        </Link>
         {cargando && !datos && <Cargando texto="Cargando la coevaluación" bloques={2} />}
         {error && (
           <EstadoVista

@@ -16,8 +16,3 @@ export function obtenerSesionActual() {
 export function cambiarContrasena(contrasenaActual, contrasenaNueva) {
   return api.put('/sesiones/actual/contrasena', { contrasenaActual, contrasenaNueva })
 }
-
-/** Perfil propio: nombre, correo, rol y facultad y programa por nombre. */
-export function obtenerPerfil() {
-  return api.get('/sesiones/actual/perfil')
-}

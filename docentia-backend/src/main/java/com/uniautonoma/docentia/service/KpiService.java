@@ -11,12 +11,10 @@ import com.uniautonoma.docentia.entity.CategoriaDesempeno;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.exception.RecursoNoEncontradoException;
 import com.uniautonoma.docentia.exception.ReglaNegocioException;
-import com.uniautonoma.docentia.entity.Programa;
 import com.uniautonoma.docentia.repository.IndicadoresRepository;
 import com.uniautonoma.docentia.repository.IndicadoresRepository.ResumenPrograma;
 import com.uniautonoma.docentia.repository.IndicadoresRepository.ResumenPromedios;
 import com.uniautonoma.docentia.repository.PeriodoAcademicoRepository;
-import com.uniautonoma.docentia.repository.ProgramaRepository;
 import com.uniautonoma.docentia.security.UsuarioSesion;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
@@ -41,7 +39,6 @@ public class KpiService {
   private final PeriodoAcademicoRepository periodoRepository;
   private final PeriodoAcademicoService periodoService;
   private final FacultadService facultadService;
-  private final ProgramaRepository programaRepository;
   private final KpiProperties propiedades;
 
   public KpiService(
@@ -49,13 +46,11 @@ public class KpiService {
       PeriodoAcademicoRepository periodoRepository,
       PeriodoAcademicoService periodoService,
       FacultadService facultadService,
-      ProgramaRepository programaRepository,
       KpiProperties propiedades) {
     this.indicadoresRepository = indicadoresRepository;
     this.periodoRepository = periodoRepository;
     this.periodoService = periodoService;
     this.facultadService = facultadService;
-    this.programaRepository = programaRepository;
     this.propiedades = propiedades;
   }
 
@@ -185,20 +180,16 @@ public class KpiService {
    * @param idPeriodo periodo consultado, o nulo para el activo
    * @param idFacultad filtro del vicerrector, o nulo para toda la institución; al coordinador
    *     siempre se le aplica su propia facultad
-   * @param idPrograma filtro opcional por programa (carrera) dentro de ese alcance
    * @param sesion usuario que consulta
    * @return los cuatro indicadores con su valor anterior y su variación cuando existen
-   * @throws RecursoNoEncontradoException si el periodo, la facultad o el programa no existen, o el
-   *     programa queda fuera del alcance
+   * @throws RecursoNoEncontradoException si el periodo o la facultad no existen
    * @throws ReglaNegocioException si no se indica periodo y no hay uno activo
    */
-  public KpisResponse calcular(
-      Long idPeriodo, Long idFacultad, Long idPrograma, UsuarioSesion sesion) {
+  public KpisResponse calcular(Long idPeriodo, Long idFacultad, UsuarioSesion sesion) {
     PeriodoAcademico periodo = resolverPeriodo(idPeriodo);
     Long facultadConsulta = resolverFacultad(idFacultad, sesion);
-    Long programaConsulta = resolverPrograma(idPrograma, facultadConsulta);
 
-    Datos actual = leer(periodo.getIdPeriodo(), facultadConsulta, programaConsulta);
+    Datos actual = leer(periodo.getIdPeriodo(), facultadConsulta);
     Optional<PeriodoAcademico> anterior =
         periodoRepository.findFirstByFechaInicioLessThanOrderByFechaInicioDesc(
             periodo.getFechaInicio());
@@ -206,9 +197,7 @@ public class KpiService {
     // valores van nulos, no en cero.
     Datos previo =
         anterior
-            .map(
-                periodoAnterior ->
-                    leer(periodoAnterior.getIdPeriodo(), facultadConsulta, programaConsulta))
+            .map(periodoAnterior -> leer(periodoAnterior.getIdPeriodo(), facultadConsulta))
             .filter(datos -> datos.evaluaciones() > 0)
             .orElse(Datos.SIN_DATOS);
 
@@ -223,32 +212,14 @@ public class KpiService {
         IndicadorResponse.comparar(numero(actual.destacados()), numero(previo.destacados())));
   }
 
-  /**
-   * Un programa solo vale si está activo y, cuando hay facultad en la consulta, pertenece a ella.
-   *
-   * @return el programa a filtrar, o nulo para todos los del alcance
-   */
-  private Long resolverPrograma(Long idPrograma, Long idFacultad) {
-    if (idPrograma == null) {
-      return null;
-    }
-    Programa programa =
-        programaRepository
-            .findByIdProgramaAndEsActivoTrue(idPrograma)
-            .filter(
-                p -> idFacultad == null || p.getFacultad().getIdFacultad().equals(idFacultad))
-            .orElseThrow(() -> new RecursoNoEncontradoException("Programa no encontrado"));
-    return programa.getIdPrograma();
-  }
-
-  private Datos leer(Long idPeriodo, Long idFacultad, Long idPrograma) {
+  private Datos leer(Long idPeriodo, Long idFacultad) {
     ResumenPromedios resumen =
         indicadoresRepository.resumirPromedios(
-            idPeriodo, idFacultad, idPrograma, propiedades.destacadoUmbral());
+            idPeriodo, idFacultad, propiedades.destacadoUmbral());
     return new Datos(
         resumen.getDocentesEvaluados(),
         resumen.getPromedioGeneral(),
-        indicadoresRepository.contarCalificaciones(idPeriodo, idFacultad, idPrograma),
+        indicadoresRepository.contarCalificaciones(idPeriodo, idFacultad),
         resumen.getDocentesDestacados());
   }
 

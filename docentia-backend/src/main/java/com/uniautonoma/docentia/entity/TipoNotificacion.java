@@ -6,14 +6,10 @@ package com.uniautonoma.docentia.entity;
  */
 public enum TipoNotificacion {
   HALLAZGOS_PUBLICADOS(
-      "Resultados publicados",
-      "La coordinación publicó tus resultados. Los verás en tu reunión de retroalimentación."),
+      "Resultados disponibles", "La coordinación publicó tus resultados. Ingresa para verlos."),
   CITA_AGENDADA("Cita agendada", "Tu cita de retroalimentación quedó agendada."),
   CITA_CAMBIADA("Cita cambiada", "Tu cita de retroalimentación cambió de horario."),
-  RECORDATORIO_CITA(
-      "Confirma tu cita",
-      "Tienes una cita de retroalimentación en 24 horas. Confirma o declina tu asistencia en Mi"
-          + " cita."),
+  RECORDATORIO_CITA("Recordatorio de cita", "Tienes una cita de retroalimentación en 24 horas."),
   ACTA_POR_FIRMAR(
       "Acta pendiente de firma", "Tienes un acta pendiente de firma. Ingresa para verla."),
   ACTA_FIRMADA("Acta firmada", "Tu acta quedó firmada por las dos partes."),
@@ -49,20 +45,7 @@ public enum TipoNotificacion {
   ALERTA_INFORMATIVA(
       "Alerta informativa", "Hay una nueva alerta informativa en acciones sugeridas."),
   VENTANA_CERRADA("Etapa cerrada", "Una etapa del periodo se cerró. Revisa el panel por programa."),
-  VENTANA_ABIERTA("Etapa abierta", "Se abrió una etapa del periodo en la que participas."),
-  ASISTENCIA_CONFIRMADA(
-      "Asistencia confirmada", "Un docente de tu facultad confirmó su asistencia a la cita."),
-  CITA_DECLINADA(
-      "Cita declinada", "Un docente de tu facultad declinó su cita; la franja quedó libre."),
-  CITA_CANCELADA(
-      "Cita cancelada",
-      "La coordinación canceló tu cita de retroalimentación. Reserva una nueva franja en Mi cita."),
-  INASISTENCIA_CITA(
-      "Cita sin asistencia",
-      "La coordinación registró que no asististe a tu cita. Reserva una nueva franja."),
-  RESULTADO_HABILITADO(
-      "Resultado habilitado",
-      "La coordinación registró tu asistencia. Ya puedes ver tu resultado y firmar el acta.");
+  VENTANA_ABIERTA("Etapa abierta", "Se abrió una etapa del periodo en la que participas.");
 
   private final String titulo;
   private final String mensaje;

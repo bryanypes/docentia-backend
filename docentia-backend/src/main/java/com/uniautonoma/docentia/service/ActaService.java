@@ -14,7 +14,6 @@ import com.uniautonoma.docentia.entity.FirmaActa;
 import com.uniautonoma.docentia.entity.FuenteEvaluacion;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.Rol;
-import com.uniautonoma.docentia.entity.TipoActa;
 import com.uniautonoma.docentia.entity.TipoEtapa;
 import com.uniautonoma.docentia.entity.TipoNotificacion;
 import com.uniautonoma.docentia.entity.Usuario;
@@ -66,7 +65,6 @@ public class ActaService {
   private final VentanaEtapaService ventanaEtapaService;
   private final GeneradorPdfActa generadorPdf;
   private final ActasProperties propiedades;
-  private final ProcesoEvaluacionService procesoService;
   private final Clock reloj;
 
   public ActaService(
@@ -80,7 +78,6 @@ public class ActaService {
       VentanaEtapaService ventanaEtapaService,
       GeneradorPdfActa generadorPdf,
       ActasProperties propiedades,
-      ProcesoEvaluacionService procesoService,
       Clock reloj,
       ApplicationEventPublisher eventos) {
     this.eventos = eventos;
@@ -94,7 +91,6 @@ public class ActaService {
     this.ventanaEtapaService = ventanaEtapaService;
     this.generadorPdf = generadorPdf;
     this.propiedades = propiedades;
-    this.procesoService = procesoService;
     this.reloj = reloj;
   }
 
@@ -107,17 +103,6 @@ public class ActaService {
    * @throws ReglaNegocioException si el docente ya tiene un acta vigente en el periodo
    */
   public ActaResponse crear(Long idDocente, UsuarioSesion sesion) {
-    return crear(idDocente, null, sesion);
-  }
-
-  /**
-   * Abre el acta del docente en el periodo activo con el tipo que elige la coordinación.
-   *
-   * @param tipo de compromiso o de retroalimentación; nulo deja el que corresponde a la nota
-   * @throws ReglaNegocioException si ya tiene un acta vigente o pide retroalimentación con una nota
-   *     bajo el umbral
-   */
-  public ActaResponse crear(Long idDocente, TipoActa tipo, UsuarioSesion sesion) {
     Usuario docente = docenteService.buscarDocenteVisible(idDocente, sesion);
     PeriodoAcademico periodo = periodoService.exigirPeriodoActivo();
     if (actaRepository.existsByDocenteIdUsuarioAndPeriodoIdPeriodoAndEstadoNot(
@@ -126,9 +111,6 @@ public class ActaService {
     }
     Acta acta = new Acta(docente, periodo, propiedades.compromisos().umbral());
     congelar(acta);
-    if (tipo != null) {
-      acta.cambiarTipo(tipo);
-    }
     Acta guardada = actaRepository.saveAndFlush(acta);
     avisarSiEstaLista(guardada);
     return ActaResponse.desde(guardada);
@@ -153,7 +135,6 @@ public class ActaService {
     return actaRepository
         .findByDocenteIdUsuarioOrderByPeriodoFechaInicioDescVersionDesc(id)
         .stream()
-        .filter(acta -> !sesion.esDocente() || visibleParaDocente(acta))
         .map(acta -> sesion.esDocente() ? ActaResponse.paraDocente(acta) : ActaResponse.desde(acta))
         .toList();
   }
@@ -162,19 +143,6 @@ public class ActaService {
   public ActaResponse obtener(Long idActa, UsuarioSesion sesion) {
     Acta acta = buscarVisible(idActa, sesion);
     return sesion.esDocente() ? ActaResponse.paraDocente(acta) : ActaResponse.desde(acta);
-  }
-
-  /**
-   * Cambia el tipo del acta mientras nadie la haya firmado.
-   *
-   * @throws ReglaNegocioException si ya tiene firmas o la nota exige el acta de compromiso
-   */
-  public ActaResponse cambiarTipo(Long idActa, TipoActa tipo, UsuarioSesion sesion) {
-    Acta acta = buscarVisible(idActa, sesion);
-    acta.cambiarTipo(tipo);
-    Acta guardada = actaRepository.saveAndFlush(acta);
-    avisarSiEstaLista(guardada);
-    return ActaResponse.desde(guardada);
   }
 
   /**
@@ -223,17 +191,6 @@ public class ActaService {
    * @throws ReglaNegocioException si no hay cita agendada, el promedio no está completo o ya firmó
    */
   public ActaResponse firmar(Long idActa, boolean confirmacion, String ip, UsuarioSesion sesion) {
-    return firmar(idActa, confirmacion, null, ip, sesion);
-  }
-
-  /**
-   * Firma el acta con el trazo dibujado en la página, que se imprime en el PDF.
-   *
-   * @param trazo PNG como data URL; obligatorio si docentia.actas.exigir-firma-dibujada
-   * @throws NoProcesableException si falta la confirmación, el trazo o los compromisos exigidos
-   */
-  public ActaResponse firmar(
-      Long idActa, boolean confirmacion, String trazo, String ip, UsuarioSesion sesion) {
     Acta acta = buscarVisible(idActa, sesion);
     acta.exigirBorrador();
     if (!confirmacion) {
@@ -245,10 +202,6 @@ public class ActaService {
     if (citaRepository.buscarActiva(idDocente, idPeriodo).isEmpty()) {
       throw new ReglaNegocioException(
           "El acta se firma después de agendar la cita de retroalimentación");
-    }
-    if (!procesoService.resultadoHabilitado(idDocente, idPeriodo)) {
-      throw new ReglaNegocioException(
-          "El acta se firma en la reunión, después de que la coordinación registre la asistencia");
     }
     if (acta.firmadaPor(sesion.rol())) {
       throw new ReglaNegocioException("Ya firmaste esta acta");
@@ -264,10 +217,8 @@ public class ActaService {
               + acta.getUmbralCompromisos()
               + " el acta exige al menos un compromiso con plazo");
     }
-    byte[] png =
-        trazo != null || propiedades.actas().exigirFirmaDibujada() ? TrazoFirma.leer(trazo) : null;
     LocalDateTime ahora = LocalDateTime.now(reloj);
-    FirmaActa firma =
+    acta.registrarFirma(
         new FirmaActa(
             acta,
             sesion.idUsuario(),
@@ -275,8 +226,7 @@ public class ActaService {
             sesion.nombreCompleto(),
             sesion.correo(),
             ip,
-            ahora);
-    acta.registrarFirma(png == null ? firma : firma.conTrazo(png, generadorPdf.sha256(png)));
+            ahora));
     if (acta.firmadaPor(Rol.DOCENTE) && acta.firmadaPor(Rol.COORDINADOR)) {
       cerrar(acta, ahora);
     }
@@ -379,13 +329,6 @@ public class ActaService {
     return nota == null ? null : nota.setScale(3, RoundingMode.HALF_UP);
   }
 
-  /** El borrador del periodo se le muestra al docente solo con el resultado habilitado. */
-  private boolean visibleParaDocente(Acta acta) {
-    return acta.getEstado() != EstadoActa.BORRADOR
-        || procesoService.resultadoHabilitado(
-            acta.getDocente().getIdUsuario(), acta.getPeriodo().getIdPeriodo());
-  }
-
   private void exigirSinFirmas(Acta acta) {
     if (!acta.getFirmas().isEmpty()) {
       throw new ReglaNegocioException("El acta ya tiene una firma: los compromisos no cambian");
@@ -399,7 +342,7 @@ public class ActaService {
             .orElseThrow(() -> new RecursoNoEncontradoException("Acta no encontrada"));
     Long idDocente = acta.getDocente().getIdUsuario();
     if (sesion.esDocente()) {
-      if (!idDocente.equals(sesion.idUsuario()) || !visibleParaDocente(acta)) {
+      if (!idDocente.equals(sesion.idUsuario())) {
         throw new RecursoNoEncontradoException("Acta no encontrada");
       }
       return acta;
@@ -417,10 +360,6 @@ public class ActaService {
    */
   private void avisarSiEstaLista(Acta acta) {
     if (acta.requiereCompromisos() && acta.getCompromisos().isEmpty()) {
-      return;
-    }
-    if (!procesoService.resultadoHabilitado(
-        acta.getDocente().getIdUsuario(), acta.getPeriodo().getIdPeriodo())) {
       return;
     }
     eventos.publishEvent(

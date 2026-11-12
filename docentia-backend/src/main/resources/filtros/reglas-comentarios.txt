@@ -35,8 +35,3 @@ GENERO | \b(es|parece)\s+(gay|lesbiana|homosexual|trans|travesti)\b
 # programación").
 VIDA_PRIVADA | \bsu (espos[oa]|novi[oa]|hij[oa]s?|divorcio|religion|vida personal|matrimonio)\b
 VIDA_PRIVADA | \b(divorciad[oa]|borrach[oa]|embarazada)\b
-
-# Situaciones graves: no se resumen ni se citan; la coordinación solo ve que existen.
-ACOSO | \b(acos\w*|se propasa\w*|insinua\w*|propuestas? indecentes?|mensajes? inapropiad\w*|tocamientos?|abuso sexual)\b
-AMENAZA | \b(amenaz\w*|me las va a pagar|(lo|la|los|las|te) voy a (matar|golpear|cascar))\b
-CONDUCTA_GRAVE | \b(borrach[oa]|ebri[oa]|drogad[oa]|soborn\w*|cobra plata|pide plata|pidio plata|vende (las )?notas|plata por (la )?nota|cobra por (la )?nota)\b
