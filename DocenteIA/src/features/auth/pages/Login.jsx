@@ -1,7 +1,7 @@
 import { ArrowRight, CircleAlert, Eye, EyeOff, Info, Lock, Mail } from 'lucide-react'
 import { GoogleLogin } from '@react-oauth/google'
 import { useRef, useState } from 'react'
-import { Navigate, useLocation } from 'react-router-dom'
+import { Link, Navigate, useLocation } from 'react-router-dom'
 import robotError from '../../../assets/ilustraciones/robot-error.svg'
 import robotPensando from '../../../assets/ilustraciones/robot-pensando.svg'
 import robotSaludo from '../../../assets/ilustraciones/robot-saludo.svg'
@@ -211,6 +211,9 @@ export default function Login() {
           {enviando ? 'Ingresando…' : 'Ingresar'}
           {!enviando && <ArrowRight size={18} strokeWidth={2.25} aria-hidden="true" className="login__flecha" />}
         </Boton>
+        <Link to="/recuperar-contrasena" className="login__olvide">
+          ¿Olvidaste tu contraseña?
+        </Link>
 
         {googleClientId && (
           <>

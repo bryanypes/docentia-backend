@@ -37,6 +37,7 @@ import { ROLES } from '../shared/constants/dominio.js'
 import InicioPorRol from './InicioPorRol.jsx'
 import { PaginaNoEncontrada } from './PaginasSistema.jsx'
 import { ProtectedRoute } from './ProtectedRoute.jsx'
+import RecuperarContrasena from '../features/auth/pages/RecuperarContrasena.jsx'
 import Presentacion from '../features/presentacion/Presentacion.jsx'
 import { RUTA_CAMBIO_CONTRASENA, rutaInicioDelRol } from './rutasPorRol.js'
 
@@ -59,6 +60,8 @@ function RutasDocentia() {
         <Routes>
           <Route path="/" element={<RedirigirAlInicio />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/recuperar-contrasena" element={<RecuperarContrasena />} />
+          <Route path="/restablecer-contrasena" element={<RecuperarContrasena />} />
           <Route path="/verificar-acta/:codigo" element={<VerificarActa />} />
 
           <Route element={<ProtectedRoute />}>

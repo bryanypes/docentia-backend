@@ -205,3 +205,8 @@
 .login__olvido strong {
   color: var(--color-texto-secundario);
 }
+
+.login__olvide {
+  justify-self: center;
+  font-size: 0.9rem;
+}
