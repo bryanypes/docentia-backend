@@ -60,8 +60,9 @@
 
 .cargando__bloque {
   height: 180px;
-  background: var(--color-superficie);
-  border: 1px solid var(--color-borde);
-  border-radius: var(--radio-lg);
-  animation: latido 1.4s ease-in-out infinite;
+  background: linear-gradient(90deg, var(--color-superficie) 0%, var(--color-azul-fondo) 50%, var(--color-superficie) 100%);
+  background-size: 200% 100%;
+  border: 1px solid var(--color-borde-suave);
+  border-radius: var(--radio-xl);
+  animation: brillo-esqueleto 1.6s ease-in-out infinite;
 }
