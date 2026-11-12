@@ -53,7 +53,7 @@ function RedirigirAlInicio() {
 
 function RutasDocentia() {
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL.replace(/\/$/, '')}>
       <SesionProvider>
         <AvisosProvider>
         <Suspense fallback={null}>

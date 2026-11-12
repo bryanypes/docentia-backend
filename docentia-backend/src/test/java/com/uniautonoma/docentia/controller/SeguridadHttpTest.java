@@ -139,6 +139,17 @@ class SeguridadHttpTest extends PruebaIntegracion {
   void soloSaludEInfoQuedanExpuestos() throws Exception {
     mockMvc.perform(get("/actuator/health/readiness")).andExpect(status().isOk());
     mockMvc.perform(get("/actuator/health/liveness")).andExpect(status().isOk());
+    mockMvc.perform(get("/actuator/health")).andExpect(status().isOk());
+    // La versión publicada se confirma sin sesión, para la prueba de humo del despliegue.
+    mockMvc
+        .perform(get("/actuator/info"))
+        .andExpect(status().isOk())
+        .andExpect(
+            org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath(
+                    "$.build.version")
+                .exists());
+    // Sin comodines: un subcomponente de la salud no queda público.
+    mockMvc.perform(get("/actuator/health/db")).andExpect(status().isUnauthorized());
     mockMvc.perform(get("/actuator/env")).andExpect(status().isUnauthorized());
     mockMvc.perform(get("/actuator/env").with(comoVicerrector())).andExpect(status().isNotFound());
   }

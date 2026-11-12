@@ -8,8 +8,9 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 
 /**
- * Revisiones al arrancar en producción. Un secreto de desarrollo detiene la app. Sin Google solo
- * avisa: el personal entra con contraseña, pero los estudiantes no tienen ninguna utilizable.
+ * Revisiones al arrancar en producción. Un secreto de desarrollo o una URL de la aplicación en
+ * localhost detienen la app. Sin Google solo avisa: el personal entra con contraseña, pero los
+ * estudiantes no tienen ninguna utilizable.
  */
 @Configuration
 @Profile("prod")
@@ -18,9 +19,24 @@ public class ValidacionProduccion {
   private static final Logger LOG = LoggerFactory.getLogger(ValidacionProduccion.class);
 
   public ValidacionProduccion(
-      @Value("${docentia.jwt.secreto:}") String secreto, GoogleProperties google) {
+      @Value("${docentia.jwt.secreto:}") String secreto,
+      GoogleProperties google,
+      @Value("${docentia.notificaciones.url-aplicacion:}") String urlAplicacion) {
     exigirSecretoPropio(secreto);
+    exigirUrlAplicacion(urlAplicacion);
     avisoGoogle(google).ifPresent(LOG::warn);
+  }
+
+  /** Los enlaces de los correos salen de esta URL: vacía o en localhost llegarían rotos. */
+  static void exigirUrlAplicacion(String url) {
+    String normalizada = url == null ? "" : url.strip().toLowerCase(java.util.Locale.ROOT);
+    if (normalizada.isEmpty()
+        || normalizada.contains("localhost")
+        || normalizada.contains("127.0.0.1")) {
+      throw new IllegalStateException(
+          "DOCENTIA_APP_URL debe ser la URL pública de la aplicación (por ejemplo"
+              + " https://nova.uniautonoma.edu.co/Evadocente-app); hoy está vacía o en localhost");
+    }
   }
 
   static void exigirSecretoPropio(String secreto) {

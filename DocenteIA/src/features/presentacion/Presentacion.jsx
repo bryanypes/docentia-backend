@@ -46,7 +46,7 @@ export default function Presentacion() {
         </Link>
         <img
           className="presentacion__logo-institucional"
-          src="/brand/logo-uniautonoma.png"
+          src={`${import.meta.env.BASE_URL}brand/logo-uniautonoma.png`}
           alt="Universidad Autónoma del Cauca"
         />
         <Link to="/login" className="presentacion__boton presentacion__boton--claro">

@@ -135,6 +135,14 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+        <executions>
+          <execution>
+            <!-- /actuator/info publica la versión: así se confirma qué quedó desplegado. -->
+            <goals>
+              <goal>build-info</goal>
+            </goals>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
         <groupId>org.jacoco</groupId>

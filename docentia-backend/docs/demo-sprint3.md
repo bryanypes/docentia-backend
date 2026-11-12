@@ -1,5 +1,7 @@
 # Demo Sprint 3 — recorrido de punta a punta
 
+> **Histórico.** Este documento describe la API de esa semana. La carga por CSV (`/importaciones`) se retiró en la versión 0.4.0; la referencia vigente está en `API.md` y `ROLES.md`.
+
 Recorrido completo con `curl` desde Git Bash, sobre una base recién creada con el seed de
 desarrollo. Los valores de ejemplo son los que dio la última corrida (27 de octubre de 2026); si se
 corre otro día, cambian las fechas de reserva pero no los números.

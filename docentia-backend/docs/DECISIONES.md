@@ -4,15 +4,19 @@ Decisiones tomadas donde la Resolución 074 de 2026, el Excel de historias o el 
 ambigüedad. La fuente de verdad es la resolución; el Excel v2 tiene errores (ver
 [RES074-TRAZABILIDAD.md](RES074-TRAZABILIDAD.md)).
 
-## Pendientes de Vicerrectoría
+## Decisiones pendientes de la institución
 
 | # | Tema | Decisión aplicada | Quién la confirma |
 |---|------|-------------------|-------------------|
 | P1 | Fuentes faltantes (Art. 3) | Se renormaliza entre las fuentes disponibles y el promedio queda PARCIAL con las faltantes expuestas. Sin ninguna fuente queda SIN_NOTA, nunca 0. | Vicerrectoría |
 | P2 | Umbral de compromisos | **Pendiente.** El código aplica 3,8 (inicio de la categoría Alto), configurable con `DOCENTIA_COMPROMISOS_UMBRAL`. El backlog del equipo y el requerimiento original dicen 4,00. Mientras no se decida, queda 3,8. | Vicerrectoría |
 | P3 | Quién corrige un acta firmada | Solo Vicerrectoría, con motivo. Configurable con `DOCENTIA_ACTAS_ROL_CORRECTOR`. | Vicerrectoría |
-| P4 | Docentes con menos de 5 respuestas de estudiantes | Sin decisión. Hoy no reciben nota de estudiantes del formulario; si no hay CSV de respaldo quedan PARCIAL y el acta no se firma. Opciones: cargar CSV, ampliar la ventana o renormalizar sin estudiantes | Vicerrectoría |
+| P4 | Docentes con menos de 5 respuestas de estudiantes | Sin decisión. Hoy no reciben nota de estudiantes del formulario; quedan PARCIAL y el acta no se firma (la carga por CSV se retiró en 0.4.0). Opciones: ampliar la ventana, bajar el mínimo o renormalizar sin estudiantes | Vicerrectoría |
 | P5 | Mínimos | 5 respuestas para la nota de estudiantes (`DOCENTIA_HETEROEVALUACION_MINIMO`) y 10 para el análisis de comentarios del formulario (`docentia.ia.minimo-encuestas`). Aplicado; falta confirmarlo | Vicerrectoría |
+| P6 | Validez de la firma electrónica simple | DOCENTIA registra cuenta, fecha, trazo y hash, con verificación pública por código; no usa certificado digital. Si sirve para actas oficiales lo decide la institución con la oficina jurídica (`FIRMA-ACTAS.md`) | Vicerrectoría y jurídica |
+| P7 | Matrícula real desde Campus/NOVA | Sin integración directa. La inscripción de estudiantes usa el servicio de matrícula del backend, sin pantalla. Falta definir de dónde y cómo llega la matrícula de cada periodo | Vicerrectoría y sistemas |
+| P8 | Modelo de lenguaje externo con datos reales | Apagado por defecto; el modelo local no usa red. Activarlo envía comentarios anonimizados a un tercero y exige revisar la política de datos (Ley 1581 de 2012) y fijar un tope de gasto | Vicerrectoría |
+| P9 | Mes de corte del nombre del periodo | AAAA-1 si inicia de enero a junio y AAAA-2 de julio a diciembre (`DOCENTIA_PERIODOS_MES_FIN_PRIMER_SEMESTRE=6`). Falta confirmar con el calendario académico | Vicerrectoría |
 
 ## Motor
 

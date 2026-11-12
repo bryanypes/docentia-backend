@@ -25,6 +25,7 @@ class ClasificadorDesempenoTest {
     "2.99, BAJO",
     "2.20, BAJO",
     "2.19, MUY_BAJO",
+    "1.00, MUY_BAJO",
     "0.00, MUY_BAJO",
   })
   void respetaLosLimitesDeCadaCategoria(String nota, CategoriaDesempeno esperada) {

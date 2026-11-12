@@ -152,7 +152,11 @@ class ActaTest extends PruebaIntegracion {
     agendarCita();
     Long acta = crearActa();
 
-    firmar(acta, coordinador, true).andExpect(status().isConflict());
+    firmar(acta, coordinador, true)
+        .andExpect(status().isConflict())
+        .andExpect(
+            jsonPath("$.mensaje")
+                .value("El acta se firma con el promedio completo de los tres evaluadores"));
   }
 
   @Test

@@ -97,7 +97,7 @@ export function PantallaError({ enLinea = false, onReintentar }) {
             <RefreshCw size={16} aria-hidden="true" />
             Recargar ahora
           </button>
-          <a href="/inicio" className="boton boton--contorno">
+          <a href={`${import.meta.env.BASE_URL}inicio`} className="boton boton--contorno">
             <House size={16} aria-hidden="true" />
             Ir al inicio
           </a>

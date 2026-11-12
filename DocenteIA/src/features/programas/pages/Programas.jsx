@@ -86,7 +86,7 @@ export default function Programas() {
 
   return (
     <>
-      <Encabezado miga="Vicerrectoría · Programas" titulo="Programas" subtitulo="Programas académicos de cada facultad." />
+      <Encabezado miga="Administración · Programas" titulo="Programas" subtitulo="Programas académicos de cada facultad." />
       <div className="pagina">
         <AvisoFlotante mensaje={resultado} />
         <ErrorApi error={error} nombresCampos={{ nombre: 'Nombre', idFacultad: 'Facultad' }} />

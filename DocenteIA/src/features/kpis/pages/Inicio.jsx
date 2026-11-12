@@ -307,7 +307,7 @@ export function ListaDestacados({ seguimiento, umbral }) {
       {destacados.length === 0 ? (
         <p className="campo__ayuda">Ningún docente con promedio completo alcanza el umbral todavía.</p>
       ) : (
-        <table className="tabla">
+        <table className="tabla tabla--apilable">
           <thead>
             <tr>
               <th scope="col">Docente</th>

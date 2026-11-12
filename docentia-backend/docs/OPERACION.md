@@ -68,23 +68,73 @@ valor. Dos réplicas que arrancan a la vez no crean dos administradores: la crea
 PostgreSQL. Pruebas: `PrimerUsuarioTest` y `PrimerUsuarioValidacionTest`. Roles y permisos:
 [ROLES.md](ROLES.md).
 
+## Publicación bajo una subruta (proxy inverso)
+
+En producción DOCENTIA se publica en `https://nova.uniautonoma.edu.co/Evadocente-app/`. El contenedor `web`
+sirve en la raíz; el proxy de la universidad quita el prefijo y reenvía. Se probó en local con este mismo
+esquema: presentación, login, recarga en una ruta profunda (`/Evadocente-app/estadisticas`), logo y API.
+
+**Al compilar la web** (en el `.env` del servidor, antes de `docker compose build web`):
+
+| Variable | Valor en producción | Para qué |
+|---|---|---|
+| `VITE_BASE_PATH` | `/Evadocente-app/` | Prefijo de los recursos y `basename` del router |
+| `VITE_API_URL` | `/Evadocente-app/api` | Dónde llama la web a la API |
+| `DOCENTIA_APP_URL` | `https://nova.uniautonoma.edu.co/Evadocente-app` | Enlaces de los correos (recuperar contraseña, avisos) |
+| `DOCENTIA_CORS_ORIGENES` | vacío | La web y la API comparten origen a través del proxy; no hace falta CORS |
+
+Si la subruta o el dominio cambian, solo cambian estas variables y se vuelve a compilar `web`.
+
+**Proxy de la universidad (nginx de ejemplo):**
+
+```nginx
+location = /Evadocente-app { return 301 /Evadocente-app/; }
+location /Evadocente-app/ {
+    proxy_pass http://SERVIDOR_DOCENTIA:5173/;   # la barra final quita el prefijo
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto https;
+    proxy_read_timeout 120s;                     # la generación del análisis puede tardar
+}
+```
+
+- El nginx del contenedor `web` reenvía `/api/` a la API y agrega `X-Forwarded-For`; la API toma como IP del
+  cliente el último salto de esa cabecera, que es el que agrega el proxy propio.
+- El HTTPS termina en el proxy de la universidad. La web envía HSTS; el navegador solo la aplica bajo HTTPS.
+
 ## Variables de entorno
 
 | Variable | Obligatoria en producción | Uso |
 |----------|---------------------------|-----|
-| `SPRING_PROFILES_ACTIVE` | Sí, `prod` | `dev` carga datos de ejemplo |
-| `DOCENTIA_JWT_SECRETO` | Sí, 32 bytes o más | Firma de sesiones |
+| `SPRING_PROFILES_ACTIVE` | Sí, `prod` | `dev` carga usuarios y datos de demostración; `prod` no carga ninguno |
+| `DOCENTIA_JWT_SECRETO` | Sí, 32 bytes o más | Firma de sesiones. Sin él, o con el de desarrollo, la API no arranca |
 | `DOCENTIA_DB_URL`, `DOCENTIA_DB_USUARIO`, `DOCENTIA_DB_CONTRASENA` | Sí | Base de datos |
+| `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` | Sí, si la base va en Compose | Servicio `db` |
+| `DOCENTIA_APP_URL` | Sí | URL pública para los enlaces de los correos. Con `prod`, la API no arranca si está vacía o en localhost |
 | `DOCENTIA_BOOTSTRAP_EMAIL`, `_NOMBRE`, `_CONTRASENA` | Solo el primer arranque | Primer administrador (ver arriba) |
+| `DOCENTIA_MAIL_HOST`, `_PORT`, `_USER`, `_PASS`, `_FROM`, `_TLS` | Sí, para recuperar contraseña y avisos | SMTP. Sin host, la API arranca pero solo registra el asunto en el log |
+| `DOCENTIA_GOOGLE_CLIENT_ID` | Sí, si entran estudiantes | Valida el token de Google. Sin él, `POST /api/sesiones/google` responde 503 |
+| `VITE_GOOGLE_CLIENT_ID` | Sí, si entran estudiantes | Botón de Google; se incrusta al compilar `web` |
+| `VITE_BASE_PATH` | Sí, `/Evadocente-app/` | Subruta pública; se incrusta al compilar `web` |
+| `VITE_API_URL` | Sí, `/Evadocente-app/api` | Ruta de la API desde la web; se incrusta al compilar `web` |
+| `DOCENTIA_CORS_ORIGENES` | Solo si la web vive en otro dominio | Orígenes exactos, separados por coma |
 | `DOCENTIA_DB_POOL_MAXIMO` | No, 15 | Pool de conexiones |
-| `DOCENTIA_CORS_ORIGENES` | Si hay otro dominio | Orígenes exactos |
-| `DOCENTIA_APP_URL` | Sí | Enlaces de los correos |
-| `DOCENTIA_MAIL_HOST`, `_PORT`, `_USER`, `_PASS`, `_FROM`, `_TLS` | Para enviar correo | SMTP |
-| `DOCENTIA_COMPROMISOS_UMBRAL` | No, 3.8 | Umbral de compromisos |
-| `DOCENTIA_ACTAS_ROL_CORRECTOR` | No, `VICERRECTOR` | Quién corrige actas |
-| `DOCENTIA_IA_*` | No | Proveedor de análisis |
+| `DOCENTIA_COMPROMISOS_UMBRAL` | No, 3.8 | Bajo esta nota el acta exige compromisos (por confirmar: 3,8 o 4,00) |
+| `DOCENTIA_ACTAS_ROL_CORRECTOR` | No, `VICERRECTOR` | Quién corrige actas firmadas (`VICERRECTOR` o `COORDINADOR`) |
+| `DOCENTIA_HETEROEVALUACION_MINIMO` | No, 5 | Respuestas mínimas para usar y mostrar la nota de estudiantes |
+| `DOCENTIA_PROCESO_EXIGIR_ASISTENCIA` | No, `true` | El docente ve su resultado y firma solo tras registrar la asistencia |
+| `DOCENTIA_ACTAS_EXIGIR_FIRMA_DIBUJADA` | No, `true` | La firma lleva imagen (dibujada, escrita o PNG) |
+| `DOCENTIA_ACTAS_LOGO` | No | Logo del PDF; por defecto el de la universidad incluido |
+| `DOCENTIA_PERIODOS_MES_FIN_PRIMER_SEMESTRE` | No, 6 | Mes de corte del nombre automático del periodo (por confirmar) |
+| `DOCENTIA_NOTIFICACIONES_RETENCION_DIAS` | No, 90 | Días que se guardan las notificaciones leídas |
+| `DOCENTIA_IA_*` | No | Análisis de comentarios: `local` por defecto, sin red. El externo solo con URL, modelo y clave |
+| `DOCENTIA_IA_PRESUPUESTO_TOKENS_DIA`, `_PERIODO` | No, 500 000 y 3 000 000 | Topes del modelo externo |
 | `DOCENTIA_API_URL` | Solo en desarrollo | Proxy de Vite hacia el backend |
-| `VITE_GOOGLE_CLIENT_ID`, `DOCENTIA_GOOGLE_CLIENT_ID` | Para Google | Inicio de sesión |
+
+**Zona horaria:** no requiere variable. Las fechas de las ventanas y los cierres se calculan siempre con
+`America/Bogota` (`RelojConfig`), sin importar la zona del servidor.
 
 ## Respaldo y restauración
 
@@ -95,6 +145,20 @@ sh scripts/restaurar.sh respaldo.dump
 
 Restaurar reemplaza la base y reinicia la API. Los dos scripts usan el `docker compose` de la carpeta
 donde se corren; para otro proyecto de Compose, exporta antes `COMPOSE_PROJECT_NAME`.
+
+- **Qué verifican.** `respaldar.sh` falla si el archivo queda vacío o si `pg_restore` no puede leer su
+  índice, y al terminar muestra el tamaño y cuántas tablas tienen datos. `restaurar.sh` hace las mismas
+  comprobaciones **antes** de borrar la base: con un archivo vacío o dañado no toca nada.
+- **Frecuencia recomendada:** un respaldo diario fuera del horario de uso y uno antes de cada despliegue o
+  cambio de periodo. Con `cron`: `0 2 * * * cd /ruta/docentia && sh scripts/respaldar.sh /respaldos/docentia-$(date +\%F).dump`.
+- **Retención sugerida** (por confirmar con la institución): 14 diarios, 8 semanales y los de cada cierre
+  de periodo sin vencimiento. Los respaldos se guardan fuera del servidor y fuera de cualquier carpeta con
+  repositorio: tienen datos personales.
+- **Cómo verificar uno guardado:** `docker compose exec -T db pg_restore -l < archivo.dump | grep -c "TABLE DATA"`
+  debe dar más de 40. Una vez al mes conviene restaurarlo en otra base con otro proyecto de Compose,
+  como en el ensayo de migraciones.
+- **Probado el 12 de noviembre de 2026:** respaldo de 179 KB y 46 tablas en 1 s; restauración en 7 s con
+  la API de vuelta en `UP`; un archivo vacío se rechazó sin tocar la base.
 
 ## Despliegue de 0.4.0 (sábado 14 de noviembre de 2026)
 
@@ -161,15 +225,30 @@ docker compose logs api | grep -E "Migrating|Successfully applied"
 docker compose exec -T db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'   < docentia-backend/docs/consultas-verificacion.sql > ensayo.txt
 ```
 
-Debe decir `Successfully applied 8 migrations … now at version v41`, la API quedar `healthy` y la
+Debe decir `Executing SQL callback: beforeMigrate`, `Successfully applied 10 migrations` (V34 a V43) y
+`Executing SQL callback: afterMigrate`; la API debe quedar `healthy` y la
 sección 7 de `ensayo.txt` tener los mismos conteos que `antes.txt`. Al terminar:
 `docker compose down -v` en la carpeta del ensayo.
 
-> **Ensayado en local el 11 de noviembre de 2026** con los mismos scripts: base de 0.3.3 con la semilla
-> (V28), `respaldar.sh` (150 KB), `restaurar.sh` en un stack de `develop` con perfil `prod`: 8 migraciones
-> aplicadas, API `UP` y los diez conteos de la sección 7 iguales. La vuelta atrás (restaurar el mismo
-> respaldo en 0.3.3) dejó V28, la API `UP` y descartó lo escrito después del respaldo. Con datos reales
-> del servidor **no se ha ensayado**: ese es el paso 3.
+> **Ensayado en local el 12 de noviembre de 2026** sobre v0.3.3 (V28) con su semilla más un acta
+> FIRMADA, una ANULADA y una BORRADOR, y 4 respuestas anónimas de estudiantes con sus participaciones:
+>
+> | Paso | Resultado |
+> |---|---|
+> | `pg_dump -Fc` | 150 KB, 41 tablas con datos, 1 s |
+> | Restauración en otra base | 3 s |
+> | Migración con 0.4.0 y perfil `prod` | 10 migraciones (V34 a V43), arranque completo en 18 s |
+> | Notas, promedios, ventanas, periodos, respuestas, participaciones y actas | Sumas md5 idénticas antes y después |
+> | Usuarios existentes | Idénticos; se suma solo el primer administrador (`DOCENTIA_BOOTSTRAP_*`), con clave temporal |
+> | Nombres de programas y cursos | Solo cambian los que estaban todo en mayúsculas o sin tilde (V38, V39), por ejemplo `ADMINISTRACION DE EMPRESAS PROFESIONAL` → `Administración de Empresas Profesional`; los ids no cambian |
+> | Actas existentes | Toman su tipo (V36); la firmada sigue inmutable: un `update` sobre ella responde "Un acta firmada es inmutable" |
+> | Log | Sin el correo ni la clave del administrador |
+> | Tamaño | 11 MB antes y después |
+>
+> **Error encontrado y corregido en el ensayo:** sin los callbacks `beforeMigrate.sql` y `afterMigrate.sql`,
+> V36 fallaba sobre una base con actas firmadas o anuladas y la API quedaba sin arrancar en V35. Por eso
+> el paso 1 debe contar cuántas actas FIRMADA y ANULADA hay en el servidor. Con datos reales del servidor
+> **no se ha ensayado**: ese es el paso 3.
 
 ### 4. Despliegue
 
@@ -192,7 +271,14 @@ docker compose logs api | grep -E "Successfully applied|Started DocentiaApplicat
 
 ### 6. Vuelta atrás
 
-Si la verificación falla y no se resuelve en la primera hora:
+**Cuándo aplicarla** (cualquiera de estas, y que no se resuelva en la primera hora):
+
+- La API no arranca o no llega a `UP` en `/api/actuator/health/readiness`.
+- El log muestra `Migration of schema … failed` o `Application run failed`.
+- Los conteos de la sección 7 de `consultas-verificacion.sql` no coinciden con los de antes.
+- Nadie puede iniciar sesión con su contraseña, o una pantalla principal responde 5xx de forma repetida.
+
+Un aviso de Google o de SMTP sin configurar **no** es motivo de vuelta atrás: se corrige con la variable.
 
 ```bash
 docker compose down                         # sin -v: conserva el volumen hasta restaurar
@@ -206,6 +292,10 @@ docker compose up -d --wait
 
 Lo que se haya escrito en la base después del respaldo se pierde; por eso la web queda detenida hasta
 terminar la verificación.
+
+**Probado el 12 de noviembre de 2026:** sobre el respaldo de v0.3.3, restaurar en una base limpia y
+levantar la imagen de 0.3.3 tomó 19 s; la base volvió a V28 (`Schema is up to date`) y las sumas md5 de
+notas, ventanas, respuestas y actas quedaron idénticas al respaldo.
 
 ## Salud
 

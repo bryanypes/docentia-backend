@@ -4,6 +4,8 @@
 
 # Heteroevaluación (estudiante → docente)
 
+> **Histórico.** Este documento describe la API de esa semana. La carga por CSV (`/importaciones`) se retiró en la versión 0.4.0; la referencia vigente está en `API.md` y `ROLES.md`.
+
 SPEC de HU-01. Las etapas 1 a 3 ya tienen pruebas. Si el código y este texto chocan, mandan
 el código y se corrige aquí en el mismo cambio.
 

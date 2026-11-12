@@ -12,14 +12,13 @@
 
 ## Roles y rutas
 
-Existen cuatro roles: `VICERRECTOR`, `COORDINADOR`, `DOCENTE` y `ESTUDIANTE`. Los roles `ADMINISTRADOR`
-y `VISUALIZADOR` no existen en `develop`; llegarían solo si se fusiona el PR #12, y entonces esta
-sección y `MatrizAutorizacionTest` deben cambiar en el mismo PR.
+Existen seis roles: `ESTUDIANTE`, `DOCENTE`, `COORDINADOR`, `VICERRECTOR`, `ADMINISTRADOR` y
+`VISUALIZADOR` (V43). La tabla rol por ruta está en `ROLES.md`, generada desde `MatrizAutorizacionTest`.
 
 | Regla | Control | Evidencia |
 |-------|---------|-----------|
-| Rol por endpoint | `@PreAuthorize` en cada controlador; la matriz completa (116 rutas por cuatro roles) vive en la prueba, que falla si aparece una ruta sin clasificar | `MatrizAutorizacionTest.todoEndpointEstaClasificado`, `cadaRolRecibeLoQueLeToca` |
-| Rutas sin sesión | Solo `POST /sesiones`, `POST /sesiones/google`, `GET /verificacion-actas/{codigo}` y `GET /actuator/health/**`, `/actuator/info`. No hay comodines: cualquier otra ruta bajo `/sesiones/` pide sesión | `MatrizAutorizacionTest.lasRutasPublicasSonSoloLasDeEntradaYVerificacion`, `loQueNoEsPublicoPideSesion` |
+| Rol por endpoint | `@PreAuthorize` en cada controlador; la matriz completa (114 rutas por seis roles) vive en la prueba, que falla si aparece una ruta sin clasificar | `MatrizAutorizacionTest.todoEndpointEstaClasificado`, `cadaRolRecibeLoQueLeToca` |
+| Rutas sin sesión | Solo `POST /sesiones`, `POST /sesiones/google`, `POST /sesiones/recuperacion`, `POST /sesiones/recuperacion/restablecimiento`, `GET /verificacion-actas/{codigo}` y `GET /actuator/health`, `/health/liveness`, `/health/readiness` e `/info`. No hay comodines: cualquier otra ruta bajo `/sesiones/` pide sesión | `MatrizAutorizacionTest.lasRutasPublicasSonSoloLasDeEntradaYVerificacion`, `loQueNoEsPublicoPideSesion` |
 | Contraseña temporal | La sesión no lleva el rol; solo puede leer `GET /sesiones/actual` y cambiar la clave en `PUT /sesiones/actual/contrasena` | `MatrizAutorizacionTest.conContrasenaTemporalSoloSeCambiaLaClave`, `CuentaUsuarioTest` |
 | Alcance | El coordinador solo ve su facultad y el docente lo propio; fuera de alcance responde 404, igual que lo inexistente | `AlcanceRecursosTest` |
 
@@ -43,6 +42,28 @@ actas. La regla A4 impide que el docente vea notas individuales de cada fuente o
 
 **Riesgo aceptado.** Un administrador de la base podría intentar correlacionar por el orden físico de las
 filas en disco. La app nunca expone ese orden y las respuestas se listan por UUID.
+
+### Riesgo residual del anonimato
+
+El modelo separa quién respondió (`participaciones_heteroevaluacion`: asignación, estudiante y fecha) de
+qué respondió (`respuestas_heteroevaluacion`: UUID aleatorio, asignación, docente, periodo y versión del
+instrumento, sin estudiante, sin fecha y sin secuencia). Aun así queda un riesgo que hay que decir:
+
+- **La respuesta guarda la asignación (la clase evaluada).** En una clase donde respondió **un solo
+  estudiante**, quien tenga acceso directo a la base puede cruzar las dos tablas por `asignacion_id` y saber
+  qué respondió esa persona. Con dos o tres estudiantes, el cruce reduce mucho las posibilidades.
+- **La aplicación nunca lo muestra.** Ninguna pantalla ni ruta entrega respuestas por clase. La nota de
+  estudiantes solo se calcula y se muestra con al menos **5 respuestas por docente**, y el análisis de
+  comentarios exige al menos **10**. La cobertura solo da conteos, sin nombres.
+- **Quién puede hacer el cruce:** solo quien administra el servidor o la base, no los usuarios de DOCENTIA.
+
+Mitigaciones propuestas (no aplicadas; se deciden con la institución):
+
+1. Guardar en la respuesta solo el docente y el periodo, no la asignación, cuando el docente tiene una sola
+   clase o cuando la clase tiene pocos matriculados.
+2. Retirar `asignacion_id` de las respuestas al cerrar la recolección, una vez calculadas las notas.
+3. Exigir un mínimo de respuestas por clase, además del mínimo por docente, para mostrar la cobertura.
+4. Restringir el acceso directo a la base a una sola cuenta de operación, con registro de consultas.
 
 ## Análisis de comentarios
 
@@ -94,6 +115,18 @@ Ningún comentario, respuesta ni dato que identifique a un estudiante va al log.
 
 El manejador global sí registra la traza completa de un error no controlado en una petición, para
 poder diagnosticarlo con el `correlationId`; los caminos que tocan comentarios no llegan ahí con texto.
+
+## Escaneos de la versión 0.4.0 (12 de noviembre de 2026)
+
+| Escaneo | Alcance | Resultado |
+|---|---|---|
+| gitleaks 8.18.4 | Todo el historial de `develop` | Sin secretos |
+| Semgrep 1.95 (`p/java`, `p/react`, `p/javascript`, `p/secrets`) | 731 archivos, 165 reglas | Sin hallazgos |
+| `npm audit` | Frontend, dependencias de producción y de desarrollo | 0 vulnerabilidades |
+| Dependencias del backend (Trivy y OSV-Scanner) | 113 dependencias de runtime | **No se pudo ejecutar**: la red del equipo de pruebas no resolvió las bases de vulnerabilidades. Queda pendiente correrlo en un equipo con acceso (`trivy fs --scanners vuln .` o activar Dependabot en GitHub) |
+
+Lo conocido del backend sigue en "Riesgos aceptados": las dos CVE de Spring MVC (`XsltView` y SSE con
+fragmentos de vista) no aplican porque el proyecto no usa esas funciones.
 
 ## Riesgos aceptados
 
