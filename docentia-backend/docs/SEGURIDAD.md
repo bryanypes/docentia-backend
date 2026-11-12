@@ -117,6 +117,18 @@ Ningún comentario, respuesta ni dato que identifique a un estudiante va al log.
 El manejador global sí registra la traza completa de un error no controlado en una petición, para
 poder diagnosticarlo con el `correlationId`; los caminos que tocan comentarios no llegan ahí con texto.
 
+## Escaneos de la versión 0.4.0 (12 de noviembre de 2026)
+
+| Escaneo | Alcance | Resultado |
+|---|---|---|
+| gitleaks 8.18.4 | Todo el historial de `develop` | Sin secretos |
+| Semgrep 1.95 (`p/java`, `p/react`, `p/javascript`, `p/secrets`) | 731 archivos, 165 reglas | Sin hallazgos |
+| `npm audit` | Frontend, dependencias de producción y de desarrollo | 0 vulnerabilidades |
+| Dependencias del backend (Trivy y OSV-Scanner) | 113 dependencias de runtime | **No se pudo ejecutar**: la red del equipo de pruebas no resolvió las bases de vulnerabilidades. Queda pendiente correrlo en un equipo con acceso (`trivy fs --scanners vuln .` o activar Dependabot en GitHub) |
+
+Lo conocido del backend sigue en "Riesgos aceptados": las dos CVE de Spring MVC (`XsltView` y SSE con
+fragmentos de vista) no aplican porque el proyecto no usa esas funciones.
+
 ## Riesgos aceptados
 
 | Riesgo | Motivo | Mitigación futura |
