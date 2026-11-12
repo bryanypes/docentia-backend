@@ -12,7 +12,7 @@ import { useFiltrosUrl, usePaginacion } from '../../../shared/hooks/usePaginacio
 import { formatearNota } from '../../../shared/utils/formatters.js'
 import { useSesion } from '../../auth/sesionContext.js'
 import { obtenerPendientesCoevaluacion } from '../../formularios/services/formulariosService.js'
-import { TablaCobertura } from '../../heteroevaluacion/pages/Matricula.jsx'
+import { TablaCobertura } from '../../heteroevaluacion/components/TablaCobertura.jsx'
 import { obtenerCobertura } from '../../heteroevaluacion/services/matriculaService.js'
 import { listarFacultades } from '../../facultades/services/facultadesService.js'
 import { listarPeriodos } from '../../periodos/services/periodosService.js'
