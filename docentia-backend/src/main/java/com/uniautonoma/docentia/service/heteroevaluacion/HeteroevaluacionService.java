@@ -53,6 +53,8 @@ public class HeteroevaluacionService {
 
   private static final int DECIMALES_FUENTE = 4;
   private static final int MAXIMO_COMENTARIO = 1000;
+  static final int MINIMO_COMENTARIO = 10;
+  static final int MINIMO_LETRAS = 3;
   private static final String NO_ENCONTRADA = "Evaluación no encontrada";
 
   private static final String ASIGNACIONES =
@@ -310,15 +312,33 @@ public class HeteroevaluacionService {
     return valores;
   }
 
-  private static String comentario(String texto) {
-    if (texto == null || texto.isBlank()) {
-      return null;
+  /**
+   * El comentario es obligatorio y debe decir algo: al menos 10 caracteres sin los espacios de los
+   * extremos, al menos 3 letras y no un mismo carácter repetido.
+   */
+  static String comentario(String texto) {
+    String limpio = texto == null ? "" : texto.strip();
+    if (limpio.isEmpty()) {
+      throw new NoProcesableException("Escribe un comentario sobre el profesor");
     }
-    if (texto.length() > MAXIMO_COMENTARIO) {
+    if (limpio.length() > MAXIMO_COMENTARIO) {
       throw new NoProcesableException(
           "El comentario no puede superar los " + MAXIMO_COMENTARIO + " caracteres");
     }
-    return texto.trim();
+    if (limpio.length() < MINIMO_COMENTARIO) {
+      throw new NoProcesableException(
+          "El comentario debe tener al menos " + MINIMO_COMENTARIO + " caracteres");
+    }
+    if (limpio.codePoints().filter(Character::isLetter).count() < MINIMO_LETRAS) {
+      throw new NoProcesableException(
+          "El comentario debe tener al menos "
+              + MINIMO_LETRAS
+              + " letras, no solo signos o números");
+    }
+    if (limpio.codePoints().filter(c -> !Character.isWhitespace(c)).distinct().count() == 1) {
+      throw new NoProcesableException("El comentario no puede ser un mismo carácter repetido");
+    }
+    return limpio;
   }
 
   private static int total(List<CatalogoInstrumento.Criterio> criterios) {
