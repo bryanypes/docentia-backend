@@ -117,7 +117,7 @@ reinicia los datos al terminar. Tiempos de referencia de la corrida del 11 de no
 | B3 | En el menú de vicerrectoría ya **no** están Usuarios, Programas, Ponderaciones ni carga de estudiantes | La vicerrectoría decide y controla; la operación es de administración | [ ] PASA [ ] FALLA |
 | B5 | **Inicio**, **Estadísticas**, **Docentes**, **Panel por programa** | Indicadores de 2026-2 frente a 2026-1 y, debajo, la lista de **Docentes destacados** (nombre, programa, puntaje); Docentes ordenados por puntaje, primero Camilo Vidal (4,75), con filtros de clasificación y orden; el panel muestra cobertura y distribución sin nombres | [ ] PASA [ ] FALLA |
 | B6 | Después del flujo C–D: **Docentes → Nora → Acta**, motivo de corrección y **Corregir con una versión nueva** | Aparece «versión 2» e «Historial de versiones (1)» | [ ] PASA [ ] FALLA |
-| B7 | **Auditoría** | Fila «Corrección de acta» con quién y cuándo | [ ] PASA [ ] FALLA |
+| B7 | Revisar el menú de vicerrectoría tras la corrección del acta | **Auditoría** no aparece como pantalla en el menú | [ ] PASA [ ] FALLA |
 
 ### B-bis. Administración (`administrador.demo`) y visualización (`visualizador.demo`)
 

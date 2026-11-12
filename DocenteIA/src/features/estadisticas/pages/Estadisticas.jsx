@@ -14,15 +14,17 @@ import {
   Users,
   X,
 } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { EtiquetaNivel } from '../../../shared/components/ui/EtiquetaNivel/EtiquetaNivel.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
+import { Paginacion } from '../../../shared/components/ui/Paginacion/Paginacion.jsx'
 import { ETIQUETA_FUENTE, NIVELES, ROLES } from '../../../shared/constants/dominio.js'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
+import { useFiltrosUrl, usePaginacion } from '../../../shared/hooks/usePaginacion.js'
 import { formatearNota } from '../../../shared/utils/formatters.js'
 import { useSesion } from '../../auth/sesionContext.js'
 import { listarSeguimientoDocentes } from '../../docentes/services/docentesService.js'
@@ -38,9 +40,6 @@ import './Estadisticas.css'
 
 const SIN_FILTROS = { facultad: '', programa: '', nivel: '', estado: '', busqueda: '' }
 const TONO_NIVEL = { MUY_ALTO: 'muy-alto', ALTO: 'alto', ACEPTABLE: 'aceptable', BAJO: 'bajo', MUY_BAJO: 'muy-bajo' }
-// Docentes que se muestran de entrada y en cada «Mostrar más».
-const TANDA_FILAS = 10
-
 const porcentaje = (valor) => (valor === null || valor === undefined ? '—' : `${valor} %`)
 const plural = (n, uno, varios) => `${n} ${n === 1 ? uno : varios}`
 
@@ -102,8 +101,7 @@ function FiltroActivo({ texto, onQuitar }) {
 export default function Estadisticas() {
   const { usuario } = useSesion()
   const esVicerrector = usuario.rol === ROLES.VICERRECTOR
-  const [filtros, setFiltros] = useState(SIN_FILTROS)
-  const [mostrar, setMostrar] = useState(TANDA_FILAS)
+  const [filtros, actualizarFiltros] = useFiltrosUrl(SIN_FILTROS)
   const agruparPor = 'nombrePrograma'
 
   const cargarSeguimiento = useCallback(() => listarSeguimientoDocentes(null), [])
@@ -131,15 +129,19 @@ export default function Estadisticas() {
     [filas, filtros.facultad],
   )
   const visibles = useMemo(() => filtrar(filas, filtros), [filas, filtros])
+  const paginacion = usePaginacion(visibles)
   const r = useMemo(() => calcular(visibles, { umbral, agruparPor }), [visibles, umbral, agruparPor])
+  const paginacionGrupos = usePaginacion(r.porGrupo, {
+    clavePagina: 'paginaGrupo',
+    claveTamano: 'tamanoGrupo',
+  })
 
   const cambiar = (campo, valor) =>
-    setFiltros((actual) => ({
-      ...actual,
-      [campo]: actual[campo] === valor ? '' : valor,
+    actualizarFiltros({
+      [campo]: filtros[campo] === valor ? '' : valor,
       ...(campo === 'facultad' ? { programa: '' } : {}),
-    }))
-  const fijar = (campo, valor) => setFiltros((actual) => ({ ...actual, [campo]: valor, ...(campo === 'facultad' ? { programa: '' } : {}) }))
+    })
+  const fijar = (campo, valor) => actualizarFiltros({ [campo]: valor, ...(campo === 'facultad' ? { programa: '' } : {}) })
   const hayFiltros = Object.values(filtros).some(Boolean)
   const nombreFacultad = (id) => (facultades.datos ?? []).find((f) => String(f.idFacultad) === String(id))?.nombre ?? id
 
@@ -299,7 +301,7 @@ export default function Estadisticas() {
                 {filtros.estado && <FiltroActivo texto={ESTADOS_PROCESO[filtros.estado].etiqueta} onQuitar={() => fijar('estado', '')} />}
                 {filtros.busqueda && <FiltroActivo texto={`“${filtros.busqueda}”`} onQuitar={() => fijar('busqueda', '')} />}
                 <li>
-                  <Boton variante="enlace" onClick={() => setFiltros(SIN_FILTROS)}>
+                  <Boton variante="enlace" onClick={() => actualizarFiltros(SIN_FILTROS)}>
                     Limpiar todo
                   </Boton>
                 </li>
@@ -343,7 +345,7 @@ export default function Estadisticas() {
 
         {r.total === 0 ? (
           <EstadoVista titulo="Ningún docente coincide" mensaje="Quita algún filtro para ver resultados.">
-            <Boton variante="contorno" onClick={() => setFiltros(SIN_FILTROS)}>
+            <Boton variante="contorno" onClick={() => actualizarFiltros(SIN_FILTROS)}>
               Limpiar filtros
             </Boton>
           </EstadoVista>
@@ -450,7 +452,7 @@ export default function Estadisticas() {
                     </tr>
                   </thead>
                   <tbody>
-                    {r.porGrupo.map((g) => {
+                    {paginacionGrupos.visibles.map((g) => {
                       const filtro = nombreGrupo === 'facultad'
                         ? () => fijar('facultad', String(visibles.find((f) => f.docente.nombreFacultad === g.nombre)?.docente.idFacultad ?? ''))
                         : () => cambiar('programa', g.nombre)
@@ -477,6 +479,7 @@ export default function Estadisticas() {
                   </tbody>
                 </table>
               </div>
+              <Paginacion {...paginacionGrupos} etiqueta={nombreGrupo === 'facultad' ? 'facultades' : 'programas'} />
             </Panel>
 
             <Panel className="estadisticas__ancho" titulo="Docentes de la selección" descripcion="La lista cambia con los filtros." icono={Users}>
@@ -494,7 +497,7 @@ export default function Estadisticas() {
                     </tr>
                   </thead>
                   <tbody>
-                    {visibles.slice(0, mostrar).map(({ docente, promedio, proceso }) => (
+                    {paginacion.visibles.map(({ docente, promedio, proceso }) => (
                       <tr key={docente.idDocente}>
                         <td className="tabla__fuerte">{docente.nombreCompleto}</td>
                         <td data-etiqueta="Programa">{docente.nombrePrograma}</td>
@@ -518,22 +521,7 @@ export default function Estadisticas() {
                   </tbody>
                 </table>
               </div>
-              {visibles.length > TANDA_FILAS && (
-                <div className="estadisticas__mas">
-                  <span>
-                    Mostrando {Math.min(mostrar, visibles.length)} de {visibles.length}
-                  </span>
-                  {mostrar < visibles.length ? (
-                    <Boton variante="contorno" onClick={() => setMostrar((n) => n + TANDA_FILAS)}>
-                      Mostrar {Math.min(TANDA_FILAS, visibles.length - mostrar)} más
-                    </Boton>
-                  ) : (
-                    <Boton variante="enlace" onClick={() => setMostrar(TANDA_FILAS)}>
-                      Mostrar menos
-                    </Boton>
-                  )}
-                </div>
-              )}
+              <Paginacion {...paginacion} etiqueta="docentes de la selección" />
             </Panel>
           </div>
           </>

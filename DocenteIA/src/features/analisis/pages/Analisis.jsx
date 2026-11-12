@@ -8,8 +8,10 @@ import { Campo } from '../../../shared/components/ui/Campo/Campo.jsx'
 import { ErrorApi } from '../../../shared/components/ui/ErrorApi/ErrorApi.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
+import { Paginacion } from '../../../shared/components/ui/Paginacion/Paginacion.jsx'
 import { ROLES } from '../../../shared/constants/dominio.js'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
+import { usePaginacion } from '../../../shared/hooks/usePaginacion.js'
 import { formatearFechaHora } from '../../../shared/utils/formatters.js'
 import { useSesion } from '../../auth/sesionContext.js'
 import { listarDocentes } from '../../docentes/services/docentesService.js'
@@ -83,6 +85,10 @@ function EstadoSolicitud({ solicitud, agotado, onReanudar }) {
 function ComentariosFiltrados({ idSolicitud, cantidad }) {
   const cargar = useCallback(() => listarComentariosFiltrados(idSolicitud), [idSolicitud])
   const { datos, error, cargando, recargar } = useFetch(cargar, [cargar])
+  const paginacion = usePaginacion(datos ?? [], {
+    clavePagina: 'paginaComentarios',
+    claveTamano: 'tamanoComentarios',
+  })
 
   return (
     <Panel
@@ -99,7 +105,7 @@ function ComentariosFiltrados({ idSolicitud, cantidad }) {
       {datos?.length === 0 && <p>El filtro no excluyó ningún comentario.</p>}
       {datos?.length > 0 && (
         <ul className="analisis__filtrados">
-          {datos.map((comentario) => (
+          {paginacion.visibles.map((comentario) => (
             <li key={comentario.idComentario}>
               <span className="pildora pildora--alerta">
                 {CATEGORIAS_FILTRO[comentario.categoria] ?? comentario.categoria}
@@ -112,6 +118,7 @@ function ComentariosFiltrados({ idSolicitud, cantidad }) {
           ))}
         </ul>
       )}
+      {datos?.length > 0 && <Paginacion {...paginacion} etiqueta="comentarios excluidos" />}
     </Panel>
   )
 }

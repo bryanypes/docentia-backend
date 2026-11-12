@@ -190,3 +190,18 @@ presentación, en este orden de prioridad:
 | L | Recuperar contraseña | Necesita migración V42, token con hash, vencimiento, límite y pruebas |
 | M | Roles ADMINISTRADOR y VISUALIZADOR | Rehacer desde cero, sin el código del PR #12; si usa V42/V43, coordinar con L y con el PR #12 |
 | O | «Cambiar fuentes (tres fuentes) por …» | El pedido está incompleto: falta saber por qué texto se cambia |
+
+## Continuación del 12 de noviembre
+
+- **P1, parcial:** se agregó paginación 10/20/50 con filtros y página en la URL para docentes,
+  coevaluaciones, usuarios, facultades, programas, estadísticas, panorama de análisis, comentarios
+  excluidos, notificaciones y auditoría. Pruebas puntuales, lint y build pasan. Falta revisar las
+  demás listas y probar las pantallas autenticadas en 1366×768 y 1280×720 (estimación: 45–90 min).
+- **Verificación visual limitada:** el inicio público no tiene desbordamiento horizontal en ambos
+  tamaños. No se pudo comprobar el flujo autenticado con la semilla en navegador en esta corrida.
+- **P0/P2 pendientes de ensayo:** ejecutar A–J y verificar consola, errores 5xx, expiración de sesión,
+  reintentos y doble envío después de estos cambios (estimación: 60–90 min con los servicios de demo).
+- **P3 pendiente:** E8 requiere datos agregados reales por programa y fuente (estimación: 2–4 h,
+  incluido contrato y autorización); E9 puede hacerse como impresión del navegador, pero requiere el
+  logo oficial (estimación: 1–2 h tras recibirlo).
+- **Sin cambio:** el texto de reemplazo de «fuentes» sigue pendiente de la decisión del equipo.
