@@ -211,15 +211,30 @@ docker compose logs api | grep -E "Migrating|Successfully applied"
 docker compose exec -T db sh -c 'psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"'   < docentia-backend/docs/consultas-verificacion.sql > ensayo.txt
 ```
 
-Debe decir `Successfully applied 8 migrations … now at version v41`, la API quedar `healthy` y la
+Debe decir `Executing SQL callback: beforeMigrate`, `Successfully applied 10 migrations` (V34 a V43) y
+`Executing SQL callback: afterMigrate`; la API debe quedar `healthy` y la
 sección 7 de `ensayo.txt` tener los mismos conteos que `antes.txt`. Al terminar:
 `docker compose down -v` en la carpeta del ensayo.
 
-> **Ensayado en local el 11 de noviembre de 2026** con los mismos scripts: base de 0.3.3 con la semilla
-> (V28), `respaldar.sh` (150 KB), `restaurar.sh` en un stack de `develop` con perfil `prod`: 8 migraciones
-> aplicadas, API `UP` y los diez conteos de la sección 7 iguales. La vuelta atrás (restaurar el mismo
-> respaldo en 0.3.3) dejó V28, la API `UP` y descartó lo escrito después del respaldo. Con datos reales
-> del servidor **no se ha ensayado**: ese es el paso 3.
+> **Ensayado en local el 12 de noviembre de 2026** sobre v0.3.3 (V28) con su semilla más un acta
+> FIRMADA, una ANULADA y una BORRADOR, y 4 respuestas anónimas de estudiantes con sus participaciones:
+>
+> | Paso | Resultado |
+> |---|---|
+> | `pg_dump -Fc` | 150 KB, 41 tablas con datos, 1 s |
+> | Restauración en otra base | 3 s |
+> | Migración con 0.4.0 y perfil `prod` | 10 migraciones (V34 a V43), arranque completo en 18 s |
+> | Notas, promedios, ventanas, periodos, respuestas, participaciones y actas | Sumas md5 idénticas antes y después |
+> | Usuarios existentes | Idénticos; se suma solo el primer administrador (`DOCENTIA_BOOTSTRAP_*`), con clave temporal |
+> | Nombres de programas y cursos | Solo cambian los que estaban todo en mayúsculas o sin tilde (V38, V39), por ejemplo `ADMINISTRACION DE EMPRESAS PROFESIONAL` → `Administración de Empresas Profesional`; los ids no cambian |
+> | Actas existentes | Toman su tipo (V36); la firmada sigue inmutable: un `update` sobre ella responde "Un acta firmada es inmutable" |
+> | Log | Sin el correo ni la clave del administrador |
+> | Tamaño | 11 MB antes y después |
+>
+> **Error encontrado y corregido en el ensayo:** sin los callbacks `beforeMigrate.sql` y `afterMigrate.sql`,
+> V36 fallaba sobre una base con actas firmadas o anuladas y la API quedaba sin arrancar en V35. Por eso
+> el paso 1 debe contar cuántas actas FIRMADA y ANULADA hay en el servidor. Con datos reales del servidor
+> **no se ha ensayado**: ese es el paso 3.
 
 ### 4. Despliegue
 

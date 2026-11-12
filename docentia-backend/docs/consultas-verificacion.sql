@@ -8,7 +8,7 @@
 
 begin transaction read only;
 
--- 1. Versión del esquema. Antes del despliegue de 0.4.0 debe terminar en 28; después, en 41.
+-- 1. Versión del esquema. Antes del despliegue de 0.4.0 debe terminar en 28; después, en 43.
 --    Si aparece alguna de V29 a V33, la base aplicó migraciones de una rama que no está en develop:
 --    no despliegues y revisa (ver OPERACION.md, ensayo de migraciones).
 select version, description, installed_on, success
@@ -88,8 +88,9 @@ from solicitudes_analisis
 group by estado
 order by cola;
 
--- 7. Conteos para comparar antes y después del despliegue. Deben coincidir: las migraciones V34 a V41
---    agregan tablas y columnas, no borran filas.
+-- 7. Conteos para comparar antes y después del despliegue. Deben coincidir: las migraciones V34 a V43
+--    agregan tablas y columnas, no borran filas. Después, usuarios suma 1 si se creó el primer
+--    administrador con DOCENTIA_BOOTSTRAP_*.
 select 'usuarios' as tabla, count(*) as filas from usuarios
 union all select 'calificaciones', count(*) from calificaciones
 union all select 'promedios_docente', count(*) from promedios_docente
@@ -101,5 +102,9 @@ union all select 'citas', count(*) from citas
 union all select 'actas', count(*) from actas
 union all select 'auditoria', count(*) from auditoria
 order by tabla;
+
+-- 8. Actas por estado. Si hay FIRMADA o ANULADA, la versión 0.4.0 debe traer los callbacks de Flyway
+--    (beforeMigrate.sql y afterMigrate.sql): sin ellos, V36 falla sobre esas actas.
+select estado, count(*) as actas from actas group by estado order by estado;
 
 rollback;
