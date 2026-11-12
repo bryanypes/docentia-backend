@@ -64,7 +64,8 @@ public class SecurityConfig {
         .authorizeHttpRequests(
             peticiones ->
                 peticiones
-                    .requestMatchers(HttpMethod.POST, "/sesiones/**")
+                    // Solo las dos rutas de entrada, exactas: nada de comodines bajo /sesiones.
+                    .requestMatchers(HttpMethod.POST, "/sesiones", "/sesiones/google")
                     .permitAll()
                     .requestMatchers(HttpMethod.GET, "/actuator/health/**", "/actuator/info")
                     .permitAll()
