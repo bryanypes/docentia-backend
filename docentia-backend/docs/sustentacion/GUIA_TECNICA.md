@@ -187,7 +187,7 @@ pruebas `DocenteIA/e2e` (11 de 11).
 **Coordinación** (`coordinacion.ingenieria`)
 
 7. **Docentes → Laura Demo:** con la quinta respuesta, la nota de estudiantes sale del formulario.
-8. **Matrícula y cobertura:** cobertura por docente y programa, sin saber quién respondió qué.
+8. **Panel por programa:** cobertura de respuestas por docente y programa, sin saber quién respondió qué.
 9. **Docentes → Nora Muñoz:** 2,85, bajo desempeño, acción institucional. **Generar acta:** acta de
    compromiso; **Agregar compromiso** con plazo.
 10. **Agenda de citas:** abrir un horario de 30 minutos para hoy.
