@@ -4,7 +4,6 @@ import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { ErrorApi } from '../../../shared/components/ui/ErrorApi/ErrorApi.jsx'
 import { formatearFechaHora } from '../../../shared/utils/formatters.js'
-import { AsistentePasos, PreguntaEscala } from './AsistentePasos.jsx'
 import './FormularioInstrumento.css'
 
 export const INTERVALO_AUTOGUARDADO_MS = 30000
@@ -19,27 +18,17 @@ function respuestasDe(formulario) {
   return respuestas
 }
 
-/**
- * Comentario general del formulario. Un borrador anterior pudo tener un comentario por criterio:
- * se juntan aquí, cada uno con el nombre de su criterio, para no perderlos al guardar.
- */
-function comentarioDe(formulario) {
-  if (formulario.comentario) return formulario.comentario
-  return formulario.criterios
-    .filter((c) => c.comentario?.trim())
-    .map((c) => `${c.nombre}: ${c.comentario.trim()}`)
-    .join('\n')
+function comentariosDe(formulario) {
+  return Object.fromEntries(formulario.criterios.map(({ codigo, comentario }) => [codigo, comentario ?? '']))
 }
 
-const MAXIMO_COMENTARIO = 1000
-
 /**
- * Instrumento del Anexo 1 por pasos: un criterio por paso y la revisión al final. Guarda el borrador
- * con el botón y cada 30 s si hubo cambios; enviar es irreversible y exige confirmación.
+ * Instrumento del Anexo 1, agrupado por criterio. Guarda el borrador con el botón y cada 30 s si hubo
+ * cambios; enviar es irreversible y exige confirmación.
  */
 export function FormularioInstrumento({ formulario, onGuardar, onEnviar }) {
   const [respuestas, setRespuestas] = useState(() => respuestasDe(formulario))
-  const [comentario, setComentario] = useState(() => comentarioDe(formulario))
+  const [comentarios, setComentarios] = useState(() => comentariosDe(formulario))
   const [confirmado, setConfirmado] = useState(false)
   const [ocupado, setOcupado] = useState(false)
   const [error, setError] = useState(null)
@@ -48,10 +37,10 @@ export function FormularioInstrumento({ formulario, onGuardar, onEnviar }) {
   // La referencia frena el doble clic y los choques con el autoguardado.
   const enCurso = useRef(false)
   const yaEnviado = useRef(false)
-  const borrador = useRef({ respuestas, comentario: comentario.trim() || null })
+  const borrador = useRef({ respuestas, comentarios })
   useEffect(() => {
-    borrador.current = { respuestas, comentario: comentario.trim() || null }
-  }, [respuestas, comentario])
+    borrador.current = { respuestas, comentarios }
+  }, [respuestas, comentarios])
 
   const enviada = formulario.estado === 'ENVIADA'
   const editable = !enviada && formulario.ventanaAbierta
@@ -92,116 +81,9 @@ export function FormularioInstrumento({ formulario, onGuardar, onEnviar }) {
     setRespuestas((actuales) => ({ ...actuales, [codigo]: valor }))
   }
 
-  function comentar(texto) {
+  function comentar(codigo, texto) {
     sinGuardar.current = true
-    setComentario(texto)
-  }
-
-  const pasos = formulario.criterios.map((criterio) => ({
-    codigo: criterio.codigo,
-    titulo: criterio.nombre,
-    total: criterio.descriptores.length,
-    respondidas: criterio.descriptores.filter((d) => respuestas[d.codigo] !== undefined).length,
-    contenido: (
-      <fieldset className="instrumento__criterio">
-        <legend className="solo-lectores">{criterio.nombre}</legend>
-        {criterio.descriptores.map((descriptor) => (
-          <PreguntaEscala
-            key={descriptor.codigo}
-            descriptor={descriptor}
-            escala={formulario.escala}
-            valor={respuestas[descriptor.codigo]}
-            editable={editable}
-            onResponder={responder}
-          />
-        ))}
-      </fieldset>
-    ),
-  }))
-
-  const revision = {
-    titulo: enviada ? 'Resumen' : 'Revisar y enviar',
-    contenido: (
-      <>
-        <ul className="revision">
-          {pasos.map((paso) => (
-            <li
-              key={paso.codigo}
-              className={`revision__criterio${paso.respondidas < paso.total ? ' revision__criterio--incompleto' : ''}`}
-            >
-              <span>
-                <strong>{paso.titulo}</strong>
-                <br />
-                <span>
-                  {paso.respondidas} de {paso.total} respondidos
-                </span>
-              </span>
-              {paso.respondidas === paso.total ? (
-                <span className="pildora pildora--turquesa">Completo</span>
-              ) : (
-                <span className="pildora pildora--alerta">Falta</span>
-              )}
-            </li>
-          ))}
-        </ul>
-        {/* Un solo comentario al final; es el que se tiene en cuenta en el análisis de comentarios. */}
-        {editable || comentario ? (
-          <label className="instrumento__comentario">
-            Comentarios u observaciones (opcional)
-            <span className="campo__ayuda">
-              Se tienen en cuenta en el análisis de comentarios del periodo. No incluyas datos personales.
-            </span>
-            <textarea
-              className="campo__control"
-              rows={4}
-              maxLength={MAXIMO_COMENTARIO}
-              disabled={!editable}
-              value={comentario}
-              onChange={(e) => comentar(e.target.value)}
-            />
-            {editable && (
-              <span className="campo__ayuda instrumento__contador">
-                {comentario.length} de {MAXIMO_COMENTARIO} caracteres
-              </span>
-            )}
-          </label>
-        ) : null}
-        <ErrorApi error={error} />
-        {editable && (
-          <div className="instrumento__acciones">
-            <div className="acciones-fila">
-              <Boton variante="contorno" icono={Save} disabled={ocupado} onClick={() => ejecutar(guardar)}>
-                Guardar borrador
-              </Boton>
-              {guardadoEn && (
-                <span className="campo__ayuda" role="status">
-                  Borrador guardado a las {guardadoEn}
-                </span>
-              )}
-            </div>
-            <label className="instrumento__confirmacion">
-              <input type="checkbox" checked={confirmado} onChange={(e) => setConfirmado(e.target.checked)} /> Revisé
-              mis respuestas y entiendo que enviar es irreversible.
-            </label>
-            <Boton
-              icono={Send}
-              disabled={!completo || !confirmado || ocupado}
-              onClick={() =>
-                ejecutar(async () => {
-                  if (yaEnviado.current) return
-                  await guardar()
-                  await onEnviar()
-                  yaEnviado.current = true
-                })
-              }
-            >
-              Enviar formulario
-            </Boton>
-            {!completo && <span className="campo__ayuda">Responde todos los ítems para poder enviar.</span>}
-          </div>
-        )}
-      </>
-    ),
+    setComentarios((actuales) => ({ ...actuales, [codigo]: texto }))
   }
 
   return (
@@ -216,7 +98,94 @@ export function FormularioInstrumento({ formulario, onGuardar, onEnviar }) {
           Este formulario solo se responde en la ventana de recolección de calificaciones.
         </Aviso>
       )}
-      <AsistentePasos pasos={pasos} revision={revision} etiqueta="Criterios del instrumento" />
+
+      <div className="instrumento__progreso">
+        <span>
+          {respondidos} de {formulario.total} ítems respondidos
+        </span>
+        <progress value={respondidos} max={formulario.total} aria-label="Avance del formulario" />
+      </div>
+
+      <dl className="instrumento__escala" aria-label="Escala de respuesta">
+        {formulario.escala.map(({ valor, etiqueta }) => (
+          <div key={valor}>
+            <dt>{valor}</dt>
+            <dd>{etiqueta}</dd>
+          </div>
+        ))}
+      </dl>
+
+      {formulario.criterios.map((criterio) => (
+        <fieldset key={criterio.codigo} className="instrumento__criterio">
+          <legend>{criterio.nombre}</legend>
+          {criterio.descriptores.map((descriptor) => (
+            <fieldset key={descriptor.codigo} className="instrumento__item">
+              <legend>{descriptor.texto}</legend>
+              <div className="instrumento__opciones">
+                {formulario.escala.map(({ valor, etiqueta }) => (
+                  <label key={valor} className="instrumento__opcion">
+                    <input
+                      type="radio"
+                      name={descriptor.codigo}
+                      value={valor}
+                      checked={respuestas[descriptor.codigo] === valor}
+                      disabled={!editable}
+                      onChange={() => responder(descriptor.codigo, valor)}
+                    />
+                    <span aria-hidden="true">{valor}</span>
+                    <span className="solo-lectores">{etiqueta}</span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          ))}
+          <label className="instrumento__comentario">
+            Comentario sobre este criterio (opcional)
+            <textarea
+              className="campo__control"
+              rows={2}
+              maxLength={1000}
+              disabled={!editable}
+              value={comentarios[criterio.codigo]}
+              onChange={(e) => comentar(criterio.codigo, e.target.value)}
+            />
+          </label>
+        </fieldset>
+      ))}
+
+      <ErrorApi error={error} />
+
+      {editable && (
+        <div className="instrumento__acciones">
+          <Boton variante="contorno" icono={Save} disabled={ocupado} onClick={() => ejecutar(guardar)}>
+            Guardar borrador
+          </Boton>
+          {guardadoEn && (
+            <span className="campo__ayuda" role="status">
+              Borrador guardado a las {guardadoEn}
+            </span>
+          )}
+          <label className="instrumento__confirmacion">
+            <input type="checkbox" checked={confirmado} onChange={(e) => setConfirmado(e.target.checked)} /> Revisé mis
+            respuestas y entiendo que enviar es irreversible.
+          </label>
+          <Boton
+            icono={Send}
+            disabled={!completo || !confirmado || ocupado}
+            onClick={() =>
+              ejecutar(async () => {
+                if (yaEnviado.current) return
+                await guardar()
+                await onEnviar()
+                yaEnviado.current = true
+              })
+            }
+          >
+            Enviar formulario
+          </Boton>
+          {!completo && <span className="campo__ayuda">Responde todos los ítems para poder enviar.</span>}
+        </div>
+      )}
     </div>
   )
 }

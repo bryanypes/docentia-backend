@@ -8,12 +8,6 @@ import com.uniautonoma.docentia.service.analisis.LectorRespuestaAnalisis;
 import com.uniautonoma.docentia.service.analisis.ModeloIA;
 import com.uniautonoma.docentia.service.analisis.ModeloIAChatCompletions;
 import com.uniautonoma.docentia.service.analisis.ModeloIASimulado;
-import com.uniautonoma.docentia.service.analisis.local.AnalizadorLocal;
-import com.uniautonoma.docentia.service.analisis.local.AnalizadorLocal.ParametrosAnalisis;
-import com.uniautonoma.docentia.service.analisis.local.FiltroCalidad;
-import com.uniautonoma.docentia.service.analisis.local.Lexico;
-import com.uniautonoma.docentia.service.analisis.local.ModeloIALocal;
-import com.uniautonoma.docentia.service.analisis.local.PipelineAnalisis;
 import java.time.Duration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
@@ -27,53 +21,15 @@ import org.springframework.web.client.RestClient;
 
 /** Piezas del análisis con IA. El modelo se elige con docentia.ia.proveedor. */
 @Configuration
-@EnableConfigurationProperties({IaProperties.class, AnalisisComentariosProperties.class})
+@EnableConfigurationProperties(IaProperties.class)
 public class AnalisisIaConfig {
 
-  /** Modelo local por reglas: el de por defecto, sin red ni datos fuera de la institución. */
   @Bean
   @ConditionalOnProperty(
       prefix = "docentia.ia",
       name = "proveedor",
-      havingValue = "local",
+      havingValue = "simulado",
       matchIfMissing = true)
-  ModeloIA modeloIALocal(AnalizadorLocal analizador) {
-    return new ModeloIALocal(analizador);
-  }
-
-  @Bean
-  Lexico lexicoAnalisis(AnalisisComentariosProperties propiedades) {
-    return Lexico.cargar(propiedades.lexico());
-  }
-
-  @Bean
-  AnalizadorLocal analizadorLocal(
-      Lexico lexico,
-      AnalisisComentariosProperties propiedades,
-      HeteroevaluacionProperties heteroevaluacion) {
-    return new AnalizadorLocal(
-        lexico,
-        new ParametrosAnalisis(
-            propiedades.minimoRecurrencia(),
-            propiedades.porcentajeRecurrencia(),
-            propiedades.maximoPorLista(),
-            propiedades.umbralTendencia(),
-            heteroevaluacion.minimoRespuestas()));
-  }
-
-  @Bean
-  PipelineAnalisis pipelineAnalisis(
-      Lexico lexico,
-      AnalisisComentariosProperties propiedades,
-      FiltroComentarios filtro,
-      Anonimizador anonimizador) {
-    return new PipelineAnalisis(
-        new FiltroCalidad(lexico, propiedades.maximoRepeticiones()), filtro, anonimizador);
-  }
-
-  /** Doble de pruebas: imita a un modelo de lenguaje sin red. */
-  @Bean
-  @ConditionalOnProperty(prefix = "docentia.ia", name = "proveedor", havingValue = "simulado")
   ModeloIA modeloIASimulado() {
     return new ModeloIASimulado();
   }

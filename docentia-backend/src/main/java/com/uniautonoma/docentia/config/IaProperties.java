@@ -1,7 +1,6 @@
 package com.uniautonoma.docentia.config;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.boot.context.properties.bind.ConstructorBinding;
 import org.springframework.boot.context.properties.bind.DefaultValue;
 
 /**
@@ -9,51 +8,24 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
  *
  * @param habilitado si es falso no se aceptan solicitudes; por defecto apagado fuera de dev porque
  *     enviar comentarios a un proveedor externo exige revisar la política de datos
- * @param proveedor "local" (reglas, por defecto, sin red), "simulado" (solo pruebas) o
- *     "chat-completions" (API compatible con el formato chat/completions)
+ * @param proveedor "simulado" (determinista, sin red) o "chat-completions" (API compatible con el
+ *     formato chat/completions)
  * @param urlBase dirección del proveedor, sin barra final
  * @param modelo identificador del modelo en el proveedor
  * @param timeoutSegundos tiempo máximo de espera de la respuesta
  * @param clave clave del proveedor; solo por variable de entorno (DOCENTIA_IA_CLAVE)
  * @param minimoEncuestas encuestas cerradas necesarias para generar un borrador
- * @param enviarTemperatura si se envía temperature=0; algunos modelos recientes lo rechazan y hay
- *     que apagarlo (DOCENTIA_IA_ENVIAR_TEMPERATURA=false)
  */
 @ConfigurationProperties(prefix = "docentia.ia")
 public record IaProperties(
     @DefaultValue("false") boolean habilitado,
-    @DefaultValue("local") String proveedor,
+    @DefaultValue("simulado") String proveedor,
     String urlBase,
     String modelo,
     @DefaultValue("60") int timeoutSegundos,
     String clave,
     @DefaultValue("10") int minimoEncuestas,
-    @DefaultValue Worker worker,
-    @DefaultValue("true") boolean enviarTemperatura) {
-
-  @ConstructorBinding
-  public IaProperties {}
-
-  public IaProperties(
-      boolean habilitado,
-      String proveedor,
-      String urlBase,
-      String modelo,
-      int timeoutSegundos,
-      String clave,
-      int minimoEncuestas,
-      Worker worker) {
-    this(
-        habilitado,
-        proveedor,
-        urlBase,
-        modelo,
-        timeoutSegundos,
-        clave,
-        minimoEncuestas,
-        worker,
-        true);
-  }
+    @DefaultValue Worker worker) {
 
   /**
    * Procesador en segundo plano.

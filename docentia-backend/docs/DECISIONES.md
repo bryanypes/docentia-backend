@@ -128,25 +128,6 @@ ambigüedad. La fuente de verdad es la resolución; el Excel v2 tiene errores (v
 - **Auditoría.** `entidad_id` guarda el docente evaluado, y el periodo se deduce de la fecha.
 - **Desglose del docente.** Mi evaluación muestra solo su autoevaluación por criterio. `GET
   /expedientes/propio` conserva `dimensiones`, valores ya ponderados que no revelan una fuente.
-- **Un comentario al final (V35).** Autoevaluación y coevaluación pasan de un comentario por
-  criterio a uno general en «Revisar y enviar», como el del estudiante. Ese comentario, solo de
-  formularios enviados, entra al análisis de la fuente FORMULARIO junto a los de estudiantes; el
-  mínimo de evidencia sigue contando solo encuestas de estudiantes. Esto cambia lo que decía V25
-  («no van al análisis»). Los comentarios por criterio anteriores se conservan en la base y la
-  pantalla los junta en el comentario general del borrador para no perderlos.
-- **Cobertura oculta.** Matrícula y cobertura de estudiantes se ocultan en la interfaz con
-  `FUNCIONES.coberturaEstudiantes` (`DocenteIA/src/shared/constants/funciones.js`): menú, ruta,
-  paneles, la cifra de Estadísticas, el dato del proceso y las columnas del Excel. No se borró código
-  ni endpoints; volver a mostrarlo es cambiar ese valor.
-- **Gestión por programa.** La coordinación ya no ve su facultad como filtro (es fija) y filtra por
-  programa; la vicerrectoría conserva facultad y suma programa. Las agrupaciones son por programa.
-- **Auditoría en Usuarios.** El registro de auditoría ya no tiene entrada propia en el menú: es la
-  pestaña «Actividad» de Usuarios (`/usuarios?vista=actividad`). El endpoint no cambia.
-- **Facultades y programas.** Una sola página con una tarjeta por facultad y sus programas. La
-  página de programas se retiró; su ruta redirige.
-- **Resumen del estudiante.** Las respuestas del formulario anónimo no se pueden recuperar desde el
-  servidor. Al enviar, el navegador guarda una copia solo para ese usuario; desde otro equipo se ve
-  un comprobante sin las respuestas.
 
 ## Heteroevaluación (HU-01)
 
@@ -174,58 +155,12 @@ ambigüedad. La fuente de verdad es la resolución; el Excel v2 tiene errores (v
   `UNICO`, porque el CSV no trae grupo ni jornada. Una columna opcional `estado` admite RETIRADA.
 - **Cobertura.** Cuenta participación, nunca puntajes. Un estudiante cuenta una vez por cada asignación,
   y un retirado no cuenta.
-- **Comentarios hacia el análisis de IA.** En 0.3.3 se recortó: copiarlos a `comentarios_estudiantes`,
-  que tiene fecha y secuencia, los ligaba en el tiempo a la participación. Ahora no se copian: se leen de
-  la respuesta solo al analizar y con la recolección cerrada. Ver
-  [DECISIONES-ANALISIS-IA.md](DECISIONES-ANALISIS-IA.md).
+- **Comentarios hacia el análisis de IA: recortado.** Para usarlos habría que copiarlos a
+  `comentarios_estudiantes`, que tiene fecha y secuencia: un comentario copiado al llegar un envío
+  quedaría ligado en el tiempo a la participación de ese estudiante. Se guardan anónimos en la
+  respuesta y no van al análisis ni a ninguna pantalla.
 - **Profe David Melo.** No había cambios suyos en los repositorios; los cambios de usuarios y roles
   venían del PR #4.
-
-## Proceso de retroalimentación
-
-Contrato: [api-proceso-evaluacion.md](api-proceso-evaluacion.md).
-
-- **Fuentes y pesos sin cambios.** Siguen las tres fuentes de la Res. 074 (50/30/20). Vicerrectoría
-  no califica: observa el proceso de todas las facultades.
-- **Estado calculado.** `EstadoProcesoEvaluacion` se deduce del promedio, las citas y el acta en cada
-  consulta. No hay una columna de estado que se pueda desfasar.
-- **Estudiantes completos.** Se usa el mismo criterio del motor: la fuente cuenta cuando hay al menos
-  un formulario HETERO enviado. La cobertura (respondidas de esperadas) se muestra a coordinación y
-  vicerrectoría para que decidan, pero no bloquea.
-- **Qué ve el docente.** Mientras falten estudiantes o coordinación solo sabe que su evaluación está
-  en curso. Desde que solo falta su autoevaluación ve los pasos del proceso, nunca la nota.
-- **Resultado en la reunión.** La nota, la categoría, el resultado por dimensión, los hallazgos y el
-  acta del periodo se le muestran cuando la coordinación registra que asistió. La propiedad
-  `docentia.proceso.exigir-asistencia` (por defecto `true`) permite apagarlo; las pruebas anteriores
-  a esta regla corren con `false` y `ProcesoEvaluacionTest` la activa.
-- **Confirmación.** El recordatorio de 24 h pide confirmar o declinar. Declinar libera la cita con
-  `DECLINADA_POR_DOCENTE` y la franja vuelve a estar disponible para otro docente. Solo se puede
-  responder antes de que empiece la cita.
-- **Asistencia.** La registra la coordinación desde el día de la cita, en el calendario o en el
-  expediente. `ASISTIO` exige el promedio COMPLETO; `NO_ASISTIO` libera la cita con `INASISTENCIA`
-  y el docente debe reservar otra. Después de asistir ya no puede cambiar de franja.
-- **Dos actas.** `COMPROMISO` exige al menos un compromiso con plazo; `RETROALIMENTACION` es la
-  constancia de que recibió la retroalimentación. Con la nota bajo el umbral siempre es de
-  compromiso; por encima, la coordinación elige al crearla o la cambia antes de la primera firma.
-  Las actas anteriores a V29 toman el tipo según su nota.
-- **Firma en la reunión.** Además de las reglas anteriores, el acta se firma después de registrar la
-  asistencia. El docente la firma desde su sesión, en Mi acta.
-- **Migración V29.** Agrega confirmación y asistencia a `citas` y `tipo` a `actas`. No se editó
-  ninguna migración anterior.
-
-## Firma, inicio y estadísticas
-
-- **Firma dibujada.** Se firma en un modal con un lienzo (mouse, dedo o lápiz). Quien no puede
-  dibujar escribe su nombre y se dibuja con letra manuscrita: el resultado es el mismo PNG. El
-  backend valida que sea un PNG con trazo, guarda su hash y lo imprime en el PDF (V30).
-- **Inicio único.** `/inicio` es la ruta principal de todos los roles y muestra el panel de cada uno.
-  Solo cuando la sesión vence y entra la misma persona se vuelve a la pantalla anterior; tras un
-  Salir nadie hereda la ruta del rol anterior.
-- **Estadísticas.** Vista propia para coordinación y vicerrectoría. Se calculan en el navegador con
-  `/docentes/seguimiento` y `/procesos-evaluacion`: una sola selección filtrada alimenta todas las
-  gráficas. El Inicio conserva lo accionable y enlaza a ellas.
-- **Panorama del análisis.** Sin docente elegido, Análisis muestra el avance de la facultad con
-  conteos del backend, sin textos de comentarios ni de hallazgos.
 
 ## Estructura de repositorios
 

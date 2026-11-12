@@ -42,11 +42,3 @@ export function validarFechasPeriodo({ fechaInicio, fechaFin, etapas }) {
   }
   return errores
 }
-
-/** Estado de una etapa según sus fechas; las etapas pueden solaparse, así que no depende del orden. */
-export function estadoEtapa(etapa, hoy) {
-  if (!etapa.fechaApertura || !etapa.fechaCierre) return 'sin'
-  if (etapa.fechaCierre < hoy) return 'terminada'
-  if (etapa.fechaApertura > hoy) return 'proxima'
-  return 'abierta'
-}

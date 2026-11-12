@@ -24,35 +24,9 @@ public class Anonimizador {
               Pattern.compile(
                   "(?iu)\\b(me llamo|mi nombre es|soy el estudiante|soy la estudiante|atentamente,?)"
                       + "\\s+\\p{Lu}\\p{L}+(\\s+\\p{Lu}\\p{L}+)?"),
-              "$1 [nombre]"),
-          new Regla(
-              Pattern.compile(
-                  "(?u)\\b(compañer[oa]|amig[oa]|profe|profesora?|docente|el estudiante|la estudiante)"
-                      + "\\s+\\p{Lu}\\p{L}+(\\s+\\p{Lu}\\p{L}+)?"),
-              "$1 [nombre]"),
-          // Dos palabras seguidas con mayúscula que no abren la frase: casi siempre un nombre.
-          new Regla(
-              Pattern.compile("(?u)(?<=[\\p{Ll},;:]\\s)\\p{Lu}\\p{Ll}+\\s+\\p{Lu}\\p{Ll}+"),
-              "[nombre]"));
+              "$1 [nombre]"));
 
   /** Devuelve el texto sin datos identificables; siempre igual para el mismo texto. */
-  /** Además de las reglas, reemplaza el nombre del docente evaluado si aparece. */
-  public String anonimizar(String texto, String nombreDocente) {
-    String resultado = anonimizar(texto);
-    if (nombreDocente == null) {
-      return resultado;
-    }
-    for (String parte : nombreDocente.split("\\s+")) {
-      if (parte.length() >= 3) {
-        resultado =
-            Pattern.compile("(?iu)\\b" + Pattern.quote(parte) + "\\b")
-                .matcher(resultado)
-                .replaceAll("[docente]");
-      }
-    }
-    return resultado;
-  }
-
   public String anonimizar(String texto) {
     String resultado = texto;
     for (Regla regla : REGLAS) {

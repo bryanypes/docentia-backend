@@ -158,9 +158,9 @@ export function PanelHistorico({ historico }) {
   )
 }
 
-export function PanelCompromisos({ titulo = 'Compromisos vigentes', compromisos, className }) {
+export function PanelCompromisos({ titulo = 'Compromisos vigentes', compromisos }) {
   return (
-    <Panel titulo={titulo} className={className}>
+    <Panel titulo={titulo}>
       {compromisos.length === 0 ? (
         <p className="expediente__vacio">No hay compromisos de mejora vigentes.</p>
       ) : (
@@ -182,15 +182,8 @@ export function PanelCompromisos({ titulo = 'Compromisos vigentes', compromisos,
 /** Fila de datos clave del docente (programa, facultad, periodo, estado). */
 export function DatosDocente({ docente, periodo, promedio }) {
   const datos = [
-    {
-      clave: 'Programa',
-      valor: (
-        <>
-          {docente.nombrePrograma}
-          {docente.nombreFacultad && <span className="datos-docente__detalle">{docente.nombreFacultad}</span>}
-        </>
-      ),
-    },
+    { clave: 'Programa', valor: docente.nombrePrograma },
+    { clave: 'Facultad', valor: docente.nombreFacultad },
     { clave: 'Periodo', valor: periodo?.nombre ?? 'Sin periodo activo' },
     { clave: 'Estado', valor: <EtiquetaNivel promedio={promedio} /> },
   ]

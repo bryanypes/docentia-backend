@@ -95,21 +95,3 @@
   align-items: center;
   gap: 10px;
 }
-
-/* En el celular la campana va en la barra fija superior, a la derecha. */
-@media (max-width: 900px) {
-  .campana {
-    position: fixed;
-    top: 9px;
-    right: 12px;
-    z-index: 45;
-  }
-
-  .campana__boton {
-    width: 42px;
-    height: 42px;
-    border-color: rgba(254, 251, 244, 0.25);
-    background: rgba(254, 251, 244, 0.1);
-    color: var(--color-crema);
-  }
-}

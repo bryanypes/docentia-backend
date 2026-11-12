@@ -55,10 +55,6 @@ public class Acta {
   @Column(nullable = false, length = 20)
   private EstadoActa estado = EstadoActa.BORRADOR;
 
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false, length = 20)
-  private TipoActa tipo = TipoActa.RETROALIMENTACION;
-
   @Column(precision = 3, scale = 2)
   private BigDecimal promedio;
 
@@ -132,7 +128,6 @@ public class Acta {
     nueva.idActaAnterior = anterior.idActa;
     nueva.motivoCorreccion = motivo;
     nueva.idUsuarioCorrige = idUsuarioCorrige;
-    nueva.tipo = anterior.tipo;
     for (Compromiso compromiso : anterior.compromisos) {
       nueva.agregarCompromiso(compromiso.getDescripcion(), compromiso.getFechaLimite());
     }
@@ -158,25 +153,6 @@ public class Acta {
     this.notaCoordinacion = notaCoordinacion;
     this.notaAutoevaluacion = notaAutoevaluacion;
     this.idUltimaCorreccion = idUltimaCorreccion;
-    if (notaBajoUmbral()) {
-      this.tipo = TipoActa.COMPROMISO;
-    }
-  }
-
-  /**
-   * Cambia el tipo mientras nadie haya firmado. Con la nota bajo el umbral solo cabe el de
-   * compromiso.
-   */
-  public void cambiarTipo(TipoActa nuevo) {
-    exigirBorrador();
-    if (!firmas.isEmpty()) {
-      throw new ReglaNegocioException("El acta ya tiene una firma: el tipo no cambia");
-    }
-    if (nuevo == TipoActa.RETROALIMENTACION && notaBajoUmbral()) {
-      throw new ReglaNegocioException(
-          "Con una nota menor a " + umbralCompromisos + " el acta es de compromiso");
-    }
-    this.tipo = nuevo;
   }
 
   public void exigirBorrador() {
@@ -195,12 +171,7 @@ public class Acta {
     compromisos.remove(compromiso);
   }
 
-  /** El acta de compromiso, elegida o exigida por la nota, se firma con al menos un compromiso. */
   public boolean requiereCompromisos() {
-    return tipo == TipoActa.COMPROMISO || notaBajoUmbral();
-  }
-
-  private boolean notaBajoUmbral() {
     return promedio != null && promedio.compareTo(umbralCompromisos) < 0;
   }
 
@@ -249,10 +220,6 @@ public class Acta {
 
   public EstadoActa getEstado() {
     return estado;
-  }
-
-  public TipoActa getTipo() {
-    return tipo;
   }
 
   public BigDecimal getPromedio() {

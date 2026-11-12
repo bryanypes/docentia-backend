@@ -18,7 +18,5 @@ export default defineConfig({
     include: ['src/**/*.test.{js,jsx}'],
     environment: 'jsdom',
     setupFiles: './src/configuracionPruebas.js',
-    // Las pantallas con varios pasos y modales superan los 5 s por defecto en máquinas cargadas.
-    testTimeout: 15000,
   },
 })

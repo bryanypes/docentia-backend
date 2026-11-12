@@ -1,37 +1,21 @@
 package com.uniautonoma.docentia.service.analisis;
 
-import com.uniautonoma.docentia.config.AnalisisComentariosProperties;
-import com.uniautonoma.docentia.config.HeteroevaluacionProperties;
 import com.uniautonoma.docentia.config.IaProperties;
 import com.uniautonoma.docentia.entity.CitaHallazgo;
 import com.uniautonoma.docentia.entity.EstadoSolicitudAnalisis;
-import com.uniautonoma.docentia.entity.FuenteComentarios;
 import com.uniautonoma.docentia.entity.Hallazgo;
 import com.uniautonoma.docentia.entity.SolicitudAnalisis;
-import com.uniautonoma.docentia.entity.TipoEtapa;
 import com.uniautonoma.docentia.entity.TipoNotificacion;
 import com.uniautonoma.docentia.repository.SolicitudAnalisisRepository;
-import com.uniautonoma.docentia.service.VentanaEtapaService;
 import com.uniautonoma.docentia.service.analisis.LectorRespuestaAnalisis.HallazgoPropuesto;
 import com.uniautonoma.docentia.service.analisis.LectorRespuestaAnalisis.RespuestaInvalidaException;
 import com.uniautonoma.docentia.service.analisis.ModeloIA.ModeloIAException;
 import com.uniautonoma.docentia.service.analisis.ModeloIA.PeticionAnalisis;
 import com.uniautonoma.docentia.service.analisis.ModeloIA.RespuestaModelo;
-import com.uniautonoma.docentia.service.analisis.ResultadosAnalisisRepositorio.ComentarioGuardado;
-import com.uniautonoma.docentia.service.analisis.local.AnalizadorComentarios.Comentario;
-import com.uniautonoma.docentia.service.analisis.local.AnalizadorComentarios.Etiquetado;
-import com.uniautonoma.docentia.service.analisis.local.AnalizadorComentarios.Salida;
-import com.uniautonoma.docentia.service.analisis.local.AnalizadorLocal;
-import com.uniautonoma.docentia.service.analisis.local.PipelineAnalisis;
-import com.uniautonoma.docentia.service.analisis.local.ResultadoAnalisis;
-import com.uniautonoma.docentia.service.analisis.local.ResultadoAnalisis.Advertencia;
 import com.uniautonoma.docentia.service.notificacion.EventoNotificacion;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationEventPublisher;
@@ -63,14 +47,8 @@ public class ProcesadorSolicitudesAnalisis {
   private static final Logger LOG = LoggerFactory.getLogger(ProcesadorSolicitudesAnalisis.class);
 
   private final SolicitudAnalisisRepository solicitudRepository;
-  private final ProveedoresComentarios proveedores;
+  private final ProveedorComentarios proveedorComentarios;
   private final PreparadorComentarios preparador;
-  private final PipelineAnalisis pipeline;
-  private final AnalizadorLocal analizador;
-  private final ResultadosAnalisisRepositorio resultados;
-  private final AnalisisComentariosProperties analisis;
-  private final HeteroevaluacionProperties heteroevaluacion;
-  private final VentanaEtapaService ventanas;
   private final InstruccionAnalisis instruccion;
   private final ModeloIA modelo;
   private final LectorRespuestaAnalisis lector;
@@ -80,14 +58,8 @@ public class ProcesadorSolicitudesAnalisis {
 
   public ProcesadorSolicitudesAnalisis(
       SolicitudAnalisisRepository solicitudRepository,
-      ProveedoresComentarios proveedores,
+      ProveedorComentarios proveedorComentarios,
       PreparadorComentarios preparador,
-      PipelineAnalisis pipeline,
-      AnalizadorLocal analizador,
-      ResultadosAnalisisRepositorio resultados,
-      AnalisisComentariosProperties analisis,
-      HeteroevaluacionProperties heteroevaluacion,
-      VentanaEtapaService ventanas,
       InstruccionAnalisis instruccion,
       ModeloIA modelo,
       LectorRespuestaAnalisis lector,
@@ -97,14 +69,8 @@ public class ProcesadorSolicitudesAnalisis {
       ApplicationEventPublisher eventos) {
     this.eventos = eventos;
     this.solicitudRepository = solicitudRepository;
-    this.proveedores = proveedores;
+    this.proveedorComentarios = proveedorComentarios;
     this.preparador = preparador;
-    this.pipeline = pipeline;
-    this.analizador = analizador;
-    this.resultados = resultados;
-    this.analisis = analisis;
-    this.heteroevaluacion = heteroevaluacion;
-    this.ventanas = ventanas;
     this.instruccion = instruccion;
     this.modelo = modelo;
     this.lector = lector;
@@ -135,12 +101,12 @@ public class ProcesadorSolicitudesAnalisis {
     }
     Long idSolicitud = tomada.get();
     try {
-      Optional<Preparado> preparado = transaccion.execute(estado -> preparar(idSolicitud));
-      if (preparado.isPresent()) {
-        Optional<Generado> generado = generar(idSolicitud, preparado.get().peticion());
+      Optional<PeticionAnalisis> peticion = transaccion.execute(estado -> preparar(idSolicitud));
+      if (peticion.isPresent()) {
+        Optional<Generado> generado = generar(idSolicitud, peticion.get());
         if (generado.isPresent()) {
           transaccion.executeWithoutResult(
-              estado -> guardarBorrador(idSolicitud, preparado.get(), generado.get()));
+              estado -> guardarBorrador(idSolicitud, peticion.get(), generado.get()));
         } else {
           marcarError(idSolicitud);
         }
@@ -170,53 +136,31 @@ public class ProcesadorSolicitudesAnalisis {
       returning id_solicitud
       """;
 
-  private Optional<Preparado> preparar(Long idSolicitud) {
+  private Optional<PeticionAnalisis> preparar(Long idSolicitud) {
     SolicitudAnalisis solicitud = solicitudRepository.findById(idSolicitud).orElseThrow();
     Long idDocente = solicitud.getDocente().getIdUsuario();
     Long idPeriodo = solicitud.getPeriodo().getIdPeriodo();
-    boolean formulario = solicitud.getFuente() == FuenteComentarios.FORMULARIO;
-    if (formulario
-        && !ventanas.haTerminado(solicitud.getPeriodo(), TipoEtapa.RECOLECCION_CALIFICACIONES)) {
-      // El servicio ya lo impide al solicitar; esto cubre una ventana reprogramada después.
-      solicitud.marcarInsuficiente(
-          0, "la recolección del formulario sigue abierta", "VENTANA_ABIERTA");
-      avisar(solicitud, TipoNotificacion.ANALISIS_INSUFICIENTE);
-      return Optional.empty();
-    }
-    int encuestas =
-        proveedores.para(solicitud.getFuente()).contarEncuestasCerradas(idDocente, idPeriodo);
-    int minimo =
-        formulario
-            ? Math.max(propiedades.minimoEncuestas(), heteroevaluacion.minimoRespuestas())
-            : propiedades.minimoEncuestas();
-    if (encuestas < minimo) {
+    int encuestas = proveedorComentarios.contarEncuestasCerradas(idDocente, idPeriodo);
+    if (encuestas < propiedades.minimoEncuestas()) {
       solicitud.marcarInsuficiente(
           encuestas,
-          "evidencia insuficiente (" + encuestas + " de " + minimo + " requeridas)",
-          "POCAS_ENCUESTAS");
+          "evidencia insuficiente ("
+              + encuestas
+              + " de "
+              + propiedades.minimoEncuestas()
+              + " requeridas)");
       avisar(solicitud, TipoNotificacion.ANALISIS_INSUFICIENTE);
       return Optional.empty();
     }
-    PreparadorComentarios.Preparados preparados =
-        preparador.preparar(solicitud, analisis.maximoComentarios());
+    PreparadorComentarios.Preparados preparados = preparador.preparar(solicitud);
     solicitud.registrarFiltrados(preparados.filtrados());
-    if (preparados.leidos() == 0) {
-      solicitud.marcarInsuficiente(
-          encuestas, "no hay comentarios abiertos para analizar", "SIN_COMENTARIOS");
-      avisar(solicitud, TipoNotificacion.ANALISIS_INSUFICIENTE);
-      return Optional.empty();
-    }
     if (preparados.enviados().isEmpty()) {
       solicitud.marcarInsuficiente(
-          encuestas,
-          "evidencia insuficiente: el filtro excluyó todos los comentarios",
-          "TODOS_EXCLUIDOS");
+          encuestas, "evidencia insuficiente: el filtro excluyó todos los comentarios");
       avisar(solicitud, TipoNotificacion.ANALISIS_INSUFICIENTE);
       return Optional.empty();
     }
-    return Optional.of(
-        new Preparado(
-            new PeticionAnalisis(instruccion.texto(), preparados.enviados()), preparados));
+    return Optional.of(new PeticionAnalisis(instruccion.texto(), preparados.enviados()));
   }
 
   /**
@@ -243,8 +187,7 @@ public class ProcesadorSolicitudesAnalisis {
     return Optional.empty();
   }
 
-  private void guardarBorrador(Long idSolicitud, Preparado preparado, Generado generado) {
-    PeticionAnalisis peticion = preparado.peticion();
+  private void guardarBorrador(Long idSolicitud, PeticionAnalisis peticion, Generado generado) {
     SolicitudAnalisis solicitud = solicitudRepository.findById(idSolicitud).orElseThrow();
     // Solo cuentan los comentarios que de verdad se enviaron: no filtrados, del docente y periodo.
     VerificadorCitas verificador = new VerificadorCitas(peticion.comentarios());
@@ -264,87 +207,15 @@ public class ProcesadorSolicitudesAnalisis {
       hallazgos.add(hallazgo);
     }
     int encuestas =
-        proveedores
-            .para(solicitud.getFuente())
-            .contarEncuestasCerradas(
-                solicitud.getDocente().getIdUsuario(), solicitud.getPeriodo().getIdPeriodo());
+        proveedorComentarios.contarEncuestasCerradas(
+            solicitud.getDocente().getIdUsuario(), solicitud.getPeriodo().getIdPeriodo());
     solicitud.completar(
         hallazgos,
         encuestas,
         peticion.comentarios().size(),
         generado.modelo(),
         instruccion.version());
-    guardarResultado(solicitud, preparado.preparados(), generado.modelo());
     avisar(solicitud, TipoNotificacion.ANALISIS_TERMINADO);
-  }
-
-  /**
-   * Resultado estructurado y copia anonimizada. Los conteos, temas y tendencias los calcula siempre
-   * el modelo local, que es determinista y verificable; si los hallazgos vienen de un modelo de
-   * lenguaje el resultado se rotula LLM y lo advierte.
-   */
-  private void guardarResultado(
-      SolicitudAnalisis solicitud,
-      PreparadorComentarios.Preparados preparados,
-      String modeloUsado) {
-    Long idDocente = solicitud.getDocente().getIdUsuario();
-    Long idPeriodo = solicitud.getPeriodo().getIdPeriodo();
-    Salida salida =
-        analizador.analizar(
-            preparados.preparacion().utiles(),
-            resultados.anterior(idDocente, idPeriodo).orElse(null));
-    ResultadoAnalisis resultado = pipeline.completar(salida.resultado(), preparados.preparacion());
-    List<Advertencia> advertencias = new ArrayList<>(resultado.advertencias());
-    if (preparados.recortado()) {
-      advertencias.add(
-          new Advertencia(
-              "LIMITE_COMENTARIOS",
-              analisis.maximoComentarios(),
-              "Se analizaron los primeros "
-                  + analisis.maximoComentarios()
-                  + " comentarios útiles en el orden de su huella."));
-    }
-    boolean llm = !"REGLAS".equals(modelo.tipo());
-    if (llm) {
-      advertencias.add(
-          new Advertencia(
-              "CONTEO_POR_REGLAS",
-              0,
-              "Los hallazgos los propuso un modelo de lenguaje; los conteos, temas y tendencias"
-                  + " los calcula el modelo local por reglas."));
-    }
-    resultado =
-        new ResultadoAnalisis(
-            llm ? "LLM" : "REGLAS",
-            llm ? modeloUsado : resultado.versionModelo(),
-            llm ? instruccion.version() : resultado.versionLexicoOPrompt(),
-            resultado.nComentarios(),
-            resultado.nExcluidos(),
-            resultado.sentimientoGlobal(),
-            resultado.temas(),
-            resultado.aspectos(),
-            resultado.tendencias(),
-            advertencias,
-            resultado.criterios(),
-            resultado.parametros());
-    Map<Long, Etiquetado> etiquetados =
-        salida.etiquetados().stream()
-            .collect(Collectors.toMap(Etiquetado::id, Function.identity(), (a, b) -> a));
-    List<ComentarioGuardado> copia = new ArrayList<>();
-    int indice = 1;
-    for (Comentario comentario : preparados.preparacion().utiles()) {
-      Etiquetado etiquetado = etiquetados.get(comentario.id());
-      copia.add(
-          new ComentarioGuardado(
-              indice++,
-              comentario.id(),
-              PipelineAnalisis.hash(comentario.texto()),
-              comentario.texto(),
-              etiquetado == null ? "NEUTRO" : etiquetado.sentimiento(),
-              etiquetado == null ? List.of() : etiquetado.etiquetas()));
-    }
-    resultados.guardar(
-        solicitud.getIdSolicitud(), idDocente, idPeriodo, solicitud.getFuente(), resultado, copia);
   }
 
   /** Avisa a quien pidió el análisis, que por construcción está en la facultad del docente. */
@@ -376,7 +247,4 @@ public class ProcesadorSolicitudesAnalisis {
   }
 
   private record Generado(List<HallazgoPropuesto> hallazgos, String modelo) {}
-
-  private record Preparado(
-      PeticionAnalisis peticion, PreparadorComentarios.Preparados preparados) {}
 }

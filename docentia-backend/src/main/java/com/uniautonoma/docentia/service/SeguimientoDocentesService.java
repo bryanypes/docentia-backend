@@ -5,8 +5,6 @@ import com.uniautonoma.docentia.dto.PromedioPonderadoResponse;
 import com.uniautonoma.docentia.dto.SeguimientoDocentesResponse;
 import com.uniautonoma.docentia.dto.SeguimientoDocentesResponse.DocenteConPromedio;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
-import com.uniautonoma.docentia.exception.RecursoNoEncontradoException;
-import com.uniautonoma.docentia.repository.PeriodoAcademicoRepository;
 import com.uniautonoma.docentia.security.UsuarioSesion;
 import java.util.Map;
 import java.util.Optional;
@@ -21,17 +19,14 @@ public class SeguimientoDocentesService {
   private final DocenteService docenteService;
   private final PeriodoAcademicoService periodoService;
   private final PromedioService promedioService;
-  private final PeriodoAcademicoRepository periodoRepository;
 
   public SeguimientoDocentesService(
       DocenteService docenteService,
       PeriodoAcademicoService periodoService,
-      PromedioService promedioService,
-      PeriodoAcademicoRepository periodoRepository) {
+      PromedioService promedioService) {
     this.docenteService = docenteService;
     this.periodoService = periodoService;
     this.promedioService = promedioService;
-    this.periodoRepository = periodoRepository;
   }
 
   /**
@@ -39,22 +34,11 @@ public class SeguimientoDocentesService {
    * ponderado y las fuentes pendientes, nunca las notas por fuente.
    *
    * @param idFacultad facultad por la que filtra el vicerrector; se ignora para el coordinador
-   * @param idPeriodo periodo consultado, o nulo para el activo
-   * @param idPrograma programa (carrera) por el que se filtra, o nulo para todos los del alcance
    * @param sesion usuario que consulta
-   * @return periodo y docentes; sin periodo (ni pedido ni activo), ambos sin promedio
-   * @throws RecursoNoEncontradoException si el periodo pedido no existe
+   * @return periodo activo y docentes; sin periodo activo, ambos sin promedio
    */
-  public SeguimientoDocentesResponse listar(
-      Long idFacultad, Long idPeriodo, Long idPrograma, UsuarioSesion sesion) {
-    Optional<PeriodoAcademico> periodo =
-        idPeriodo == null
-            ? periodoService.buscarPeriodoActivo()
-            : Optional.of(
-                periodoRepository
-                    .findById(idPeriodo)
-                    .orElseThrow(
-                        () -> new RecursoNoEncontradoException("Periodo académico no encontrado")));
+  public SeguimientoDocentesResponse listar(Long idFacultad, UsuarioSesion sesion) {
+    Optional<PeriodoAcademico> periodo = periodoService.buscarPeriodoActivo();
     Map<Long, PromedioPonderadoResponse> promedios =
         periodo
             .map(activo -> promedioService.obtenerPromedios(activo.getIdPeriodo()))
@@ -62,7 +46,6 @@ public class SeguimientoDocentesService {
     return new SeguimientoDocentesResponse(
         periodo.map(PeriodoResumenResponse::desde).orElse(null),
         docenteService.listarDocentes(idFacultad, sesion).stream()
-            .filter(docente -> idPrograma == null || idPrograma.equals(docente.idPrograma()))
             .map(
                 docente ->
                     new DocenteConPromedio(
