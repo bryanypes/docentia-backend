@@ -14,7 +14,6 @@ import { useSesion } from '../../auth/sesionContext.js'
 import { obtenerPendientesCoevaluacion } from '../../formularios/services/formulariosService.js'
 import { TablaCobertura } from '../../heteroevaluacion/components/TablaCobertura.jsx'
 import { obtenerCobertura } from '../../heteroevaluacion/services/matriculaService.js'
-import { listarFacultades } from '../../facultades/services/facultadesService.js'
 import { listarPeriodos } from '../../periodos/services/periodosService.js'
 import { obtenerPanelProgramas } from '../services/kpisService.js'
 import '../components/PanelesSeguimiento.css'
@@ -135,7 +134,6 @@ export default function PanelProgramas() {
   const periodoId = filtros.periodo
   const facultadId = filtros.facultad
   const periodos = useFetch(listarPeriodos)
-  const facultades = useFetch(() => (esVicerrector ? listarFacultades() : Promise.resolve([])), [esVicerrector])
   const cargar = useCallback(() => obtenerPanelProgramas({ periodoId, facultadId }), [periodoId, facultadId])
   const panel = useFetch(cargar, [cargar])
   const paginacionProgramas = usePaginacion(panel.datos?.programas ?? [], {
@@ -167,23 +165,6 @@ export default function PanelProgramas() {
               ))}
             </select>
           </Campo>
-          {esVicerrector && (
-            <Campo id="facultadPanel" etiqueta="Facultad">
-              <select
-                id="facultadPanel"
-                className="campo__control"
-                value={facultadId}
-                onChange={(e) => actualizarFiltros({ facultad: e.target.value })}
-              >
-                <option value="">Toda la universidad</option>
-                {(facultades.datos ?? []).map((f) => (
-                  <option key={f.idFacultad} value={f.idFacultad}>
-                    {f.nombre}
-                  </option>
-                ))}
-              </select>
-            </Campo>
-          )}
         </div>
         {panel.cargando && !panel.datos && <Cargando texto="Cargando el panel" bloques={2} />}
         {panel.error && (
@@ -205,7 +186,7 @@ export default function PanelProgramas() {
             )}
             <div className="rejilla">
               {paginacionProgramas.visibles.map((fila) => (
-                <Panel key={fila.idPrograma} titulo={fila.programa} descripcion={fila.facultad}>
+                <Panel key={fila.idPrograma} titulo={fila.programa}>
                   <Fila fila={fila} />
                 </Panel>
               ))}

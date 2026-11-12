@@ -176,7 +176,6 @@ export default function ExpedienteDocente() {
             <dl>
               <div><dt>Docente</dt><dd>{docente.nombreCompleto}</dd></div>
               <div><dt>Programa</dt><dd>{docente.nombrePrograma}</dd></div>
-              <div><dt>Facultad</dt><dd>{docente.nombreFacultad}</dd></div>
               <div><dt>Periodo</dt><dd>{periodo?.nombre ?? 'Sin periodo activo'}</dd></div>
               <div><dt>Nota final</dt><dd>{formatearNota(promedio?.valor)}</dd></div>
               <div><dt>Clasificación</dt><dd><EtiquetaNivel promedio={promedio} /></dd></div>

@@ -230,19 +230,6 @@ export default function Estadisticas() {
                 onChange={(e) => fijar('busqueda', e.target.value)}
               />
             </label>
-            {esVicerrector && (
-              <label className="estadisticas__campo">
-                <span>Facultad</span>
-                <select className="campo__control" value={filtros.facultad} onChange={(e) => fijar('facultad', e.target.value)}>
-                  <option value="">Todas</option>
-                  {(facultades.datos ?? []).map((f) => (
-                    <option key={f.idFacultad} value={f.idFacultad}>
-                      {f.nombre}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            )}
             <label className="estadisticas__campo">
               <span>Programa</span>
               <select className="campo__control" value={filtros.programa} onChange={(e) => fijar('programa', e.target.value)}>

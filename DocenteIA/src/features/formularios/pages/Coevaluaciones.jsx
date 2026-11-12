@@ -49,7 +49,7 @@ export default function Coevaluaciones() {
       <Encabezado
         miga="Coordinación · Coevaluaciones"
         titulo="Coevaluaciones"
-        subtitulo={datos ? `Periodo ${datos.periodo.nombre}. ${datos.pendientes} pendientes.` : 'Docentes de tu facultad.'}
+        subtitulo={datos ? `Periodo ${datos.periodo.nombre}. ${datos.pendientes} pendientes.` : 'Docentes de tus programas.'}
       />
       <div className="pagina">
         {cargando && !datos && <Cargando texto="Cargando coevaluaciones" bloques={1} />}
@@ -62,10 +62,10 @@ export default function Coevaluaciones() {
           <EstadoVista titulo="No hay un periodo activo" mensaje="La vicerrectoría debe activar uno." />
         )}
         {datos?.docentes.length === 0 && (
-          <EstadoVista titulo="Sin docentes" mensaje="Tu facultad no tiene docentes activos." />
+          <EstadoVista titulo="Sin docentes" mensaje="Tus programas no tienen docentes activos." />
         )}
         {datos?.docentes.length > 0 && (
-          <Panel titulo="Docentes de la facultad" icono={ClipboardList}>
+          <Panel titulo="Docentes de tus programas" icono={ClipboardList}>
             <div className="coevaluaciones__filtros" role="search" aria-label="Filtrar coevaluaciones">
               <span className="coevaluaciones__filtros-rotulo">
                 <SlidersHorizontal size={16} aria-hidden="true" />

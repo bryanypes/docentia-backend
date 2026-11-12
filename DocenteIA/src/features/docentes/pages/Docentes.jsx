@@ -13,7 +13,6 @@ import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { useFiltrosUrl, usePaginacion } from '../../../shared/hooks/usePaginacion.js'
 import { formatearNota, iniciales, listarFuentes, normalizarTexto } from '../../../shared/utils/formatters.js'
 import { useSesion } from '../../auth/sesionContext.js'
-import { listarFacultades } from '../../facultades/services/facultadesService.js'
 import { ChipProceso } from '../../proceso/components/ChipProceso.jsx'
 import { ESTADOS_PROCESO, ORDEN_ESTADOS } from '../../proceso/estados.js'
 import { listarProcesos } from '../../proceso/services/procesoService.js'
@@ -98,7 +97,6 @@ export default function Docentes() {
     () => new Map((procesos.datos ?? []).map((p) => [p.docente.idDocente, p])),
     [procesos.datos],
   )
-  const facultades = useFetch(() => (esVicerrector ? listarFacultades() : Promise.resolve([])), [esVicerrector])
 
   const periodo = seguimiento.datos?.periodo ?? null
   const lista = useMemo(() => seguimiento.datos?.docentes ?? [], [seguimiento.datos])
@@ -137,14 +135,14 @@ export default function Docentes() {
     })
   }
 
-  const alcance = esVicerrector ? 'toda la universidad' : (lista[0]?.docente.nombreFacultad ?? 'tu facultad')
+  const alcance = esVicerrector ? 'toda la universidad' : 'tus programas'
   const hayFiltros = Boolean(busqueda || programa || estado || nivel || estadoProceso || idFacultad)
 
   return (
     <>
       <Encabezado
         miga={`${esVicerrector ? 'Vicerrectoría' : 'Coordinación'} · Docentes`}
-        titulo={esVicerrector ? 'Docentes de la universidad' : 'Docentes de la facultad'}
+        titulo={esVicerrector ? 'Docentes de la universidad' : 'Docentes de tus programas'}
         subtitulo="Filtra y abre el expediente de cada docente. La calificación final siempre la firma un humano."
       />
 
@@ -196,25 +194,6 @@ export default function Docentes() {
               placeholder="Buscar docente, correo o programa"
             />
           </label>
-
-          {esVicerrector && (
-            <label className="docentes__selector">
-              <span className="docentes__etiqueta">Facultad</span>
-              <select
-                value={idFacultad}
-                onChange={(e) => {
-                  actualizarFiltros({ facultad: e.target.value, programa: TODOS })
-                }}
-              >
-                <option value={TODOS}>Todas</option>
-                {(facultades.datos ?? []).map((f) => (
-                  <option key={f.idFacultad} value={f.idFacultad}>
-                    {f.nombre}
-                  </option>
-                ))}
-              </select>
-            </label>
-          )}
 
           <label className="docentes__selector">
             <span className="docentes__etiqueta">Programa</span>
@@ -292,7 +271,7 @@ export default function Docentes() {
         {!seguimiento.cargando && !seguimiento.error && lista.length === 0 && (
           <EstadoVista
             titulo="No hay docentes en tu alcance"
-            mensaje="Cuando se registren docentes activos en los programas de la facultad aparecerán aquí."
+            mensaje="Cuando se registren docentes activos en tus programas aparecerán aquí."
           />
         )}
 
@@ -340,7 +319,6 @@ export default function Docentes() {
                           </td>
                           <td data-etiqueta="Programa">
                             {d.nombrePrograma}
-                            {esVicerrector && <span className="docentes__correo">{d.nombreFacultad}</span>}
                           </td>
                           <td data-etiqueta="Evaluación">
                             <EstadoEvaluacion promedio={promedio} faltaMia={faltaMia} />

@@ -201,7 +201,7 @@ export default function MiCita() {
       <Encabezado
         miga="Docente · Mi cita"
         titulo="Mi cita de retroalimentación"
-        subtitulo="Elige en el calendario un horario de 30 minutos con la coordinación de tu facultad."
+        subtitulo="Elige en el calendario un horario de 30 minutos con la coordinación de tu programa."
       />
       <div className="pagina">
         <AvisoEtapaCerrada ventana={ventana} accion="Reservar una cita" />

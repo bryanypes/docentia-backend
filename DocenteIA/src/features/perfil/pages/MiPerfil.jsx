@@ -85,7 +85,11 @@ export default function MiPerfil() {
               <dl className="perfil__lista">
                 <Dato icono={Mail} rotulo="Correo institucional" valor={datos.correo} />
                 <Dato icono={IdCard} rotulo="Código" valor={datos.codigo} />
-                <Dato icono={Building2} rotulo="Facultad" valor={datos.nombreFacultad ?? (usuario.rol === 'VICERRECTOR' ? 'Toda la universidad' : null)} />
+                <Dato
+                  icono={Building2}
+                  rotulo="Alcance"
+                  valor={usuario.rol === 'VICERRECTOR' ? 'Toda la universidad' : datos.nombrePrograma ? null : datos.nombreFacultad ? 'Los programas a tu cargo' : null}
+                />
                 <Dato icono={BookOpen} rotulo="Programa" valor={datos.nombrePrograma} />
                 <Dato icono={CalendarDays} rotulo="En la plataforma desde" valor={formatearFecha(datos.fechaCreacion)} />
               </dl>
