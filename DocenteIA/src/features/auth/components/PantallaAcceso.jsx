@@ -25,7 +25,7 @@ export function PantallaAcceso({ avatar, estadoAvatar, children }) {
           <p className="acceso__nombre">DOCENTIA</p>
           <img
             className="acceso__logo"
-            src="/brand/logo-uniautonoma.png"
+            src={`${import.meta.env.BASE_URL}brand/logo-uniautonoma.png`}
             alt="Universidad Autónoma del Cauca"
           />
           <p className="acceso__institucion">Evaluación docente institucional</p>
