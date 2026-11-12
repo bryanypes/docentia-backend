@@ -207,7 +207,7 @@ export function PanelAtencion({ analisis }) {
   )
 }
 
-/** Promedio de cada facultad (vicerrectoría) o programa (coordinación), sobre 5. */
+/** Promedio de cada programa, sobre 5. */
 export function PanelPorGrupo({ analisis, agrupacion }) {
   const { porGrupo } = analisis
   const nombre = agrupacion === 'facultad' ? 'facultad' : 'programa'
