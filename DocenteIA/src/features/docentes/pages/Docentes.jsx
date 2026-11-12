@@ -1,14 +1,16 @@
 import { RefreshCw, Search, SlidersHorizontal, X } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import robotSenala from '../../../assets/ilustraciones/robot-senala.svg'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { BotonAccion } from '../../../shared/components/ui/BotonAccion/BotonAccion.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { EtiquetaNivel } from '../../../shared/components/ui/EtiquetaNivel/EtiquetaNivel.jsx'
+import { Paginacion } from '../../../shared/components/ui/Paginacion/Paginacion.jsx'
 import { ETIQUETA_FUENTE, FUENTE_DEL_ROL, NIVELES, ROLES } from '../../../shared/constants/dominio.js'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
+import { useFiltrosUrl, usePaginacion } from '../../../shared/hooks/usePaginacion.js'
 import { formatearNota, iniciales, listarFuentes, normalizarTexto } from '../../../shared/utils/formatters.js'
 import { useSesion } from '../../auth/sesionContext.js'
 import { listarFacultades } from '../../facultades/services/facultadesService.js'
@@ -19,6 +21,15 @@ import { listarSeguimientoDocentes } from '../services/docentesService.js'
 import './Docentes.css'
 
 const TODOS = ''
+const FILTROS_PREDETERMINADOS = {
+  facultad: '',
+  programa: '',
+  estado: '',
+  busqueda: '',
+  nivel: '',
+  orden: 'desc',
+  proceso: '',
+}
 
 /** Filtros por estado de la evaluación en el periodo activo. */
 const ESTADOS = {
@@ -69,17 +80,14 @@ export default function Docentes() {
   const esVicerrector = usuario.rol === ROLES.VICERRECTOR
   const miFuente = FUENTE_DEL_ROL[usuario.rol]
 
-  const [idFacultad, setIdFacultad] = useState(TODOS)
-  const [programa, setPrograma] = useState(TODOS)
-  // El tablero enlaza aquí con ?estado=FALTA_MI_NOTA para abrir la lista ya filtrada.
-  const [parametros] = useSearchParams()
-  const [estado, setEstado] = useState(() =>
-    Object.values(ESTADOS).includes(parametros.get('estado')) ? parametros.get('estado') : TODOS,
-  )
-  const [busqueda, setBusqueda] = useState('')
-  const [nivel, setNivel] = useState(TODOS)
-  const [ascendente, setAscendente] = useState(false)
-  const [estadoProceso, setEstadoProceso] = useState(TODOS)
+  const [filtros, actualizarFiltros] = useFiltrosUrl(FILTROS_PREDETERMINADOS)
+  const idFacultad = filtros.facultad
+  const programa = filtros.programa
+  const estado = Object.values(ESTADOS).includes(filtros.estado) ? filtros.estado : TODOS
+  const busqueda = filtros.busqueda
+  const nivel = filtros.nivel
+  const ascendente = filtros.orden === 'asc'
+  const estadoProceso = filtros.proceso
 
   const cargarDocentes = useCallback(() => listarSeguimientoDocentes(idFacultad || null), [idFacultad])
   const seguimiento = useFetch(cargarDocentes, [cargarDocentes])
@@ -115,13 +123,18 @@ export default function Docentes() {
       .sort((a, b) => compararPorPuntaje(a, b, ascendente))
   }, [lista, programa, estado, nivel, ascendente, estadoProceso, procesoPorDocente, miFuente, busqueda])
 
+  const paginacion = usePaginacion(filas)
+
   function limpiarFiltros() {
-    setBusqueda('')
-    setPrograma(TODOS)
-    setEstado(TODOS)
-    setNivel(TODOS)
-    setEstadoProceso(TODOS)
-    setIdFacultad(TODOS)
+    actualizarFiltros({
+      facultad: TODOS,
+      programa: TODOS,
+      estado: TODOS,
+      busqueda: TODOS,
+      nivel: TODOS,
+      orden: 'desc',
+      proceso: TODOS,
+    })
   }
 
   const alcance = esVicerrector ? 'toda la universidad' : (lista[0]?.docente.nombreFacultad ?? 'tu facultad')
@@ -145,7 +158,7 @@ export default function Docentes() {
               </strong>{' '}
               de {ETIQUETA_FUENTE[miFuente]?.toLowerCase()} en {periodo.nombre}.
             </span>
-            <Boton variante="contorno" onClick={() => setEstado(ESTADOS.FALTA_MI_NOTA)}>
+            <Boton variante="contorno" onClick={() => actualizarFiltros({ estado: ESTADOS.FALTA_MI_NOTA })}>
               Ver solo esos
             </Boton>
           </div>
@@ -179,7 +192,7 @@ export default function Docentes() {
             <input
               type="search"
               value={busqueda}
-              onChange={(e) => setBusqueda(e.target.value)}
+              onChange={(e) => actualizarFiltros({ busqueda: e.target.value })}
               placeholder="Buscar docente, correo o programa"
             />
           </label>
@@ -190,8 +203,7 @@ export default function Docentes() {
               <select
                 value={idFacultad}
                 onChange={(e) => {
-                  setIdFacultad(e.target.value)
-                  setPrograma(TODOS)
+                  actualizarFiltros({ facultad: e.target.value, programa: TODOS })
                 }}
               >
                 <option value={TODOS}>Todas</option>
@@ -206,7 +218,7 @@ export default function Docentes() {
 
           <label className="docentes__selector">
             <span className="docentes__etiqueta">Programa</span>
-            <select value={programa} onChange={(e) => setPrograma(e.target.value)}>
+            <select value={programa} onChange={(e) => actualizarFiltros({ programa: e.target.value })}>
               <option value={TODOS}>Todos</option>
               {programas.map((p) => (
                 <option key={p} value={p}>
@@ -218,7 +230,7 @@ export default function Docentes() {
 
           <label className="docentes__selector">
             <span className="docentes__etiqueta">Evaluación</span>
-            <select value={estado} onChange={(e) => setEstado(e.target.value)} disabled={!periodo}>
+            <select value={estado} onChange={(e) => actualizarFiltros({ estado: e.target.value })} disabled={!periodo}>
               <option value={TODOS}>Todas</option>
               <option value={ESTADOS.FALTA_MI_NOTA}>Falta mi calificación</option>
               <option value={ESTADOS.INCOMPLETOS}>Incompletas</option>
@@ -228,7 +240,7 @@ export default function Docentes() {
 
           <label className="docentes__selector">
             <span className="docentes__etiqueta">Clasificación</span>
-            <select value={nivel} onChange={(e) => setNivel(e.target.value)} disabled={!periodo}>
+            <select value={nivel} onChange={(e) => actualizarFiltros({ nivel: e.target.value })} disabled={!periodo}>
               <option value={TODOS}>Todas</option>
               {NIVELES.map((n) => (
                 <option key={n.codigo} value={n.codigo}>
@@ -240,7 +252,7 @@ export default function Docentes() {
 
           <label className="docentes__selector">
             <span className="docentes__etiqueta">Orden</span>
-            <select value={ascendente ? 'asc' : 'desc'} onChange={(e) => setAscendente(e.target.value === 'asc')}>
+            <select value={filtros.orden} onChange={(e) => actualizarFiltros({ orden: e.target.value })}>
               <option value="desc">Puntaje: mayor a menor</option>
               <option value="asc">Puntaje: menor a mayor</option>
             </select>
@@ -250,7 +262,7 @@ export default function Docentes() {
             <span className="docentes__etiqueta">Proceso</span>
             <select
               value={estadoProceso}
-              onChange={(e) => setEstadoProceso(e.target.value)}
+              onChange={(e) => actualizarFiltros({ proceso: e.target.value })}
               disabled={!periodo || !procesos.datos}
             >
               <option value={TODOS}>Todos</option>
@@ -305,7 +317,7 @@ export default function Docentes() {
                     </tr>
                   </thead>
                   <tbody>
-                    {filas.map(({ docente: d, promedio }) => {
+                    {paginacion.visibles.map(({ docente: d, promedio }) => {
                       const faltaMia = cumpleEstado(promedio, ESTADOS.FALTA_MI_NOTA, miFuente)
                       return (
                         <tr key={d.idDocente} onClick={() => navegar(`/docentes/${d.idDocente}`)}>
@@ -370,6 +382,7 @@ export default function Docentes() {
                 )}
               </EstadoVista>
             )}
+            {filas.length > 0 && <Paginacion {...paginacion} etiqueta="docentes" />}
           </div>
         )}
         </section>

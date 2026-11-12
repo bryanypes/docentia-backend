@@ -1,12 +1,15 @@
 import { RefreshCw, ScrollText } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { useCallback, useEffect } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import { api } from '../../../services/api.js'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { Campo } from '../../../shared/components/ui/Campo/Campo.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
+import { Paginacion } from '../../../shared/components/ui/Paginacion/Paginacion.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
+import { TAMANOS, useFiltrosUrl } from '../../../shared/hooks/usePaginacion.js'
 import { formatearFechaHora } from '../../../shared/utils/formatters.js'
 import '../../actas/components/PanelActa.css'
 import '../../kpis/pages/PanelProgramas.css'
@@ -29,8 +32,10 @@ const ACCIONES = {
   IMPORTACION_MATRICULA: 'Importación de matrícula',
 }
 
-function consultar({ desde, hasta, accion, usuario, pagina }) {
-  const consulta = new URLSearchParams({ page: pagina, size: 20 })
+const FILTROS_PREDETERMINADOS = { desde: '', hasta: '', accion: '', usuario: '' }
+
+function consultar({ desde, hasta, accion, usuario, pagina, tamano }) {
+  const consulta = new URLSearchParams({ page: pagina, size: tamano })
   if (desde) consulta.set('desde', desde)
   if (hasta) consulta.set('hasta', hasta)
   if (accion) consulta.set('accion', accion)
@@ -40,15 +45,52 @@ function consultar({ desde, hasta, accion, usuario, pagina }) {
 
 /** Vista de solo lectura para Vicerrectoría. */
 export default function Auditoria() {
-  const [filtros, setFiltros] = useState({ desde: '', hasta: '', accion: '', usuario: '' })
-  const [pagina, setPagina] = useState(0)
-  const cargar = useCallback(() => consultar({ ...filtros, pagina }), [filtros, pagina])
+  const [filtros, actualizarFiltros] = useFiltrosUrl(FILTROS_PREDETERMINADOS)
+  const [parametros, setParametros] = useSearchParams()
+  const pagina = Math.max(0, Number.parseInt(parametros.get('pagina') ?? '1', 10) - 1 || 0)
+  const tamanoSolicitado = Number(parametros.get('tamano'))
+  const tamano = TAMANOS.includes(tamanoSolicitado) ? tamanoSolicitado : TAMANOS[0]
+  const filtrosClave = JSON.stringify(filtros)
+  const cargar = useCallback(
+    () => consultar({ ...JSON.parse(filtrosClave), pagina, tamano }),
+    [filtrosClave, pagina, tamano],
+  )
   const registros = useFetch(cargar, [cargar])
   const datos = registros.datos
+  const paginaActual = Math.min(pagina, Math.max(0, (datos?.totalPaginas ?? 1) - 1))
+
+  const actualizarPagina = useCallback((cambios) => {
+    setParametros(
+      (actuales) => {
+        const nuevos = new URLSearchParams(actuales)
+        if ('pagina' in cambios) {
+          if (cambios.pagina == null || cambios.pagina === 1) nuevos.delete('pagina')
+          else nuevos.set('pagina', String(cambios.pagina))
+        }
+        if ('tamano' in cambios) {
+          if (cambios.tamano == null || cambios.tamano === TAMANOS[0]) nuevos.delete('tamano')
+          else nuevos.set('tamano', String(cambios.tamano))
+        }
+        return nuevos
+      },
+      { replace: true },
+    )
+  }, [setParametros])
+
+  useEffect(() => {
+    if (!datos) return
+    const paginaEnUrl = parametros.get('pagina')
+    if (pagina !== paginaActual || (paginaEnUrl && Number(paginaEnUrl) !== paginaActual + 1)) {
+      actualizarPagina({ pagina: paginaActual + 1 })
+      return
+    }
+    if (parametros.has('tamano') && !TAMANOS.includes(tamanoSolicitado)) {
+      actualizarPagina({ tamano: TAMANOS[0] })
+    }
+  }, [actualizarPagina, datos, pagina, paginaActual, parametros, tamanoSolicitado])
 
   function cambiar(campo, valor) {
-    setPagina(0)
-    setFiltros((actuales) => ({ ...actuales, [campo]: valor }))
+    actualizarFiltros({ [campo]: valor })
   }
 
   return (
@@ -113,17 +155,17 @@ export default function Auditoria() {
                 </tbody>
               </table>
             </div>
-            <div className="notificaciones__paginas">
-              <Boton variante="contorno" disabled={pagina === 0} onClick={() => setPagina((p) => p - 1)}>
-                Anterior
-              </Boton>
-              <span>
-                Página {pagina + 1} de {Math.max(datos.totalPaginas, 1)}
-              </span>
-              <Boton variante="contorno" disabled={pagina + 1 >= datos.totalPaginas} onClick={() => setPagina((p) => p + 1)}>
-                Siguiente
-              </Boton>
-            </div>
+            <Paginacion
+              pagina={paginaActual + 1}
+              paginas={Math.max(datos.totalPaginas, 1)}
+              tamano={tamano}
+              total={datos.totalElementos}
+              desde={datos.totalElementos === 0 ? 0 : paginaActual * tamano + 1}
+              hasta={Math.min(datos.totalElementos, (paginaActual + 1) * tamano)}
+              irA={(siguiente) => actualizarPagina({ pagina: siguiente })}
+              cambiarTamano={(siguiente) => actualizarPagina({ tamano: siguiente, pagina: null })}
+              etiqueta="registros de auditoría"
+            />
           </Panel>
         )}
       </div>

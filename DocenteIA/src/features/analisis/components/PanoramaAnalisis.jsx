@@ -1,10 +1,12 @@
 import { BadgeCheck, Brain, Filter, MessagesSquare, RefreshCw, ShieldAlert, Sparkles, TrendingUp } from 'lucide-react'
-import { useCallback, useMemo, useState } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { BotonAccion } from '../../../shared/components/ui/BotonAccion/BotonAccion.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
+import { Paginacion } from '../../../shared/components/ui/Paginacion/Paginacion.jsx'
+import { useFiltrosUrl, usePaginacion } from '../../../shared/hooks/usePaginacion.js'
 import { normalizarTexto } from '../../../shared/utils/formatters.js'
 import { obtenerPanorama } from '../services/analisisService.js'
 import { MensajeIA } from './DocenteIA.jsx'
@@ -50,8 +52,8 @@ const pct = (parte, total) => (total ? Math.round((parte / total) * 100) : 0)
 export function PanoramaAnalisis({ periodoId, onElegirDocente }) {
   const cargar = useCallback(() => obtenerPanorama(periodoId), [periodoId])
   const panorama = useFetch(cargar, [cargar])
-  const [filtroEtapa, setFiltroEtapa] = useState('')
-  const [busqueda, setBusqueda] = useState('')
+  const [filtros, actualizarFiltros] = useFiltrosUrl({ etapa: '', busqueda: '' })
+  const { etapa: filtroEtapa, busqueda } = filtros
 
   const filas = useMemo(() => (panorama.datos?.docentes ?? []).map((f) => ({ ...f, etapa: etapa(f) })), [panorama.datos])
   const visibles = useMemo(() => {
@@ -62,6 +64,7 @@ export function PanoramaAnalisis({ periodoId, onElegirDocente }) {
         (!termino || normalizarTexto(f.docente.nombreCompleto).includes(termino)),
     )
   }, [filas, filtroEtapa, busqueda])
+  const paginacion = usePaginacion(visibles)
 
   if (panorama.cargando && !panorama.datos) return <Cargando texto="Calculando el panorama del análisis" bloques={2} />
   if (panorama.error) {
@@ -121,7 +124,7 @@ export function PanoramaAnalisis({ periodoId, onElegirDocente }) {
                   type="button"
                   className={`panorama__etapa${filtroEtapa === e.clave ? ' panorama__etapa--activa' : ''}`}
                   aria-pressed={filtroEtapa === e.clave}
-                  onClick={() => setFiltroEtapa((actual) => (actual === e.clave ? '' : e.clave))}
+                  onClick={() => actualizarFiltros({ etapa: filtroEtapa === e.clave ? '' : e.clave })}
                 >
                   <span>{e.texto}</span>
                   <span className="panorama__riel" aria-hidden="true">
@@ -193,7 +196,7 @@ export function PanoramaAnalisis({ periodoId, onElegirDocente }) {
         icono={Brain}
         acciones={
           filtroEtapa ? (
-            <Boton variante="enlace" onClick={() => setFiltroEtapa('')}>
+            <Boton variante="enlace" onClick={() => actualizarFiltros({ etapa: '' })}>
               Quitar filtro
             </Boton>
           ) : null
@@ -201,10 +204,16 @@ export function PanoramaAnalisis({ periodoId, onElegirDocente }) {
       >
         <label className="panorama__buscador">
           <span className="solo-lectores">Buscar docente</span>
-          <input type="search" className="campo__control" placeholder="Buscar docente" value={busqueda} onChange={(e) => setBusqueda(e.target.value)} />
+          <input
+            type="search"
+            className="campo__control"
+            placeholder="Buscar docente"
+            value={busqueda}
+            onChange={(e) => actualizarFiltros({ busqueda: e.target.value })}
+          />
         </label>
         <ul className="panorama__docentes">
-          {visibles.map((f) => (
+          {paginacion.visibles.map((f) => (
             <li key={f.docente.idDocente}>
               <div className="panorama__docente">
                 <strong>{f.docente.nombreCompleto}</strong>
@@ -233,6 +242,7 @@ export function PanoramaAnalisis({ periodoId, onElegirDocente }) {
           ))}
           {visibles.length === 0 && <li className="campo__ayuda">Ningún docente coincide.</li>}
         </ul>
+        <Paginacion {...paginacion} etiqueta="análisis por docente" />
       </Panel>
     </div>
   )

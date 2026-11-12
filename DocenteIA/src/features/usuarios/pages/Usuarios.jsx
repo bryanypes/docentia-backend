@@ -6,10 +6,12 @@ import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { BotonAccion } from '../../../shared/components/ui/BotonAccion/BotonAccion.jsx'
 import { Modal } from '../../../shared/components/ui/Modal/Modal.jsx'
+import { Paginacion } from '../../../shared/components/ui/Paginacion/Paginacion.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { MensajeNavegacion } from '../../../shared/components/ui/MensajeNavegacion/MensajeNavegacion.jsx'
 import { ETIQUETA_ROL, ROLES } from '../../../shared/constants/dominio.js'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
+import { useFiltrosUrl, usePaginacion } from '../../../shared/hooks/usePaginacion.js'
 import { iniciales, normalizarTexto } from '../../../shared/utils/formatters.js'
 import { useSesion } from '../../auth/sesionContext.js'
 import { cambiarEstadoUsuario, listarUsuarios } from '../services/usuariosService.js'
@@ -17,8 +19,7 @@ import './Usuarios.css'
 import { useAvisos } from '../../../shared/components/ui/Avisos/avisosContext.js'
 
 const TODOS = ''
-// Usuarios que se muestran de entrada y en cada «Mostrar más».
-const TANDA = 20
+const FILTROS_PREDETERMINADOS = { rol: '', busqueda: '' }
 
 /** Facultad y programa al que está vinculado el usuario según su rol. */
 function vinculo(usuario) {
@@ -35,10 +36,10 @@ export default function Usuarios() {
   const { confirmar } = useAvisos()
   const navegar = useNavigate()
   const { usuario: sesion } = useSesion()
-  const [rol, setRol] = useState(TODOS)
   const [viendo, setViendo] = useState(null)
-  const [busqueda, setBusqueda] = useState('')
-  const [mostrar, setMostrar] = useState(TANDA)
+  const [filtros, actualizarFiltros] = useFiltrosUrl(FILTROS_PREDETERMINADOS)
+  const rol = filtros.rol
+  const busqueda = filtros.busqueda
   // Usuarios cuyo estado cambió aquí: se muestran con la respuesta del backend sin recargar la lista.
   const [actualizados, setActualizados] = useState({})
   const [cambiando, setCambiando] = useState(null)
@@ -58,6 +59,7 @@ export default function Usuarios() {
       normalizarTexto(`${u.nombreCompleto} ${u.correo} ${u.nombrePrograma ?? ''} ${u.nombreFacultad ?? ''}`).includes(termino),
     )
   }, [lista, busqueda])
+  const paginacion = usePaginacion(filas)
 
   async function alternarEstado(u) {
     const activar = !u.esActivo
@@ -111,19 +113,17 @@ export default function Usuarios() {
             <input
               type="search"
               value={busqueda}
-              onChange={(e) => {
-                setBusqueda(e.target.value)
-                setMostrar(TANDA)
-              }}
+              onChange={(e) => actualizarFiltros({ busqueda: e.target.value })}
               placeholder="Buscar por nombre, correo, programa o facultad"
             />
           </label>
           <label className="usuarios__filtro">
             <span className="usuarios__filtro-etiqueta">Rol</span>
-            <select className="campo__control usuarios__selector" value={rol} onChange={(e) => {
-                setRol(e.target.value)
-                setMostrar(TANDA)
-              }}>
+            <select
+              className="campo__control usuarios__selector"
+              value={rol}
+              onChange={(e) => actualizarFiltros({ rol: e.target.value })}
+            >
               <option value={TODOS}>Todos los roles</option>
               {Object.values(ROLES).map((r) => (
                 <option key={r} value={r}>
@@ -168,7 +168,7 @@ export default function Usuarios() {
                 </tr>
               </thead>
               <tbody>
-                {filas.slice(0, mostrar).map((u) => {
+                {paginacion.visibles.map((u) => {
                   const { principal, secundario } = vinculo(u)
                   const esPropio = u.idUsuario === sesion.idUsuario
                   return (
@@ -236,22 +236,7 @@ export default function Usuarios() {
             </table>
           </div>
         )}
-        {!usuarios.cargando && !usuarios.error && filas.length > TANDA && (
-          <div className="usuarios__mas">
-            <span>
-              Mostrando {Math.min(mostrar, filas.length)} de {filas.length}
-            </span>
-            {mostrar < filas.length ? (
-              <Boton variante="contorno" onClick={() => setMostrar((n) => n + TANDA)}>
-                Mostrar {Math.min(TANDA, filas.length - mostrar)} más
-              </Boton>
-            ) : (
-              <Boton variante="enlace" onClick={() => setMostrar(TANDA)}>
-                Mostrar menos
-              </Boton>
-            )}
-          </div>
-        )}
+        {!usuarios.cargando && !usuarios.error && <Paginacion {...paginacion} etiqueta="usuarios" />}
       </div>
 
       {viendo && <ModalUsuario usuario={viendo} vinculo={vinculo(viendo)} onCerrar={() => setViendo(null)} />}

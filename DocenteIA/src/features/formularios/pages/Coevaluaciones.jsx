@@ -1,16 +1,19 @@
 import { ClipboardList, RefreshCw, Search, SlidersHorizontal, X } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { useMemo } from 'react'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { BotonAccion } from '../../../shared/components/ui/BotonAccion/BotonAccion.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
+import { Paginacion } from '../../../shared/components/ui/Paginacion/Paginacion.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
+import { useFiltrosUrl, usePaginacion } from '../../../shared/hooks/usePaginacion.js'
 import { normalizarTexto } from '../../../shared/utils/formatters.js'
 import { obtenerPendientesCoevaluacion } from '../services/formulariosService.js'
 import '../components/FormularioInstrumento.css'
 
 const TODOS = ''
+const FILTROS_PREDETERMINADOS = { busqueda: '', programa: '', estado: '' }
 
 const ESTADO = {
   SIN_INICIAR: { etiqueta: 'Sin iniciar', clase: 'neutro', accion: 'editar', texto: 'Responder' },
@@ -20,9 +23,8 @@ const ESTADO = {
 
 export default function Coevaluaciones() {
   const { datos, error, cargando, recargar } = useFetch(obtenerPendientesCoevaluacion)
-  const [busqueda, setBusqueda] = useState('')
-  const [programa, setPrograma] = useState(TODOS)
-  const [estado, setEstado] = useState(TODOS)
+  const [filtros, actualizarFiltros] = useFiltrosUrl(FILTROS_PREDETERMINADOS)
+  const { busqueda, programa, estado } = filtros
 
   const docentes = useMemo(() => datos?.docentes ?? [], [datos])
   const programas = useMemo(() => [...new Set(docentes.map((d) => d.programa))].sort(), [docentes])
@@ -35,12 +37,11 @@ export default function Coevaluaciones() {
         (!termino || normalizarTexto(`${d.nombreDocente} ${d.programa}`).includes(termino)),
     )
   }, [docentes, programa, estado, busqueda])
+  const paginacion = usePaginacion(filas)
   const hayFiltros = Boolean(busqueda || programa || estado)
 
   function limpiarFiltros() {
-    setBusqueda('')
-    setPrograma(TODOS)
-    setEstado(TODOS)
+    actualizarFiltros({ busqueda: TODOS, programa: TODOS, estado: TODOS })
   }
 
   return (
@@ -76,13 +77,13 @@ export default function Coevaluaciones() {
                 <input
                   type="search"
                   value={busqueda}
-                  onChange={(e) => setBusqueda(e.target.value)}
+                  onChange={(e) => actualizarFiltros({ busqueda: e.target.value })}
                   placeholder="Buscar docente o programa"
                 />
               </label>
               <label className="coevaluaciones__selector">
                 <span>Programa</span>
-                <select value={programa} onChange={(e) => setPrograma(e.target.value)}>
+                <select value={programa} onChange={(e) => actualizarFiltros({ programa: e.target.value })}>
                   <option value={TODOS}>Todos</option>
                   {programas.map((p) => (
                     <option key={p} value={p}>
@@ -93,7 +94,7 @@ export default function Coevaluaciones() {
               </label>
               <label className="coevaluaciones__selector">
                 <span>Estado</span>
-                <select value={estado} onChange={(e) => setEstado(e.target.value)}>
+                <select value={estado} onChange={(e) => actualizarFiltros({ estado: e.target.value })}>
                   <option value={TODOS}>Todos</option>
                   {Object.entries(ESTADO).map(([clave, { etiqueta }]) => (
                     <option key={clave} value={clave}>
@@ -127,7 +128,7 @@ export default function Coevaluaciones() {
                   </tr>
                 </thead>
                 <tbody>
-                  {filas.map((d) => (
+                  {paginacion.visibles.map((d) => (
                     <tr key={d.idDocente}>
                       <td className="tabla__fuerte">{d.nombreDocente}</td>
                       <td data-etiqueta="Programa">{d.programa}</td>
@@ -164,6 +165,7 @@ export default function Coevaluaciones() {
               </table>
             </div>
             )}
+            {filas.length > 0 && <Paginacion {...paginacion} etiqueta="coevaluaciones" />}
           </Panel>
         )}
       </div>

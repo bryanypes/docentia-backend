@@ -8,6 +8,8 @@ import { ErrorApi } from '../../../shared/components/ui/ErrorApi/ErrorApi.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
+import { Paginacion } from '../../../shared/components/ui/Paginacion/Paginacion.jsx'
+import { useFiltrosUrl, usePaginacion } from '../../../shared/hooks/usePaginacion.js'
 import { ModalAlcance } from '../../facultades/components/ModalAlcance.jsx'
 import { listarFacultades } from '../../facultades/services/facultadesService.js'
 import { AvisoFlotante } from '../../../shared/components/ui/Avisos/AvisoFlotante.jsx'
@@ -23,7 +25,8 @@ const VACIO = { nombre: '', idFacultad: '' }
 
 export default function Programas() {
   const { confirmar } = useAvisos()
-  const [filtro, setFiltro] = useState('')
+  const [filtros, actualizarFiltros] = useFiltrosUrl({ facultad: '' })
+  const filtro = filtros.facultad
   const [viendo, setViendo] = useState(null)
   const cargar = useCallback(() => listarProgramas(filtro || null), [filtro])
   const programas = useFetch(cargar, [cargar])
@@ -74,6 +77,7 @@ export default function Programas() {
   }
 
   const lista = programas.datos ?? []
+  const paginacion = usePaginacion(lista)
   const opciones = (facultades.datos ?? []).map((facultad) => (
     <option key={facultad.idFacultad} value={facultad.idFacultad}>
       {facultad.nombre}
@@ -124,7 +128,7 @@ export default function Programas() {
             id="filtroFacultadProgramas"
             className="campo__control"
             value={filtro}
-            onChange={(e) => setFiltro(e.target.value)}
+            onChange={(e) => actualizarFiltros({ facultad: e.target.value })}
           >
             <option value="">Todas</option>
             {opciones}
@@ -151,7 +155,7 @@ export default function Programas() {
                 </tr>
               </thead>
               <tbody>
-                {lista.map((programa) => (
+                {paginacion.visibles.map((programa) => (
                   <tr key={programa.idPrograma}>
                     <td className="tabla__fuerte">{programa.nombre}</td>
                     <td data-etiqueta="Facultad">{programa.nombreFacultad}</td>
@@ -168,6 +172,7 @@ export default function Programas() {
             </table>
           </div>
         )}
+        {lista.length > 0 && <Paginacion {...paginacion} etiqueta="programas" />}
         {viendo && <ModalAlcance programa={viendo} onCerrar={() => setViendo(null)} />}
       </div>
     </>
