@@ -44,6 +44,28 @@ actas. La regla A4 impide que el docente vea notas individuales de cada fuente o
 **Riesgo aceptado.** Un administrador de la base podría intentar correlacionar por el orden físico de las
 filas en disco. La app nunca expone ese orden y las respuestas se listan por UUID.
 
+### Riesgo residual del anonimato
+
+El modelo separa quién respondió (`participaciones_heteroevaluacion`: asignación, estudiante y fecha) de
+qué respondió (`respuestas_heteroevaluacion`: UUID aleatorio, asignación, docente, periodo y versión del
+instrumento, sin estudiante, sin fecha y sin secuencia). Aun así queda un riesgo que hay que decir:
+
+- **La respuesta guarda la asignación (la clase evaluada).** En una clase donde respondió **un solo
+  estudiante**, quien tenga acceso directo a la base puede cruzar las dos tablas por `asignacion_id` y saber
+  qué respondió esa persona. Con dos o tres estudiantes, el cruce reduce mucho las posibilidades.
+- **La aplicación nunca lo muestra.** Ninguna pantalla ni ruta entrega respuestas por clase. La nota de
+  estudiantes solo se calcula y se muestra con al menos **5 respuestas por docente**, y el análisis de
+  comentarios exige al menos **10**. La cobertura solo da conteos, sin nombres.
+- **Quién puede hacer el cruce:** solo quien administra el servidor o la base, no los usuarios de DOCENTIA.
+
+Mitigaciones propuestas (no aplicadas; se deciden con la institución):
+
+1. Guardar en la respuesta solo el docente y el periodo, no la asignación, cuando el docente tiene una sola
+   clase o cuando la clase tiene pocos matriculados.
+2. Retirar `asignacion_id` de las respuestas al cerrar la recolección, una vez calculadas las notas.
+3. Exigir un mínimo de respuestas por clase, además del mínimo por docente, para mostrar la cobertura.
+4. Restringir el acceso directo a la base a una sola cuenta de operación, con registro de consultas.
+
 ## Análisis de comentarios
 
 | Amenaza | Control | Evidencia |
