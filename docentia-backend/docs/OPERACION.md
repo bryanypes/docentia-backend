@@ -216,7 +216,7 @@ curl http://localhost:8080/api/actuator/health/liveness
 
 ## Inicio de sesión con Google
 
-Fuera de `dev` los estudiantes no tienen contraseña utilizable: la matrícula por CSV les asigna una
+Fuera de `dev` los estudiantes no tienen contraseña utilizable: la matrícula les asigna una
 aleatoria que nadie conoce. **Sin Google ningún estudiante puede entrar a evaluar.** El personal puede
 entrar con correo y contraseña.
 

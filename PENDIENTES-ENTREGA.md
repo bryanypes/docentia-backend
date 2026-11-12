@@ -147,7 +147,28 @@ Quedó fuera o por revisar después de la presentación:
   muestra la interfaz cuando la sesión vence.
 - **Docker Desktop se cerró solo dos veces** durante la preparación en esta máquina.
 
-## Correcciones pedidas para la presentación del 12 de noviembre (no hechas)
+## Correcciones del 12 de noviembre (rama `demo/correcciones-12nov`)
+
+Rama sin fusionar, un commit por punto. Lo que quedó fuera o por confirmar:
+
+- **O. «Cambiar fuentes (tres fuentes) por …»**: el pedido está incompleto (falta el texto nuevo). No se hizo.
+- **Retirar el backend de importaciones** (CSV de notas y de matrícula): la interfaz ya no lo usa, pero
+  las rutas, servicios y tablas siguen. Tarea futura, con su migración.
+- **G. Logo del acta**: el código ya lee `resources/marca/logo-uniautonoma.png`; falta que la
+  universidad entregue el archivo.
+- **C. Facultad → Programa**: los paneles y agrupaciones ya hablan de programas. El filtro de facultad
+  conserva su nombre porque lista facultades reales y la coordinación sigue vinculada a una facultad;
+  vincular coordinación a programas exige migración y decisión.
+- **M. Visualización**: no incluye Estadísticas ni el ranking, porque esas pantallas muestran a cada
+  docente con su nota. Por confirmar con Vicerrectoría si se quiere una versión agregada.
+- **M. Vicerrectoría** lee usuarios, catálogos y ponderaciones por la API, pero esas pantallas salieron
+  de su menú para no mostrar botones que ya no puede usar.
+- **I. «Ver evaluaciones anteriores»**: se ve la coevaluación enviada del periodo; las de periodos
+  anteriores no tienen pantalla.
+- **V42 y V43** (recuperar contraseña y roles): si el PR #12 trae migraciones con esos números, se
+  renumeran allá.
+
+## Correcciones pedidas para la presentación del 12 de noviembre (primer intento, superado)
 
 La ronda de correcciones llegó después de la hora de corte (1:00 a.m. del 12 de noviembre): ninguna se
 empezó y la presentación se hace desde `release/0.4.0` sin cambios. Quedan para después de la

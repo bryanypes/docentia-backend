@@ -57,8 +57,9 @@ netsh interface ipv4 show excludedportrange protocol=tcp
 Elige en `.env` puertos fuera de esos rangos (por ejemplo `API_PORT=18080`, `WEB_PORT=18173`,
 `POSTGRES_PORT=6543`) y vuelve a levantar.
 
-**Roles.** Hay cuatro: vicerrectoría, coordinación, docente y estudiante. Los roles Administrador y
-Visualizador no existen en `develop` (están en el PR #12, sin fusionar).
+**Roles.** Seis: vicerrectoría, administración, visualización, coordinación, docente y estudiante.
+Qué puede hacer cada uno está en `docentia-backend/docs/ROLES.md`. Las notas salen solo de los
+formularios; la carga por CSV ya no se usa.
 
 Los correos de desarrollo se ven en <http://localhost:8025>. La operación completa está en
 `docentia-backend/docs/OPERACION.md`; la arquitectura en `ARQUITECTURA.md`, la API en `API.md`, la
