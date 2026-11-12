@@ -317,7 +317,7 @@ public class MatriculaService {
                 ? TipoNotificacion.IMPORTACION_EXITOSA
                 : TipoNotificacion.IMPORTACION_CON_ERRORES,
             sesion.idUsuario(),
-            "/matricula",
+            "/notificaciones",
             "MATRICULA",
             null,
             "matricula:" + UUID.randomUUID()));
