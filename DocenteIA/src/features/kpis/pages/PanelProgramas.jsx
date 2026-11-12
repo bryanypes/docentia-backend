@@ -1,12 +1,14 @@
 import { ChartColumn, RefreshCw } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { Campo } from '../../../shared/components/ui/Campo/Campo.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
+import { Paginacion } from '../../../shared/components/ui/Paginacion/Paginacion.jsx'
 import { ETIQUETA_ROL, NIVELES, ROLES } from '../../../shared/constants/dominio.js'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
+import { useFiltrosUrl, usePaginacion } from '../../../shared/hooks/usePaginacion.js'
 import { formatearNota } from '../../../shared/utils/formatters.js'
 import { useSesion } from '../../auth/sesionContext.js'
 import { obtenerPendientesCoevaluacion } from '../../formularios/services/formulariosService.js'
@@ -65,7 +67,12 @@ function Fila({ fila }) {
 
 function Participacion() {
   const { datos } = useFetch(obtenerPendientesCoevaluacion)
-  if (!datos?.programas.length) return null
+  const programas = datos?.programas ?? []
+  const paginacion = usePaginacion(programas, {
+    clavePagina: 'paginaParticipacion',
+    claveTamano: 'tamanoParticipacion',
+  })
+  if (!programas.length) return null
   return (
     <Panel titulo="Participación en formularios" descripcion="Solo conteos, sin puntajes.">
       <div className="tabla-contenedor">
@@ -81,7 +88,7 @@ function Participacion() {
             </tr>
           </thead>
           <tbody>
-            {datos.programas.map((p) => (
+            {paginacion.visibles.map((p) => (
               <tr key={p.programa}>
                 <td className="tabla__fuerte">{p.programa}</td>
                 <td data-etiqueta="Docentes">{p.docentes}</td>
@@ -94,19 +101,26 @@ function Participacion() {
           </tbody>
         </table>
       </div>
+      <Paginacion {...paginacion} etiqueta="participación por programa" />
     </Panel>
   )
 }
 
 function CoberturaEstudiantes() {
   const { datos } = useFetch(() => obtenerCobertura(0))
-  if (!datos?.programas.length) return null
+  const programas = datos?.programas ?? []
+  const paginacion = usePaginacion(programas, {
+    clavePagina: 'paginaCobertura',
+    claveTamano: 'tamanoCobertura',
+  })
+  if (!programas.length) return null
   return (
     <Panel
       titulo="Cobertura de la evaluación de estudiantes"
       descripcion={`${datos.total.respondieron} de ${datos.total.matriculados} matriculados respondieron.`}
     >
-      <TablaCobertura filas={datos.programas} primeraColumna="Programa" />
+      <TablaCobertura filas={paginacion.visibles} primeraColumna="Programa" />
+      <Paginacion {...paginacion} etiqueta="cobertura por programa" />
     </Panel>
   )
 }
@@ -116,12 +130,17 @@ export default function PanelProgramas() {
   const { usuario } = useSesion()
   // Visualización lee el panel de toda la universidad, como vicerrectoría.
   const esVicerrector = usuario.rol === ROLES.VICERRECTOR || usuario.rol === ROLES.VISUALIZADOR
-  const [periodoId, setPeriodoId] = useState('')
-  const [facultadId, setFacultadId] = useState('')
+  const [filtros, actualizarFiltros] = useFiltrosUrl({ periodo: '', facultad: '' })
+  const periodoId = filtros.periodo
+  const facultadId = filtros.facultad
   const periodos = useFetch(listarPeriodos)
   const facultades = useFetch(() => (esVicerrector ? listarFacultades() : Promise.resolve([])), [esVicerrector])
   const cargar = useCallback(() => obtenerPanelProgramas({ periodoId, facultadId }), [periodoId, facultadId])
   const panel = useFetch(cargar, [cargar])
+  const paginacionProgramas = usePaginacion(panel.datos?.programas ?? [], {
+    clavePagina: 'paginaPanelProgramas',
+    claveTamano: 'tamanoPanelProgramas',
+  })
 
   return (
     <>
@@ -137,7 +156,7 @@ export default function PanelProgramas() {
               id="periodoPanel"
               className="campo__control"
               value={periodoId}
-              onChange={(e) => setPeriodoId(e.target.value)}
+              onChange={(e) => actualizarFiltros({ periodo: e.target.value })}
             >
               <option value="">Periodo activo</option>
               {(periodos.datos ?? []).map((p) => (
@@ -153,7 +172,7 @@ export default function PanelProgramas() {
                 id="facultadPanel"
                 className="campo__control"
                 value={facultadId}
-                onChange={(e) => setFacultadId(e.target.value)}
+                onChange={(e) => actualizarFiltros({ facultad: e.target.value })}
               >
                 <option value="">Toda la universidad</option>
                 {(facultades.datos ?? []).map((f) => (
@@ -184,12 +203,13 @@ export default function PanelProgramas() {
               <EstadoVista titulo="Sin programas" mensaje="No hay docentes activos en este alcance." />
             )}
             <div className="rejilla">
-              {panel.datos.programas.map((fila) => (
+              {paginacionProgramas.visibles.map((fila) => (
                 <Panel key={fila.idPrograma} titulo={fila.programa} descripcion={fila.facultad}>
                   <Fila fila={fila} />
                 </Panel>
               ))}
             </div>
+            <Paginacion {...paginacionProgramas} etiqueta="programas del panel" />
             {esVicerrector && <Participacion />}
             {esVicerrector && <CoberturaEstudiantes />}
           </>

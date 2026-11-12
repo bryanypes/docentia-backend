@@ -194,9 +194,10 @@ presentación, en este orden de prioridad:
 ## Continuación del 12 de noviembre
 
 - **P1, parcial:** se agregó paginación 10/20/50 con filtros y página en la URL para docentes,
-  coevaluaciones, usuarios, facultades, programas, estadísticas, panorama de análisis, comentarios
-  excluidos, notificaciones y auditoría. Pruebas puntuales, lint y build pasan. Falta revisar las
-  demás listas y probar las pantallas autenticadas en 1366×768 y 1280×720 (estimación: 45–90 min).
+  coevaluaciones, usuarios, facultades, programas, periodos, acciones sugeridas, estadísticas,
+  paneles por programa, panorama de análisis, comentarios excluidos, notificaciones y auditoría.
+  Pruebas puntuales, lint y build pasan. Falta revisar las demás listas y probar las pantallas
+  autenticadas en 1366×768 y 1280×720 (estimación: 45–90 min).
 - **Verificación visual limitada:** el inicio público no tiene desbordamiento horizontal en ambos
   tamaños. No se pudo comprobar el flujo autenticado con la semilla en navegador en esta corrida.
 - **P0/P2 pendientes de ensayo:** ejecutar A–J y verificar consola, errores 5xx, expiración de sesión,

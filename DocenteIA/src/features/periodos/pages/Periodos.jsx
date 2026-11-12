@@ -8,7 +8,9 @@ import { Campo } from '../../../shared/components/ui/Campo/Campo.jsx'
 import { ErrorApi } from '../../../shared/components/ui/ErrorApi/ErrorApi.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
+import { Paginacion } from '../../../shared/components/ui/Paginacion/Paginacion.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
+import { usePaginacion } from '../../../shared/hooks/usePaginacion.js'
 import { formatearFecha } from '../../../shared/utils/formatters.js'
 import { ApiError } from '../../../services/api.js'
 import { ETAPAS_PERIODO, validarFechasPeriodo } from '../etapas.js'
@@ -260,6 +262,7 @@ export default function Periodos() {
 
   const lista = periodos.datos ?? []
   const activo = lista.find((p) => p.esActivo)
+  const paginacion = usePaginacion(lista)
 
   return (
     <>
@@ -288,7 +291,7 @@ export default function Periodos() {
           <EstadoVista titulo="Aún no hay periodos" mensaje="Crea el primero con el formulario de arriba." />
         )}
 
-        {lista.map((periodo) => (
+        {paginacion.visibles.map((periodo) => (
           <Panel
             key={periodo.idPeriodo}
             titulo={periodo.nombre}
@@ -312,6 +315,7 @@ export default function Periodos() {
             <EtapasDe periodo={periodo} ventanas={ventanas} />
           </Panel>
         ))}
+        {lista.length > 0 && <Paginacion {...paginacion} etiqueta="periodos académicos" />}
       </div>
     </>
   )
