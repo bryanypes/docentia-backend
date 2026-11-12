@@ -12,14 +12,13 @@
 
 ## Roles y rutas
 
-Existen cuatro roles: `VICERRECTOR`, `COORDINADOR`, `DOCENTE` y `ESTUDIANTE`. Los roles `ADMINISTRADOR`
-y `VISUALIZADOR` no existen en `develop`; llegarían solo si se fusiona el PR #12, y entonces esta
-sección y `MatrizAutorizacionTest` deben cambiar en el mismo PR.
+Existen seis roles: `ESTUDIANTE`, `DOCENTE`, `COORDINADOR`, `VICERRECTOR`, `ADMINISTRADOR` y
+`VISUALIZADOR` (V43). La tabla rol por ruta está en `ROLES.md`, generada desde `MatrizAutorizacionTest`.
 
 | Regla | Control | Evidencia |
 |-------|---------|-----------|
-| Rol por endpoint | `@PreAuthorize` en cada controlador; la matriz completa (116 rutas por cuatro roles) vive en la prueba, que falla si aparece una ruta sin clasificar | `MatrizAutorizacionTest.todoEndpointEstaClasificado`, `cadaRolRecibeLoQueLeToca` |
-| Rutas sin sesión | Solo `POST /sesiones`, `POST /sesiones/google`, `GET /verificacion-actas/{codigo}` y `GET /actuator/health/**`, `/actuator/info`. No hay comodines: cualquier otra ruta bajo `/sesiones/` pide sesión | `MatrizAutorizacionTest.lasRutasPublicasSonSoloLasDeEntradaYVerificacion`, `loQueNoEsPublicoPideSesion` |
+| Rol por endpoint | `@PreAuthorize` en cada controlador; la matriz completa (114 rutas por seis roles) vive en la prueba, que falla si aparece una ruta sin clasificar | `MatrizAutorizacionTest.todoEndpointEstaClasificado`, `cadaRolRecibeLoQueLeToca` |
+| Rutas sin sesión | Solo `POST /sesiones`, `POST /sesiones/google`, `POST /sesiones/recuperacion`, `POST /sesiones/recuperacion/restablecimiento`, `GET /verificacion-actas/{codigo}` y `GET /actuator/health`, `/health/liveness`, `/health/readiness` e `/info`. No hay comodines: cualquier otra ruta bajo `/sesiones/` pide sesión | `MatrizAutorizacionTest.lasRutasPublicasSonSoloLasDeEntradaYVerificacion`, `loQueNoEsPublicoPideSesion` |
 | Contraseña temporal | La sesión no lleva el rol; solo puede leer `GET /sesiones/actual` y cambiar la clave en `PUT /sesiones/actual/contrasena` | `MatrizAutorizacionTest.conContrasenaTemporalSoloSeCambiaLaClave`, `CuentaUsuarioTest` |
 | Alcance | El coordinador solo ve su facultad y el docente lo propio; fuera de alcance responde 404, igual que lo inexistente | `AlcanceRecursosTest` |
 

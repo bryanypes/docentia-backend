@@ -1,5 +1,7 @@
 # API DOCENTIA — Sprint 3, semana 1 (14–20 oct)
 
+> **Histórico.** Este documento describe la API de esa semana. La carga por CSV (`/importaciones`) se retiró en la versión 0.4.0; la referencia vigente está en `API.md` y `ROLES.md`.
+
 Endpoints nuevos o que cambiaron en esta semana. Todo lo que no aparece aquí sigue igual.
 
 ## Convenciones

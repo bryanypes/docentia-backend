@@ -10,7 +10,7 @@ Lo que el sistema no hace hoy y por qué.
 | HU-09, evidencias complementarias y grupos focales | Fuera de alcance por el orden de corte |
 | Etiquetas de los seis criterios en los hallazgos | Quedó fuera por el orden de corte |
 | SSO institucional real | El estudiante entra con Google institucional o, en desarrollo, con la contraseña de demo; sin SSO real, su acceso en producción depende de Google |
-| Matrícula real de Campus/NOVA | Se carga por CSV o con el seed |
+| Matrícula real de Campus/NOVA | Sin integración directa: la inscripción usa el servicio de matrícula del backend (sin pantalla) o la semilla; la integración está por confirmar |
 | Métricas del análisis con comentarios reales | La validación usa 90 comentarios sintéticos escritos por el mismo autor del léxico; las cifras sobreestiman. Hace falta una muestra real etiquetada |
 | Sarcasmo, dobles sentidos y jerga nueva | El modelo local solo reconoce lo que está en el léxico; lo demás queda NEUTRO o mal clasificado |
 | Comentarios en otro idioma | El léxico es solo en español |

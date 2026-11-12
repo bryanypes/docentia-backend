@@ -4,6 +4,8 @@
 
 # Decisiones — heteroevaluación (HU-01)
 
+> **Histórico.** Este documento describe la API de esa semana. La carga por CSV (`/importaciones`) se retiró en la versión 0.4.0; la referencia vigente está en `API.md` y `ROLES.md`.
+
 Decisiones tomadas al pasar la fuente **Estudiantes (50 %)** del CSV del coordinador al
 formulario del estudiante en la app. La resolución, el JSON de Campus y el código mandan
 sobre el Excel. Contrato: [api-heteroevaluacion.md](api-heteroevaluacion.md). Recorrido con
