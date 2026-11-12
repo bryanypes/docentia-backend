@@ -223,3 +223,12 @@
     animation: none;
   }
 }
+
+.inicio__destacados {
+  padding: 18px 20px;
+  border-radius: var(--radio-xl);
+}
+
+.inicio__destacados-titulo {
+  color: #073475;
+}
