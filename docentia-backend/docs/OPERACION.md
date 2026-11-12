@@ -108,19 +108,33 @@ location /Evadocente-app/ {
 
 | Variable | Obligatoria en producción | Uso |
 |----------|---------------------------|-----|
-| `SPRING_PROFILES_ACTIVE` | Sí, `prod` | `dev` carga datos de ejemplo |
-| `DOCENTIA_JWT_SECRETO` | Sí, 32 bytes o más | Firma de sesiones |
+| `SPRING_PROFILES_ACTIVE` | Sí, `prod` | `dev` carga usuarios y datos de demostración; `prod` no carga ninguno |
+| `DOCENTIA_JWT_SECRETO` | Sí, 32 bytes o más | Firma de sesiones. Sin él, o con el de desarrollo, la API no arranca |
 | `DOCENTIA_DB_URL`, `DOCENTIA_DB_USUARIO`, `DOCENTIA_DB_CONTRASENA` | Sí | Base de datos |
+| `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` | Sí, si la base va en Compose | Servicio `db` |
+| `DOCENTIA_APP_URL` | Sí | URL pública para los enlaces de los correos. Con `prod`, la API no arranca si está vacía o en localhost |
 | `DOCENTIA_BOOTSTRAP_EMAIL`, `_NOMBRE`, `_CONTRASENA` | Solo el primer arranque | Primer administrador (ver arriba) |
+| `DOCENTIA_MAIL_HOST`, `_PORT`, `_USER`, `_PASS`, `_FROM`, `_TLS` | Sí, para recuperar contraseña y avisos | SMTP. Sin host, la API arranca pero solo registra el asunto en el log |
+| `DOCENTIA_GOOGLE_CLIENT_ID` | Sí, si entran estudiantes | Valida el token de Google. Sin él, `POST /api/sesiones/google` responde 503 |
+| `VITE_GOOGLE_CLIENT_ID` | Sí, si entran estudiantes | Botón de Google; se incrusta al compilar `web` |
+| `VITE_BASE_PATH` | Sí, `/Evadocente-app/` | Subruta pública; se incrusta al compilar `web` |
+| `VITE_API_URL` | Sí, `/Evadocente-app/api` | Ruta de la API desde la web; se incrusta al compilar `web` |
+| `DOCENTIA_CORS_ORIGENES` | Solo si la web vive en otro dominio | Orígenes exactos, separados por coma |
 | `DOCENTIA_DB_POOL_MAXIMO` | No, 15 | Pool de conexiones |
-| `DOCENTIA_CORS_ORIGENES` | Si hay otro dominio | Orígenes exactos |
-| `DOCENTIA_APP_URL` | Sí | Enlaces de los correos |
-| `DOCENTIA_MAIL_HOST`, `_PORT`, `_USER`, `_PASS`, `_FROM`, `_TLS` | Para enviar correo | SMTP |
-| `DOCENTIA_COMPROMISOS_UMBRAL` | No, 3.8 | Umbral de compromisos |
-| `DOCENTIA_ACTAS_ROL_CORRECTOR` | No, `VICERRECTOR` | Quién corrige actas |
-| `DOCENTIA_IA_*` | No | Proveedor de análisis |
+| `DOCENTIA_COMPROMISOS_UMBRAL` | No, 3.8 | Bajo esta nota el acta exige compromisos (por confirmar: 3,8 o 4,00) |
+| `DOCENTIA_ACTAS_ROL_CORRECTOR` | No, `VICERRECTOR` | Quién corrige actas firmadas (`VICERRECTOR` o `COORDINADOR`) |
+| `DOCENTIA_HETEROEVALUACION_MINIMO` | No, 5 | Respuestas mínimas para usar y mostrar la nota de estudiantes |
+| `DOCENTIA_PROCESO_EXIGIR_ASISTENCIA` | No, `true` | El docente ve su resultado y firma solo tras registrar la asistencia |
+| `DOCENTIA_ACTAS_EXIGIR_FIRMA_DIBUJADA` | No, `true` | La firma lleva imagen (dibujada, escrita o PNG) |
+| `DOCENTIA_ACTAS_LOGO` | No | Logo del PDF; por defecto el de la universidad incluido |
+| `DOCENTIA_PERIODOS_MES_FIN_PRIMER_SEMESTRE` | No, 6 | Mes de corte del nombre automático del periodo (por confirmar) |
+| `DOCENTIA_NOTIFICACIONES_RETENCION_DIAS` | No, 90 | Días que se guardan las notificaciones leídas |
+| `DOCENTIA_IA_*` | No | Análisis de comentarios: `local` por defecto, sin red. El externo solo con URL, modelo y clave |
+| `DOCENTIA_IA_PRESUPUESTO_TOKENS_DIA`, `_PERIODO` | No, 500 000 y 3 000 000 | Topes del modelo externo |
 | `DOCENTIA_API_URL` | Solo en desarrollo | Proxy de Vite hacia el backend |
-| `VITE_GOOGLE_CLIENT_ID`, `DOCENTIA_GOOGLE_CLIENT_ID` | Para Google | Inicio de sesión |
+
+**Zona horaria:** no requiere variable. Las fechas de las ventanas y los cierres se calculan siempre con
+`America/Bogota` (`RelojConfig`), sin importar la zona del servidor.
 
 ## Respaldo y restauración
 
