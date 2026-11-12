@@ -173,7 +173,7 @@ class ProcesoEvaluacionTest extends PruebaIntegracion {
     }
     org.assertj.core.api.Assertions.assertThat(texto.toString())
         .contains("Acta de compromiso docente")
-        .contains("Firma dibujada en DOCENTIA");
+        .contains("Firma registrada en DOCENTIA");
 
     proceso()
         .andExpect(jsonPath("$.estado").value("FINALIZADO"))

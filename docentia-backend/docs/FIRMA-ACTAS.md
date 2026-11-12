@@ -67,3 +67,11 @@ En orden de esfuerzo:
 6. **Firma digital con certificado personal** de cada firmante, emitido por una entidad de certificación, si jurídica lo exige.
 
 Los puntos 4 a 6 requieren decisiones y presupuesto institucionales. Están **por confirmar**.
+
+## Decisión pendiente de la institución
+
+DOCENTIA no puede decidir si esta firma electrónica simple sirve para actas oficiales de evaluación docente. Esa respuesta le corresponde a la Vicerrectoría, con la oficina jurídica. Mientras llega:
+
+- El acta firmada en DOCENTIA documenta la reunión de retroalimentación y los compromisos, con su hash y su código de verificación pública.
+- Si la institución exige otra forma de firma para el acta oficial, el PDF se puede imprimir y firmar a mano, o firmar con un certificado institucional (ver "Qué reforzaría la validez").
+- La decisión queda registrada como pendiente en `DECISIONES.md`.
