@@ -189,7 +189,7 @@ export default function Login() {
               className="login__ver"
               onClick={() => setVerContrasena((v) => !v)}
               aria-pressed={verContrasena}
-              aria-label="Mostrar contraseña"
+              aria-label={verContrasena ? 'Ocultar contraseña' : 'Mostrar contraseña'}
               aria-controls="contrasena"
             >
               {verContrasena ? <EyeOff size={18} aria-hidden="true" /> : <Eye size={18} aria-hidden="true" />}
@@ -235,9 +235,6 @@ export default function Login() {
           </>
         )}
 
-        <p className="login__olvido">
-          <strong>¿Olvidaste tu contraseña?</strong> Pide una nueva a la Vicerrectoría académica.
-        </p>
       </form>
     </PantallaAcceso>
   )

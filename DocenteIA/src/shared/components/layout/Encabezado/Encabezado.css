@@ -1,5 +1,6 @@
 /* Encabezado claro con un matiz azul suave que conecta la navegación con el contenido. */
 .encabezado {
+  position: relative;
   display: flex;
   flex-wrap: wrap;
   align-items: flex-end;
@@ -12,9 +13,23 @@
 }
 
 .encabezado__textos {
+  position: relative;
+  flex: 1 1 360px;
   min-width: 0;
+  padding-left: 14px;
   /* Deja libre la esquina de la campana de notificaciones, que va fija arriba a la derecha. */
   padding-right: 52px;
+}
+
+.encabezado__textos::before {
+  position: absolute;
+  top: 2px;
+  bottom: 1px;
+  left: 0;
+  width: 3px;
+  border-radius: 3px;
+  background: var(--color-amarillo);
+  content: '';
 }
 
 .encabezado__miga {
@@ -27,6 +42,7 @@
 }
 
 .encabezado__titulo {
+  color: var(--color-azul);
   font-size: 30px;
   font-weight: var(--peso-fuerte);
   letter-spacing: -0.03em;
@@ -44,15 +60,20 @@
 
 .encabezado__acciones {
   display: flex;
+  flex: 0 1 auto;
   flex-wrap: wrap;
   align-items: center;
   gap: 10px;
+  min-width: 0;
 }
 
 .encabezado__periodo {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
+  min-width: 0;
+  max-width: 100%;
   min-height: var(--alto-tactil);
   padding: 0 14px;
   border: 1px solid var(--color-borde);
@@ -70,8 +91,10 @@
 }
 
 .encabezado__periodo strong {
+  min-width: 0;
   font-size: 14px;
   font-weight: var(--peso-fuerte);
+  overflow-wrap: anywhere;
 }
 
 @media (max-width: 900px) {
@@ -79,12 +102,36 @@
     padding: 18px 16px;
   }
 
+  .encabezado__acciones {
+    flex: 1 1 100%;
+  }
+
   /* La campana ya va en la barra fija: el título usa todo el ancho. */
   .encabezado__textos {
     padding-right: 0;
   }
 
+  @media (max-width: 520px) {
+    .encabezado {
+      gap: 12px;
+      padding: 14px 14px;
+    }
+
+    .encabezado__acciones {
+      align-items: stretch;
+    }
+
+    .encabezado__periodo {
+      justify-content: space-between;
+    }
+  }
+
   .encabezado__titulo {
-    font-size: 24px;
+    font-size: clamp(22px, 4vw, 26px);
+  }
+
+  .encabezado__subtitulo {
+    max-width: 68ch;
+    font-size: 13.5px;
   }
 }

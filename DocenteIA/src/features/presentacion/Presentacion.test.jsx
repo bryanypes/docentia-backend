@@ -15,5 +15,9 @@ describe('Presentacion', () => {
     const enlaces = screen.getAllByRole('link', { name: 'Iniciar sesión' })
     expect(enlaces.length).toBeGreaterThan(0)
     for (const enlace of enlaces) expect(enlace).toHaveAttribute('href', '/login')
+    expect(screen.getByRole('img', { name: 'Universidad Autónoma del Cauca' })).toHaveAttribute(
+      'src',
+      '/brand/logo-uniautonoma.png',
+    )
   })
 })

@@ -190,6 +190,10 @@ export function ModalFirma({ nombre, tipoActa, enviando, error, onFirmar, onCerr
             ? 'Si no puedes dibujar, elige “Escribir”: tu nombre se convierte en el trazo de la firma.'
             : 'Se dibuja con letra manuscrita y queda igual en el PDF.'}
         </p>
+        <p className="campo__ayuda firma__alcance">
+          DOCENTIA registra el trazo, la cuenta y la fecha con un hash de integridad; no usa un certificado digital
+          criptográfico.
+        </p>
 
         <div className="firma__acciones-lienzo">
           <Boton variante="secundario" icono={Eraser} disabled={!hayTrazo} onClick={modo === 'escribir' ? () => escribir('') : borrar}>
@@ -204,7 +208,7 @@ export function ModalFirma({ nombre, tipoActa, enviando, error, onFirmar, onCerr
             checked={confirmado}
             onChange={(e) => setConfirmado(e.target.checked)}
           />
-          Leí el acta y entiendo que firmar es irreversible.
+          Confirmo que leí el acta y entiendo que esta firma queda registrada y no se puede retirar desde DOCENTIA.
         </label>
 
         <ErrorApi error={error} />

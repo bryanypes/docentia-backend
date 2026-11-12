@@ -6,7 +6,10 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Iterator;
 import javax.imageio.ImageIO;
+import javax.imageio.ImageReader;
+import javax.imageio.stream.ImageInputStream;
 
 /**
  * Trazo de una firma dibujada en la página. Solo acepta un PNG real, de un tamaño razonable y con
@@ -17,6 +20,7 @@ public final class TrazoFirma {
   private static final String PREFIJO = "data:image/png;base64,";
   private static final byte[] FIRMA_PNG = {(byte) 0x89, 'P', 'N', 'G', '\r', '\n', 0x1a, '\n'};
   private static final int MAXIMO_BYTES = 300_000;
+  private static final int MAXIMO_CARACTERES_BASE64 = ((MAXIMO_BYTES + 2) / 3) * 4;
   private static final int MAXIMO_LADO = 2000;
   private static final int MINIMO_PIXELES_TRAZADOS = 40;
 
@@ -36,6 +40,9 @@ public final class TrazoFirma {
     if (!dataUrl.startsWith(PREFIJO)) {
       throw new NoProcesableException("La firma debe ser una imagen PNG");
     }
+    if (dataUrl.length() - PREFIJO.length() > MAXIMO_CARACTERES_BASE64) {
+      throw new NoProcesableException("La firma no es una imagen válida");
+    }
     byte[] png;
     try {
       png = Base64.getDecoder().decode(dataUrl.substring(PREFIJO.length()));
@@ -47,17 +54,32 @@ public final class TrazoFirma {
         || !Arrays.equals(Arrays.copyOf(png, FIRMA_PNG.length), FIRMA_PNG)) {
       throw new NoProcesableException("La firma no es una imagen válida");
     }
-    BufferedImage imagen;
-    try {
-      imagen = ImageIO.read(new ByteArrayInputStream(png));
+    try (ImageInputStream entrada =
+        ImageIO.createImageInputStream(new ByteArrayInputStream(png))) {
+      if (entrada == null) {
+        throw new NoProcesableException("La firma no es una imagen válida");
+      }
+      Iterator<ImageReader> lectores = ImageIO.getImageReaders(entrada);
+      if (!lectores.hasNext()) {
+        throw new NoProcesableException("La firma no es una imagen válida");
+      }
+      ImageReader lector = lectores.next();
+      try {
+        lector.setInput(entrada, true, true);
+        int ancho = lector.getWidth(0);
+        int alto = lector.getHeight(0);
+        if (ancho <= 0 || alto <= 0 || ancho > MAXIMO_LADO || alto > MAXIMO_LADO) {
+          throw new NoProcesableException("La firma no es una imagen válida");
+        }
+        BufferedImage imagen = lector.read(0);
+        if (imagen == null || pixelesTrazados(imagen) < MINIMO_PIXELES_TRAZADOS) {
+          throw new NoProcesableException("Dibuja tu firma antes de firmar el acta");
+        }
+      } finally {
+        lector.dispose();
+      }
     } catch (IOException ilegible) {
       throw new NoProcesableException("La firma no es una imagen válida");
-    }
-    if (imagen == null
-        || imagen.getWidth() > MAXIMO_LADO
-        || imagen.getHeight() > MAXIMO_LADO
-        || pixelesTrazados(imagen) < MINIMO_PIXELES_TRAZADOS) {
-      throw new NoProcesableException("Dibuja tu firma antes de firmar el acta");
     }
     return png;
   }

@@ -4,6 +4,11 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-behavior: smooth;
+  scroll-padding-top: 72px;
+}
+
 body {
   margin: 0;
   background:
@@ -130,11 +135,17 @@ legend.rotulo,
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
   *,
   *::before,
   *::after {
     animation-duration: 0.01ms !important;
     animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
   }
 }
 
@@ -210,6 +221,15 @@ textarea.campo__control {
 .campo__error {
   font-size: 12px;
   color: var(--color-error);
+}
+
+.campo__ayuda,
+.campo__error,
+.aviso__contenido,
+.estado-vista__mensaje,
+.panel__descripcion,
+.tabla td {
+  overflow-wrap: anywhere;
 }
 
 /* Tabla de datos del maquetado */

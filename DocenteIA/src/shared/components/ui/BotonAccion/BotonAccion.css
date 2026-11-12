@@ -15,7 +15,11 @@
   text-decoration: none;
   white-space: nowrap;
   cursor: pointer;
-  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  transition:
+    background-color 0.15s ease,
+    border-color 0.15s ease,
+    color 0.15s ease,
+    transform 0.15s ease;
 }
 
 .boton-accion:hover:not(:disabled) {
@@ -30,6 +34,10 @@
 .boton-accion:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+}
+
+.boton-accion:active:not(:disabled) {
+  transform: translateY(1px);
 }
 
 .boton-accion--ver {
@@ -70,6 +78,12 @@
     height: 1px;
     overflow: hidden;
     clip: rect(0 0 0 0);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .boton-accion {
+      transition: none;
+    }
   }
 
   .boton-accion {

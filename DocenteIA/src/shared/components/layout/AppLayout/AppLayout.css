@@ -23,12 +23,13 @@
   flex: 1;
   flex-direction: column;
   gap: var(--espacio-4);
+  min-width: 0;
   padding: var(--espacio-6) var(--espacio-7) 48px;
 }
 
 .rejilla {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
   gap: var(--espacio-4);
   align-items: start;
 }
@@ -156,6 +157,12 @@
     z-index: 55;
     background: rgba(10, 20, 45, 0.45);
     animation: velo-entrar 0.2s ease both;
+  }
+
+  .cuestionario__cabecera,
+  .instrumento__progreso,
+  .estadisticas__filtros {
+    top: 60px;
   }
 }
 

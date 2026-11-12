@@ -1,10 +1,10 @@
 .asistente {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 150px) minmax(0, 1fr);
+  grid-template-columns: minmax(0, 138px) minmax(0, 1fr);
   align-items: center;
   gap: 26px;
-  padding: 22px 26px;
+  padding: 22px clamp(16px, 2.4vw, 26px);
   overflow: hidden;
   border: 1px solid var(--color-borde-suave);
   border-radius: 20px;
@@ -18,8 +18,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 150px;
-  height: 150px;
+  width: 138px;
+  height: 138px;
   border: 5px solid var(--color-amarillo);
   border-radius: 50%;
   background: var(--color-crema);
@@ -37,6 +37,7 @@
 .asistente__globo {
   position: relative;
   min-width: 0;
+  overflow-wrap: anywhere;
   padding: 18px 20px;
   border: 1px solid var(--color-borde);
   border-radius: 16px;
@@ -127,12 +128,14 @@
   color: var(--color-crema);
   font-size: 14px;
   font-weight: var(--peso-semi);
+  transition: background-color 150ms ease, transform 150ms ease;
 }
 
 .asistente__accion:hover {
   background: var(--color-azul-oscuro);
   color: var(--color-crema);
   text-decoration: none;
+  transform: translateY(-1px);
 }
 
 .asistente__nota {
@@ -197,6 +200,7 @@
 
   .asistente__globo {
     justify-self: stretch;
+    width: 100%;
   }
 
   /* En columna, la colita apunta hacia arriba, al robot */
@@ -208,5 +212,12 @@
 
   .asistente__mensajes {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .asistente__robot,
+  .asistente__robot img {
+    animation: none;
   }
 }
