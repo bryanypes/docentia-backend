@@ -19,7 +19,7 @@ export const ETIQUETA_FUENTE = {
 }
 
 export const ORIGEN_FUENTE = {
-  ESTUDIANTES: 'Sincronizado del sistema de encuestas',
+  ESTUDIANTES: 'Formulario de los estudiantes',
   COORDINACION: 'Registrada por coordinación',
   AUTOEVALUACION: 'Registrada por el docente',
 }

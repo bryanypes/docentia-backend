@@ -228,7 +228,7 @@ function Indicadores({ kpis, esVicerrector, mostrarCompletos }) {
     return (
       <EstadoVista
         titulo="Aún no hay calificaciones en este periodo"
-        mensaje="Cuando coordinación, vicerrectoría o la carga del CSV de estudiantes registren calificaciones, los indicadores aparecerán aquí."
+        mensaje="Cuando se envíen los formularios de evaluación, los indicadores aparecerán aquí."
       />
     )
   }

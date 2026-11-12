@@ -29,10 +29,10 @@ vi.mock('react-router-dom', () => ({
 }))
 
 describe('Sidebar', () => {
-  it('el coordinador tiene la carga de estudiantes y no ve matrícula, auditoría ni facultades', () => {
+  it('el coordinador no ve carga de estudiantes, matrícula, auditoría ni facultades', () => {
     renderizarConSesion(<Sidebar />, { rol: 'COORDINADOR' })
     expect(screen.getByRole('link', { name: 'Coevaluaciones' })).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'Evaluación de estudiantes' })).toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Evaluación de estudiantes' })).not.toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'Matrícula y cobertura' })).not.toBeInTheDocument()
   })
 

@@ -12,7 +12,7 @@ export const ETAPAS_PERIODO = [
   {
     etapa: ETAPAS.RECOLECCION_CALIFICACIONES,
     nombre: 'Recolección de calificaciones',
-    habilita: 'Calificar y cargar el CSV de estudiantes.',
+    habilita: 'Responder los formularios de estudiantes, coordinación y docente.',
   },
   {
     etapa: ETAPAS.REVISION_HALLAZGOS,

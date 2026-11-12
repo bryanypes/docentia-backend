@@ -23,7 +23,7 @@ const ROLES_ORDENADOS = [ROLES.DOCENTE, ROLES.ESTUDIANTE, ROLES.COORDINADOR, ROL
 
 const DESCRIPCION_ROL = {
   VICERRECTOR: 'Alcance institucional: administra periodos, usuarios y ve todas las facultades.',
-  COORDINADOR: 'Ve y califica a los docentes de su facultad y carga el CSV de estudiantes.',
+  COORDINADOR: 'Ve y coevalúa a los docentes de su facultad.',
   DOCENTE: 'Consulta su propia evaluación, sin notas individuales por fuente.',
   ESTUDIANTE: 'Califica a sus profesores por cada clase en la que está matriculado.',
 }

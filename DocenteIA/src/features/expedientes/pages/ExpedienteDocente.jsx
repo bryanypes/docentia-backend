@@ -110,7 +110,7 @@ export default function ExpedienteDocente() {
           <PanelFuentes
             notasPorFuente={notasPorFuente}
             promedio={promedio}
-            descripcion="Estudiantes llega por CSV; coevaluación y autoevaluación, por sus formularios."
+            descripcion="Las tres notas llegan por sus formularios: heteroevaluación, coevaluación y autoevaluación."
           >
             {miFuente && (
               <>
