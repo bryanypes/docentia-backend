@@ -347,14 +347,18 @@ export function ListaDestacados({ seguimiento, umbral }) {
               <th scope="col">Docente</th>
               <th scope="col">Programa</th>
               <th scope="col">Puntaje</th>
+              <th scope="col">Clasificación</th>
             </tr>
           </thead>
           <tbody>
             {destacados.map((d) => (
               <tr key={d.docente.idDocente}>
-                <td className="tabla__fuerte">{d.docente.nombreCompleto}</td>
+                <td className="tabla__fuerte">
+                  <Link to={`/docentes/${d.docente.idDocente}`}>{d.docente.nombreCompleto}</Link>
+                </td>
                 <td data-etiqueta="Programa">{d.docente.nombrePrograma}</td>
                 <td data-etiqueta="Puntaje">{formatearNota(d.promedio.valor)}</td>
+                <td data-etiqueta="Clasificación">{d.promedio.categoria?.etiqueta ?? '—'}</td>
               </tr>
             ))}
           </tbody>

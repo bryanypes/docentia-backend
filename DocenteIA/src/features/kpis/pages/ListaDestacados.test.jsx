@@ -1,10 +1,11 @@
 import { render, screen, within } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 import { ListaDestacados } from './Inicio.jsx'
 
 const docente = (id, nombre, programa, estado, valor) => ({
   docente: { idDocente: id, nombreCompleto: nombre, nombrePrograma: programa },
-  promedio: { estado, valor },
+  promedio: { estado, valor, categoria: { etiqueta: valor >= 4.6 ? 'Muy alto desempeño' : 'Alto desempeño' } },
 })
 
 describe('ListaDestacados', () => {
@@ -19,13 +20,17 @@ describe('ListaDestacados', () => {
         ],
       },
     }
-    render(<ListaDestacados seguimiento={seguimiento} umbral={4.5} />)
+    render(<MemoryRouter><ListaDestacados seguimiento={seguimiento} umbral={4.5} /></MemoryRouter>)
     const filas = within(screen.getByRole('table')).getAllByRole('row').slice(1)
-    expect(filas.map((f) => f.textContent)).toEqual(['Camilo VidalIngeniería de Software4,75', 'Luis JustoDerecho4,50'])
+    expect(filas.map((f) => f.textContent)).toEqual([
+      'Camilo VidalIngeniería de Software4,75Muy alto desempeño',
+      'Luis JustoDerecho4,50Alto desempeño',
+    ])
+    expect(screen.getByRole('link', { name: 'Camilo Vidal' })).toHaveAttribute('href', '/docentes/2')
   })
 
   it('sin destacados lo dice', () => {
-    render(<ListaDestacados seguimiento={{ datos: { docentes: [] } }} umbral={4.5} />)
+    render(<MemoryRouter><ListaDestacados seguimiento={{ datos: { docentes: [] } }} umbral={4.5} /></MemoryRouter>)
     expect(screen.getByText(/Ningún docente/)).toBeInTheDocument()
   })
 })
