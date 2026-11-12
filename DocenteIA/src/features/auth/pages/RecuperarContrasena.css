@@ -3,7 +3,9 @@
   place-items: center;
   min-height: 100vh;
   padding: 1rem;
-  background: var(--color-crema, #fffdf5);
+  background:
+    radial-gradient(circle at 84% 8%, rgba(232, 201, 68, 0.22), transparent 22rem),
+    var(--gradiente-marca);
 }
 
 .recuperar__tarjeta {
@@ -12,8 +14,10 @@
   width: min(100%, 28rem);
   padding: 1.75rem;
   border: 1px solid var(--color-borde, #e6dfce);
-  border-radius: 1rem;
+  border-radius: 28px;
   background: var(--color-superficie, #ffffff);
+  box-shadow: 0 30px 70px -30px rgba(0, 20, 55, 0.65);
+  animation: entrar-suave var(--transicion-media) both;
 }
 
 .recuperar__tarjeta h1 {
