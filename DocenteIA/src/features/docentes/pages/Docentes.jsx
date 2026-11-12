@@ -7,7 +7,7 @@ import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { BotonAccion } from '../../../shared/components/ui/BotonAccion/BotonAccion.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { EtiquetaNivel } from '../../../shared/components/ui/EtiquetaNivel/EtiquetaNivel.jsx'
-import { ETIQUETA_FUENTE, FUENTE_DEL_ROL, ROLES } from '../../../shared/constants/dominio.js'
+import { ETIQUETA_FUENTE, FUENTE_DEL_ROL, NIVELES, ROLES } from '../../../shared/constants/dominio.js'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { formatearNota, iniciales, listarFuentes, normalizarTexto } from '../../../shared/utils/formatters.js'
 import { useSesion } from '../../auth/sesionContext.js'
@@ -36,10 +36,12 @@ function cumpleEstado(promedio, estado, miFuente) {
 }
 
 /** Solo se ordena por el puntaje que se ve (promedio completo); los demás van al final, por nombre. */
-function compararPorPuntaje(a, b) {
+function compararPorPuntaje(a, b, ascendente = false) {
   const puntajeA = a.promedio?.estado === 'COMPLETO' ? Number(a.promedio.valor) : null
   const puntajeB = b.promedio?.estado === 'COMPLETO' ? Number(b.promedio.valor) : null
-  if (puntajeA !== null && puntajeB !== null && puntajeA !== puntajeB) return puntajeB - puntajeA
+  if (puntajeA !== null && puntajeB !== null && puntajeA !== puntajeB) {
+    return ascendente ? puntajeA - puntajeB : puntajeB - puntajeA
+  }
   if (puntajeA !== null && puntajeB === null) return -1
   if (puntajeA === null && puntajeB !== null) return 1
   return a.docente.nombreCompleto.localeCompare(b.docente.nombreCompleto, 'es')
@@ -75,6 +77,8 @@ export default function Docentes() {
     Object.values(ESTADOS).includes(parametros.get('estado')) ? parametros.get('estado') : TODOS,
   )
   const [busqueda, setBusqueda] = useState('')
+  const [nivel, setNivel] = useState(TODOS)
+  const [ascendente, setAscendente] = useState(false)
   const [estadoProceso, setEstadoProceso] = useState(TODOS)
 
   const cargarDocentes = useCallback(() => listarSeguimientoDocentes(idFacultad || null), [idFacultad])
@@ -103,23 +107,25 @@ export default function Docentes() {
         ({ docente, promedio }) =>
           (!programa || docente.nombrePrograma === programa) &&
           cumpleEstado(promedio, estado, miFuente) &&
+          (!nivel || (promedio?.estado === 'COMPLETO' && promedio.categoria?.codigo === nivel)) &&
           (!estadoProceso || procesoPorDocente.get(docente.idDocente)?.estado === estadoProceso) &&
           (!termino ||
             normalizarTexto(`${docente.nombreCompleto} ${docente.correo} ${docente.nombrePrograma}`).includes(termino)),
       )
-      .sort(compararPorPuntaje)
-  }, [lista, programa, estado, estadoProceso, procesoPorDocente, miFuente, busqueda])
+      .sort((a, b) => compararPorPuntaje(a, b, ascendente))
+  }, [lista, programa, estado, nivel, ascendente, estadoProceso, procesoPorDocente, miFuente, busqueda])
 
   function limpiarFiltros() {
     setBusqueda('')
     setPrograma(TODOS)
     setEstado(TODOS)
+    setNivel(TODOS)
     setEstadoProceso(TODOS)
     setIdFacultad(TODOS)
   }
 
   const alcance = esVicerrector ? 'toda la universidad' : (lista[0]?.docente.nombreFacultad ?? 'tu facultad')
-  const hayFiltros = Boolean(busqueda || programa || estado || estadoProceso || idFacultad)
+  const hayFiltros = Boolean(busqueda || programa || estado || nivel || estadoProceso || idFacultad)
 
   return (
     <>
@@ -217,6 +223,26 @@ export default function Docentes() {
               <option value={ESTADOS.FALTA_MI_NOTA}>Falta mi calificación</option>
               <option value={ESTADOS.INCOMPLETOS}>Incompletas</option>
               <option value={ESTADOS.COMPLETOS}>Completas</option>
+            </select>
+          </label>
+
+          <label className="docentes__selector">
+            <span className="docentes__etiqueta">Clasificación</span>
+            <select value={nivel} onChange={(e) => setNivel(e.target.value)} disabled={!periodo}>
+              <option value={TODOS}>Todas</option>
+              {NIVELES.map((n) => (
+                <option key={n.codigo} value={n.codigo}>
+                  {n.etiqueta}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <label className="docentes__selector">
+            <span className="docentes__etiqueta">Orden</span>
+            <select value={ascendente ? 'asc' : 'desc'} onChange={(e) => setAscendente(e.target.value === 'asc')}>
+              <option value="desc">Puntaje: mayor a menor</option>
+              <option value="asc">Puntaje: menor a mayor</option>
             </select>
           </label>
 
