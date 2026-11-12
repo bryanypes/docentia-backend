@@ -13,7 +13,6 @@ import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.SolicitudAnalisis;
 import com.uniautonoma.docentia.entity.TipoHallazgo;
 import com.uniautonoma.docentia.exception.RecursoNoEncontradoException;
-import com.uniautonoma.docentia.repository.ComentarioEstudianteRepository;
 import com.uniautonoma.docentia.repository.PeriodoAcademicoRepository;
 import com.uniautonoma.docentia.repository.SolicitudAnalisisRepository;
 import com.uniautonoma.docentia.security.UsuarioSesion;
@@ -43,19 +42,19 @@ public class PanoramaAnalisisService {
       EnumSet.of(EstadoSolicitudAnalisis.EN_COLA, EstadoSolicitudAnalisis.EN_PROCESO);
 
   private final SolicitudAnalisisRepository solicitudRepository;
-  private final ComentarioEstudianteRepository comentarioRepository;
+  private final ComentariosFormularioProveedor comentariosFormulario;
   private final PeriodoAcademicoRepository periodoRepository;
   private final PeriodoAcademicoService periodoService;
   private final DocenteService docenteService;
 
   public PanoramaAnalisisService(
       SolicitudAnalisisRepository solicitudRepository,
-      ComentarioEstudianteRepository comentarioRepository,
+      ComentariosFormularioProveedor comentariosFormulario,
       PeriodoAcademicoRepository periodoRepository,
       PeriodoAcademicoService periodoService,
       DocenteService docenteService) {
     this.solicitudRepository = solicitudRepository;
-    this.comentarioRepository = comentarioRepository;
+    this.comentariosFormulario = comentariosFormulario;
     this.periodoRepository = periodoRepository;
     this.periodoService = periodoService;
     this.docenteService = docenteService;
@@ -91,7 +90,7 @@ public class PanoramaAnalisisService {
                 docente ->
                     describir(
                         docente,
-                        comentarioRepository.countByDocenteIdUsuarioAndPeriodoIdPeriodo(
+                        comentariosFormulario.contarComentarios(
                             docente.idDocente(), periodo.getIdPeriodo()),
                         Optional.ofNullable(ultimas.get(docente.idDocente()))))
             .toList();

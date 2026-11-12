@@ -505,6 +505,12 @@ export default function Analisis() {
               </Panel>
             )}
             {esCoordinador && (
+              <p className="campo__ayuda analisis__fuente">
+                Se analizan los comentarios del formulario anónimo de los estudiantes, cuando la recolección ya
+                terminó y la revisión de hallazgos está abierta. Hacen falta al menos 10 respuestas.
+              </p>
+            )}
+            {esCoordinador && (
               <div className="analisis__acciones">
                 {pideMotivo && (
                   <Campo

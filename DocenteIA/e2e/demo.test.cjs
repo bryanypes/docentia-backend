@@ -362,3 +362,46 @@ test('el estudiante evalúa de forma anónima y la nota cambia al llegar al mín
   assert.equal(propio.datos.notasPorFuente, undefined)
   await docente.context().close()
 })
+
+test('el análisis lee los comentarios del formulario cuando cierra la recolección y se conserva', async () => {
+  const coordinacion = await entrar(COORDINACION)
+  const docentes = await llamar(coordinacion, 'GET', '/docentes?size=500')
+  const mariana = (docentes.datos.content ?? docentes.datos).find((d) => d.nombreCompleto === 'Mariana Ruiz Ortega')
+  const activo = await llamar(coordinacion, 'GET', '/periodos-academicos/activo')
+  const idPeriodo = activo.datos.idPeriodo
+  const pedido = { docenteId: mariana.idDocente, periodoId: idPeriodo, fuente: 'FORMULARIO' }
+
+  // Con la recolección abierta no se analiza, y el mensaje lo dice.
+  const antes = await llamar(coordinacion, 'POST', '/analisis-ia/solicitudes', pedido)
+  assert.equal(antes.estado, 409)
+  assert.match(antes.datos.mensaje, /La recolección aún no termina/)
+
+  // La vicerrectoría cierra la recolección ayer.
+  const vicerrectoria = await entrar('vicerrectoria')
+  const periodo = await llamar(vicerrectoria, 'GET', `/periodos-academicos/${idPeriodo}`)
+  const etapas = periodo.datos.etapas.map(({ tipoEtapa, fechaApertura, fechaCierre }) => ({
+    tipoEtapa,
+    fechaApertura,
+    fechaCierre: tipoEtapa === 'RECOLECCION_CALIFICACIONES' ? sumarDias(hoy(), -1) : fechaCierre,
+  }))
+  const cierre = await llamar(vicerrectoria, 'PUT', `/periodos-academicos/${idPeriodo}`, {
+    fechaInicio: periodo.datos.fechaInicio,
+    fechaFin: periodo.datos.fechaFin,
+    etapas,
+  })
+  assert.equal(cierre.estado, 200, JSON.stringify(cierre.datos))
+  await vicerrectoria.context().close()
+
+  // Desde la pantalla, con el modelo local por defecto.
+  await coordinacion.goto(`${BASE}/analisis?docente=${mariana.idDocente}&periodo=${idPeriodo}`)
+  await coordinacion.getByText('Se analizan los comentarios del formulario anónimo').waitFor()
+  await coordinacion.getByRole('button', { name: 'Solicitar análisis' }).click()
+  await coordinacion.getByText(/Fortalezas/).first().waitFor({ timeout: 60000 })
+
+  // Al salir y volver el resultado sigue ahí; pedir otro ya es regenerar.
+  await coordinacion.goto(`${BASE}/inicio`)
+  await coordinacion.goto(`${BASE}/analisis?docente=${mariana.idDocente}&periodo=${idPeriodo}`)
+  await coordinacion.getByText(/Fortalezas/).first().waitFor()
+  await coordinacion.getByRole('button', { name: 'Regenerar análisis' }).waitFor()
+  await coordinacion.context().close()
+})

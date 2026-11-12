@@ -30,6 +30,18 @@ public class ComentariosFormularioProveedor implements ProveedorComentarios {
     this.jdbcTemplate = jdbcTemplate;
   }
 
+  /** Respuestas con un comentario escrito, para el panorama. Solo cuenta; no lee el texto. */
+  public long contarComentarios(Long idDocente, Long idPeriodo) {
+    Long total =
+        jdbcTemplate.queryForObject(
+            "select count(*) from respuestas_heteroevaluacion where docente_id = ? and periodo_id = ?"
+                + " and comentario is not null and btrim(comentario) <> ''",
+            Long.class,
+            idDocente,
+            idPeriodo);
+    return total == null ? 0 : total;
+  }
+
   /** Respuestas enviadas, con o sin comentario: el mínimo se cuenta sobre respuestas. */
   @Override
   public int contarEncuestasCerradas(Long idDocente, Long idPeriodo) {

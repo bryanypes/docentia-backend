@@ -84,7 +84,8 @@ export function puedeRegistrarAsistencia(cita, hoy) {
   return Boolean(cita?.activa && !cita.asistencia && cita.fecha <= hoy)
 }
 
-const ORIGEN = { CSV: 'cargada por CSV', MANUAL: 'registrada sin formularios' }
+// Origen de notas cargadas antes de 0.4.0 por archivo; hoy la nota de estudiantes sale del formulario.
+const ORIGEN = { CSV: 'cargada desde un archivo en una versión anterior', MANUAL: 'registrada sin formularios' }
 
 /**
  * Explica la nota de estudiantes: cuántos respondieron el formulario en la app y, si la nota no sale

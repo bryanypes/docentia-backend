@@ -52,6 +52,9 @@ public class EscenarioPrueba {
   private final ClaseRepository claseRepository;
   private final MatriculaRepository matriculaRepository;
 
+  @org.springframework.beans.factory.annotation.Autowired
+  private org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
+
   public EscenarioPrueba(
       FacultadRepository facultadRepository,
       ProgramaRepository programaRepository,
@@ -75,6 +78,34 @@ public class EscenarioPrueba {
     this.cursoRepository = cursoRepository;
     this.claseRepository = claseRepository;
     this.matriculaRepository = matriculaRepository;
+  }
+
+  /**
+   * Respuestas anónimas del formulario de estudiantes con su comentario, como las deja un envío
+   * real: sin estudiante y sin fecha. Crea una clase del docente para tener la asignación.
+   */
+  public void responderFormularioAnonimo(
+      Usuario docente, PeriodoAcademico periodo, List<String> comentarios) {
+    Curso curso =
+        crearCurso("FORM-" + docente.getIdUsuario(), "Curso del formulario", docente.getPrograma());
+    Clase clase = crearClase(periodo, curso, "A", docente);
+    Long asignacion =
+        jdbcTemplate.queryForObject(
+            "select id from clases_docente where clase_id = ? and docente_id = ?",
+            Long.class,
+            clase.getId(),
+            docente.getIdUsuario());
+    for (String comentario : comentarios) {
+      jdbcTemplate.update(
+          "insert into respuestas_heteroevaluacion"
+              + " (asignacion_id, docente_id, periodo_id, instrumento_version, comentario)"
+              + " values (?, ?, ?, ?, ?)",
+          asignacion,
+          docente.getIdUsuario(),
+          periodo.getIdPeriodo(),
+          com.uniautonoma.docentia.service.formulario.CatalogoInstrumento.VERSION,
+          comentario);
+    }
   }
 
   /**

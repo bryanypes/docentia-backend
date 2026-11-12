@@ -22,6 +22,7 @@ describe('analisisService', () => {
     expect(api.post).toHaveBeenCalledWith('/analisis-ia/solicitudes', {
       docenteId: 4,
       periodoId: 2,
+      fuente: 'FORMULARIO',
       motivo: 'Revisar el nuevo periodo',
       modelo: 'LLM',
     })

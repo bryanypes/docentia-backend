@@ -1,8 +1,12 @@
 import { api } from '../../../services/api.js'
 
-/** Con un análisis ya generado, pedir otro es regenerar: el backend exige motivo y una hora de espera. */
+/**
+ * Pide el análisis de los comentarios del formulario anónimo de estudiantes, la única fuente en
+ * producción. Con un análisis ya generado, pedir otro es regenerar: el backend exige motivo y una
+ * hora de espera.
+ */
 export function solicitarAnalisis(docenteId, periodoId, motivo, modelo) {
-  const cuerpo = { docenteId: Number(docenteId), periodoId: Number(periodoId) }
+  const cuerpo = { docenteId: Number(docenteId), periodoId: Number(periodoId), fuente: 'FORMULARIO' }
   if (motivo) cuerpo.motivo = motivo
   if (modelo) cuerpo.modelo = modelo
   return api.post('/analisis-ia/solicitudes', cuerpo)
