@@ -146,6 +146,20 @@ sh scripts/restaurar.sh respaldo.dump
 Restaurar reemplaza la base y reinicia la API. Los dos scripts usan el `docker compose` de la carpeta
 donde se corren; para otro proyecto de Compose, exporta antes `COMPOSE_PROJECT_NAME`.
 
+- **Qué verifican.** `respaldar.sh` falla si el archivo queda vacío o si `pg_restore` no puede leer su
+  índice, y al terminar muestra el tamaño y cuántas tablas tienen datos. `restaurar.sh` hace las mismas
+  comprobaciones **antes** de borrar la base: con un archivo vacío o dañado no toca nada.
+- **Frecuencia recomendada:** un respaldo diario fuera del horario de uso y uno antes de cada despliegue o
+  cambio de periodo. Con `cron`: `0 2 * * * cd /ruta/docentia && sh scripts/respaldar.sh /respaldos/docentia-$(date +\%F).dump`.
+- **Retención sugerida** (por confirmar con la institución): 14 diarios, 8 semanales y los de cada cierre
+  de periodo sin vencimiento. Los respaldos se guardan fuera del servidor y fuera de cualquier carpeta con
+  repositorio: tienen datos personales.
+- **Cómo verificar uno guardado:** `docker compose exec -T db pg_restore -l < archivo.dump | grep -c "TABLE DATA"`
+  debe dar más de 40. Una vez al mes conviene restaurarlo en otra base con otro proyecto de Compose,
+  como en el ensayo de migraciones.
+- **Probado el 12 de noviembre de 2026:** respaldo de 179 KB y 46 tablas en 1 s; restauración en 7 s con
+  la API de vuelta en `UP`; un archivo vacío se rechazó sin tocar la base.
+
 ## Despliegue de 0.4.0 (sábado 14 de noviembre de 2026)
 
 Pasa el servidor de 0.3.3 (migración V28) a 0.4.0 (V41). Las migraciones nuevas son V34 a V41: agregan
