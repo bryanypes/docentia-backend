@@ -1,3 +1,4 @@
+import userEvent from '@testing-library/user-event'
 import { screen, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderizarConSesion } from '../../../pruebas/renderizarConSesion.jsx'
@@ -31,16 +32,29 @@ beforeEach(() => {
 })
 
 describe('PanelProgramas', () => {
-  it('muestra cobertura y distribución sin enlaces individuales', async () => {
+  it('muestra avance y distribución sin enlaces individuales', async () => {
     obtenerPanelProgramas.mockResolvedValue({
       periodo: { nombre: '2026-2' },
       programas: [FILA],
       total: { ...FILA, idPrograma: null, programa: 'Total' },
     })
     const { container } = renderizarConSesion(<PanelProgramas />)
-    expect(await screen.findByText('Software')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Software' })).toBeInTheDocument()
     expect(within(container).getAllByText('50 %').length).toBeGreaterThan(0)
     expect(container.querySelector('.pagina a')).toBeNull()
+  })
+
+  it('filtra las tarjetas por programa', async () => {
+    obtenerPanelProgramas.mockResolvedValue({
+      periodo: { nombre: '2026-2' },
+      programas: [FILA, { ...FILA, idPrograma: 99, programa: 'Derecho' }],
+      total: { ...FILA, idPrograma: null, programa: 'Total' },
+    })
+    renderizarConSesion(<PanelProgramas />)
+    expect(await screen.findByRole('heading', { name: 'Derecho' })).toBeInTheDocument()
+    await userEvent.selectOptions(screen.getByLabelText('Programa'), String(FILA.idPrograma))
+    expect(screen.queryByRole('heading', { name: 'Derecho' })).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Software' })).toBeInTheDocument()
   })
 
   it('muestra el error del servidor', async () => {

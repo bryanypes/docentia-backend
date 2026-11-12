@@ -1,19 +1,25 @@
-import { Download, FileSignature, Plus, RefreshCw, Trash2 } from 'lucide-react'
+import { CalendarClock, Download, FileSignature, ListPlus, Plus, RefreshCw, Sparkles } from 'lucide-react'
 import { useCallback, useRef, useState } from 'react'
 import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
+import { BotonAccion } from '../../../shared/components/ui/BotonAccion/BotonAccion.jsx'
 import { Campo } from '../../../shared/components/ui/Campo/Campo.jsx'
 import { ErrorApi } from '../../../shared/components/ui/ErrorApi/ErrorApi.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { ChipCategoria } from '../../../shared/components/ui/EtiquetaNivel/EtiquetaNivel.jsx'
+import { Modal } from '../../../shared/components/ui/Modal/Modal.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
 import { ETIQUETA_ROL, ROLES } from '../../../shared/constants/dominio.js'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { formatearFecha, formatearFechaHora, formatearNota } from '../../../shared/utils/formatters.js'
+import { compromisoDesdeTema } from '../../analisis/estados.js'
+import { obtenerAnalisisDocente } from '../../analisis/services/analisisService.js'
 import { useSesion } from '../../auth/sesionContext.js'
 import { obtenerConfiguracionEvaluacion } from '../../kpis/services/configuracionService.js'
+import { ETIQUETA_TIPO_ACTA } from '../../proceso/estados.js'
 import {
   agregarCompromiso,
+  cambiarTipoActa,
   corregirActa,
   crearActa,
   descargarPdfActa,
@@ -21,6 +27,7 @@ import {
   listarActas,
   quitarCompromiso,
 } from '../services/actasService.js'
+import { ModalFirma } from './ModalFirma.jsx'
 import './PanelActa.css'
 
 const ESTADO_ACTA = {
@@ -38,81 +45,231 @@ function guardarArchivo(blob, nombre) {
   URL.revokeObjectURL(url)
 }
 
-function Compromisos({ acta, editable, ejecutar, ocupado }) {
-  const [descripcion, setDescripcion] = useState('')
-  const [fechaLimite, setFechaLimite] = useState('')
+const SUGERENCIAS = [
+  'Actualizar el plan de asignatura con resultados de aprendizaje',
+  'Retroalimentar cada evaluación en máximo ocho días',
+  'Participar en el curso de formación docente del periodo',
+  'Incorporar una estrategia didáctica activa por unidad',
+]
 
-  async function agregar(evento) {
+/** Fecha AAAA-MM-DD a n meses de hoy, para los plazos rápidos. */
+function enMeses(meses) {
+  const fecha = new Date()
+  fecha.setMonth(fecha.getMonth() + meses)
+  return fecha.toISOString().slice(0, 10)
+}
+
+/** Modal para agregar un compromiso: qué se compromete el docente y para cuándo. */
+function ModalCompromiso({ acta, inicial = '', ejecutar, ocupado, onCerrar }) {
+  const [descripcion, setDescripcion] = useState(inicial)
+  const [fechaLimite, setFechaLimite] = useState('')
+  // Se calculan al abrir el modal: hoy y los plazos rápidos no cambian mientras está abierto.
+  const [hoy] = useState(() => enMeses(0))
+  const [plazos] = useState(() => [
+    [enMeses(1), 'En 1 mes'],
+    [enMeses(3), 'En 3 meses'],
+    [enMeses(6), 'En 6 meses'],
+  ])
+  const idDescripcion = `compromiso-${acta.idActa}`
+  const idPlazo = `plazo-${acta.idActa}`
+  const listo = descripcion.trim().length >= 5 && fechaLimite
+
+  async function guardar(evento) {
     evento.preventDefault()
+    if (!listo) return
     const hecho = await ejecutar(() => agregarCompromiso(acta.idActa, { descripcion: descripcion.trim(), fechaLimite }))
-    if (hecho) {
-      setDescripcion('')
-      setFechaLimite('')
-    }
+    if (hecho) onCerrar()
   }
 
   return (
-    <section>
-      <h3 className="acta__subtitulo">{acta.categoria?.codigo === 'BAJO' ? 'Plan de Mejoramiento Profesoral' : 'Compromisos'}</h3>
+    <Modal
+      titulo="Agregar compromiso"
+      descripcion="Una acción concreta que el docente se compromete a cumplir, con su plazo."
+      icono={ListPlus}
+      ancho="pequeno"
+      onCerrar={onCerrar}
+    >
+      <form className="compromiso-nuevo" onSubmit={guardar}>
+        <Campo id={idDescripcion} etiqueta="Compromiso" ayuda="Empieza con un verbo: actualizar, participar, incorporar…">
+          <textarea
+            id={idDescripcion}
+            className="campo__control"
+            rows={3}
+            maxLength={500}
+            required
+            value={descripcion}
+            onChange={(e) => setDescripcion(e.target.value)}
+          />
+        </Campo>
+        <div className="compromiso-nuevo__sugerencias" role="group" aria-label="Sugerencias">
+          {SUGERENCIAS.map((texto) => (
+            <button key={texto} type="button" className="compromiso-nuevo__sugerencia" onClick={() => setDescripcion(texto)}>
+              {texto}
+            </button>
+          ))}
+        </div>
+        <Campo id={idPlazo} etiqueta="Plazo">
+          <input
+            id={idPlazo}
+            type="date"
+            className="campo__control"
+            required
+            min={hoy}
+            value={fechaLimite}
+            onChange={(e) => setFechaLimite(e.target.value)}
+          />
+        </Campo>
+        <div className="compromiso-nuevo__plazos" role="group" aria-label="Plazos rápidos">
+          {plazos.map(([fecha, texto]) => (
+            <button
+              key={fecha}
+              type="button"
+              className={`compromiso-nuevo__plazo${fechaLimite === fecha ? ' compromiso-nuevo__plazo--activo' : ''}`}
+              aria-pressed={fechaLimite === fecha}
+              onClick={() => setFechaLimite(fecha)}
+            >
+              {texto}
+            </button>
+          ))}
+        </div>
+        <div className="compromiso-nuevo__acciones">
+          <Boton variante="secundario" onClick={onCerrar}>
+            Cancelar
+          </Boton>
+          <Boton type="submit" icono={Plus} disabled={ocupado || !listo}>
+            Guardar compromiso
+          </Boton>
+        </div>
+      </form>
+    </Modal>
+  )
+}
+
+/**
+ * Oportunidades de mejora que DocenteIA encontró en los comentarios de los estudiantes, listas para
+ * convertirse en compromisos. Quien redacta decide cuáles agregar y puede editar el texto.
+ */
+function SugerenciasIA({ idDocente, idPeriodo, compromisos, onAgregar }) {
+  const cargar = useCallback(
+    () => (idDocente && idPeriodo ? obtenerAnalisisDocente(idDocente, idPeriodo) : Promise.resolve(null)),
+    [idDocente, idPeriodo],
+  )
+  const { datos } = useFetch(cargar, [cargar])
+  const oportunidades = datos?.resultado?.aspectos.oportunidades ?? []
+  if (oportunidades.length === 0) return null
+  const usadas = new Set(compromisos.map((c) => c.descripcion))
+
+  return (
+    <div className="acta-sugerencias">
+      <p className="acta-sugerencias__titulo">
+        <Sparkles size={15} aria-hidden="true" />
+        Sugerencias de DocenteIA según los comentarios de estudiantes
+      </p>
+      <ul className="acta-sugerencias__lista">
+        {oportunidades.map((tema) => {
+          const texto = compromisoDesdeTema(tema)
+          const agregada = usadas.has(texto)
+          return (
+            <li key={`${tema.criterio}-${tema.descriptor}`} className="acta-sugerencias__item">
+              <div>
+                <strong>{tema.nombre}</strong>
+                <span>
+                  {tema.criterio} · {tema.frecuencia} {tema.frecuencia === 1 ? 'comentario' : 'comentarios'}
+                  {tema.citas?.[0] ? ` · «${tema.citas[0].fragmento}»` : ''}
+                </span>
+              </div>
+              <Boton variante="contorno" icono={Plus} disabled={agregada} onClick={() => onAgregar(texto)}>
+                {agregada ? 'Agregado' : 'Agregar'}
+              </Boton>
+            </li>
+          )
+        })}
+      </ul>
+    </div>
+  )
+}
+
+function Compromisos({ acta, idDocente, editable, ejecutar, ocupado }) {
+  // null: modal cerrado; texto (posiblemente vacío): modal abierto con ese compromiso de partida.
+  const [agregando, setAgregando] = useState(null)
+  const faltan = editable && acta.requiereCompromisos && acta.compromisos.length === 0
+  const titulo = acta.categoria?.codigo === 'BAJO' ? 'Plan de Mejoramiento Profesoral' : 'Compromisos'
+
+  return (
+    <section className="acta-compromisos">
+      <div className="acta-compromisos__cabecera">
+        <h3 className="acta__subtitulo">
+          {titulo}
+          <span className="acta-compromisos__contador">{acta.compromisos.length}</span>
+        </h3>
+        {editable && (
+          <Boton icono={Plus} disabled={ocupado} onClick={() => setAgregando('')}>
+            Agregar compromiso
+          </Boton>
+        )}
+      </div>
+      {editable && (
+        <SugerenciasIA
+          idDocente={idDocente}
+          idPeriodo={acta.periodo?.idPeriodo}
+          compromisos={acta.compromisos}
+          onAgregar={setAgregando}
+        />
+      )}
       {acta.compromisos.length === 0 ? (
-        <p className="campo__ayuda">Sin compromisos registrados.</p>
+        <div className={`acta-compromisos__vacio${faltan ? ' acta-compromisos__vacio--requerido' : ''}`}>
+          <ListPlus size={22} aria-hidden="true" />
+          <div>
+            <strong>{faltan ? 'Esta acta necesita al menos un compromiso' : 'Sin compromisos registrados'}</strong>
+            <span>
+              {editable
+                ? 'Pulsa «Agregar compromiso» para escribir la acción y su plazo.'
+                : 'La coordinación los agrega en la reunión.'}
+            </span>
+          </div>
+        </div>
       ) : (
-        <ul className="acta__compromisos">
-          {acta.compromisos.map((c) => (
-            <li key={c.idCompromiso}>
-              <span>
-                {c.descripcion} · Plazo {formatearFecha(c.fechaLimite)}
+        <ol className="acta-compromisos__lista">
+          {acta.compromisos.map((c, indice) => (
+            <li key={c.idCompromiso} className="acta-compromisos__item">
+              <span className="acta-compromisos__numero" aria-hidden="true">
+                {indice + 1}
               </span>
+              <div className="acta-compromisos__texto">
+                <strong>{c.descripcion}</strong>
+                <span>
+                  <CalendarClock size={14} aria-hidden="true" /> Plazo {formatearFecha(c.fechaLimite)}
+                </span>
+              </div>
               {editable && (
-                <Boton
-                  variante="contorno"
-                  icono={Trash2}
-                  aria-label={`Quitar ${c.descripcion}`}
+                <BotonAccion
+                  tipo="eliminar"
+                  texto="Quitar"
+                  nombre={c.descripcion}
                   onClick={() => ejecutar(() => quitarCompromiso(acta.idActa, c.idCompromiso))}
                 />
               )}
             </li>
           ))}
-        </ul>
+        </ol>
       )}
-      {editable && (
-        <form className="acta__formulario" onSubmit={agregar}>
-          <Campo id={`compromiso-${acta.idActa}`} etiqueta="Compromiso">
-            <input
-              id={`compromiso-${acta.idActa}`}
-              className="campo__control"
-              maxLength={500}
-              required
-              value={descripcion}
-              onChange={(e) => setDescripcion(e.target.value)}
-            />
-          </Campo>
-          <Campo id={`plazo-${acta.idActa}`} etiqueta="Plazo">
-            <input
-              id={`plazo-${acta.idActa}`}
-              type="date"
-              className="campo__control"
-              required
-              value={fechaLimite}
-              onChange={(e) => setFechaLimite(e.target.value)}
-            />
-          </Campo>
-          <Boton type="submit" variante="contorno" icono={Plus} disabled={ocupado}>
-            Agregar compromiso
-          </Boton>
-        </form>
+      {agregando !== null && (
+        <ModalCompromiso acta={acta} inicial={agregando} ejecutar={ejecutar} ocupado={ocupado} onCerrar={() => setAgregando(null)} />
       )}
     </section>
   )
 }
 
-function Firma({ acta, usuario, ejecutar, ocupado }) {
-  const [confirmado, setConfirmado] = useState(false)
+function Firma({ acta, usuario, ejecutar, ocupado, error }) {
+  const [firmando, setFirmando] = useState(false)
   const puedeFirmar =
     acta.estado === 'BORRADOR' &&
     (usuario.rol === ROLES.COORDINADOR || usuario.rol === ROLES.DOCENTE) &&
     !acta.firmas.some((firma) => firma.rol === usuario.rol)
-  const idConfirmacion = `confirmar-${acta.idActa}`
+
+  async function firmar(trazo) {
+    if (await ejecutar(() => firmarActa(acta.idActa, trazo))) setFirmando(false)
+  }
 
   return (
     <section>
@@ -124,25 +281,28 @@ function Firma({ acta, usuario, ejecutar, ocupado }) {
           {acta.firmas.map((firma) => (
             <li key={firma.rol}>
               {ETIQUETA_ROL[firma.rol]}: {firma.nombre} · {formatearFechaHora(firma.fecha)}
+              {firma.conTrazo && <span className="pildora pildora--rosa">Firma dibujada</span>}
             </li>
           ))}
         </ul>
       )}
       {puedeFirmar && (
         <div className="acta__firmar">
-          <label htmlFor={idConfirmacion}>
-            <input
-              id={idConfirmacion}
-              type="checkbox"
-              checked={confirmado}
-              onChange={(e) => setConfirmado(e.target.checked)}
-            />{' '}
-            Leí el acta y entiendo que firmar es irreversible.
-          </label>
-          <Boton icono={FileSignature} disabled={!confirmado || ocupado} onClick={() => ejecutar(() => firmarActa(acta.idActa))}>
+          <Boton icono={FileSignature} disabled={ocupado} onClick={() => setFirmando(true)}>
             Firmar acta
           </Boton>
+          <span className="campo__ayuda">Dibujas tu firma aquí mismo; queda impresa en el PDF.</span>
         </div>
+      )}
+      {firmando && (
+        <ModalFirma
+          nombre={usuario.nombreCompleto}
+          tipoActa={acta.tipo ? ETIQUETA_TIPO_ACTA[acta.tipo] : null}
+          enviando={ocupado}
+          error={error}
+          onFirmar={firmar}
+          onCerrar={() => setFirmando(false)}
+        />
       )}
     </section>
   )
@@ -177,7 +337,26 @@ function Correccion({ acta, ejecutar, ocupado }) {
   )
 }
 
-function DetalleActa({ acta, usuario, rolCorrector, ejecutar, ocupado, onDescargar }) {
+/** Selector del tipo de acta para la coordinación, mientras nadie haya firmado. */
+function TipoActa({ acta, ejecutar, ocupado }) {
+  const id = `tipo-acta-${acta.idActa}`
+  return (
+    <Campo id={id} etiqueta="Tipo de acta" ayuda="Con una nota bajo el umbral solo cabe el acta de compromiso.">
+      <select
+        id={id}
+        className="campo__control"
+        value={acta.tipo}
+        disabled={ocupado}
+        onChange={(e) => ejecutar(() => cambiarTipoActa(acta.idActa, e.target.value))}
+      >
+        <option value="RETROALIMENTACION">{ETIQUETA_TIPO_ACTA.RETROALIMENTACION}</option>
+        <option value="COMPROMISO">{ETIQUETA_TIPO_ACTA.COMPROMISO}</option>
+      </select>
+    </Campo>
+  )
+}
+
+function DetalleActa({ acta, idDocente, usuario, rolCorrector, ejecutar, ocupado, error, onDescargar }) {
   const estado = ESTADO_ACTA[acta.estado]
   const editable = acta.estado === 'BORRADOR' && usuario.rol === ROLES.COORDINADOR && acta.firmas.length === 0
   const umbral = formatearNota(acta.umbralCompromisos)
@@ -186,9 +365,14 @@ function DetalleActa({ acta, usuario, rolCorrector, ejecutar, ocupado, onDescarg
     <div className="acta">
       <div className="acta__resumen">
         <strong>
-          Periodo {acta.periodo.nombre} · versión {acta.version}
+          {acta.tipo ? `${ETIQUETA_TIPO_ACTA[acta.tipo]} · ` : ''}Periodo {acta.periodo.nombre} · versión {acta.version}
         </strong>
         <span className={`pildora pildora--${estado.clase}`}>{estado.etiqueta}</span>
+        {acta.tipo && (
+          <span className={`pildora pildora--${acta.tipo === 'COMPROMISO' ? 'rosa' : 'turquesa'}`}>
+            {acta.tipo === 'COMPROMISO' ? 'Con compromisos' : 'Retroalimentación recibida'}
+          </span>
+        )}
         {acta.categoria ? (
           <>
             <span>Nota {formatearNota(acta.promedio)}</span>
@@ -200,15 +384,25 @@ function DetalleActa({ acta, usuario, rolCorrector, ejecutar, ocupado, onDescarg
       </div>
       {acta.categoria && <p className="acta__accion">Acción institucional: {acta.categoria.accionInstitucional}</p>}
       {acta.motivoCorreccion && <p className="acta__accion">Motivo de la corrección: {acta.motivoCorreccion}</p>}
+      {editable && acta.tipo && <TipoActa acta={acta} ejecutar={ejecutar} ocupado={ocupado} />}
       {acta.estado === 'BORRADOR' && acta.categoria && (
-        <Aviso tipo="info" titulo={acta.requiereCompromisos ? `Nota menor a ${umbral}` : `Nota de ${umbral} o más`}>
+        <Aviso
+          tipo="info"
+          titulo={
+            acta.requiereCompromisos
+              ? Number(acta.promedio) < Number(acta.umbralCompromisos)
+                ? `Nota menor a ${umbral}`
+                : 'Acta de compromiso'
+              : `Nota de ${umbral} o más`
+          }
+        >
           {acta.requiereCompromisos
             ? 'El acta necesita al menos un compromiso con plazo antes de firmarse.'
-            : 'Basta con la confirmación de lectura; los compromisos son opcionales.'}
+            : 'Es la constancia de que el docente recibió la retroalimentación: basta con la confirmación de lectura.'}
         </Aviso>
       )}
-      <Compromisos acta={acta} editable={editable} ejecutar={ejecutar} ocupado={ocupado} />
-      <Firma acta={acta} usuario={usuario} ejecutar={ejecutar} ocupado={ocupado} />
+      <Compromisos acta={acta} idDocente={idDocente} editable={editable} ejecutar={ejecutar} ocupado={ocupado} />
+      <Firma acta={acta} usuario={usuario} ejecutar={ejecutar} ocupado={ocupado} error={error} />
       {acta.estado === 'FIRMADA' && (
         <>
           <p className="acta__sello">
@@ -268,13 +462,14 @@ export function PanelActa({ idDocente }) {
     }
   }
 
+  const [tipoNueva, setTipoNueva] = useState('')
   const lista = actas.datos ?? []
   const [vigente, ...anteriores] = lista
   const rolCorrector = configuracion.datos?.rolCorrectorActas
-  const propsDetalle = { usuario, rolCorrector, ejecutar, ocupado, onDescargar: descargar }
+  const propsDetalle = { idDocente, usuario, rolCorrector, ejecutar, ocupado, error, onDescargar: descargar }
 
   return (
-    <Panel titulo="Acta de retroalimentación" icono={FileSignature}>
+    <Panel titulo="Acta de la reunión" descripcion="Acta de compromiso o de retroalimentación; se firma en la reunión." icono={FileSignature} tono="rosa">
       {actas.cargando && !actas.datos && <Cargando texto="Cargando el acta" bloques={1} />}
       {actas.error && (
         <EstadoVista tipo="error" titulo="No fue posible cargar el acta" mensaje={actas.error.message}>
@@ -284,11 +479,32 @@ export function PanelActa({ idDocente }) {
       <ErrorApi error={error} />
       {actas.datos && lista.length === 0 && (
         <>
-          <p className="campo__ayuda">Todavía no hay un acta en este periodo.</p>
+          <p className="campo__ayuda">
+            {usuario.rol === ROLES.DOCENTE
+              ? 'Tu acta aparece en la reunión de retroalimentación, cuando la coordinación registra tu asistencia. Ahí mismo la firmas.'
+              : 'Todavía no hay un acta en este periodo.'}
+          </p>
           {usuario.rol === ROLES.COORDINADOR && (
-            <Boton disabled={ocupado} onClick={() => ejecutar(() => crearActa(idDocente))}>
-              Generar acta
-            </Boton>
+            <div className="formulario-simple">
+              <Campo id={`tipo-nueva-${idDocente}`} etiqueta="Tipo de acta">
+                <select
+                  id={`tipo-nueva-${idDocente}`}
+                  className="campo__control"
+                  value={tipoNueva}
+                  onChange={(e) => setTipoNueva(e.target.value)}
+                >
+                  <option value="">Según la nota</option>
+                  <option value="RETROALIMENTACION">{ETIQUETA_TIPO_ACTA.RETROALIMENTACION}</option>
+                  <option value="COMPROMISO">{ETIQUETA_TIPO_ACTA.COMPROMISO}</option>
+                </select>
+              </Campo>
+              <Boton
+                disabled={ocupado}
+                onClick={() => ejecutar(() => (tipoNueva ? crearActa(idDocente, tipoNueva) : crearActa(idDocente)))}
+              >
+                Generar acta
+              </Boton>
+            </div>
           )}
         </>
       )}

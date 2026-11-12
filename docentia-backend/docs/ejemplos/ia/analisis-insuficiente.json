@@ -1,0 +1,23 @@
+{
+  "estado" : "INSUFICIENTE",
+  "motivo" : "POCAS_ENCUESTAS",
+  "mensaje" : "evidencia insuficiente (4 de 10 requeridas)",
+  "docenteId" : 7,
+  "nombreDocente" : "Docente Insuficiente",
+  "periodoId" : 1,
+  "nombrePeriodo" : "2026-2",
+  "programa" : {
+    "id" : 1,
+    "nombre" : "Ingeniería de Software"
+  },
+  "facultad" : {
+    "id" : 1,
+    "nombre" : "Ingeniería"
+  },
+  "fuente" : "FORMULARIO",
+  "idSolicitud" : 4,
+  "version" : null,
+  "generadoEn" : null,
+  "estadoHallazgos" : null,
+  "resultado" : null
+}

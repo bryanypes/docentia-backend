@@ -23,6 +23,7 @@ public class ModeloIAChatCompletions implements ModeloIA {
 
   private final RestClient restClient;
   private final String modelo;
+  private final boolean enviarTemperatura;
   private final ObjectMapper objectMapper = new ObjectMapper();
 
   /**
@@ -34,6 +35,7 @@ public class ModeloIAChatCompletions implements ModeloIA {
     exigir(propiedades.modelo(), "docentia.ia.modelo");
     exigir(propiedades.clave(), "docentia.ia.clave (variable DOCENTIA_IA_CLAVE)");
     this.modelo = propiedades.modelo();
+    this.enviarTemperatura = propiedades.enviarTemperatura();
     this.restClient =
         restClientBuilder
             .baseUrl(propiedades.urlBase())
@@ -67,7 +69,9 @@ public class ModeloIAChatCompletions implements ModeloIA {
   private String cuerpo(PeticionAnalisis peticion) {
     ObjectNode cuerpo = objectMapper.createObjectNode();
     cuerpo.put("model", modelo);
-    cuerpo.put("temperature", 0);
+    if (enviarTemperatura) {
+      cuerpo.put("temperature", 0);
+    }
     cuerpo.put("max_tokens", 4096);
     cuerpo.set("response_format", formatoJson());
     ArrayNode mensajes = cuerpo.putArray("messages");

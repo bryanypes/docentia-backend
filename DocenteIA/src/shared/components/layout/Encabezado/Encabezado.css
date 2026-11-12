@@ -14,6 +14,8 @@
 
 .encabezado__textos {
   min-width: 0;
+  /* Deja libre la esquina de la campana de notificaciones, que va fija arriba a la derecha. */
+  padding-right: 52px;
 }
 
 .encabezado__miga {
@@ -78,7 +80,56 @@
     padding: 18px 16px;
   }
 
+  /* La campana ya va en la barra fija: el título usa todo el ancho. */
+  .encabezado__textos {
+    padding-right: 0;
+  }
+
   .encabezado__titulo {
     font-size: 24px;
   }
+}
+
+.encabezado__fila-titulo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* Encabezado de una página de detalle: el regreso va arriba del título y todo es más bajo. */
+.encabezado--compacto {
+  padding-top: 16px;
+  padding-bottom: 14px;
+}
+
+.encabezado--compacto .encabezado__titulo {
+  font-size: 25px;
+}
+
+.encabezado--compacto .encabezado__subtitulo {
+  margin-top: 4px;
+}
+
+.encabezado__volver {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin: 0 0 6px -4px;
+  padding: 2px 6px 2px 2px;
+  border-radius: var(--radio-pildora);
+  font-size: 12px;
+  font-weight: var(--peso-semi);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--color-azul);
+  text-decoration: none;
+}
+
+.encabezado__volver:hover {
+  background: var(--color-azul-suave);
+}
+
+.encabezado__volver:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
 }
