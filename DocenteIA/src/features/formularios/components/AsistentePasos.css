@@ -430,3 +430,25 @@
   background: none;
   gap: 18px;
 }
+
+/* Formulario del estudiante: preguntas más juntas para hacer menos scroll. */
+.instrumento--estudiante .cuestionario {
+  gap: 10px;
+}
+
+.instrumento--estudiante .pregunta {
+  padding-bottom: 10px;
+}
+
+.instrumento--estudiante .pregunta legend {
+  margin-bottom: 6px;
+  font-size: 14px;
+}
+
+.instrumento--estudiante .pregunta__opciones {
+  gap: 6px;
+}
+
+.instrumento--estudiante .pregunta__opcion {
+  padding: 6px 4px;
+}

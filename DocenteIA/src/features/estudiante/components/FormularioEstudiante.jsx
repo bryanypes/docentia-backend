@@ -1,3 +1,6 @@
+import { useVentanaEtapa } from '../../../shared/components/layout/AppLayout/periodoContext.js'
+import { ETAPAS } from '../../../shared/constants/dominio.js'
+import { mensajeVentanaCerrada } from '../estadoVentana.js'
 import { Send, ShieldCheck } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
@@ -10,6 +13,8 @@ import '../../formularios/components/FormularioInstrumento.css'
  * Formulario anónimo del estudiante: once ítems, un comentario opcional y un solo envío. No guarda
  * borradores para no dejar respuestas parciales asociadas a nadie.
  */
+const MENSAJE_CERRADA = { titulo: 'La evaluación ya cerró', texto: 'La ventana de recolección de este periodo terminó.' }
+
 export function FormularioEstudiante({ formulario, onEnviar }) {
   const [respuestas, setRespuestas] = useState({})
   const [comentario, setComentario] = useState('')
@@ -19,6 +24,7 @@ export function FormularioEstudiante({ formulario, onEnviar }) {
   const enCurso = useRef(false)
 
   const completo = Object.keys(respuestas).length === formulario.total
+  const cerrada = mensajeVentanaCerrada(useVentanaEtapa(ETAPAS.RECOLECCION_CALIFICACIONES))
   const editable = formulario.estado === 'PENDIENTE' && formulario.ventanaAbierta
 
   async function enviar() {
@@ -37,7 +43,7 @@ export function FormularioEstudiante({ formulario, onEnviar }) {
   }
 
   return (
-    <div className="instrumento">
+    <div className="instrumento instrumento--estudiante">
       <Aviso tipo="info" titulo="Tus respuestas son anónimas">
         {formulario.aviso}
       </Aviso>
@@ -47,8 +53,8 @@ export function FormularioEstudiante({ formulario, onEnviar }) {
         </Aviso>
       )}
       {formulario.estado === 'PENDIENTE' && !formulario.ventanaAbierta && (
-        <Aviso tipo="alerta" titulo="La evaluación está cerrada">
-          Solo se responde durante la ventana de recolección de calificaciones.
+        <Aviso tipo="alerta" titulo={(cerrada ?? MENSAJE_CERRADA).titulo}>
+          {(cerrada ?? MENSAJE_CERRADA).texto}
         </Aviso>
       )}
 
