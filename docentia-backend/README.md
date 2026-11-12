@@ -105,7 +105,7 @@ propósito** para poder demostrar todo el flujo; en producción las define la vi
 solo se puede hacer dentro de su etapa; fuera de ella la API responde 409. Si hace falta probar otra
 fecha, se cambian las etapas desde la pantalla de periodos.
 
-En 2026-2 también hay comentarios de estudiantes, como si vinieran del CSV: Julián tiene 13 (dos son
+En 2026-2 también hay comentarios de estudiantes guardados en la semilla: Julián tiene 13 (dos son
 ofensivos o sobre su persona, para probar el filtro) y Diana 6, así que su análisis sale "evidencia
 insuficiente". Para la heteroevaluación, Laura Demo tiene 4 respuestas del formulario (una menos que el
 mínimo) y `estudiante.demo5` tiene dos evaluaciones pendientes: al enviar una, Laura llega a 5 y su nota
