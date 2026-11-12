@@ -193,32 +193,6 @@ class FormulariosTest extends PruebaIntegracion {
   }
 
   @Test
-  void elComentarioGeneralSeGuardaYVuelveEnElFormulario() throws Exception {
-    mockMvc
-        .perform(
-            put(AUTO)
-                .with(como(docente))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    aJson(
-                        Map.of(
-                            "respuestas", todos(4),
-                            "comentario", "  Quiero mejorar la retroalimentación de los parciales.  "))))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.comentario").value("Quiero mejorar la retroalimentación de los parciales."));
-    mockMvc
-        .perform(get(AUTO).with(como(docente)))
-        .andExpect(jsonPath("$.comentario").value("Quiero mejorar la retroalimentación de los parciales."));
-    mockMvc
-        .perform(
-            put(AUTO)
-                .with(como(docente))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(aJson(Map.of("comentario", "x".repeat(1001)))))
-        .andExpect(status().isUnprocessableEntity());
-  }
-
-  @Test
   void elEnvioIncompletoResponde422() throws Exception {
     enviarAuto().andExpect(status().isUnprocessableEntity());
     guardarAuto(Map.of("D01", 4)).andExpect(status().isOk());

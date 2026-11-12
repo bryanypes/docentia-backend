@@ -44,38 +44,3 @@ export function publicarRevision(idSolicitud) {
 export function obtenerResultadoPropio() {
   return api.get('/analisis-ia/resultados/propio')
 }
-
-/** Panorama del análisis del alcance (solo conteos). Sin periodo, el activo. */
-export function obtenerPanorama(periodoId) {
-  return api.get(`/analisis-ia/panorama${periodoId ? `?periodoId=${encodeURIComponent(periodoId)}` : ''}`)
-}
-
-/** Cuántos comentarios de cada docente contienen la palabra; nunca devuelve el texto. */
-export function obtenerCoincidencias(periodoId, buscar) {
-  const parametros = new URLSearchParams({ buscar })
-  if (periodoId) parametros.set('periodoId', periodoId)
-  return api.get(`/analisis-ia/panorama/coincidencias?${parametros}`)
-}
-
-/**
- * Resumen agregado de los comentarios del periodo en el alcance (GET /analisis-comentarios/resumen).
- * `programa` es opcional. Con pocos docentes analizados llega `disponible: false`.
- */
-export function obtenerResumenComentarios({ periodo, programa }) {
-  const parametros = new URLSearchParams({ periodo })
-  if (programa) parametros.set('programa', programa)
-  return api.get(`/analisis-comentarios/resumen?${parametros}`)
-}
-
-/** Análisis de comentarios de un docente en un periodo (contrato api-comentarios-ia.md). */
-export function obtenerAnalisisDocente(idDocente, periodo) {
-  return api.get(`/analisis-comentarios/docentes/${encodeURIComponent(idDocente)}?periodo=${encodeURIComponent(periodo)}`)
-}
-
-/** Comentarios anonimizados del análisis vigente, paginados y filtrables por criterio y sentimiento. */
-export function listarComentariosDocente(idDocente, { periodo, criterio, sentimiento, pagina = 0, tamano = 10 }) {
-  const parametros = new URLSearchParams({ periodo, page: pagina, size: tamano })
-  if (criterio) parametros.set('criterio', criterio)
-  if (sentimiento) parametros.set('sentimiento', sentimiento)
-  return api.get(`/comentarios-estudiantes/docentes/${encodeURIComponent(idDocente)}?${parametros}`)
-}

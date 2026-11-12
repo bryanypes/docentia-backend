@@ -35,9 +35,8 @@ public class KpiController {
   public KpisResponse obtenerKpis(
       @RequestParam(required = false) Long periodoId,
       @RequestParam(required = false) Long facultadId,
-      @RequestParam(required = false) Long programaId,
       @AuthenticationPrincipal UsuarioSesion sesion) {
-    return kpiService.calcular(periodoId, facultadId, programaId, sesion);
+    return kpiService.calcular(periodoId, facultadId, sesion);
   }
 
   /**

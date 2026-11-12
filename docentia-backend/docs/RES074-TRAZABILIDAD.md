@@ -9,7 +9,7 @@ Historias del Excel v2 frente a lo construido. Si difieren, manda la resolución
 | HU-03 Formulario de autoevaluación (14 ítems) | Implementado | `/formularios/autoevaluacion`, `FormulariosTest`, E2E |
 | HU-04 Cálculo de la nota final | Implementado | `CalculadoraPromedioPonderado`, `ClasificadorDesempenoTest`, `AutoevaluacionTest` |
 | HU-05 Clasificación y acción institucional | Implementado | `ClasificadorDesempeno`, `GET /acciones-sugeridas`, `AccionesYPanelTest` |
-| HU-06 Análisis de comentarios | Implementado, con CSV o formulario; modelo local por reglas por defecto | `RevisionHallazgosTest`, `AnalisisIaTest`, `CitasVerificablesTest`, `AnalisisComentariosTest`, `ValidacionAnalisisTest` |
+| HU-06 Análisis de comentarios | Implementado | `RevisionHallazgosTest`, `AnalisisIaTest`, `CitasVerificablesTest` |
 | HU-07 Retroalimentación y plan de mejoramiento | Vía acta | `ActaTest`, `PlanSeguimientoTest` |
 | HU-08 Reportes | Vía I5 e I11 | `GET /kpis`, `GET /kpis/panel`, `AccionesYPanelTest` |
 | HU-09 Evidencias complementarias | Futuro | No implementado |

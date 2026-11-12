@@ -5,7 +5,6 @@ import com.uniautonoma.docentia.dto.CompromisoActaRequest;
 import com.uniautonoma.docentia.dto.CorreccionActaRequest;
 import com.uniautonoma.docentia.dto.FirmaActaRequest;
 import com.uniautonoma.docentia.dto.NuevaActaRequest;
-import com.uniautonoma.docentia.dto.TipoActaRequest;
 import com.uniautonoma.docentia.entity.AccionAuditoria;
 import com.uniautonoma.docentia.entity.EstadoActa;
 import com.uniautonoma.docentia.security.DireccionCliente;
@@ -25,7 +24,6 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -53,17 +51,7 @@ public class ActaController {
   public ActaResponse crear(
       @Valid @RequestBody NuevaActaRequest solicitud,
       @AuthenticationPrincipal UsuarioSesion sesion) {
-    return actaService.crear(solicitud.idDocente(), solicitud.tipo(), sesion);
-  }
-
-  /** Acta de compromiso o de retroalimentación; solo antes de la primera firma. */
-  @PatchMapping("/{idActa}/tipo")
-  @PreAuthorize("hasRole('COORDINADOR')")
-  public ActaResponse cambiarTipo(
-      @PathVariable Long idActa,
-      @Valid @RequestBody TipoActaRequest solicitud,
-      @AuthenticationPrincipal UsuarioSesion sesion) {
-    return actaService.cambiarTipo(idActa, solicitud.tipo(), sesion);
+    return actaService.crear(solicitud.idDocente(), sesion);
   }
 
   @GetMapping
@@ -107,16 +95,11 @@ public class ActaController {
   @PreAuthorize("hasAnyRole('COORDINADOR', 'DOCENTE')")
   public ActaResponse firmar(
       @PathVariable Long idActa,
-      @Valid @RequestBody FirmaActaRequest solicitud,
+      @RequestBody FirmaActaRequest solicitud,
       HttpServletRequest peticion,
       @AuthenticationPrincipal UsuarioSesion sesion) {
     ActaResponse acta =
-        actaService.firmar(
-            idActa,
-            solicitud.confirmacion(),
-            solicitud.trazo(),
-            DireccionCliente.de(peticion),
-            sesion);
+        actaService.firmar(idActa, solicitud.confirmacion(), DireccionCliente.de(peticion), sesion);
     auditoria.registrar(AccionAuditoria.FIRMA_ACTA, "ACTA", idActa, sesion);
     return acta;
   }

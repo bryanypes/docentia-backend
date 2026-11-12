@@ -5,14 +5,8 @@ export function listarActas(idDocente) {
   return api.get(idDocente ? `/actas?idDocente=${encodeURIComponent(idDocente)}` : '/actas')
 }
 
-/** `tipo`: COMPROMISO o RETROALIMENTACION; sin él, el que corresponde a la nota. */
-export function crearActa(idDocente, tipo) {
-  return api.post('/actas', tipo ? { idDocente: Number(idDocente), tipo } : { idDocente: Number(idDocente) })
-}
-
-/** Cambia el tipo del acta antes de la primera firma. */
-export function cambiarTipoActa(idActa, tipo) {
-  return api.patch(`/actas/${encodeURIComponent(idActa)}/tipo`, { tipo })
+export function crearActa(idDocente) {
+  return api.post('/actas', { idDocente: Number(idDocente) })
 }
 
 export function agregarCompromiso(idActa, compromiso) {
@@ -23,12 +17,9 @@ export function quitarCompromiso(idActa, idCompromiso) {
   return api.delete(`/actas/${encodeURIComponent(idActa)}/compromisos/${encodeURIComponent(idCompromiso)}`)
 }
 
-/**
- * La firma es irreversible: el backend exige `confirmacion` en true y el trazo dibujado en la
- * página (PNG como data URL), que se imprime en el PDF.
- */
-export function firmarActa(idActa, trazo) {
-  return api.post(`/actas/${encodeURIComponent(idActa)}/firmas`, { confirmacion: true, trazo })
+/** La firma es irreversible: el backend exige `confirmacion` en true. */
+export function firmarActa(idActa) {
+  return api.post(`/actas/${encodeURIComponent(idActa)}/firmas`, { confirmacion: true })
 }
 
 export function corregirActa(idActa, motivo) {

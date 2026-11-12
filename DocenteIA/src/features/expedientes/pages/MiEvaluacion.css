@@ -95,26 +95,3 @@
   white-space: nowrap;
   opacity: 1;
 }
-
-/* En pantallas amplias: resumen, autoevaluación y comentarios en una fila; los compromisos debajo a
-   todo el ancho, con sus tarjetas en columnas. */
-@media (min-width: 1200px) {
-  .rejilla.mi-evaluacion__rejilla {
-    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr) minmax(0, 1fr);
-    align-items: stretch;
-  }
-
-  .mi-evaluacion__compromisos {
-    align-self: start;
-  }
-
-  .mi-evaluacion__compromisos {
-    grid-column: 1 / -1;
-    order: 1;
-  }
-
-  .mi-evaluacion__compromisos .compromisos {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  }
-}

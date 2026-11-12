@@ -1,26 +1,19 @@
+import { Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
-import { BotonAccion } from '../../../shared/components/ui/BotonAccion/BotonAccion.jsx'
+import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
 import { formatearFechaHora } from '../../../shared/utils/formatters.js'
 import { NOMBRE_CAMPO } from '../mapeo.js'
 import { eliminarPlantilla } from '../services/importacionesService.js'
-import { useAvisos } from '../../../shared/components/ui/Avisos/avisosContext.js'
 
 /** Plantillas de mapeo del coordinador. `plantillas` es el resultado de useFetch. */
 export function PanelPlantillas({ plantillas }) {
-  const { confirmar } = useAvisos()
   const [eliminando, setEliminando] = useState(null)
   const [error, setError] = useState(null)
 
   async function eliminar(plantilla) {
-    const seguro = await confirmar({
-      tipo: 'peligro',
-      titulo: '¿Eliminar la plantilla?',
-      mensaje: `«${plantilla.nombre}» deja de estar disponible para nuevas cargas.`,
-      textoConfirmar: 'Eliminar',
-    })
-    if (!seguro) return
+    if (!window.confirm(`¿Eliminar la plantilla "${plantilla.nombre}"?`)) return
     setEliminando(plantilla.idPlantilla)
     setError(null)
     try {
@@ -67,13 +60,15 @@ export function PanelPlantillas({ plantillas }) {
                   </ul>
                 </details>
               </div>
-              <BotonAccion
-                tipo="eliminar"
-                nombre={`la plantilla ${p.nombre}`}
-                texto={eliminando === p.idPlantilla ? 'Eliminando…' : 'Eliminar'}
+              <Boton
+                variante="secundario"
+                icono={Trash2}
                 onClick={() => eliminar(p)}
                 disabled={eliminando === p.idPlantilla}
-              />
+                aria-label={`Eliminar la plantilla ${p.nombre}`}
+              >
+                {eliminando === p.idPlantilla ? 'Eliminando…' : 'Eliminar'}
+              </Boton>
             </li>
           ))}
         </ul>
