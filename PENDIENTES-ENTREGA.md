@@ -2,14 +2,20 @@
 
 ## Estado al jueves 12 de noviembre (finalización y publicación)
 
-Rama de trabajo: `integracion/v0.4.0`, que sale de `develop` (2e31e67). Se actualiza al cerrar cada fase.
+Trabajo integrado en `develop` por los PR #26 y #27, con CI verde.
 
 | Fase | Estado | Qué quedó |
 |------|--------|-----------|
-| 0. Punto de partida | Hecho, con diferencias | `develop` en 2e31e67 (069fe94 más la semilla de la demo, subida a pedido del usuario). `main` en eee2774, no en v0.3.3, y con CI en rojo. `develop` no contiene a `main` por la limpieza de trailers. El PR #25 figura como fusionado. Ver "Decisiones abiertas" |
-| 1. Pendientes funcionales | Hecho | Evaluadores en pantalla; sin CSV, matrícula, auditoría ni facultades en pantalla; E2E 11/11; casos límite de periodos; firma con PNG en el modal real; Google documentado; facultad → programa en lo visible |
-| 2. Autoría y paridad | En curso | 21 commits de Daniel Aranda reaplicados con su autor y fecha, sin cambios de código; `docs/INTEGRACION-PR-8-Y-12.md` |
-| 3 a 9 | Pendiente | |
+| 0. Punto de partida | Hecho, con diferencias | `develop` partió de 2e31e67 (069fe94 más la semilla de la demo, pedida por el usuario). `main` está en eee2774, no en v0.3.3. La limpieza de trailers reescribió esos commits, así que la historia de `develop` no contiene a `main`. El PR #25 figura como fusionado y su cambio ya no está en `develop` |
+| 1. Pendientes funcionales | Hecho (PR #26) | Evaluadores y programas en pantalla; sin CSV, matrícula, auditoría ni facultades en pantalla; E2E 11/11; periodos; firma con PNG; Google documentado |
+| 2. Autoría y paridad | Hecho (PR #26) | 21 commits de Daniel Aranda con su autor y fecha; `docs/INTEGRACION-PR-8-Y-12.md`; comentarios en los PR #8 y #12 |
+| 3. Seguridad | Hecho, salvo el escaneo de dependencias del backend (PR #27) | La red no alcanzó las bases de Trivy ni de OSV; gitleaks, Semgrep y `npm audit` sin hallazgos |
+| 4. Calidad | Hecho (PR #27) | 1443 pruebas de backend y 94,4 % de líneas cubiertas; 145 de frontend; E2E 11/11; axe sin violaciones serias; carga con 50 usuarios: p95 de 16 ms y 0 errores |
+| 5. Producción | Hecho (PR #27) | Subruta `/Evadocente-app/`, variables, primer administrador, ensayo de migración (V36 corregida), respaldos, vuelta atrás en 19 s |
+| 6. Documentación | Hecho (PR #27) | CHANGELOG 0.4.0, manual por rol, decisiones pendientes |
+| 7. Publicación | Parcial | `develop` al día en los 4 repos con CI verde; `backup/pre-0.4.0` creado en los 4. **Falta `main`, la etiqueta v0.4.0 y el release**: la historia diverge (ver la decisión 11) |
+| 8. Kit de despliegue | Hecho (PR #27) | `docs/DESPLIEGUE-0.4.0.md` y `scripts/humo-postdespliegue.sh` |
+| 9. Limpieza | Hecho | Pilas de prueba apagadas sin borrar volúmenes |
 
 ### Decisiones abiertas (las toma el usuario)
 
@@ -23,7 +29,10 @@ Rama de trabajo: `integracion/v0.4.0`, que sale de `develop` (2e31e67). Se actua
 8. Funciones opcionales del PR #8 que se quieran después.
 9. Respuesta de Vicerrectoría sobre la validez de la firma electrónica simple.
 10. Análisis con IA sobre datos reales: con el CSV retirado, la pantalla todavía pide el análisis sobre comentarios importados (fuente CSV). Para datos reales debe leer los del formulario anónimo, que el backend solo permite cuando cierra la recolección.
-11. Cómo llevar `develop` a `main`: propuesta sin forzar, `merge -s ours` de `main` en `develop` y luego el PR `develop` → `main` con merge normal.
+11. Cómo llevar `develop` a `main`. `main` (eee2774) tiene en su historial tres commits con `Co-authored-by` de Copilot, y `develop` tiene copias limpias de esos commits. Hay dos opciones:
+    - **A:** `merge -s ours` de `main` en `develop` y después el PR `develop` → `main` con merge normal. No reescribe nada, pero los tres trailers siguen en el historial de `main` y el gate sobre `main` no sale vacío.
+    - **B:** llevar `main` al commit de `develop` con `--force-with-lease`, ya respaldado en `backup/pre-0.4.0`. El historial queda limpio, pero es un push forzado a `main` y necesita confirmación explícita.
+12. Activar Dependabot en GitHub, o correr Trivy en un equipo con acceso a sus bases, para el escaneo de dependencias del backend.
 
 ## Estado anterior (miércoles 11 de noviembre)
 
