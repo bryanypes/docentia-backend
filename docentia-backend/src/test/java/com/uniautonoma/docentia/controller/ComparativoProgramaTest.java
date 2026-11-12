@@ -19,7 +19,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.test.context.TestPropertySource;
-import org.springframework.test.web.servlet.request.RequestPostProcessor;
 
 @TestPropertySource(properties = "docentia.proceso.exigir-asistencia=true")
 class ComparativoProgramaTest extends PruebaIntegracion {
@@ -53,7 +52,9 @@ class ComparativoProgramaTest extends PruebaIntegracion {
                 .with(comoCoordinador(facultad.getIdFacultad())))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.nombrePrograma").value("Programa comparativo"))
-        .andExpect(jsonPath("$.fuentes[*].fuente", contains("ESTUDIANTES", "COORDINACION", "AUTOEVALUACION")))
+        .andExpect(
+            jsonPath(
+                "$.fuentes[*].fuente", contains("ESTUDIANTES", "COORDINACION", "AUTOEVALUACION")))
         .andExpect(jsonPath("$.fuentes[0].notaDocente").value(4.0))
         .andExpect(jsonPath("$.fuentes[0].promedioPrograma").value(4.0))
         .andExpect(jsonPath("$.fuentes[1].notaDocente").value(3.0))
@@ -63,8 +64,7 @@ class ComparativoProgramaTest extends PruebaIntegracion {
 
     mockMvc
         .perform(
-            get("/expedientes/{id}/comparativo", docente.getIdUsuario())
-                .with(comoVicerrector()))
+            get("/expedientes/{id}/comparativo", docente.getIdUsuario()).with(comoVicerrector()))
         .andExpect(status().isOk());
 
     mockMvc
@@ -79,22 +79,25 @@ class ComparativoProgramaTest extends PruebaIntegracion {
     mockMvc
         .perform(get("/expedientes/propio/comparativo").with(como(docente)))
         .andExpect(status().isConflict())
-        .andExpect(jsonPath("$.mensaje").value(
-            "El comparativo estará disponible cuando la coordinación habilite tu resultado"));
+        .andExpect(
+            jsonPath("$.mensaje")
+                .value(
+                    "El comparativo estará disponible cuando la coordinación habilite tu resultado"));
 
     mockMvc
         .perform(
             get("/expedientes/{id}/comparativo", docente.getIdUsuario())
-                .with(authentication(
-                    new UsuarioSesion(
-                            9003L,
-                            "Visualizador de prueba",
-                            "visualizador@prueba.co",
-                            Rol.VISUALIZADOR,
-                            null,
-                            null,
-                            false)
-                        .aAutenticacion())))
+                .with(
+                    authentication(
+                        new UsuarioSesion(
+                                9003L,
+                                "Visualizador de prueba",
+                                "visualizador@prueba.co",
+                                Rol.VISUALIZADOR,
+                                null,
+                                null,
+                                false)
+                            .aAutenticacion())))
         .andExpect(status().isForbidden());
   }
 }

@@ -1,8 +1,8 @@
 package com.uniautonoma.docentia.controller;
 
+import com.uniautonoma.docentia.dto.ComparativoProgramaResponse;
 import com.uniautonoma.docentia.dto.ExpedienteDocenteResponse;
 import com.uniautonoma.docentia.dto.ExpedientePropioResponse;
-import com.uniautonoma.docentia.dto.ComparativoProgramaResponse;
 import com.uniautonoma.docentia.security.UsuarioSesion;
 import com.uniautonoma.docentia.service.ExpedienteService;
 import org.springframework.security.access.prepost.PreAuthorize;

@@ -1,8 +1,8 @@
 package com.uniautonoma.docentia.service;
 
-import com.uniautonoma.docentia.dto.CompromisoResponse;
 import com.uniautonoma.docentia.dto.ComparativoProgramaResponse;
 import com.uniautonoma.docentia.dto.ComparativoProgramaResponse.FuenteComparada;
+import com.uniautonoma.docentia.dto.CompromisoResponse;
 import com.uniautonoma.docentia.dto.DimensionPorFuenteResponse;
 import com.uniautonoma.docentia.dto.DocenteResponse;
 import com.uniautonoma.docentia.dto.ExpedienteDocenteResponse;
@@ -12,6 +12,7 @@ import com.uniautonoma.docentia.dto.PeriodoResumenResponse;
 import com.uniautonoma.docentia.dto.PromedioHistoricoResponse;
 import com.uniautonoma.docentia.dto.PromedioPonderadoResponse;
 import com.uniautonoma.docentia.dto.ResultadoDimensionResponse;
+import com.uniautonoma.docentia.entity.Calificacion;
 import com.uniautonoma.docentia.entity.Dimension;
 import com.uniautonoma.docentia.entity.EstadoCompromiso;
 import com.uniautonoma.docentia.entity.FuenteEvaluacion;
@@ -20,15 +21,14 @@ import com.uniautonoma.docentia.entity.Rol;
 import com.uniautonoma.docentia.entity.Usuario;
 import com.uniautonoma.docentia.exception.RecursoNoEncontradoException;
 import com.uniautonoma.docentia.exception.ReglaNegocioException;
-import com.uniautonoma.docentia.entity.Calificacion;
 import com.uniautonoma.docentia.repository.CalificacionRepository;
 import com.uniautonoma.docentia.repository.CompromisoRepository;
 import com.uniautonoma.docentia.repository.UsuarioRepository;
 import com.uniautonoma.docentia.security.UsuarioSesion;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Arrays;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.List;
 import java.util.Map;
@@ -169,7 +169,8 @@ public class ExpedienteService {
     Map<FuenteEvaluacion, BigDecimal> notasDocente =
         promedioService.cargarEvaluacion(docente.getIdUsuario(), periodo).notasDeFuentes();
     Map<FuenteEvaluacion, List<BigDecimal>> notasPrograma = new EnumMap<>(FuenteEvaluacion.class);
-    Arrays.stream(FuenteEvaluacion.values()).forEach(fuente -> notasPrograma.put(fuente, new ArrayList<>()));
+    Arrays.stream(FuenteEvaluacion.values())
+        .forEach(fuente -> notasPrograma.put(fuente, new ArrayList<>()));
     for (Calificacion calificacion :
         calificacionRepository.listarPorProgramaYPeriodo(
             docente.getPrograma().getIdPrograma(), periodo.getIdPeriodo())) {
@@ -197,7 +198,8 @@ public class ExpedienteService {
   private BigDecimal promedioRedondeado(List<BigDecimal> notas) {
     if (notas.isEmpty()) return null;
     BigDecimal total = notas.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
-    return total.divide(BigDecimal.valueOf(notas.size()), DECIMALES_NOTA_FUENTE, RoundingMode.HALF_UP);
+    return total.divide(
+        BigDecimal.valueOf(notas.size()), DECIMALES_NOTA_FUENTE, RoundingMode.HALF_UP);
   }
 
   private PromedioPonderadoResponse sinValor(PromedioPonderadoResponse promedio) {
