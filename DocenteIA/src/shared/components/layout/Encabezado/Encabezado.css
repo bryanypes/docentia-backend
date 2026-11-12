@@ -1,5 +1,4 @@
-/* Encabezado de página: fondo blanco liso con un filete inferior. El color de marca va solo en la
-   ruta (azul) y en el periodo; nada de velos ni tramas. */
+/* Encabezado claro con un matiz azul suave que conecta la navegación con el contenido. */
 .encabezado {
   display: flex;
   flex-wrap: wrap;
@@ -8,7 +7,7 @@
   gap: var(--espacio-5);
   padding: 26px var(--espacio-7) 22px;
   color: var(--color-texto);
-  background: var(--color-superficie);
+  background: linear-gradient(112deg, var(--color-superficie) 68%, var(--color-azul-fondo));
   border-bottom: 1px solid var(--color-borde);
 }
 

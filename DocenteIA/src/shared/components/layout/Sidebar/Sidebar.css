@@ -6,7 +6,7 @@
   flex-direction: column;
   width: var(--ancho-sidebar);
   height: 100vh;
-  background: var(--color-azul);
+  background: linear-gradient(180deg, var(--color-azul-oscuro), var(--color-azul) 58%, #032e70);
   color: var(--color-crema);
 }
 
@@ -74,6 +74,7 @@
 }
 
 .sidebar__enlace {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 10px;
@@ -94,6 +95,17 @@
 .sidebar__enlace.active {
   background: rgba(254, 251, 244, 0.16);
   color: var(--color-crema);
+}
+
+.sidebar__enlace.active::before {
+  position: absolute;
+  top: 8px;
+  bottom: 8px;
+  left: 0;
+  width: 3px;
+  border-radius: 0 3px 3px 0;
+  background: var(--color-amarillo);
+  content: '';
 }
 
 .sidebar__icono {

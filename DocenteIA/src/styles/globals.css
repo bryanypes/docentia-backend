@@ -6,7 +6,9 @@
 
 body {
   margin: 0;
-  background: var(--color-fondo);
+  background:
+    radial-gradient(ellipse at 92% 4%, rgba(226, 241, 250, 0.52), transparent 30%),
+    var(--color-fondo);
   color: var(--color-texto);
   font-family: var(--fuente-base);
   font-weight: var(--peso-normal);
