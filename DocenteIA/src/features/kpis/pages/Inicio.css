@@ -145,3 +145,17 @@
   background: var(--color-superficie);
   color: var(--color-violeta);
 }
+
+.inicio__destacados {
+  margin-top: 1rem;
+}
+
+.inicio__destacados-titulo {
+  margin: 0 0 0.5rem;
+  font-size: 1rem;
+}
+
+.inicio__destacados-titulo span {
+  font-weight: 400;
+  color: var(--texto-suave, #5a6270);
+}

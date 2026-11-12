@@ -156,6 +156,9 @@ export default function Inicio() {
           <span> · {nombreFacultad}</span>
         </h2>
         <Indicadores kpis={kpis} esVicerrector={esVicerrector} mostrarCompletos={!viendoActivo} />
+        {esVicerrector && viendoActivo && (
+          <ListaDestacados seguimiento={seguimiento} umbral={kpis.datos?.umbralDestacado} />
+        )}
 
         <h2 className="inicio__seccion">
           Seguimiento del periodo activo{seguimiento.datos?.periodo ? ` (${seguimiento.datos.periodo.nombre})` : ''}
@@ -320,5 +323,42 @@ function Seguimiento({ seguimiento, configuracion, analisis, agrupacion, miFuent
         <ArrowRight size={18} aria-hidden="true" />
       </Link>
     </>
+  )
+}
+
+/** Docentes con promedio completo igual o mayor al umbral de destacado, de mayor a menor. */
+export function ListaDestacados({ seguimiento, umbral }) {
+  if (umbral == null || !seguimiento.datos) return null
+  const destacados = seguimiento.datos.docentes
+    .filter((d) => d.promedio?.estado === 'COMPLETO' && Number(d.promedio.valor) >= Number(umbral))
+    .sort((a, b) => Number(b.promedio.valor) - Number(a.promedio.valor))
+  return (
+    <section className="inicio__destacados panel" aria-labelledby="titulo-destacados">
+      <h3 id="titulo-destacados" className="inicio__destacados-titulo">
+        Docentes destacados <span>· promedio de {formatearNota(umbral)} o más</span>
+      </h3>
+      {destacados.length === 0 ? (
+        <p className="campo__ayuda">Ningún docente con promedio completo alcanza el umbral todavía.</p>
+      ) : (
+        <table className="tabla">
+          <thead>
+            <tr>
+              <th scope="col">Docente</th>
+              <th scope="col">Programa</th>
+              <th scope="col">Puntaje</th>
+            </tr>
+          </thead>
+          <tbody>
+            {destacados.map((d) => (
+              <tr key={d.docente.idDocente}>
+                <td className="tabla__fuerte">{d.docente.nombreCompleto}</td>
+                <td data-etiqueta="Programa">{d.docente.nombrePrograma}</td>
+                <td data-etiqueta="Puntaje">{formatearNota(d.promedio.valor)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </section>
   )
 }
