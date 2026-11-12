@@ -109,7 +109,7 @@ public class RecuperacionContrasenaService {
             sha256(token == null ? "" : token.strip()),
             Timestamp.valueOf(ahora));
     if (usuarios.isEmpty()) {
-      throw new DatosInvalidosException(ENLACE_INVALIDO, "token");
+      throw new DatosInvalidosException(ENLACE_INVALIDO);
     }
     Long idUsuario = usuarios.get(0);
     int cambiados =
@@ -119,7 +119,7 @@ public class RecuperacionContrasenaService {
             passwordEncoder.encode(contrasena),
             idUsuario);
     if (cambiados == 0) {
-      throw new DatosInvalidosException(ENLACE_INVALIDO, "token");
+      throw new DatosInvalidosException(ENLACE_INVALIDO);
     }
     jdbcTemplate.update(
         "update recuperaciones_contrasena set usado_en = ? where id_usuario = ? and usado_en is null",

@@ -122,7 +122,7 @@ class RecuperacionContrasenaTest extends PruebaIntegracion {
         .andExpect(status().isCreated());
     restablecer(token, "Otra-Clave-2026")
         .andExpect(status().isBadRequest())
-        .andExpect(jsonPath("$.errores.token").exists());
+        .andExpect(jsonPath("$.mensaje").value(org.hamcrest.Matchers.containsString("ya venció")));
 
     assertThat(salida.getAll()).doesNotContain(token).doesNotContain(NUEVA);
   }
