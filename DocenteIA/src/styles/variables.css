@@ -33,14 +33,14 @@
   --color-crema: #fffdf5;
 
   /* Superficies y bordes */
-  --color-fondo: var(--color-crema);
+  --color-fondo: #f5f7fb;
   --color-superficie: #ffffff;
-  --color-superficie-suave: #f7f3e8;
-  --color-borde: #e6dfce;
-  --color-borde-suave: #f1ecdd;
-  --color-borde-punteado: #d8d0bc;
+  --color-superficie-suave: #f2f6fc;
+  --color-borde: #d9e3f0;
+  --color-borde-suave: #e9eef5;
+  --color-borde-punteado: #cbd6e4;
   /* Borde de inputs y selects: 3:1 contra el fondo para que se identifiquen como controles (WCAG 1.4.11) */
-  --color-borde-control: #8f8775;
+  --color-borde-control: #758295;
 
   /* Anillo de foco: azul sobre superficies claras; en la barra lateral azul se usa el amarillo */
   --color-foco: var(--color-azul);
@@ -106,11 +106,11 @@
 
   /* Radios y sombras */
   --radio-sm: 7px;
-  --radio-md: 8px;
-  --radio-lg: 10px;
-  --radio-xl: 16px;
+  --radio-md: 9px;
+  --radio-lg: 12px;
+  --radio-xl: 18px;
   --radio-pildora: 20px;
-  --sombra-tarjeta: 0 1px 2px rgba(30, 30, 30, 0.04), 0 12px 28px -18px rgba(5, 54, 134, 0.28);
+  --sombra-tarjeta: 0 2px 6px rgba(20, 42, 75, 0.04), 0 16px 34px -22px rgba(5, 54, 134, 0.32);
   --sombra-boton: 0 1px 2px rgba(5, 54, 134, 0.3);
 
   /* Espaciado */

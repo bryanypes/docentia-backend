@@ -50,6 +50,33 @@ const COMPLETADO = {
   },
 }
 
+const MODELOS = {
+  porDefecto: 'LOCAL',
+  opciones: [
+    {
+      codigo: 'LOCAL',
+      nombre: 'Modelo local',
+      disponible: true,
+      consumeTokens: false,
+      descripcion: 'Procesamiento local, sin proveedor externo.',
+    },
+    {
+      codigo: 'LLM',
+      nombre: 'Modelo externo',
+      disponible: true,
+      consumeTokens: true,
+      descripcion: 'Usa el modelo de lenguaje configurado.',
+    },
+  ],
+  llmDisponible: true,
+  modeloLlm: 'modelo-demo',
+  maxComentariosLlm: 30,
+  maxCaracteresComentario: 2000,
+  tokensPorAnalisis: { entradaMaxima: 1000, salidaMaxima: 200, totalMaximo: 1200 },
+  tokensRestantesHoy: 4000,
+  advertencia: 'Se enviarán comentarios anonimizados a un proveedor externo.',
+}
+
 function renderizar(rol = 'COORDINADOR') {
   renderizarConSesion(<Analisis />, { rol, ruta: '/analisis?docente=4&periodo=2' })
 }
@@ -61,6 +88,7 @@ describe('Analisis', () => {
       { idDocente: 4, nombreCompleto: 'Julián Camilo Hoyos', nombrePrograma: 'Software' },
     ])
     periodosService.listarPeriodos.mockResolvedValue([{ idPeriodo: 2, nombre: '2026-2', esActivo: true }])
+    analisisService.obtenerModelosAnalisis.mockResolvedValue(MODELOS)
     analisisService.listarComentariosFiltrados.mockResolvedValue([
       { idComentario: 112, texto: 'Se viste mal.', categoria: 'APARIENCIA' },
     ])
@@ -116,7 +144,28 @@ describe('Analisis', () => {
 
     await userEvent.click(await screen.findByRole('button', { name: 'Solicitar análisis' }))
 
-    expect(analisisService.solicitarAnalisis).toHaveBeenCalledWith('4', '2')
+    expect(analisisService.solicitarAnalisis).toHaveBeenCalledWith('4', '2', null, 'LOCAL')
+    expect(await screen.findByText('En cola…')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Regenerar análisis' })).toBeDisabled()
+  })
+
+  it('exige confirmar el uso externo y envía el modelo elegido', async () => {
+    const enCola = { ...COMPLETADO, estado: 'EN_COLA', borrador: null }
+    analisisService.listarSolicitudes.mockResolvedValue([])
+    analisisService.solicitarAnalisis.mockResolvedValue(enCola)
+    analisisService.obtenerSolicitud.mockResolvedValue(enCola)
+    renderizar()
+
+    await userEvent.click(await screen.findByRole('radio', { name: /modelo externo/i }))
+    const boton = await screen.findByRole('button', { name: 'Solicitar análisis' })
+    const autorizacion = screen.getByRole('checkbox', { name: /autorizo enviar comentarios anonimizados/i })
+
+    expect(boton).toBeDisabled()
+    await userEvent.click(autorizacion)
+    expect(boton).toBeEnabled()
+    await userEvent.click(boton)
+
+    expect(analisisService.solicitarAnalisis).toHaveBeenCalledWith('4', '2', null, 'LLM')
     expect(await screen.findByText('En cola…')).toBeInTheDocument()
   })
 
@@ -128,14 +177,14 @@ describe('Analisis', () => {
     )
     renderizar()
 
-    const boton = await screen.findByRole('button', { name: 'Solicitar un análisis nuevo' })
+    const boton = await screen.findByRole('button', { name: 'Regenerar análisis' })
     expect(boton).toBeDisabled()
     await userEvent.type(screen.getByLabelText('Motivo para pedir otro análisis'), 'Corto')
     expect(boton).toBeDisabled()
     await userEvent.type(screen.getByLabelText('Motivo para pedir otro análisis'), ' pero suficiente')
     await userEvent.click(boton)
 
-    expect(analisisService.solicitarAnalisis).toHaveBeenCalledWith('4', '2', 'Corto pero suficiente')
+    expect(analisisService.solicitarAnalisis).toHaveBeenCalledWith('4', '2', 'Corto pero suficiente', 'LOCAL')
     expect(await screen.findByText(/60 minutos después/)).toBeInTheDocument()
   })
 

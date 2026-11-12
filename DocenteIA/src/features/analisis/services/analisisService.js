@@ -1,10 +1,16 @@
 import { api } from '../../../services/api.js'
 
 /** Con un análisis ya generado, pedir otro es regenerar: el backend exige motivo y una hora de espera. */
-export function solicitarAnalisis(docenteId, periodoId, motivo) {
+export function solicitarAnalisis(docenteId, periodoId, motivo, modelo) {
   const cuerpo = { docenteId: Number(docenteId), periodoId: Number(periodoId) }
   if (motivo) cuerpo.motivo = motivo
+  if (modelo) cuerpo.modelo = modelo
   return api.post('/analisis-ia/solicitudes', cuerpo)
+}
+
+/** Opciones reales de modelo y sus condiciones para el usuario autenticado. */
+export function obtenerModelosAnalisis() {
+  return api.get('/analisis-comentarios/modelos')
 }
 
 /** Solicitud con su borrador. `senal` cancela la consulta al salir de la pantalla. */

@@ -2,11 +2,9 @@
   min-width: 0;
   padding: 22px;
   background: var(--color-superficie);
-  border: 1px solid rgba(230, 223, 206, 0.7);
-  border-radius: 16px;
-  box-shadow:
-    0 1px 2px rgba(30, 30, 30, 0.04),
-    0 12px 28px -18px rgba(5, 54, 134, 0.28);
+  border: 1px solid var(--color-borde-suave);
+  border-radius: var(--radio-xl);
+  box-shadow: var(--sombra-tarjeta);
 }
 
 .panel__cabecera {
@@ -62,7 +60,7 @@
 }
 
 .panel__titulo {
-  font-size: 16.5px;
+  font-size: 17px;
   font-weight: var(--peso-fuerte);
   letter-spacing: -0.01em;
 }

@@ -1,5 +1,5 @@
-import { MessagesSquare, RefreshCw, ShieldOff } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { Cpu, MessagesSquare, RefreshCw, ShieldOff, Sparkles } from 'lucide-react'
+import { useCallback, useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
 import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
@@ -12,7 +12,7 @@ import { Paginacion } from '../../../shared/components/ui/Paginacion/Paginacion.
 import { ROLES } from '../../../shared/constants/dominio.js'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { usePaginacion } from '../../../shared/hooks/usePaginacion.js'
-import { formatearFechaHora } from '../../../shared/utils/formatters.js'
+import { formatearEntero, formatearFechaHora } from '../../../shared/utils/formatters.js'
 import { useSesion } from '../../auth/sesionContext.js'
 import { listarDocentes } from '../../docentes/services/docentesService.js'
 import { listarPeriodos } from '../../periodos/services/periodosService.js'
@@ -33,6 +33,7 @@ import {
   editarHallazgo,
   listarComentariosFiltrados,
   listarSolicitudes,
+  obtenerModelosAnalisis,
   publicarRevision,
   solicitarAnalisis,
   validarHallazgo,
@@ -40,6 +41,78 @@ import {
 import './Analisis.css'
 
 const MOTIVO_MINIMO = 10
+
+function SelectorModelo({ modelos, valor, onCambiar, confirmaExterno, onConfirmarExterno }) {
+  const opciones = modelos.opciones ?? []
+  const opcionElegida = opciones.find((opcion) => opcion.codigo === valor)
+  const puedeUsarLlm = Boolean(modelos.llmDisponible)
+  const tokensMaximos = modelos.tokensPorAnalisis?.totalMaximo
+
+  return (
+    <fieldset className="analisis__modelos">
+      <legend>Selecciona el motor para este análisis</legend>
+      <div className="analisis__modelos-opciones">
+        {opciones.map((opcion) => {
+          const Icono = opcion.codigo === 'LOCAL' ? Cpu : Sparkles
+          const disponible = opcion.disponible && (opcion.codigo !== 'LLM' || puedeUsarLlm)
+          return (
+            <label
+              key={opcion.codigo}
+              className={`analisis__modelo${valor === opcion.codigo ? ' analisis__modelo--activo' : ''}${!disponible ? ' analisis__modelo--deshabilitado' : ''}`}
+            >
+              <input
+                type="radio"
+                name="modeloAnalisis"
+                value={opcion.codigo}
+                checked={valor === opcion.codigo}
+                disabled={!disponible}
+                onChange={() => onCambiar(opcion.codigo)}
+              />
+              <span className="analisis__modelo-icono" aria-hidden="true">
+                <Icono size={19} />
+              </span>
+              <span className="analisis__modelo-contenido">
+                <span className="analisis__modelo-titulo">
+                  <strong>{opcion.nombre}</strong>
+                  {opcion.codigo === modelos.porDefecto && <span className="pildora">Predeterminado</span>}
+                </span>
+                <span>{opcion.descripcion}</span>
+                {opcion.codigo === 'LLM' && !disponible && (
+                  <span className="analisis__modelo-ayuda">No está configurado en este entorno.</span>
+                )}
+                {opcion.codigo === 'LLM' && disponible && modelos.modeloLlm && (
+                  <span className="analisis__modelo-ayuda">Modelo: {modelos.modeloLlm}</span>
+                )}
+              </span>
+            </label>
+          )
+        })}
+      </div>
+      {valor === 'LOCAL' && (
+        <Aviso tipo="info" titulo="Procesamiento local">
+          Los comentarios se analizan en DOCENTIA; no se envían a proveedores externos ni consumen tokens.
+        </Aviso>
+      )}
+      {valor === 'LLM' && opcionElegida?.disponible && puedeUsarLlm && (
+        <>
+          <Aviso tipo="alerta" titulo="Uso de un proveedor externo">
+            <p>{modelos.advertencia || 'El análisis se procesará con el modelo externo configurado.'}</p>
+            <p>
+              Límite por análisis: {formatearEntero(modelos.maxComentariosLlm)} comentarios
+              {tokensMaximos != null ? ` y ${formatearEntero(tokensMaximos)} tokens` : ''}.
+              {modelos.tokensRestantesHoy != null &&
+                ` Presupuesto diario restante: ${formatearEntero(modelos.tokensRestantesHoy)} tokens.`}
+            </p>
+          </Aviso>
+          <label className="analisis__consentimiento">
+            <input type="checkbox" checked={confirmaExterno} onChange={(e) => onConfirmarExterno(e.target.checked)} />
+            <span>Confirmo que autorizo enviar comentarios anonimizados al proveedor externo para este análisis.</span>
+          </label>
+        </>
+      )}
+    </fieldset>
+  )
+}
 
 function EstadoSolicitud({ solicitud, agotado, onReanudar }) {
   const { estado } = solicitud
@@ -225,8 +298,14 @@ function Borrador({ solicitud, puedeValidar, onValidado }) {
   )
 }
 
-function DetalleSolicitud({ idSolicitud, puedeValidar }) {
+function DetalleSolicitud({ idSolicitud, puedeValidar, clave, onTerminar }) {
   const { solicitud, error, agotado, reanudar } = useSeguimientoSolicitud(idSolicitud)
+
+  useEffect(() => {
+    if (solicitud && Number(solicitud.idSolicitud) === Number(idSolicitud) && !estaEnCurso(solicitud)) {
+      onTerminar(clave)
+    }
+  }, [solicitud, idSolicitud, clave, onTerminar])
 
   if (error) {
     return (
@@ -261,12 +340,16 @@ export default function Analisis() {
   const docenteId = parametros.get('docente') ?? ''
   const docentes = useFetch(() => listarDocentes(null))
   const periodos = useFetch(listarPeriodos)
+  const modelos = useFetch(obtenerModelosAnalisis)
   const periodoActivo = periodos.datos?.find((periodo) => periodo.esActivo)
   const periodoId = parametros.get('periodo') ?? (periodoActivo ? String(periodoActivo.idPeriodo) : '')
   const [solicitudNueva, setSolicitudNueva] = useState(null)
   const [errorSolicitar, setErrorSolicitar] = useState(null)
   const [enviando, setEnviando] = useState(false)
   const [motivo, setMotivo] = useState('')
+  const [modeloElegido, setModeloElegido] = useState(null)
+  const [confirmaExterno, setConfirmaExterno] = useState(false)
+  const [solicitudPendienteClave, setSolicitudPendienteClave] = useState(null)
 
   const cargarUltima = useCallback(
     () =>
@@ -279,6 +362,15 @@ export default function Analisis() {
   // La recién solicitada manda sobre la última consultada, solo para el mismo docente y periodo.
   const clave = `${docenteId}-${periodoId}`
   const idSolicitud = solicitudNueva?.clave === clave ? solicitudNueva.id : (ultima.datos?.idSolicitud ?? null)
+  const liberarSolicitud = useCallback((claveTerminada) => {
+    setSolicitudPendienteClave((actual) => (actual === claveTerminada ? null : actual))
+  }, [])
+  const modelo = modeloElegido ?? modelos.datos?.porDefecto ?? ''
+  const opcionModelo = modelos.datos?.opciones?.find((opcion) => opcion.codigo === modelo)
+  const modeloDisponible = Boolean(
+    opcionModelo?.disponible && (modelo !== 'LLM' || modelos.datos?.llmDisponible),
+  )
+  const modeloConfirmado = modelo !== 'LLM' || confirmaExterno
 
   function cambiarFiltro(nombre, valor) {
     setErrorSolicitar(null)
@@ -294,14 +386,15 @@ export default function Analisis() {
   const motivoListo = motivo.trim().length >= MOTIVO_MINIMO
 
   async function solicitar() {
+    if (!modeloDisponible || !modeloConfirmado) return
     setEnviando(true)
     setErrorSolicitar(null)
     try {
-      const nueva = pideMotivo
-        ? await solicitarAnalisis(docenteId, periodoId, motivo.trim())
-        : await solicitarAnalisis(docenteId, periodoId)
+      const nueva = await solicitarAnalisis(docenteId, periodoId, pideMotivo ? motivo.trim() : null, modelo)
       setSolicitudNueva({ clave, id: nueva.idSolicitud })
+      setSolicitudPendienteClave(clave)
       setMotivo('')
+      setConfirmaExterno(false)
     } catch (error) {
       setErrorSolicitar(error)
       // Ya había una en curso: se muestra esa.
@@ -384,6 +477,34 @@ export default function Analisis() {
         ) : (
           <>
             {esCoordinador && (
+              <Panel
+                className="analisis__modelo-panel"
+                titulo="Motor de análisis"
+                descripcion="Elige si DocenteIA procesa los comentarios localmente o usa el modelo externo configurado."
+                icono={Sparkles}
+                tono="violeta"
+              >
+                {modelos.cargando && <Cargando texto="Consultando modelos disponibles" bloques={1} />}
+                {modelos.error && (
+                  <EstadoVista tipo="error" titulo="No fue posible consultar los modelos" mensaje={modelos.error.message}>
+                    <Boton icono={RefreshCw} onClick={modelos.recargar}>Intentar de nuevo</Boton>
+                  </EstadoVista>
+                )}
+                {modelos.datos && (
+                  <SelectorModelo
+                    modelos={modelos.datos}
+                    valor={modelo}
+                    onCambiar={(nuevoModelo) => {
+                      setModeloElegido(nuevoModelo)
+                      setConfirmaExterno(false)
+                    }}
+                    confirmaExterno={confirmaExterno}
+                    onConfirmarExterno={setConfirmaExterno}
+                  />
+                )}
+              </Panel>
+            )}
+            {esCoordinador && (
               <div className="analisis__acciones">
                 {pideMotivo && (
                   <Campo
@@ -402,15 +523,28 @@ export default function Analisis() {
                 )}
                 <Boton
                   onClick={solicitar}
-                  disabled={enviando || estaEnCurso(ultima.datos) || (pideMotivo && !motivoListo)}
+                  disabled={
+                    enviando ||
+                    !modeloDisponible ||
+                    !modeloConfirmado ||
+                    solicitudPendienteClave === clave ||
+                    estaEnCurso(ultima.datos) ||
+                    (pideMotivo && !motivoListo)
+                  }
                 >
-                  {enviando ? 'Solicitando…' : idSolicitud ? 'Solicitar un análisis nuevo' : 'Solicitar análisis'}
+                  {enviando ? 'Solicitando…' : idSolicitud ? 'Regenerar análisis' : 'Solicitar análisis'}
                 </Boton>
               </div>
             )}
             <ErrorApi error={errorSolicitar} />
             {idSolicitud ? (
-              <DetalleSolicitud key={idSolicitud} idSolicitud={idSolicitud} puedeValidar={esCoordinador} />
+              <DetalleSolicitud
+                key={idSolicitud}
+                idSolicitud={idSolicitud}
+                puedeValidar={esCoordinador}
+                clave={clave}
+                onTerminar={liberarSolicitud}
+              />
             ) : (
               <MensajeIA robot="esperando" tono="violeta" titulo="Todavía no he analizado a este docente en este periodo">
                 <p>
