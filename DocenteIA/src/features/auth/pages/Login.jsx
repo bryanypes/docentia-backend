@@ -129,7 +129,7 @@ export default function Login() {
         {motivoCierre === MOTIVO_CIERRE.EXPIRADA && !errorGeneral && (
           <div className="login__aviso login__aviso--info" role="status">
             <Info size={18} aria-hidden="true" />
-            <span>Tu sesión expiró por seguridad. Vuelve a ingresar para continuar donde ibas.</span>
+            <span>Tu sesión venció. Vuelve a ingresar para continuar donde ibas.</span>
           </div>
         )}
 
