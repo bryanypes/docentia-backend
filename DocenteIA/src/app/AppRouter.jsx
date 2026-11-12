@@ -25,7 +25,6 @@ const Coevaluaciones = lazy(() => import('../features/formularios/pages/Coevalua
 const EvaluacionProfesores = lazy(() => import('../features/formularios/pages/EvaluacionProfesores.jsx'))
 const HeteroevaluacionClase = lazy(() => import('../features/formularios/pages/HeteroevaluacionClase.jsx'))
 const MiAutoevaluacion = lazy(() => import('../features/formularios/pages/MiAutoevaluacion.jsx'))
-const Auditoria = lazy(() => import('../features/auditoria/pages/Auditoria.jsx'))
 const Notificaciones = lazy(() => import('../features/notificaciones/pages/Notificaciones.jsx'))
 const PanelProgramas = lazy(() => import('../features/kpis/pages/PanelProgramas.jsx'))
 const Agenda = lazy(() => import('../features/agenda/pages/Agenda.jsx'))
@@ -35,7 +34,6 @@ const Docentes = lazy(() => import('../features/docentes/pages/Docentes.jsx'))
 const Estadisticas = lazy(() => import('../features/estadisticas/pages/Estadisticas.jsx'))
 const ExpedienteDocente = lazy(() => import('../features/expedientes/pages/ExpedienteDocente.jsx'))
 const MiEvaluacion = lazy(() => import('../features/expedientes/pages/MiEvaluacion.jsx'))
-const Facultades = lazy(() => import('../features/facultades/pages/Facultades.jsx'))
 const Periodos = lazy(() => import('../features/periodos/pages/Periodos.jsx'))
 const Ponderaciones = lazy(() => import('../features/ponderaciones/pages/Ponderaciones.jsx'))
 const Programas = lazy(() => import('../features/programas/pages/Programas.jsx'))
@@ -108,14 +106,12 @@ function RutasDocentia() {
               </Route>
 
               <Route element={<ProtectedRoute rolesPermitidos={[ROLES.VICERRECTOR]} />}>
-                <Route path="/auditoria" element={<Auditoria />} />
               </Route>
 
               {/* Vicerrectoría decide fechas y lee la configuración; administración la gestiona. */}
               <Route element={<ProtectedRoute rolesPermitidos={[ROLES.VICERRECTOR, ROLES.ADMINISTRADOR]} />}>
                 <Route path="/periodos" element={<Periodos />} />
                 <Route path="/ponderaciones" element={<Ponderaciones />} />
-                <Route path="/facultades" element={<Facultades />} />
                 <Route path="/programas" element={<Programas />} />
                 {/* Crear y editar se abren como modal sobre la lista */}
                 <Route path="/usuarios" element={<Usuarios />}>
