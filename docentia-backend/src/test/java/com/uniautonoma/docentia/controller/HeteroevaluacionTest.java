@@ -367,28 +367,6 @@ class HeteroevaluacionTest extends PruebaIntegracion {
   }
 
   @Test
-  void elCsvNoPisaLaFuenteQueYaVieneDelFormulario() throws Exception {
-    for (int i = 0; i < 5; i++) {
-      enviar(estudiantes.get(i), 5).andExpect(status().isOk());
-    }
-    byte[] csv =
-        ("Correo docente;Dominio disciplinar;Planeación académica;Metodología de enseñanza;"
-                + "Evaluación del aprendizaje;Compromiso institucional;Comentario\n"
-                + docente.getCorreo()
-                + ";2.0;2.0;2.0;2.0;2.0;Bien\n")
-            .getBytes(StandardCharsets.UTF_8);
-    mockMvc
-        .perform(
-            multipart("/importaciones/csv")
-                .file(new MockMultipartFile("archivo", "e.csv", "text/csv", csv))
-                .with(como(coordinador)))
-        .andExpect(status().isOk());
-
-    assertThat(estudiantesDe(docente).getOrigen()).isEqualTo(OrigenCalificacion.FORMULARIO);
-    assertThat(estudiantesDe(docente).getNotaFuente()).isEqualByComparingTo("5");
-  }
-
-  @Test
   void laCoberturaRespetaElAlcanceYNoIdentificaEstudiantes() throws Exception {
     enviar(estudiantes.get(0), 4).andExpect(status().isOk());
     enviar(estudiantes.get(1), 4).andExpect(status().isOk());

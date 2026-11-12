@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.containsString;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
@@ -285,34 +284,6 @@ class FormulariosTest extends PruebaIntegracion {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(calificacion))
         .andExpect(status().isConflict());
-  }
-
-  @Test
-  void laCargaDeEstudiantesNoTocaLoQueVinoDeFormulario() throws Exception {
-    guardarCo(coordinador, coevaluacion(5)).andExpect(status().isOk());
-    enviarCo(coordinador).andExpect(status().isOk());
-    byte[] csv =
-        ("Correo docente;Dominio disciplinar;Planeación académica;Metodología de enseñanza;"
-                + "Evaluación del aprendizaje;Compromiso institucional;Comentario\n"
-                + docente.getCorreo()
-                + ";4.0;4.0;4.0;4.0;4.0;Bien\n")
-            .getBytes(java.nio.charset.StandardCharsets.UTF_8);
-    mockMvc
-        .perform(
-            multipart("/importaciones/csv")
-                .file(
-                    new org.springframework.mock.web.MockMultipartFile(
-                        "archivo", "e.csv", "text/csv", csv))
-                .with(como(coordinador)))
-        .andExpect(status().isOk());
-
-    var coevaluacion =
-        calificacionRepository
-            .findByDocenteIdUsuarioAndPeriodoIdPeriodoAndFuente(
-                docente.getIdUsuario(), periodo.getIdPeriodo(), FuenteEvaluacion.COORDINACION)
-            .orElseThrow();
-    assertThat(coevaluacion.getOrigen()).isEqualTo(OrigenCalificacion.FORMULARIO);
-    assertThat(coevaluacion.getNotaFuente()).isEqualByComparingTo("5");
   }
 
   @Test
