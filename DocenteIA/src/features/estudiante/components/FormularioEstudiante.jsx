@@ -1,6 +1,7 @@
 import { useVentanaEtapa } from '../../../shared/components/layout/AppLayout/periodoContext.js'
 import { ETAPAS } from '../../../shared/constants/dominio.js'
 import { mensajeVentanaCerrada } from '../estadoVentana.js'
+import { errorComentario } from '../validarComentario.js'
 import { Send, ShieldCheck } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
@@ -24,6 +25,7 @@ export function FormularioEstudiante({ formulario, onEnviar }) {
   const enCurso = useRef(false)
 
   const completo = Object.keys(respuestas).length === formulario.total
+  const problemaComentario = errorComentario(comentario)
   const cerrada = mensajeVentanaCerrada(useVentanaEtapa(ETAPAS.RECOLECCION_CALIFICACIONES))
   const editable = formulario.estado === 'PENDIENTE' && formulario.ventanaAbierta
 
@@ -33,7 +35,7 @@ export function FormularioEstudiante({ formulario, onEnviar }) {
     setOcupado(true)
     setError(null)
     try {
-      await onEnviar({ respuestas, comentario: comentario.trim() || null })
+      await onEnviar({ respuestas, comentario: comentario.trim() })
     } catch (errorApi) {
       setError(errorApi)
       enCurso.current = false
@@ -87,15 +89,24 @@ export function FormularioEstudiante({ formulario, onEnviar }) {
             contenido: (
               <>
                 <label className="instrumento__comentario">
-                  Comentario (opcional). No incluyas datos personales: ni tu nombre ni el de otras personas.
+                  Comentario sobre el profesor (obligatorio, mínimo 10 caracteres). No incluyas datos personales: ni
+                  tu nombre ni el de otras personas.
                   <textarea
                     className="campo__control"
                     rows={3}
                     maxLength={1000}
+                    required
+                    aria-invalid={comentario !== '' && Boolean(problemaComentario)}
+                    aria-describedby="ayuda-comentario"
                     value={comentario}
                     onChange={(e) => setComentario(e.target.value)}
                   />
                 </label>
+                {comentario !== '' && problemaComentario && (
+                  <span id="ayuda-comentario" className="campo__error" role="alert">
+                    {problemaComentario}
+                  </span>
+                )}
 
                 <ErrorApi error={error} />
 
@@ -104,11 +115,14 @@ export function FormularioEstudiante({ formulario, onEnviar }) {
                     <input type="checkbox" checked={confirmado} onChange={(e) => setConfirmado(e.target.checked)} />{' '}
                     Revisé mis respuestas y entiendo que el envío es definitivo.
                   </label>
-                  <Boton icono={Send} disabled={!completo || !confirmado || ocupado} onClick={enviar}>
+                  <Boton icono={Send} disabled={!completo || !confirmado || ocupado || Boolean(problemaComentario)} onClick={enviar}>
                     {ocupado ? 'Enviando…' : 'Enviar evaluación'}
                   </Boton>
                   {!completo && (
                     <span className="campo__ayuda">Responde los {formulario.total} ítems para poder enviar.</span>
+                  )}
+                  {completo && problemaComentario && (
+                    <span className="campo__ayuda">Escribe tu comentario para poder enviar.</span>
                   )}
                 </div>
               </>

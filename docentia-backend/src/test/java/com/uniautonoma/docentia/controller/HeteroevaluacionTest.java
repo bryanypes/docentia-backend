@@ -116,7 +116,7 @@ class HeteroevaluacionTest extends PruebaIntegracion {
   }
 
   private ResultActions enviar(Usuario estudiante, int valor) throws Exception {
-    return enviar(estudiante, todos(valor), null);
+    return enviar(estudiante, todos(valor), "Explica con claridad y da ejemplos.");
   }
 
   @Test
@@ -193,8 +193,16 @@ class HeteroevaluacionTest extends PruebaIntegracion {
     ajeno.put("D01", 4);
     enviar(e, ajeno, null).andExpect(status().isUnprocessableEntity());
     enviar(e, todos(4), "x".repeat(1001)).andExpect(status().isUnprocessableEntity());
+    for (String malo :
+        new String[] {
+          null, "   ", "  corto  ", "..........", "1234567890!", "aaaaaaaaaaaa", "a a a a a a a"
+        }) {
+      enviar(e, todos(4), malo)
+          .andExpect(status().isUnprocessableEntity())
+          .andExpect(jsonPath("$.mensaje").exists());
+    }
 
-    enviar(e, todos(4), "Explica con ejemplos")
+    enviar(e, todos(4), "  Explica con ejemplos  ")
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.estado").value("ENVIADA"))
         .andExpect(content().string(not(containsString("4"))));
