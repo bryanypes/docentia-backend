@@ -262,7 +262,7 @@ function Indicadores({ kpis, esVicerrector, mostrarCompletos }) {
         unidad="en total"
         indicador={datos.evaluacionesRealizadas}
         periodoAnterior={periodoAnterior}
-        explicacion="Cada docente recibe hasta tres: una por fuente."
+        explicacion="Cada docente recibe hasta tres: una por evaluador."
       />
       <TarjetaKpi
         icono={Award}

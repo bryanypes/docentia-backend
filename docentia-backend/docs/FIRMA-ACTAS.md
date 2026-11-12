@@ -14,7 +14,7 @@ Es una **firma electrónica simple**. Una persona con sesión iniciada en DOCENT
   - La etapa FIRMA_ACTAS está abierta en el periodo.
   - El docente tiene una cita de retroalimentación activa.
   - La coordinación registró la asistencia, salvo que se desactive `exigir-asistencia`.
-  - El promedio está completo con las tres fuentes.
+  - El promedio está completo con los tres evaluadores (estudiantes, coordinación y autoevaluación).
   - Si la nota está por debajo del umbral, el acta tiene al menos un compromiso con plazo.
 - Hay que marcar una casilla para confirmar la lectura. Sin esa confirmación, el servidor rechaza la firma.
 

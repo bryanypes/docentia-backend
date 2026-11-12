@@ -33,7 +33,7 @@ const DESCRIPCION_ROL = {
   ADMINISTRADOR: 'Usuarios, programas, ponderaciones y fechas. No ve notas, comentarios ni actas.',
   VISUALIZADOR: 'Solo lectura de paneles agregados, sin datos individuales.',
   COORDINADOR: 'Ve y coevalúa a los docentes de su facultad.',
-  DOCENTE: 'Consulta su propia evaluación, sin notas individuales por fuente.',
+  DOCENTE: 'Consulta su propia evaluación, sin notas individuales por evaluador.',
   ESTUDIANTE: 'Califica a sus profesores por cada clase en la que está matriculado.',
 }
 

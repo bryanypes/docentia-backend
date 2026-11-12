@@ -1,5 +1,7 @@
 # Guion de prueba y demostración
 
+> **Términos en pantalla:** la interfaz dice **evaluadores** (estudiantes, coordinación y autoevaluación) donde la API y esta documentación técnica dicen *fuentes*. Los campos de la API no cambian (por ejemplo, `fuentesPendientes`).
+
 Presentación a Vicerrectoría, jueves 12 de noviembre de 2026. Se presenta **en local con Docker y datos
 de demostración**, sobre la rama `release/0.4.0`. No se usa el servidor de producción, donde la
 recolección real sigue abierta hasta el viernes 13.

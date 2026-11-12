@@ -47,7 +47,7 @@ export default function ExpedienteDocente() {
     <Encabezado
       miga="Docentes · Expediente"
       titulo="Expediente del docente"
-      subtitulo="Calificación por fuente, resultado por dimensión, histórico y compromisos vigentes."
+      subtitulo="Calificación por evaluador, resultado por dimensión, histórico y compromisos vigentes."
     />
   )
 
@@ -185,9 +185,9 @@ export default function ExpedienteDocente() {
                 <dd>{ESTADOS_PROCESO[datosProceso.estado]?.etiqueta ?? 'No disponible'}</dd>
               </div>
             </dl>
-            <h2>Fuentes de evaluación</h2>
+            <h2>Evaluadores</h2>
             <table>
-              <thead><tr><th>Fuente</th><th>Nota</th><th>Peso</th></tr></thead>
+              <thead><tr><th>Evaluador</th><th>Nota</th><th>Peso</th></tr></thead>
               <tbody>
                 {notasPorFuente.map((fuente) => (
                   <tr key={fuente.fuente}>

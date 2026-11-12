@@ -54,7 +54,7 @@ export function PanelCorrecciones({ idDocente }) {
 
               <dl className="correcciones__cambios">
                 <div>
-                  <dt className="rotulo">Nota de la fuente</dt>
+                  <dt className="rotulo">Nota del evaluador</dt>
                   <dd>
                     {formatearNota(c.notaAnterior)} <ArrowRight size={14} aria-hidden="true" className="correcciones__flecha" />
                     <span className="solo-lectores">pasó a</span>{' '}

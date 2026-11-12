@@ -38,7 +38,7 @@ export function ValorPromedio({ promedio, tamano = 'grande' }) {
 /** Nota de cada fuente con su peso y el promedio ponderado. Solo para coordinación y vicerrectoría. */
 export function PanelFuentes({ notasPorFuente, promedio, descripcion, children }) {
   return (
-    <Panel titulo="Calificación por fuente" descripcion={descripcion}>
+    <Panel titulo="Calificación por evaluador" descripcion={descripcion}>
       <p className="fuentes__formula">{textoFormula(pesosDe(notasPorFuente))}</p>
       <ul className="fuentes">
         {notasPorFuente.map((f) => (
@@ -75,7 +75,7 @@ export function PanelFuentes({ notasPorFuente, promedio, descripcion, children }
 /** Resultado ya ponderado de cada dimensión. Sirve para la vista del docente y la completa. */
 export function PanelDimensiones({ titulo = 'Resultado por dimensión', dimensiones }) {
   return (
-    <Panel titulo={titulo} descripcion="Resultado ponderado entre las tres fuentes.">
+    <Panel titulo={titulo} descripcion="Resultado ponderado entre los tres evaluadores.">
       {dimensiones.length === 0 ? (
         <p className="expediente__vacio">Aún no hay resultados en el periodo activo.</p>
       ) : (

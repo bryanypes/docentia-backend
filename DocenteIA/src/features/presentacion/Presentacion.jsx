@@ -80,7 +80,7 @@ export default function Presentacion() {
             <p className="presentacion__visual-rotulo">Un proceso conectado</p>
             <ol className="presentacion__ruta">
               {[
-                ['01', 'Evaluar', 'Tres fuentes, un mismo periodo'],
+                ['01', 'Evaluar', 'Tres evaluadores, un mismo periodo'],
                 ['02', 'Analizar', 'Resultados y comentarios'],
                 ['03', 'Retroalimentar', 'Reunión, acta y seguimiento'],
               ].map(([numero, titulo, texto]) => (
