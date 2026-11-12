@@ -78,6 +78,14 @@ docentia:
   # Rol que puede corregir un acta firmada (VICERRECTOR o COORDINADOR).
   actas:
     rol-corrector: ${DOCENTIA_ACTAS_ROL_CORRECTOR:VICERRECTOR}
+    # La firma lleva el trazo dibujado en la página; se imprime en el PDF con su hash.
+    exigir-firma-dibujada: ${DOCENTIA_ACTAS_EXIGIR_FIRMA_DIBUJADA:true}
+    # Logo institucional del PDF (ver resources/marca/LEEME.md). Sin archivo, el acta sale sin logo.
+    logo: ${DOCENTIA_ACTAS_LOGO:classpath:marca/logo-uniautonoma.png}
+  # El docente ve su nota, compromisos y acta solo cuando la coordinación registra su asistencia a la
+  # cita, y el acta se firma en esa reunión.
+  proceso:
+    exigir-asistencia: ${DOCENTIA_PROCESO_EXIGIR_ASISTENCIA:true}
   # Avisos dentro de la app y correo. Sin DOCENTIA_MAIL_HOST los correos solo se registran.
   notificaciones:
     url-aplicacion: ${DOCENTIA_APP_URL:http://localhost:5173}
@@ -94,11 +102,12 @@ docentia:
   # externo exige revisar la política de tratamiento de datos de la universidad (Ley 1581 de 2012).
   ia:
     habilitado: ${DOCENTIA_IA_HABILITADO:false}
-    proveedor: ${DOCENTIA_IA_PROVEEDOR:simulado}
+    proveedor: ${DOCENTIA_IA_PROVEEDOR:local}
     url-base: ${DOCENTIA_IA_URL_BASE:}
     modelo: ${DOCENTIA_IA_MODELO:}
     timeout-segundos: ${DOCENTIA_IA_TIMEOUT_SEGUNDOS:60}
     clave: ${DOCENTIA_IA_CLAVE:}
+    enviar-temperatura: ${DOCENTIA_IA_ENVIAR_TEMPERATURA:true}
     minimo-encuestas: 10
     worker:
       habilitado: ${DOCENTIA_IA_WORKER:true}

@@ -1,7 +1,6 @@
 import { RefreshCw, Scale } from 'lucide-react'
 import { useState } from 'react'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
-import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { Campo } from '../../../shared/components/ui/Campo/Campo.jsx'
 import { ErrorApi } from '../../../shared/components/ui/ErrorApi/ErrorApi.jsx'
@@ -9,6 +8,7 @@ import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { guardarPonderacionActiva, obtenerPonderacionActiva } from '../services/ponderacionesService.js'
+import { AvisoFlotante } from '../../../shared/components/ui/Avisos/AvisoFlotante.jsx'
 
 const FUENTES = [
   { campo: 'pesoEstudiantes', etiqueta: 'Estudiantes' },
@@ -90,7 +90,7 @@ export default function Ponderaciones() {
         subtitulo="Peso de cada fuente en el promedio del periodo activo. Debe sumar 100 %."
       />
       <div className="pagina">
-        {resultado && <Aviso tipo="exito" titulo={resultado} />}
+        <AvisoFlotante mensaje={resultado} />
         {cargando && !datos && <Cargando texto="Cargando ponderación" bloques={1} />}
         {error?.status === 409 && (
           <EstadoVista titulo="No hay un periodo activo" mensaje="Activa un periodo para configurar sus pesos." />

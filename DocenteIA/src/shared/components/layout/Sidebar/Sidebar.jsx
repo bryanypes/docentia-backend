@@ -1,46 +1,48 @@
 import {
-  BookOpen,
   Building2,
   CalendarDays,
   CalendarRange,
   ChartColumn,
+  ChartColumnBig,
   ClipboardCheck,
   ClipboardList,
   FileSignature,
   FileUp,
   GraduationCap,
-  KeyRound,
   LayoutDashboard,
   Lightbulb,
   LogOut,
+  Menu,
   MessagesSquare,
   PenLine,
   Scale,
-  ScrollText,
+  Settings,
   UserCog,
   Users,
+  X,
 } from 'lucide-react'
-import { useEffect, useRef } from 'react'
-import { Link, NavLink, useLocation } from 'react-router-dom'
-import { RUTA_CAMBIO_CONTRASENA } from '../../../../app/rutasPorRol.js'
+import { Fragment } from 'react'
+import { Link, NavLink } from 'react-router-dom'
 import { useSesion } from '../../../../features/auth/sesionContext.js'
 import '../../../../features/formularios/components/FormularioInstrumento.css'
 import { obtenerPendientesCoevaluacion } from '../../../../features/formularios/services/formulariosService.js'
 import { useFetch } from '../../../hooks/useFetch.js'
 import { ETIQUETA_ROL, ROLES } from '../../../constants/dominio.js'
+import { FUNCIONES } from '../../../constants/funciones.js'
 import { iniciales } from '../../../utils/formatters.js'
 import './Sidebar.css'
 
 const NAVEGACION = {
-  [ROLES.ESTUDIANTE]: [{ ruta: '/evaluacion-profesores', etiqueta: 'Mis evaluaciones', Icono: ClipboardCheck }],
+  [ROLES.ESTUDIANTE]: [{ ruta: '/inicio', etiqueta: 'Mis evaluaciones', Icono: ClipboardCheck }],
   [ROLES.DOCENTE]: [
-    { ruta: '/mi-evaluacion', etiqueta: 'Mi evaluación', Icono: ClipboardCheck },
+    { ruta: '/inicio', etiqueta: 'Mi evaluación', Icono: ClipboardCheck },
     { ruta: '/mi-autoevaluacion', etiqueta: 'Mi autoevaluación', Icono: PenLine },
     { ruta: '/mi-cita', etiqueta: 'Mi cita', Icono: CalendarDays },
     { ruta: '/mi-acta', etiqueta: 'Mi acta', Icono: FileSignature },
   ],
   [ROLES.COORDINADOR]: [
     { ruta: '/inicio', etiqueta: 'Inicio', Icono: LayoutDashboard },
+    { ruta: '/estadisticas', etiqueta: 'Estadísticas', Icono: ChartColumnBig },
     { ruta: '/docentes', etiqueta: 'Docentes', Icono: Users },
     { ruta: '/coevaluaciones', etiqueta: 'Coevaluaciones', Icono: ClipboardList },
     { ruta: '/importaciones', etiqueta: 'Evaluación de estudiantes', Icono: FileUp },
@@ -51,19 +53,18 @@ const NAVEGACION = {
     { ruta: '/panel-programas', etiqueta: 'Panel por programa', Icono: ChartColumn },
   ],
   [ROLES.VICERRECTOR]: [
-    { ruta: '/inicio', etiqueta: 'Inicio', Icono: LayoutDashboard },
-    { ruta: '/docentes', etiqueta: 'Docentes', Icono: Users },
-    { ruta: '/importaciones', etiqueta: 'Cargas de estudiantes', Icono: FileUp },
-    { ruta: '/matricula', etiqueta: 'Matrícula y cobertura', Icono: GraduationCap },
-    { ruta: '/analisis', etiqueta: 'Análisis de comentarios', Icono: MessagesSquare },
-    { ruta: '/acciones-sugeridas', etiqueta: 'Acciones sugeridas', Icono: Lightbulb },
-    { ruta: '/panel-programas', etiqueta: 'Panel por programa', Icono: ChartColumn },
-    { ruta: '/periodos', etiqueta: 'Periodos', Icono: CalendarRange },
-    { ruta: '/ponderaciones', etiqueta: 'Ponderaciones', Icono: Scale },
-    { ruta: '/facultades', etiqueta: 'Facultades', Icono: Building2 },
-    { ruta: '/programas', etiqueta: 'Programas', Icono: BookOpen },
-    { ruta: '/usuarios', etiqueta: 'Usuarios', Icono: UserCog },
-    { ruta: '/auditoria', etiqueta: 'Auditoría', Icono: ScrollText },
+    { ruta: '/inicio', etiqueta: 'Inicio', Icono: LayoutDashboard, grupo: 'Seguimiento' },
+    { ruta: '/estadisticas', etiqueta: 'Estadísticas', Icono: ChartColumnBig, grupo: 'Seguimiento' },
+    { ruta: '/docentes', etiqueta: 'Docentes', Icono: Users, grupo: 'Seguimiento' },
+    { ruta: '/importaciones', etiqueta: 'Cargas de estudiantes', Icono: FileUp, grupo: 'Seguimiento' },
+    { ruta: '/matricula', etiqueta: 'Matrícula y cobertura', Icono: GraduationCap, grupo: 'Seguimiento' },
+    { ruta: '/analisis', etiqueta: 'Análisis de comentarios', Icono: MessagesSquare, grupo: 'Seguimiento' },
+    { ruta: '/acciones-sugeridas', etiqueta: 'Acciones sugeridas', Icono: Lightbulb, grupo: 'Seguimiento' },
+    { ruta: '/panel-programas', etiqueta: 'Panel por programa', Icono: ChartColumn, grupo: 'Seguimiento' },
+    { ruta: '/periodos', etiqueta: 'Periodos', Icono: CalendarRange, grupo: 'Administración' },
+    { ruta: '/ponderaciones', etiqueta: 'Ponderaciones', Icono: Scale, grupo: 'Administración' },
+    { ruta: '/facultades', etiqueta: 'Facultades y programas', Icono: Building2, grupo: 'Administración' },
+    { ruta: '/usuarios', etiqueta: 'Usuarios', Icono: UserCog, grupo: 'Administración' },
   ],
 }
 
@@ -78,22 +79,20 @@ function ContadorCoevaluaciones() {
   )
 }
 
-export function Sidebar() {
+/**
+ * Menú principal. En escritorio es la barra lateral y `onCerrar` la oculta del todo; en el celular
+ * (`movil`) es un panel sobre la página que se cierra al elegir un destino (`onNavegar`).
+ */
+export function Sidebar({ id, movil = false, onCerrar, onNavegar }) {
   const { usuario, cerrarSesion } = useSesion()
-  const enlaces = NAVEGACION[usuario.rol] ?? []
-  const { pathname } = useLocation()
-  const nav = useRef(null)
-
-  // En móvil el menú es una fila con desplazamiento: se lleva el enlace activo a la vista.
-  useEffect(() => {
-    const activo = nav.current?.querySelector('.active')
-    if (activo && nav.current.scrollWidth > nav.current.clientWidth) {
-      nav.current.scrollTo({ left: activo.offsetLeft - nav.current.offsetLeft - 12 })
-    }
-  }, [pathname])
+  const enlaces = (NAVEGACION[usuario.rol] ?? []).filter(
+    ({ ruta }) =>
+      (FUNCIONES.coberturaEstudiantes || ruta !== '/matricula') &&
+      (FUNCIONES.cargaCsvEstudiantes || ruta !== '/importaciones'),
+  )
 
   return (
-    <aside className="sidebar">
+    <aside id={id} className="sidebar" aria-label="Menú principal">
       <div className="sidebar__marca">
         <span className="sidebar__logo" aria-hidden="true">
           <GraduationCap size={20} strokeWidth={2.25} />
@@ -102,16 +101,34 @@ export function Sidebar() {
           <strong>DOCENTIA</strong>
           <span>Evaluación docente</span>
         </span>
+        <button
+          id="cerrar-menu"
+          type="button"
+          className="sidebar__cerrar"
+          onClick={onCerrar}
+          aria-controls={id}
+          aria-expanded="true"
+          aria-label="Cerrar menú"
+          title="Cerrar menú"
+        >
+          {movil ? <X size={20} aria-hidden="true" /> : <Menu size={20} aria-hidden="true" />}
+        </button>
       </div>
 
-      <nav ref={nav} className="sidebar__nav" aria-label="Navegación principal">
+      <nav className="sidebar__nav" aria-label="Navegación principal">
         <span className="sidebar__seccion">{ETIQUETA_ROL[usuario.rol]}</span>
-        {enlaces.map(({ ruta, etiqueta, Icono }) => (
-          <NavLink key={ruta} to={ruta} className="sidebar__enlace">
+        {enlaces.map(({ ruta, etiqueta, Icono, grupo }, i) => (
+          <Fragment key={ruta}>
+          {/* La vicerrectoría separa el seguimiento de la administración de la plataforma. */}
+          {grupo && grupo !== enlaces[i - 1]?.grupo && (
+            <span className={`sidebar__grupo${i === 0 ? ' sidebar__grupo--primero' : ''}`}>{grupo}</span>
+          )}
+          <NavLink to={ruta} className="sidebar__enlace" onClick={onNavegar}>
             <Icono size={18} strokeWidth={1.75} aria-hidden="true" className="sidebar__icono" />
             {etiqueta}
             {ruta === '/coevaluaciones' && <ContadorCoevaluaciones />}
           </NavLink>
+          </Fragment>
         ))}
       </nav>
 
@@ -123,9 +140,9 @@ export function Sidebar() {
           <span className="sidebar__usuario-nombre">{usuario.nombreCompleto}</span>
           <span className="sidebar__usuario-meta">{usuario.correo}</span>
         </span>
-        <Link to={RUTA_CAMBIO_CONTRASENA} className="sidebar__icono-boton" title="Cambiar contraseña">
-          <KeyRound size={17} aria-hidden="true" />
-          <span className="solo-lectores">Cambiar contraseña</span>
+        <Link to="/perfil" className="sidebar__icono-boton" title="Mi perfil y configuración" onClick={onNavegar}>
+          <Settings size={17} aria-hidden="true" />
+          <span className="solo-lectores">Mi perfil y configuración</span>
         </Link>
         <button type="button" className="sidebar__salir" onClick={() => cerrarSesion()}>
           <LogOut size={16} strokeWidth={2} aria-hidden="true" />

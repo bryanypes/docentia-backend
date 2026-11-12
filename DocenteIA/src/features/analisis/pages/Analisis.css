@@ -117,3 +117,117 @@
 .analisis__versiones p {
   margin: 2px 0 0;
 }
+
+/* Guía de cuándo se puede pedir el análisis: tres pasos con su estado. */
+.analisis__guia {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  margin: 10px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.analisis__guia-paso {
+  --tono: var(--color-texto-tenue);
+  --tono-fondo: var(--color-fondo);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-borde-suave);
+  border-top: 3px solid var(--tono);
+  border-radius: var(--radio-md);
+  background: var(--color-superficie);
+  font-size: 13px;
+}
+
+.analisis__guia-paso--hecho {
+  --tono: var(--color-turquesa);
+  --tono-fondo: var(--color-turquesa-fondo);
+}
+
+.analisis__guia-paso--actual {
+  --tono: var(--color-violeta);
+  --tono-fondo: var(--color-violeta-fondo);
+  background: var(--color-violeta-fondo);
+}
+
+.analisis__guia-paso div {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.analisis__guia-paso strong {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  color: var(--color-texto);
+}
+
+.analisis__guia-paso div > span {
+  color: var(--color-texto-secundario);
+}
+
+.analisis__guia-marca {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: var(--tono-fondo);
+  color: var(--tono);
+  font-size: 12px;
+  font-weight: var(--peso-fuerte);
+}
+
+.analisis__guia-paso--actual .analisis__guia-marca {
+  background: var(--tono);
+  color: var(--color-superficie);
+}
+
+.analisis__guia-ahora {
+  padding: 1px 8px;
+  border-radius: var(--radio-pildora);
+  background: var(--color-violeta);
+  color: var(--color-superficie);
+  font-size: 11px;
+  font-style: normal;
+}
+
+@media (max-width: 900px) {
+  .analisis__guia {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Botón de información junto al título: abre la explicación de DocenteIA en un modal. */
+.analisis__ayuda {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--color-borde);
+  border-radius: 50%;
+  background: var(--color-superficie);
+  color: var(--color-azul);
+  cursor: pointer;
+}
+
+.analisis__ayuda:hover {
+  background: var(--color-azul-suave);
+}
+
+.analisis__ayuda:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+/* En el modal los pasos van uno debajo del otro. */
+.modal .analisis__guia {
+  grid-template-columns: minmax(0, 1fr);
+}

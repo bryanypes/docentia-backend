@@ -26,6 +26,7 @@
   --color-azul: #053686;
   --color-azul-oscuro: #022a8a;
   --color-azul-suave: #e8edf8;
+  --color-seleccion: #d9e2f8;
   --color-azul-claro: #c7d3ec;
   --color-azul-fondo: #f6f8fd;
   --color-amarillo: #e3c924;
@@ -62,6 +63,24 @@
   --color-error: #a33116;
   --color-error-fondo: #fbede9;
   --color-error-borde: #e5b4a6;
+
+  /* Acentos: dan variedad a estados, calendario e iconos sin salir de la marca. Cada texto va sobre
+     su fondo con contraste AA (4,5:1) y siempre acompañado de una etiqueta. */
+  --color-turquesa: #0f766e;
+  --color-turquesa-fondo: #e1f5f2;
+  --color-turquesa-borde: #9ad6cc;
+  --color-violeta: #6d28d9;
+  --color-violeta-fondo: #f0eafd;
+  --color-violeta-borde: #c9b6f2;
+  --color-coral: #b93d0c;
+  --color-coral-fondo: #fdede4;
+  --color-coral-borde: #f2bea2;
+  --color-cielo: #036394;
+  --color-cielo-fondo: #e2f1fa;
+  --color-cielo-borde: #a5d1ec;
+  --color-rosa: #b0185a;
+  --color-rosa-fondo: #fce8f1;
+  --color-rosa-borde: #f1b5cf;
 
   /* Niveles de desempeño de la Resolución 074 (siempre con su texto) */
   --color-nivel-muy-alto: var(--color-exito);

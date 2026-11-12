@@ -1,5 +1,5 @@
-import { ChevronLeft, PenLine, RefreshCw } from 'lucide-react'
-import { Link, useNavigate, useParams } from 'react-router-dom'
+import { ChartColumnBig, FileSignature, History, PenLine, RefreshCw, Sparkles } from 'lucide-react'
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
 import { useVentanaEtapa } from '../../../shared/components/layout/AppLayout/periodoContext.js'
 import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
@@ -10,32 +10,45 @@ import { ETAPAS, FUENTE_DEL_ROL, ROLES } from '../../../shared/constants/dominio
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { iniciales } from '../../../shared/utils/formatters.js'
 import { PanelActa } from '../../actas/components/PanelActa.jsx'
+import { ResumenAnalisisIA } from '../../analisis/components/ResumenAnalisisIA.jsx'
 import { PanelSeguimientoPlan } from '../../actas/components/PanelSeguimientoPlan.jsx'
 import { useSesion } from '../../auth/sesionContext.js'
 import { PanelCorrecciones } from '../../calificaciones/components/PanelCorrecciones.jsx'
 import { AvisoEtapaCerrada } from '../../periodos/components/AvisoEtapaCerrada.jsx'
+import { PanelProceso } from '../../proceso/components/PanelProceso.jsx'
 import {
   DatosDocente,
   PanelCompromisos,
   PanelDimensiones,
   PanelFuentes,
   PanelHistorico,
+  ValorPromedio,
 } from '../components/PanelesExpediente.jsx'
 import { obtenerExpedienteDocente } from '../services/expedientesService.js'
 import './Expediente.css'
+
+// Pestañas del expediente: cada una reúne lo que antes eran varias tarjetas sueltas.
+const PESTANAS = [
+  { clave: 'resultados', etiqueta: 'Resultados', corta: 'Resultados', Icono: ChartColumnBig },
+  { clave: 'analisis', etiqueta: 'Análisis IA', corta: 'IA', Icono: Sparkles },
+  { clave: 'historico', etiqueta: 'Histórico y compromisos', corta: 'Histórico', Icono: History },
+  { clave: 'acta', etiqueta: 'Proceso y acta', corta: 'Acta', Icono: FileSignature },
+]
 
 export default function ExpedienteDocente() {
   const { idDocente } = useParams()
   const { usuario } = useSesion()
   const navegar = useNavigate()
+  const [parametros, setParametros] = useSearchParams()
+  const pestana = PESTANAS.some((p) => p.clave === parametros.get('pestana')) ? parametros.get('pestana') : 'resultados'
   const recoleccion = useVentanaEtapa(ETAPAS.RECOLECCION_CALIFICACIONES)
   const expediente = useFetch(() => obtenerExpedienteDocente(idDocente), [idDocente])
 
   const encabezado = (
     <Encabezado
-      miga="Docentes · Expediente"
+      volver={{ a: '/docentes', texto: 'Docentes' }}
       titulo="Expediente del docente"
-      subtitulo="Calificación por fuente, resultado por dimensión, histórico y compromisos vigentes."
+      subtitulo="Resultados, análisis de los comentarios de estudiantes, histórico, compromisos y acta."
     />
   )
 
@@ -81,10 +94,6 @@ export default function ExpedienteDocente() {
     <>
       {encabezado}
       <div className="pagina">
-        <Link to="/docentes" className="enlace-volver">
-          <ChevronLeft size={16} aria-hidden="true" />
-          Volver al listado
-        </Link>
 
         {!periodo && (
           <Aviso tipo="alerta" titulo="No hay un periodo académico activo">
@@ -92,54 +101,96 @@ export default function ExpedienteDocente() {
           </Aviso>
         )}
 
-        <div className="rejilla">
-          <Panel>
-            <div className="expediente__perfil">
-              <span className="expediente__avatar" aria-hidden="true">
-                {iniciales(docente.nombreCompleto)}
-              </span>
-              <div>
-                <h2 className="expediente__nombre">{docente.nombreCompleto}</h2>
-                <p className="expediente__correo">{docente.correo}</p>
-              </div>
+        <Panel className="expediente__cabecera">
+          <div className="expediente__perfil">
+            <span className="expediente__avatar" aria-hidden="true">
+              {iniciales(docente.nombreCompleto)}
+            </span>
+            <div>
+              <h2 className="expediente__nombre">{docente.nombreCompleto}</h2>
+              <p className="expediente__correo">{docente.correo}</p>
             </div>
-            <DatosDocente docente={docente} periodo={periodo} promedio={promedio} />
-          </Panel>
+          </div>
+          <DatosDocente docente={docente} periodo={periodo} promedio={promedio} />
+          <div className="expediente__nota">
+            <span className="rotulo">Nota final</span>
+            <ValorPromedio promedio={promedio} />
+          </div>
+          {miFuente && (
+            <div className="expediente__calificar">
+              <Boton
+                icono={PenLine}
+                disabled={!periodo || Boolean(recoleccion && !recoleccion.abierta)}
+                onClick={() => navegar(`/coevaluaciones/${docente.idDocente}`)}
+              >
+                {yaCalifique ? 'Ver mi coevaluación' : 'Responder coevaluación'}
+              </Boton>
+              <AvisoEtapaCerrada ventana={recoleccion} accion="Calificar" />
+            </div>
+          )}
+        </Panel>
 
-          <PanelFuentes
-            notasPorFuente={notasPorFuente}
-            promedio={promedio}
-            descripcion="Estudiantes llega por CSV; coevaluación y autoevaluación, por sus formularios."
-          >
-            {miFuente && (
+        <section className="expediente-pestanas">
+          <div className="expediente-pestanas__barra" role="tablist" aria-label="Secciones del expediente">
+            {PESTANAS.map(({ clave, etiqueta, corta, Icono }) => (
+              <button
+                key={clave}
+                id={`pestana-${clave}`}
+                type="button"
+                role="tab"
+                aria-selected={pestana === clave}
+                aria-controls="expediente-contenido"
+                className={`expediente-pestanas__pestana${pestana === clave ? ' expediente-pestanas__pestana--activa' : ''}`}
+                onClick={() => {
+                  const nuevos = new URLSearchParams(parametros)
+                  if (clave === 'resultados') nuevos.delete('pestana')
+                  else nuevos.set('pestana', clave)
+                  setParametros(nuevos, { replace: true, state: { conservarFoco: true } })
+                }}
+              >
+                <Icono size={16} aria-hidden="true" />
+                <span className="expediente-pestanas__larga">{etiqueta}</span>
+                <span className="expediente-pestanas__corta" aria-hidden="true">
+                  {corta}
+                </span>
+              </button>
+            ))}
+          </div>
+
+          <div id="expediente-contenido" className="expediente-pestanas__contenido" role="tabpanel" aria-labelledby={`pestana-${pestana}`}>
+            {pestana === 'resultados' && (
               <>
-                <Boton
-                  bloque
-                  className="expediente__calificar"
-                  icono={PenLine}
-                  disabled={!periodo || Boolean(recoleccion && !recoleccion.abierta)}
-                  onClick={() => navegar(`/coevaluaciones/${docente.idDocente}`)}
-                >
-                  {yaCalifique ? 'Ver mi coevaluación' : 'Responder coevaluación'}
-                </Boton>
-                <div className="expediente__etapa">
-                  <AvisoEtapaCerrada ventana={recoleccion} accion="Calificar" />
+                <div className="expediente-pestanas__columnas">
+                  <PanelFuentes
+                    notasPorFuente={notasPorFuente}
+                    promedio={promedio}
+                    descripcion="Estudiantes llega por su encuesta o CSV; coevaluación y autoevaluación, por sus formularios."
+                  />
+                  <PanelDimensiones dimensiones={dimensiones} />
                 </div>
+                <PanelCorrecciones idDocente={docente.idDocente} />
               </>
             )}
-          </PanelFuentes>
-
-          <PanelDimensiones dimensiones={dimensiones} />
-        </div>
-
-        <div className="rejilla">
-          <PanelHistorico historico={historico} />
-          <PanelCompromisos compromisos={compromisosVigentes} />
-        </div>
-
-        <PanelActa idDocente={docente.idDocente} />
-        <PanelSeguimientoPlan idDocente={docente.idDocente} puedeMarcar={usuario.rol === ROLES.COORDINADOR} />
-        <PanelCorrecciones idDocente={docente.idDocente} />
+            {pestana === 'analisis' && <ResumenAnalisisIA
+                idDocente={docente.idDocente}
+                periodoId={periodo?.idPeriodo}
+                esCoordinador={usuario.rol === ROLES.COORDINADOR}
+              />}
+            {pestana === 'historico' && (
+              <div className="expediente-pestanas__columnas">
+                <PanelHistorico historico={historico} />
+                <PanelCompromisos compromisos={compromisosVigentes} />
+              </div>
+            )}
+            {pestana === 'acta' && (
+              <>
+                {periodo && <PanelProceso idDocente={docente.idDocente} />}
+                <PanelActa idDocente={docente.idDocente} />
+                <PanelSeguimientoPlan idDocente={docente.idDocente} puedeMarcar={usuario.rol === ROLES.COORDINADOR} />
+              </>
+            )}
+          </div>
+        </section>
       </div>
     </>
   )

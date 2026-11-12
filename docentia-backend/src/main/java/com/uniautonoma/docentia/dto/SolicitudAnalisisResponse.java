@@ -2,6 +2,7 @@ package com.uniautonoma.docentia.dto;
 
 import com.uniautonoma.docentia.entity.CitaHallazgo;
 import com.uniautonoma.docentia.entity.EstadoSolicitudAnalisis;
+import com.uniautonoma.docentia.entity.FuenteComentarios;
 import com.uniautonoma.docentia.entity.Hallazgo;
 import com.uniautonoma.docentia.entity.SolicitudAnalisis;
 import java.time.LocalDateTime;
@@ -12,6 +13,9 @@ import java.util.Map;
  * Estado de una solicitud de análisis. El borrador solo viene cuando el estado es COMPLETADO.
  *
  * @param mensaje explicación para el usuario en ERROR o INSUFICIENTE
+ * @param fuente CSV o FORMULARIO
+ * @param motivo detalle de INSUFICIENTE: POCAS_ENCUESTAS, SIN_COMENTARIOS, TODOS_EXCLUIDOS o
+ *     VENTANA_ABIERTA
  */
 public record SolicitudAnalisisResponse(
     Long idSolicitud,
@@ -27,7 +31,9 @@ public record SolicitudAnalisisResponse(
     LocalDateTime fechaSolicitud,
     LocalDateTime fechaInicio,
     LocalDateTime fechaFin,
-    Borrador borrador) {
+    Borrador borrador,
+    FuenteComentarios fuente,
+    String motivo) {
 
   public static SolicitudAnalisisResponse desde(SolicitudAnalisis solicitud) {
     return desde(solicitud, Map.of());
@@ -64,7 +70,9 @@ public record SolicitudAnalisisResponse(
         solicitud.getFechaSolicitud(),
         solicitud.getFechaInicio(),
         solicitud.getFechaFin(),
-        borrador);
+        borrador,
+        solicitud.getFuente(),
+        solicitud.getMotivo());
   }
 
   /**

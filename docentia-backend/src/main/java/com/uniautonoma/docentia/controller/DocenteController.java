@@ -39,8 +39,10 @@ public class DocenteController {
   @GetMapping("/seguimiento")
   public SeguimientoDocentesResponse listarSeguimiento(
       @RequestParam(required = false) Long idFacultad,
+      @RequestParam(required = false) Long periodoId,
+      @RequestParam(required = false) Long idPrograma,
       @AuthenticationPrincipal UsuarioSesion sesion) {
-    return seguimientoService.listar(idFacultad, sesion);
+    return seguimientoService.listar(idFacultad, periodoId, idPrograma, sesion);
   }
 
   /**

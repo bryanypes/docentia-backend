@@ -40,12 +40,12 @@ public class Programa {
   protected Programa() {}
 
   public Programa(String nombre, Facultad facultad) {
-    this.nombre = nombre;
+    this.nombre = NombrePropio.normalizar(nombre);
     this.facultad = facultad;
   }
 
   public Programa(String nombre, String codigo, Facultad facultad) {
-    this.nombre = nombre;
+    this.nombre = NombrePropio.normalizar(nombre);
     this.codigo = codigo;
     this.facultad = facultad;
   }
@@ -75,7 +75,7 @@ public class Programa {
   }
 
   public void setNombre(String nombre) {
-    this.nombre = nombre;
+    this.nombre = NombrePropio.normalizar(nombre);
   }
 
   public boolean getEsActivo() {

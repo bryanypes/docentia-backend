@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderizarConSesion } from '../../../pruebas/renderizarConSesion.jsx'
 import { api, ApiError } from '../../../services/api.js'
-import Auditoria from './Auditoria.jsx'
+import { RegistroAuditoria as Auditoria } from '../components/RegistroAuditoria.jsx'
 
 vi.spyOn(api, 'get')
 

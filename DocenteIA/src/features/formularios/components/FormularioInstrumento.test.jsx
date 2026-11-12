@@ -32,9 +32,10 @@ function responderTodo() {
 afterEach(() => vi.useRealTimers())
 
 describe('FormularioInstrumento', () => {
-  it('agrupa por criterio y muestra el avance', async () => {
+  it('muestra un criterio por paso con su avance', async () => {
     render(<FormularioInstrumento formulario={FORMULARIO} onGuardar={vi.fn()} onEnviar={vi.fn()} />)
     expect(screen.getByRole('group', { name: 'Capacidad para planear' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Capacidad para planear/ })).toHaveAttribute('aria-current', 'step')
     expect(screen.getByRole('group', { name: 'Prepara el curso' })).toBeInTheDocument()
     await userEvent.click(screen.getAllByRole('radio', { name: 'Nivel 4' })[0])
     expect(screen.getByText('1 de 2 ítems respondidos')).toBeInTheDocument()
@@ -44,14 +45,36 @@ describe('FormularioInstrumento', () => {
     const onGuardar = vi.fn().mockResolvedValue({})
     const onEnviar = vi.fn().mockResolvedValue({})
     render(<FormularioInstrumento formulario={FORMULARIO} onGuardar={onGuardar} onEnviar={onEnviar} />)
-    const enviar = screen.getByRole('button', { name: 'Enviar formulario' })
-    expect(enviar).toBeDisabled()
     await responderTodo()
+    await userEvent.click(screen.getByRole('button', { name: 'Revisar' }))
+    expect(screen.getByText('Completo')).toBeInTheDocument()
+    const enviar = screen.getByRole('button', { name: 'Enviar formulario' })
     expect(enviar).toBeDisabled()
     await userEvent.click(screen.getByRole('checkbox'))
     await userEvent.dblClick(enviar)
-    expect(onGuardar).toHaveBeenCalledWith({ respuestas: { D01: 4, D02: 5 }, comentarios: { C1: '' } })
+    expect(onGuardar).toHaveBeenCalledWith({ respuestas: { D01: 4, D02: 5 }, comentario: null })
     expect(onEnviar).toHaveBeenCalledTimes(1)
+  })
+
+  it('tiene un solo comentario al final, que se guarda con el borrador', async () => {
+    const onGuardar = vi.fn().mockResolvedValue({})
+    render(<FormularioInstrumento formulario={FORMULARIO} onGuardar={onGuardar} onEnviar={vi.fn()} />)
+    // En el paso del criterio ya no hay comentario.
+    expect(screen.queryByRole('textbox')).not.toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Revisar' }))
+    await userEvent.type(screen.getByLabelText(/Comentarios u observaciones/), '  Mejorar la retroalimentación ')
+    await userEvent.click(screen.getByRole('button', { name: 'Guardar borrador' }))
+    expect(onGuardar).toHaveBeenCalledWith({ respuestas: {}, comentario: 'Mejorar la retroalimentación' })
+  })
+
+  it('un borrador anterior con comentarios por criterio los junta en el comentario general', async () => {
+    const anterior = {
+      ...FORMULARIO,
+      criterios: [{ ...FORMULARIO.criterios[0], comentario: 'Planea bien' }],
+    }
+    render(<FormularioInstrumento formulario={anterior} onGuardar={vi.fn()} onEnviar={vi.fn()} />)
+    await userEvent.click(screen.getByRole('button', { name: 'Revisar' }))
+    expect(screen.getByLabelText(/Comentarios u observaciones/)).toHaveValue('Capacidad para planear: Planea bien')
   })
 
   it('guarda cada 30 segundos solo si hubo cambios', async () => {
@@ -67,7 +90,7 @@ describe('FormularioInstrumento', () => {
     expect(onGuardar).toHaveBeenCalledTimes(1)
   })
 
-  it('enviada queda de solo lectura con su fecha', () => {
+  it('enviada queda de solo lectura con su fecha', async () => {
     render(
       <FormularioInstrumento
         formulario={{ ...FORMULARIO, estado: 'ENVIADA', enviadaEn: '2026-10-31T10:00:00' }}
@@ -77,6 +100,7 @@ describe('FormularioInstrumento', () => {
     )
     expect(screen.getByText(/Se envió el/)).toBeInTheDocument()
     expect(screen.getAllByRole('radio')[0]).toBeDisabled()
+    await userEvent.click(screen.getByRole('button', { name: 'Revisar' }))
     expect(screen.queryByRole('button', { name: 'Enviar formulario' })).not.toBeInTheDocument()
   })
 

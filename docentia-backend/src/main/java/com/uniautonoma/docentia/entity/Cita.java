@@ -57,6 +57,21 @@ public class Cita {
 
   private LocalDateTime fechaLiberacion;
 
+  @Enumerated(EnumType.STRING)
+  @Column(length = 20)
+  private ConfirmacionCita confirmacion;
+
+  private LocalDateTime fechaConfirmacion;
+
+  @Enumerated(EnumType.STRING)
+  @Column(length = 20)
+  private AsistenciaCita asistencia;
+
+  private LocalDateTime fechaAsistencia;
+
+  @Column(name = "id_usuario_asistencia")
+  private Long idUsuarioAsistencia;
+
   protected Cita() {}
 
   public Cita(FranjaHoraria franja, Usuario docente) {
@@ -69,6 +84,29 @@ public class Cita {
     this.estado = EstadoCita.LIBERADA;
     this.motivoLiberacion = motivo;
     this.fechaLiberacion = LocalDateTime.now();
+  }
+
+  /** Respuesta del docente; declinar libera la cita y deja la franja para otro docente. */
+  public void responderConfirmacion(boolean asiste, LocalDateTime ahora) {
+    this.confirmacion = asiste ? ConfirmacionCita.CONFIRMADA : ConfirmacionCita.DECLINADA;
+    this.fechaConfirmacion = ahora;
+    if (!asiste) {
+      liberar(MotivoLiberacion.DECLINADA_POR_DOCENTE);
+    }
+  }
+
+  /** Asistencia registrada por la coordinación; si no asistió, la cita se libera. */
+  public void registrarAsistencia(boolean asistio, Long idUsuario, LocalDateTime ahora) {
+    this.asistencia = asistio ? AsistenciaCita.ASISTIO : AsistenciaCita.NO_ASISTIO;
+    this.fechaAsistencia = ahora;
+    this.idUsuarioAsistencia = idUsuario;
+    if (!asistio) {
+      liberar(MotivoLiberacion.INASISTENCIA);
+    }
+  }
+
+  public boolean asistio() {
+    return asistencia == AsistenciaCita.ASISTIO;
   }
 
   public Long getIdCita() {
@@ -101,5 +139,25 @@ public class Cita {
 
   public LocalDateTime getFechaLiberacion() {
     return fechaLiberacion;
+  }
+
+  public ConfirmacionCita getConfirmacion() {
+    return confirmacion;
+  }
+
+  public LocalDateTime getFechaConfirmacion() {
+    return fechaConfirmacion;
+  }
+
+  public AsistenciaCita getAsistencia() {
+    return asistencia;
+  }
+
+  public LocalDateTime getFechaAsistencia() {
+    return fechaAsistencia;
+  }
+
+  public Long getIdUsuarioAsistencia() {
+    return idUsuarioAsistencia;
   }
 }
