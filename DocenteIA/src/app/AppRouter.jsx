@@ -37,16 +37,18 @@ import { ROLES } from '../shared/constants/dominio.js'
 import InicioPorRol from './InicioPorRol.jsx'
 import { PaginaNoEncontrada } from './PaginasSistema.jsx'
 import { ProtectedRoute } from './ProtectedRoute.jsx'
+import Presentacion from '../features/presentacion/Presentacion.jsx'
 import { RUTA_CAMBIO_CONTRASENA, rutaInicioDelRol } from './rutasPorRol.js'
 
 const GESTION = [ROLES.COORDINADOR, ROLES.VICERRECTOR]
 
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim() ?? ''
 
+/** En la raíz: con sesión va al inicio de su rol; sin sesión, la presentación pública. */
 function RedirigirAlInicio() {
   const { usuario, validando } = useSesion()
   if (validando) return null
-  return <Navigate to={usuario ? rutaInicioDelRol(usuario.rol) : '/login'} replace />
+  return usuario ? <Navigate to={rutaInicioDelRol(usuario.rol)} replace /> : <Presentacion />
 }
 
 function RutasDocentia() {
