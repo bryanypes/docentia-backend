@@ -1,8 +1,10 @@
 package com.uniautonoma.docentia.service;
 
 import com.uniautonoma.docentia.exception.NoProcesableException;
+import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Base64;
@@ -12,8 +14,9 @@ import javax.imageio.ImageReader;
 import javax.imageio.stream.ImageInputStream;
 
 /**
- * Trazo de una firma dibujada en la página. Solo acepta un PNG real, de un tamaño razonable y con
- * algo dibujado: un lienzo en blanco no es una firma.
+ * Trazo de una firma, dibujada en la página o subida como PNG. Solo acepta un PNG real (cabecera
+ * comprobada), de hasta 300 KB y 2000 px por lado y con algo trazado: un lienzo en blanco no es una
+ * firma. Lo que se guarda es una copia recodificada, sin metadatos; nunca el archivo recibido.
  */
 public final class TrazoFirma {
 
@@ -30,7 +33,7 @@ public final class TrazoFirma {
    * Decodifica y valida el trazo.
    *
    * @param dataUrl PNG como {@code data:image/png;base64,...}
-   * @return los bytes del PNG
+   * @return los bytes del PNG recodificado, sin metadatos
    * @throws NoProcesableException si falta, no es un PNG válido o está en blanco
    */
   public static byte[] leer(String dataUrl) {
@@ -54,8 +57,7 @@ public final class TrazoFirma {
         || !Arrays.equals(Arrays.copyOf(png, FIRMA_PNG.length), FIRMA_PNG)) {
       throw new NoProcesableException("La firma no es una imagen válida");
     }
-    try (ImageInputStream entrada =
-        ImageIO.createImageInputStream(new ByteArrayInputStream(png))) {
+    try (ImageInputStream entrada = ImageIO.createImageInputStream(new ByteArrayInputStream(png))) {
       if (entrada == null) {
         throw new NoProcesableException("La firma no es una imagen válida");
       }
@@ -75,13 +77,30 @@ public final class TrazoFirma {
         if (imagen == null || pixelesTrazados(imagen) < MINIMO_PIXELES_TRAZADOS) {
           throw new NoProcesableException("Dibuja tu firma antes de firmar el acta");
         }
+        // Se guarda una copia recodificada: solo píxeles, sin metadatos ni fragmentos extra.
+        return recodificar(imagen);
       } finally {
         lector.dispose();
       }
     } catch (IOException ilegible) {
       throw new NoProcesableException("La firma no es una imagen válida");
     }
-    return png;
+  }
+
+  private static byte[] recodificar(BufferedImage original) throws IOException {
+    BufferedImage limpia =
+        new BufferedImage(original.getWidth(), original.getHeight(), BufferedImage.TYPE_INT_ARGB);
+    Graphics2D lienzo = limpia.createGraphics();
+    try {
+      lienzo.drawImage(original, 0, 0, null);
+    } finally {
+      lienzo.dispose();
+    }
+    ByteArrayOutputStream salida = new ByteArrayOutputStream();
+    if (!ImageIO.write(limpia, "png", salida)) {
+      throw new NoProcesableException("La firma no es una imagen válida");
+    }
+    return salida.toByteArray();
   }
 
   /** Píxeles opacos y oscuros: el trazo sobre el fondo transparente o blanco. */

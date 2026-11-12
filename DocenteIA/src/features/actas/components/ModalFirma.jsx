@@ -1,14 +1,14 @@
-import { Eraser, FileSignature, PenLine, Type } from 'lucide-react'
+import { Eraser, FileSignature, ImageUp, PenLine, Type } from 'lucide-react'
 import { useEffect, useId, useRef, useState } from 'react'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { ErrorApi } from '../../../shared/components/ui/ErrorApi/ErrorApi.jsx'
 import { Modal } from '../../../shared/components/ui/Modal/Modal.jsx'
+import { MAXIMO_LADO_PNG, revisarPngFirma } from './firmaPng.js'
 import './ModalFirma.css'
 
 const ANCHO = 560
 const ALTO = 190
 const COLOR_TRAZO = '#0b1f4d'
-
 /** Lienzo a la resolución de la pantalla (hasta 2x) para que el trazo no se vea pixelado. */
 function prepararLienzo(lienzo) {
   const escala = Math.min(window.devicePixelRatio || 1, 2)
@@ -36,6 +36,7 @@ export function ModalFirma({ nombre, tipoActa, enviando, error, onFirmar, onCerr
   const [hayTrazo, setHayTrazo] = useState(false)
   const [texto, setTexto] = useState('')
   const [confirmado, setConfirmado] = useState(false)
+  const [errorArchivo, setErrorArchivo] = useState(null)
   const idConfirmacion = useId()
   const idTexto = useId()
   const idAyuda = useId()
@@ -114,7 +115,37 @@ export function ModalFirma({ nombre, tipoActa, enviando, error, onFirmar, onCerr
   function cambiarModo(nuevo) {
     setModo(nuevo)
     setTexto('')
+    setErrorArchivo(null)
     borrar()
+  }
+
+  // El PNG nunca se inserta en la página: se decodifica y se pinta en el lienzo, que lo vuelve a
+  // codificar al firmar (sin metadatos).
+  async function subir(evento) {
+    const archivo = evento.target.files?.[0]
+    evento.target.value = ''
+    borrar()
+    const problema = await revisarPngFirma(archivo)
+    if (problema) {
+      setErrorArchivo(problema)
+      return
+    }
+    try {
+      const imagen = await createImageBitmap(archivo)
+      if (imagen.width > MAXIMO_LADO_PNG || imagen.height > MAXIMO_LADO_PNG) {
+        setErrorArchivo('La imagen es demasiado grande: máximo 2000 px por lado.')
+        return
+      }
+      const escala = Math.min((ANCHO - 20) / imagen.width, (ALTO - 20) / imagen.height, 1)
+      const w = imagen.width * escala
+      const h = imagen.height * escala
+      contexto.current?.drawImage(imagen, (ANCHO - w) / 2, (ALTO - h) / 2, w, h)
+      imagen.close?.()
+      setErrorArchivo(null)
+      setHayTrazo(true)
+    } catch {
+      setErrorArchivo('No fue posible leer la imagen. Usa un PNG válido.')
+    }
   }
 
   function firmar() {
@@ -149,7 +180,28 @@ export function ModalFirma({ nombre, tipoActa, enviando, error, onFirmar, onCerr
             <Type size={16} aria-hidden="true" />
             Escribir
           </button>
+          <button
+            type="button"
+            className={`firma__modo${modo === 'subir' ? ' firma__modo--activo' : ''}`}
+            aria-pressed={modo === 'subir'}
+            onClick={() => cambiarModo('subir')}
+          >
+            <ImageUp size={16} aria-hidden="true" />
+            Subir PNG
+          </button>
         </div>
+
+        {modo === 'subir' && (
+          <label className="firma__escribir">
+            Imagen de tu firma (PNG, máximo 300 KB)
+            <input type="file" accept="image/png" className="campo__control" onChange={subir} />
+          </label>
+        )}
+        {errorArchivo && (
+          <p className="campo__error" role="alert">
+            {errorArchivo}
+          </p>
+        )}
 
         {modo === 'escribir' && (
           <label className="firma__escribir" htmlFor={idTexto}>
@@ -181,14 +233,20 @@ export function ModalFirma({ nombre, tipoActa, enviando, error, onFirmar, onCerr
           <span className="firma__linea" aria-hidden="true" />
           {!hayTrazo && (
             <span className="firma__guia" aria-hidden="true">
-              {modo === 'dibujar' ? 'Firma aquí con el mouse, el dedo o un lápiz' : 'Escribe tu nombre arriba'}
+              {modo === 'dibujar'
+                ? 'Firma aquí con el mouse, el dedo o un lápiz'
+                : modo === 'subir'
+                  ? 'Elige el PNG de tu firma arriba'
+                  : 'Escribe tu nombre arriba'}
             </span>
           )}
         </div>
         <p id={idAyuda} className="campo__ayuda">
           {modo === 'dibujar'
             ? 'Si no puedes dibujar, elige “Escribir”: tu nombre se convierte en el trazo de la firma.'
-            : 'Se dibuja con letra manuscrita y queda igual en el PDF.'}
+            : modo === 'subir'
+              ? 'Se acepta solo PNG. Se guarda una copia limpia, sin datos ocultos del archivo.'
+              : 'Se dibuja con letra manuscrita y queda igual en el PDF.'}
         </p>
         <p className="campo__ayuda firma__alcance">
           DOCENTIA registra el trazo, la cuenta y la fecha con un hash de integridad; no usa un certificado digital
