@@ -223,7 +223,7 @@ entrar con correo y contraseña.
 | Qué | Dónde | Nota |
 |-----|-------|------|
 | Cliente OAuth 2.0 tipo **Aplicación web** | Google Cloud Console de la universidad | No se usa el secreto `GOCSPX-…`; solo el Client ID |
-| Orígenes de JavaScript autorizados | Mismo cliente | La URL pública exacta de la web, con esquema y sin barra final (por ejemplo `https://docentia.uniautonoma.edu.co`; **por confirmar** la URL real). `http://localhost:5173` solo para pruebas |
+| Orígenes de JavaScript autorizados | Mismo cliente | `https://nova.uniautonoma.edu.co`: solo esquema y dominio, sin la subruta `/Evadocente-app/` ni barra final (Google compara el origen, no la ruta). `http://localhost:5173` solo para pruebas. **Por confirmar** que ya esté autorizado en la consola de Google de la universidad |
 | `DOCENTIA_GOOGLE_CLIENT_ID` | `.env` del servidor, servicio `api` | La API valida que el token venga para ese cliente |
 | `VITE_GOOGLE_CLIENT_ID` | `.env` del servidor, **argumento de build** del servicio `web` | Mismo valor. Se incrusta al compilar: cambiarlo exige `docker compose build web` |
 
