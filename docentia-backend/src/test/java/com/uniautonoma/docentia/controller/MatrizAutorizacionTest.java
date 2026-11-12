@@ -147,6 +147,7 @@ class MatrizAutorizacionTest extends PruebaIntegracion {
       {"POST /sesiones/google", "P"},
       {"POST /sesiones/recuperacion", "P"},
       {"POST /sesiones/recuperacion/restablecimiento", "P"},
+      {"GET /sesiones/recuperacion/disponibilidad", "P"},
       {"GET /sesiones/actual", "DCVEAL"},
       {"GET /sesiones/actual/perfil", "DCVEAL"},
       {"PUT /sesiones/actual/contrasena", "DCVEAL"},
@@ -280,6 +281,7 @@ class MatrizAutorizacionTest extends PruebaIntegracion {
             "POST /sesiones/google",
             "POST /sesiones/recuperacion",
             "POST /sesiones/recuperacion/restablecimiento",
+            "GET /sesiones/recuperacion/disponibilidad",
             "GET /verificacion-actas/{}");
   }
 

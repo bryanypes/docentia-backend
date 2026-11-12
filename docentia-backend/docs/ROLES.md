@@ -20,7 +20,7 @@ pantallas de matrícula, auditoría y facultades. Las API `/auditoria` y `/facul
 
 Todos los roles con sesión tienen además Notificaciones y Mi perfil.
 
-## API por rol (114 rutas)
+## API por rol (115 rutas)
 
 Las rutas van bajo `/api`. Una ruta sin sesión responde 401; con un rol no permitido, 403.
 
@@ -131,6 +131,7 @@ Las rutas van bajo `/api`. Una ruta sin sesión responde 401; con un rol no perm
 | `POST /sesiones/google` | Público (sin sesión) |
 | `POST /sesiones/recuperacion` | Público (sin sesión) |
 | `POST /sesiones/recuperacion/restablecimiento` | Público (sin sesión) |
+| `GET /sesiones/recuperacion/disponibilidad` | Público (sin sesión) |
 | `GET /sesiones/actual` | Estudiante, Docente, Coordinación, Vicerrectoría, Administración, Visualización |
 | `GET /sesiones/actual/perfil` | Estudiante, Docente, Coordinación, Vicerrectoría, Administración, Visualización |
 | `PUT /sesiones/actual/contrasena` | Estudiante, Docente, Coordinación, Vicerrectoría, Administración, Visualización |

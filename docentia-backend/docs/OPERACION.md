@@ -114,7 +114,7 @@ location /Evadocente-app/ {
 | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` | Sí, si la base va en Compose | Servicio `db` |
 | `DOCENTIA_APP_URL` | Sí | URL pública para los enlaces de los correos. Con `prod`, la API no arranca si está vacía o en localhost |
 | `DOCENTIA_BOOTSTRAP_EMAIL`, `_NOMBRE`, `_CONTRASENA` | Solo el primer arranque | Primer administrador (ver arriba) |
-| `DOCENTIA_MAIL_HOST`, `_PORT`, `_USER`, `_PASS`, `_FROM`, `_TLS` | Sí, para recuperar contraseña y avisos | SMTP. Sin host, la API arranca pero solo registra el asunto en el log |
+| `DOCENTIA_MAIL_HOST`, `_PORT`, `_USER`, `_PASS`, `_FROM`, `_TLS` | Sí, para recuperar contraseña y avisos | SMTP. Sin host, la API arranca y solo registra el asunto en el log; la pantalla de recuperar contraseña no promete un correo y pide solicitar la clave a la Vicerrectoría |
 | `DOCENTIA_GOOGLE_CLIENT_ID` | Sí, si entran estudiantes | Valida el token de Google. Sin él, `POST /api/sesiones/google` responde 503 |
 | `VITE_GOOGLE_CLIENT_ID` | Sí, si entran estudiantes | Botón de Google; se incrusta al compilar `web` |
 | `VITE_BASE_PATH` | Sí, `/Evadocente-app/` | Subruta pública; se incrusta al compilar `web` |

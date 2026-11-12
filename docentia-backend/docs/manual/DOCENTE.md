@@ -4,7 +4,7 @@ Tu evaluación del periodo combina tres evaluadores: estudiantes (50 %), coordin
 
 ## Entrar
 
-En **Iniciar sesión** escribe tu correo institucional y tu contraseña, o usa el botón de Google. La primera vez DOCENTIA te pide cambiar la contraseña temporal. Si la olvidaste, pulsa **¿Olvidaste tu contraseña?**: llega un enlace a tu correo que sirve una vez y vence en 30 minutos.
+En **Iniciar sesión** escribe tu correo institucional y tu contraseña, o usa el botón de Google. La primera vez DOCENTIA te pide cambiar la contraseña temporal. Si la olvidaste, pulsa **¿Olvidaste tu contraseña?**: llega un enlace a tu correo que sirve una vez y vence en 30 minutos. Si el servidor no tiene correo configurado, la pantalla te pide solicitar una contraseña nueva a la Vicerrectoría.
 
 ## Menú
 

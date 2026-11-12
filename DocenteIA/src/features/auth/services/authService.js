@@ -22,6 +22,11 @@ export function obtenerPerfil() {
   return api.get('/sesiones/actual/perfil')
 }
 
+/** Si el servidor puede enviar el enlace por correo (tiene SMTP). Sin sesión. */
+export function obtenerDisponibilidadRecuperacion() {
+  return api.get('/sesiones/recuperacion/disponibilidad', { publica: true })
+}
+
 /** Siempre responde lo mismo, exista o no el correo. */
 export function solicitarRecuperacion(correo) {
   return api.post('/sesiones/recuperacion', { correo }, { publica: true })
