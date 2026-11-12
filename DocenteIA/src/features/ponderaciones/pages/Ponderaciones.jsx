@@ -85,7 +85,7 @@ export default function Ponderaciones() {
   return (
     <>
       <Encabezado
-        miga="Vicerrectoría · Ponderaciones"
+        miga="Administración · Ponderaciones"
         titulo="Ponderaciones"
         subtitulo="Peso de cada evaluador en el promedio del periodo activo. Debe sumar 100 %."
       />

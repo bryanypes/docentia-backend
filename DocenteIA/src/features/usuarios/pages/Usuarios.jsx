@@ -93,7 +93,7 @@ export default function Usuarios() {
   return (
     <>
       <Encabezado
-        miga="Vicerrectoría · Usuarios"
+        miga="Administración · Usuarios"
         titulo="Usuarios y roles"
         subtitulo="Cada persona tiene un solo rol. La coordinación queda vinculada a una facultad y el docente a un programa."
       >

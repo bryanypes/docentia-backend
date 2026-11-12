@@ -283,7 +283,7 @@ export default function Periodos() {
   return (
     <>
       <Encabezado
-        miga="Vicerrectoría · Periodos"
+        miga={`${usuario?.rol === 'ADMINISTRADOR' ? 'Administración' : 'Vicerrectoría'} · Periodos`}
         titulo="Periodos académicos"
         subtitulo="Crea los periodos, define las ventanas de cada etapa y activa el periodo en curso."
       />
