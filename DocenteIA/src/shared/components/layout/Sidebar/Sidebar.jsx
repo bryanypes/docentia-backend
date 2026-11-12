@@ -53,7 +53,6 @@ const NAVEGACION = {
     { ruta: '/inicio', etiqueta: 'Inicio', Icono: LayoutDashboard },
     { ruta: '/estadisticas', etiqueta: 'Estadísticas', Icono: ChartColumnBig },
     { ruta: '/docentes', etiqueta: 'Docentes', Icono: Users },
-    { ruta: '/importaciones', etiqueta: 'Cargas de estudiantes', Icono: FileUp },
     { ruta: '/analisis', etiqueta: 'Análisis de comentarios', Icono: MessagesSquare },
     { ruta: '/acciones-sugeridas', etiqueta: 'Acciones sugeridas', Icono: Lightbulb },
     { ruta: '/panel-programas', etiqueta: 'Panel por programa', Icono: ChartColumn },

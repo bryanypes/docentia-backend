@@ -85,17 +85,18 @@ function RutasDocentia() {
               </Route>
 
               <Route element={<ProtectedRoute rolesPermitidos={GESTION} />}>
-                <Route path="/importaciones" element={<Importaciones />} />
                 <Route path="/analisis" element={<Analisis />} />
                 <Route path="/estadisticas" element={<Estadisticas />} />
                 <Route path="/docentes" element={<Docentes />} />
                 <Route path="/docentes/:idDocente" element={<ExpedienteDocente />} />
                 <Route path="/acciones-sugeridas" element={<AccionesSugeridas />} />
-                <Route path="/matricula" element={<Matricula />} />
                 <Route path="/panel-programas" element={<PanelProgramas />} />
               </Route>
 
               <Route element={<ProtectedRoute rolesPermitidos={[ROLES.COORDINADOR]} />}>
+                {/* La carga de estudiantes y la matrícula son solo de coordinación. */}
+                <Route path="/importaciones" element={<Importaciones />} />
+                <Route path="/matricula" element={<Matricula />} />
                 <Route path="/agenda" element={<Agenda />} />
                 <Route path="/coevaluaciones" element={<Coevaluaciones />} />
                 <Route path="/coevaluaciones/:idDocente" element={<CoevaluacionDocente />} />

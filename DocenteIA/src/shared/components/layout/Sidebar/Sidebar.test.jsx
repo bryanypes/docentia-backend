@@ -39,7 +39,7 @@ describe('Sidebar', () => {
   it('vicerrectoría no ve matrícula, auditoría ni facultades en el menú', () => {
     renderizarConSesion(<Sidebar />, { rol: 'VICERRECTOR' })
     expect(screen.getByRole('link', { name: 'Programas' })).toBeInTheDocument()
-    for (const nombre of ['Matrícula y cobertura', 'Auditoría', 'Facultades']) {
+    for (const nombre of ['Matrícula y cobertura', 'Auditoría', 'Facultades', 'Cargas de estudiantes']) {
       expect(screen.queryByRole('link', { name: nombre })).not.toBeInTheDocument()
     }
   })
