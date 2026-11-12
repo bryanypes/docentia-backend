@@ -125,3 +125,24 @@ Rama `release/0.4.0` (tarea 8), **sin PR, sin etiqueta y sin fusionar**: versió
    configurar `DOCENTIA_GOOGLE_CLIENT_ID` y `VITE_GOOGLE_CLIENT_ID`. Sin eso, los estudiantes no
    entran en producción.
 10. **Repo DocenteIA:** actualizar su `main` al publicar 0.4.0, como dice OPERACION.md.
+
+## Ensayo de la presentación del 12 de noviembre
+
+Recorrido completo sobre un clon limpio de `release/0.4.0` con los puertos de la demo (5443, 8199, 5173,
+8226): 42 pasos de los flujos A a I, todos pasan. No hubo fallas que bloquearan la demo y no se cambió
+código. Guion: `docentia-backend/docs/sustentacion/GUION_PRUEBA_Y_DEMO.md`.
+
+Quedó fuera o por revisar después de la presentación:
+
+- **La semilla no trae ningún docente PARCIAL.** En la demo se crea uno en vivo con la coevaluación de
+  Óscar Chantre.
+- **Importar el CSV de ejemplo cambia a Julián** de 4,34 a 4,27, y la guía técnica dice 4,34. En la
+  presentación no se importa.
+- **Anonimato.** La respuesta del estudiante guarda la asignación (clase y docente). En una clase de un
+  solo estudiante, quien tenga acceso directo a la base podría cruzarla con la participación. Revisar si
+  se agrega como riesgo aceptado en SEGURIDAD.md o si se guarda solo el docente.
+- **La semilla depende de la fecha:** desde el 14 de noviembre la recolección queda cerrada. Se extiende
+  por configuración en Periodos, sin tocar código.
+- **Por confirmar a mano:** que la pantalla de carga CSV no deje importar un archivo con errores y qué
+  muestra la interfaz cuando la sesión vence.
+- **Docker Desktop se cerró solo dos veces** durante la preparación en esta máquina.
