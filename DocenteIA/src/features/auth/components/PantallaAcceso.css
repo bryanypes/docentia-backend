@@ -12,8 +12,9 @@
   min-height: 100dvh;
   padding: calc(var(--avatar) / 2 + clamp(12px, 3vh, 32px)) var(--espacio-4) clamp(12px, 3vh, 40px);
   background:
-    radial-gradient(rgba(5, 54, 134, 0.08) 1px, transparent 1.4px) 0 0 / 22px 22px,
-    var(--color-fondo);
+    radial-gradient(circle at 84% 8%, rgba(232, 201, 68, 0.22), transparent 22rem),
+    radial-gradient(circle at 10% 92%, rgba(255, 255, 255, 0.08), transparent 18rem),
+    var(--gradiente-marca);
 }
 
 .acceso__tarjeta {
@@ -25,9 +26,9 @@
   max-width: 440px;
   padding: calc(var(--avatar) / 2 + var(--separacion)) 34px clamp(18px, 3.2vh, 32px);
   background: var(--color-superficie);
-  border-radius: 24px;
-  border: 1px solid var(--color-borde);
-  box-shadow: 0 24px 50px -30px rgba(5, 54, 134, 0.35);
+  border-radius: 28px;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 30px 70px -30px rgba(0, 20, 55, 0.65);
   animation: acceso-entrar 0.35s ease-out both;
 }
 
