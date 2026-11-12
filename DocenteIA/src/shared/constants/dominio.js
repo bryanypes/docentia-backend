@@ -3,6 +3,8 @@ export const ROLES = {
   COORDINADOR: 'COORDINADOR',
   DOCENTE: 'DOCENTE',
   ESTUDIANTE: 'ESTUDIANTE',
+  ADMINISTRADOR: 'ADMINISTRADOR',
+  VISUALIZADOR: 'VISUALIZADOR',
 }
 
 export const ETIQUETA_ROL = {
@@ -10,6 +12,8 @@ export const ETIQUETA_ROL = {
   COORDINADOR: 'Coordinación',
   DOCENTE: 'Docente',
   ESTUDIANTE: 'Estudiante',
+  ADMINISTRADOR: 'Administración',
+  VISUALIZADOR: 'Visualización',
 }
 
 export const ETIQUETA_FUENTE = {

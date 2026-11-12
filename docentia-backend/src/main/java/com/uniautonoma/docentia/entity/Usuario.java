@@ -147,10 +147,10 @@ public class Usuario {
               quien + " se vincula a un programa; su facultad es la del programa");
         }
       }
-      case VICERRECTOR -> {
+      case VICERRECTOR, ADMINISTRADOR, VISUALIZADOR -> {
         if (facultad != null || programa != null) {
           throw new DatosInvalidosException(
-              "El vicerrector no se vincula a una facultad ni a un programa");
+              "Este rol no se vincula a una facultad ni a un programa");
         }
       }
     }

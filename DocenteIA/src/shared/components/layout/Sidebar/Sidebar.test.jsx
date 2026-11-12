@@ -38,10 +38,36 @@ describe('Sidebar', () => {
 
   it('vicerrectoría no ve matrícula, auditoría ni facultades en el menú', () => {
     renderizarConSesion(<Sidebar />, { rol: 'VICERRECTOR' })
-    expect(screen.getByRole('link', { name: 'Programas' })).toBeInTheDocument()
-    for (const nombre of ['Matrícula y cobertura', 'Auditoría', 'Facultades', 'Cargas de estudiantes']) {
+    expect(screen.getByRole('link', { name: 'Periodos' })).toBeInTheDocument()
+    for (const nombre of [
+      'Matrícula y cobertura',
+      'Auditoría',
+      'Facultades',
+      'Cargas de estudiantes',
+      'Usuarios',
+      'Programas',
+      'Ponderaciones',
+    ]) {
       expect(screen.queryByRole('link', { name: nombre })).not.toBeInTheDocument()
     }
+  })
+
+  it('administración gestiona usuarios y configuración, sin paneles de notas', () => {
+    renderizarConSesion(<Sidebar />, { rol: 'ADMINISTRADOR' })
+    for (const nombre of ['Usuarios', 'Programas', 'Ponderaciones', 'Periodos']) {
+      expect(screen.getByRole('link', { name: nombre })).toBeInTheDocument()
+    }
+    for (const nombre of ['Docentes', 'Análisis de comentarios', 'Estadísticas', 'Inicio']) {
+      expect(screen.queryByRole('link', { name: nombre })).not.toBeInTheDocument()
+    }
+  })
+
+  it('visualización solo ve el panel por programa', () => {
+    renderizarConSesion(<Sidebar />, { rol: 'VISUALIZADOR' })
+    expect(screen.getAllByRole('link').filter((l) => l.getAttribute('href') !== '/perfil').map((l) => l.textContent)).toContain(
+      'Panel por programa',
+    )
+    expect(screen.queryByRole('link', { name: 'Docentes' })).not.toBeInTheDocument()
   })
 
   it('el estudiante solo ve sus evaluaciones', () => {

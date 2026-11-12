@@ -91,7 +91,6 @@ function RutasDocentia() {
                 <Route path="/docentes" element={<Docentes />} />
                 <Route path="/docentes/:idDocente" element={<ExpedienteDocente />} />
                 <Route path="/acciones-sugeridas" element={<AccionesSugeridas />} />
-                <Route path="/panel-programas" element={<PanelProgramas />} />
               </Route>
 
               <Route element={<ProtectedRoute rolesPermitidos={[ROLES.COORDINADOR]} />}>
@@ -100,9 +99,17 @@ function RutasDocentia() {
                 <Route path="/coevaluaciones/:idDocente" element={<CoevaluacionDocente />} />
               </Route>
 
+              <Route element={<ProtectedRoute rolesPermitidos={[ROLES.COORDINADOR, ROLES.VICERRECTOR, ROLES.VISUALIZADOR]} />}>
+                <Route path="/panel-programas" element={<PanelProgramas />} />
+              </Route>
+
               <Route element={<ProtectedRoute rolesPermitidos={[ROLES.VICERRECTOR]} />}>
-                <Route path="/periodos" element={<Periodos />} />
                 <Route path="/auditoria" element={<Auditoria />} />
+              </Route>
+
+              {/* Vicerrectoría decide fechas y lee la configuración; administración la gestiona. */}
+              <Route element={<ProtectedRoute rolesPermitidos={[ROLES.VICERRECTOR, ROLES.ADMINISTRADOR]} />}>
+                <Route path="/periodos" element={<Periodos />} />
                 <Route path="/ponderaciones" element={<Ponderaciones />} />
                 <Route path="/facultades" element={<Facultades />} />
                 <Route path="/programas" element={<Programas />} />

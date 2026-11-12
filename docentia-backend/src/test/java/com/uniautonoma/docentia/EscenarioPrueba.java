@@ -12,6 +12,7 @@ import com.uniautonoma.docentia.entity.NotasAspectos;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.Programa;
 import com.uniautonoma.docentia.entity.ResultadoImportacion;
+import com.uniautonoma.docentia.entity.Rol;
 import com.uniautonoma.docentia.entity.TipoEtapa;
 import com.uniautonoma.docentia.entity.Usuario;
 import com.uniautonoma.docentia.repository.CalificacionRepository;
@@ -158,6 +159,10 @@ public class EscenarioPrueba {
   public Usuario crearCoordinador(String nombre, Facultad facultad) {
     return usuarioRepository.save(
         Usuario.crearCoordinador(nombre, correoDe(nombre), HASH, facultad));
+  }
+
+  public Usuario crearConRol(String nombre, Rol rol) {
+    return usuarioRepository.save(Usuario.crear(nombre, correoDe(nombre), HASH, rol, null, null));
   }
 
   public Usuario crearVicerrector(String nombre) {

@@ -90,7 +90,7 @@ public class PeriodoAcademicoController {
    * @param solicitud datos del periodo
    * @return el periodo creado, todavía inactivo
    */
-  @PreAuthorize("hasRole('VICERRECTOR')")
+  @PreAuthorize("hasAnyRole('VICERRECTOR', 'ADMINISTRADOR')")
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public PeriodoAcademicoResponse crearPeriodo(
@@ -105,7 +105,7 @@ public class PeriodoAcademicoController {
    * @param solicitud datos nuevos
    * @return el periodo actualizado
    */
-  @PreAuthorize("hasRole('VICERRECTOR')")
+  @PreAuthorize("hasAnyRole('VICERRECTOR', 'ADMINISTRADOR')")
   @PutMapping("/{idPeriodo}")
   public PeriodoAcademicoResponse actualizarPeriodo(
       @PathVariable Long idPeriodo,
@@ -123,7 +123,7 @@ public class PeriodoAcademicoController {
    * @param confirmar acepta activar el periodo aunque no tenga matrículas
    * @return el periodo activado
    */
-  @PreAuthorize("hasRole('VICERRECTOR')")
+  @PreAuthorize("hasAnyRole('VICERRECTOR', 'ADMINISTRADOR')")
   @PutMapping("/{idPeriodo}/activacion")
   public PeriodoAcademicoResponse activarPeriodo(
       @PathVariable Long idPeriodo,
@@ -139,7 +139,7 @@ public class PeriodoAcademicoController {
    *
    * @param idPeriodo identificador del periodo
    */
-  @PreAuthorize("hasRole('VICERRECTOR')")
+  @PreAuthorize("hasAnyRole('VICERRECTOR', 'ADMINISTRADOR')")
   @DeleteMapping("/{idPeriodo}/activacion")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void desactivarPeriodo(

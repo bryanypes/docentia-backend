@@ -70,6 +70,17 @@ public record UsuarioSesion(
     return esCoordinador() && idFacultad.equals(idFacultadConsultada);
   }
 
+  /**
+   * Para leer catálogos (facultades y programas): vicerrectoría, administración y visualización los
+   * ven todos; coordinación, la suya. No da alcance sobre docentes ni notas.
+   */
+  public boolean veCatalogoDeFacultad(Long idFacultadConsultada) {
+    if (rol == Rol.VICERRECTOR || rol == Rol.ADMINISTRADOR || rol == Rol.VISUALIZADOR) {
+      return true;
+    }
+    return esCoordinador() && idFacultad.equals(idFacultadConsultada);
+  }
+
   public boolean esCoordinador() {
     return rol == Rol.COORDINADOR;
   }

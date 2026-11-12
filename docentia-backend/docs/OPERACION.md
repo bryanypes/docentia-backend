@@ -44,10 +44,10 @@ Contraseña: `Docentia2026*`.
 | Docente con nota 2,85 | `nora.munoz@uniautonoma.edu.co` |
 | Docente con comentarios | `julian.hoyos@uniautonoma.edu.co` |
 
-## Primer usuario en producción
+## Primer administrador (paso obligatorio del despliegue)
 
-Fuera del perfil `dev` no hay seed, y solo la vicerrectoría crea usuarios. El primer vicerrector se crea
-desde el entorno, una sola vez:
+Fuera del perfil `dev` no hay seed y solo la **administración** crea usuarios. Si no existe ningún
+ADMINISTRADOR activo, el primero se crea desde el entorno:
 
 | Variable | Obligatoria | Regla |
 |----------|-------------|-------|
@@ -56,16 +56,17 @@ desde el entorno, una sola vez:
 | `DOCENTIA_BOOTSTRAP_CONTRASENA` | No | De 12 a 72 caracteres. Queda **temporal**: al entrar solo se puede cambiar. Sin ella la cuenta entra solo con Google, y entonces `DOCENTIA_GOOGLE_CLIENT_ID` es obligatorio |
 
 1. Pon las tres variables en el `.env` del servidor (nunca en el repositorio) y arranca la API.
-2. Si la tabla de usuarios está vacía, se crea un `VICERRECTOR` y el log dice
-   `Se creó el primer usuario de vicerrectoría (id N)`, sin correo ni contraseña.
-3. Entra con ese correo y cambia la contraseña. Desde **Usuarios** crea el resto de cuentas.
+2. Si no hay ningún administrador activo, se crea uno y el log dice
+   `Se creó el primer administrador (id N)`, sin correo ni contraseña.
+3. Entra con ese correo, cambia la contraseña y, desde **Usuarios**, crea las cuentas de vicerrectoría,
+   coordinación, docentes y visualización.
 4. Quita las variables `DOCENTIA_BOOTSTRAP_*` del `.env`. Si se quedan, en cada arranque el log avisa
-   `ya hay usuarios: no se crea nada`; nunca se crea un segundo usuario ni se cambia una clave.
+   `ya hay un administrador: no se crea nada`.
 
-Una configuración inválida (correo externo, contraseña corta, sin contraseña y sin Google) detiene el
-arranque con un mensaje que nombra la variable y nunca repite su valor. Dos réplicas que arrancan a la
-vez no crean dos usuarios: la creación toma un candado de PostgreSQL. Pruebas: `PrimerUsuarioTest` y
-`PrimerUsuarioValidacionTest`.
+Una configuración inválida detiene el arranque con un mensaje que nombra la variable sin repetir su
+valor. Dos réplicas que arrancan a la vez no crean dos administradores: la creación toma un candado de
+PostgreSQL. Pruebas: `PrimerUsuarioTest` y `PrimerUsuarioValidacionTest`. Roles y permisos:
+[ROLES.md](ROLES.md).
 
 ## Variables de entorno
 
@@ -74,7 +75,7 @@ vez no crean dos usuarios: la creación toma un candado de PostgreSQL. Pruebas: 
 | `SPRING_PROFILES_ACTIVE` | Sí, `prod` | `dev` carga datos de ejemplo |
 | `DOCENTIA_JWT_SECRETO` | Sí, 32 bytes o más | Firma de sesiones |
 | `DOCENTIA_DB_URL`, `DOCENTIA_DB_USUARIO`, `DOCENTIA_DB_CONTRASENA` | Sí | Base de datos |
-| `DOCENTIA_BOOTSTRAP_EMAIL`, `_NOMBRE`, `_CONTRASENA` | Solo el primer arranque | Primer vicerrector (ver arriba) |
+| `DOCENTIA_BOOTSTRAP_EMAIL`, `_NOMBRE`, `_CONTRASENA` | Solo el primer arranque | Primer administrador (ver arriba) |
 | `DOCENTIA_DB_POOL_MAXIMO` | No, 15 | Pool de conexiones |
 | `DOCENTIA_CORS_ORIGENES` | Si hay otro dominio | Orígenes exactos |
 | `DOCENTIA_APP_URL` | Sí | Enlaces de los correos |

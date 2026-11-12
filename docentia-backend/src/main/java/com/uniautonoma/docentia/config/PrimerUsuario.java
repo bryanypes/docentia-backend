@@ -1,5 +1,6 @@
 package com.uniautonoma.docentia.config;
 
+import com.uniautonoma.docentia.entity.Rol;
 import com.uniautonoma.docentia.entity.Usuario;
 import com.uniautonoma.docentia.repository.UsuarioRepository;
 import java.util.Locale;
@@ -17,14 +18,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.support.TransactionTemplate;
 
 /**
- * Crea el primer usuario de vicerrectoría en un ambiente sin seed (todo lo que no es {@code dev}).
- * Fuera de desarrollo solo la vicerrectoría crea usuarios, así que sin esto una base nueva no tiene
+ * Crea el primer ADMINISTRADOR en un ambiente sin seed (todo lo que no es {@code dev}). Solo la
+ * administración crea usuarios, así que sin esto una base nueva o una sin administrador no tiene
  * con quién entrar.
  *
- * <p>Actúa una sola vez: con {@code DOCENTIA_BOOTSTRAP_EMAIL} definido y la tabla de usuarios
- * vacía. Si ya hay usuarios no toca nada. La contraseña, si se da, queda temporal y hay que
- * cambiarla al entrar; sin contraseña la cuenta solo entra con Google. Ni la contraseña ni el
- * correo van al log. Ver docs/OPERACION.md.
+ * <p>Actúa una sola vez: con {@code DOCENTIA_BOOTSTRAP_EMAIL} definido y ningún administrador
+ * activo. Si ya hay uno no toca nada. La contraseña, si se da, queda temporal y hay que cambiarla
+ * al entrar; sin contraseña la cuenta solo entra con Google. Ni la contraseña ni el correo van al
+ * log. Ver docs/OPERACION.md.
  */
 @Component
 @Profile("!dev")
@@ -89,20 +90,30 @@ public class PrimerUsuario implements ApplicationRunner {
         transaccion.execute(
             estado -> {
               jdbcTemplate.query("select pg_advisory_xact_lock(?)", fila -> null, LLAVE_CANDADO);
-              if (usuarioRepository.count() > 0) {
+              Long administradores =
+                  jdbcTemplate.queryForObject(
+                      "select count(*) from usuarios where rol = 'ADMINISTRADOR' and es_activo",
+                      Long.class);
+              if (administradores != null && administradores > 0) {
                 LOG.warn(
-                    "DOCENTIA_BOOTSTRAP_EMAIL está definido pero ya hay usuarios: no se crea nada."
+                    "DOCENTIA_BOOTSTRAP_EMAIL está definido pero ya hay un administrador: no se crea nada."
                         + " Quita las variables DOCENTIA_BOOTSTRAP_* del entorno.");
                 return false;
               }
               Usuario vicerrector =
-                  Usuario.crearVicerrector(nombre, correo, passwordEncoder.encode(claveInicial()));
+                  Usuario.crear(
+                      nombre,
+                      correo,
+                      passwordEncoder.encode(claveInicial()),
+                      Rol.ADMINISTRADOR,
+                      null,
+                      null);
               if (!contrasena.isEmpty()) {
                 vicerrector.asignarContrasenaTemporal(vicerrector.getContrasenaHash());
               }
               Long id = usuarioRepository.save(vicerrector).getIdUsuario();
               LOG.warn(
-                  "Se creó el primer usuario de vicerrectoría (id {}), {}. Quita las variables"
+                  "Se creó el primer administrador (id {}), {}. Quita las variables"
                       + " DOCENTIA_BOOTSTRAP_* del entorno.",
                   id,
                   contrasena.isEmpty()

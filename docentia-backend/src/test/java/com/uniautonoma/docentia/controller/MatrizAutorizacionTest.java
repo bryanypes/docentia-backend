@@ -8,6 +8,7 @@ import com.uniautonoma.docentia.EscenarioPrueba;
 import com.uniautonoma.docentia.PruebaIntegracion;
 import com.uniautonoma.docentia.entity.Facultad;
 import com.uniautonoma.docentia.entity.Programa;
+import com.uniautonoma.docentia.entity.Rol;
 import com.uniautonoma.docentia.entity.Usuario;
 import com.uniautonoma.docentia.security.UsuarioSesion;
 import java.util.List;
@@ -31,8 +32,9 @@ import org.springframework.test.web.servlet.request.RequestPostProcessor;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 
 /**
- * Rol por endpoint. D = docente, C = coordinador, V = vicerrector, E = estudiante, P = público. Si
- * aparece un endpoint nuevo sin clasificar, {@link #todoEndpointEstaClasificado} falla.
+ * Rol por endpoint. D = docente, C = coordinador, V = vicerrector, E = estudiante, A =
+ * administrador, L = visualizador (solo lectura), P = público. Si aparece un endpoint nuevo sin
+ * clasificar, {@link #todoEndpointEstaClasificado} falla.
  */
 class MatrizAutorizacionTest extends PruebaIntegracion {
 
@@ -63,7 +65,7 @@ class MatrizAutorizacionTest extends PruebaIntegracion {
       {"GET /analisis-comentarios/docentes/{}", "CV"},
       {"GET /analisis-comentarios/resumen", "CV"},
       {"POST /analisis-comentarios/docentes/{}/regeneracion", "CV"},
-      {"GET /analisis-comentarios/uso", "V"},
+      {"GET /analisis-comentarios/uso", "VA"},
       {"GET /analisis-comentarios/modelos", "CV"},
       {"GET /comentarios-estudiantes/docentes/{}", "CV"},
       {"GET /auditoria", "V"},
@@ -96,18 +98,18 @@ class MatrizAutorizacionTest extends PruebaIntegracion {
       {"GET /procesos-evaluacion/propio", "D"},
       {"GET /procesos-evaluacion/{}", "CV"},
       {"PATCH /actas/{}/tipo", "C"},
-      {"GET /configuracion/evaluacion", "DCVE"},
+      {"GET /configuracion/evaluacion", "DCVEAL"},
       {"GET /docentes", "CV"},
       {"GET /docentes/seguimiento", "CV"},
       {"GET /docentes/{}", "CV"},
       {"GET /docentes/{}/plan-seguimiento", "CV"},
       {"GET /expedientes/propio", "D"},
       {"GET /expedientes/{}", "CV"},
-      {"GET /facultades", "CV"},
-      {"GET /facultades/{}", "CV"},
-      {"POST /facultades", "V"},
-      {"PUT /facultades/{}", "V"},
-      {"DELETE /facultades/{}", "V"},
+      {"GET /facultades", "CVAL"},
+      {"GET /facultades/{}", "CVAL"},
+      {"POST /facultades", "A"},
+      {"PUT /facultades/{}", "A"},
+      {"DELETE /facultades/{}", "A"},
       {"GET /franjas", "C"},
       {"POST /franjas", "C"},
       {"POST /franjas/lote", "C"},
@@ -119,44 +121,44 @@ class MatrizAutorizacionTest extends PruebaIntegracion {
       {"GET /importaciones/plantillas", "C"},
       {"POST /importaciones/plantillas", "C"},
       {"DELETE /importaciones/plantillas/{}", "C"},
-      {"GET /kpis", "CV"},
-      {"GET /kpis/panel", "CV"},
-      {"GET /notificaciones", "DCVE"},
-      {"GET /notificaciones/no-leidas/conteo", "DCVE"},
-      {"PATCH /notificaciones/{}/leida", "DCVE"},
-      {"PATCH /notificaciones/leer-todas", "DCVE"},
-      {"GET /notificaciones/preferencias", "DCVE"},
-      {"PUT /notificaciones/preferencias", "DCVE"},
-      {"GET /periodos-academicos", "DCVE"},
-      {"GET /periodos-academicos/activo", "DCVE"},
-      {"GET /periodos-academicos/activo/calendario", "DCVE"},
-      {"GET /periodos-academicos/activo/ventanas", "DCVE"},
-      {"GET /periodos-academicos/{}", "DCVE"},
-      {"POST /periodos-academicos", "V"},
-      {"PUT /periodos-academicos/{}", "V"},
-      {"PUT /periodos-academicos/{}/activacion", "V"},
-      {"DELETE /periodos-academicos/{}/activacion", "V"},
-      {"GET /periodos-academicos/activo/ponderaciones", "CV"},
-      {"PUT /periodos-academicos/activo/ponderaciones", "V"},
+      {"GET /kpis", "CVL"},
+      {"GET /kpis/panel", "CVL"},
+      {"GET /notificaciones", "DCVEAL"},
+      {"GET /notificaciones/no-leidas/conteo", "DCVEAL"},
+      {"PATCH /notificaciones/{}/leida", "DCVEAL"},
+      {"PATCH /notificaciones/leer-todas", "DCVEAL"},
+      {"GET /notificaciones/preferencias", "DCVEAL"},
+      {"PUT /notificaciones/preferencias", "DCVEAL"},
+      {"GET /periodos-academicos", "DCVEAL"},
+      {"GET /periodos-academicos/activo", "DCVEAL"},
+      {"GET /periodos-academicos/activo/calendario", "DCVEAL"},
+      {"GET /periodos-academicos/activo/ventanas", "DCVEAL"},
+      {"GET /periodos-academicos/{}", "DCVEAL"},
+      {"POST /periodos-academicos", "VA"},
+      {"PUT /periodos-academicos/{}", "VA"},
+      {"PUT /periodos-academicos/{}/activacion", "VA"},
+      {"DELETE /periodos-academicos/{}/activacion", "VA"},
+      {"GET /periodos-academicos/activo/ponderaciones", "CVA"},
+      {"PUT /periodos-academicos/activo/ponderaciones", "A"},
       {"GET /plan-seguimiento/propio", "D"},
       {"PUT /compromisos/{}/cumplimiento", "C"},
-      {"GET /programas", "CV"},
-      {"GET /programas/{}", "CV"},
-      {"POST /programas", "V"},
-      {"PUT /programas/{}", "V"},
-      {"DELETE /programas/{}", "V"},
+      {"GET /programas", "CVAL"},
+      {"GET /programas/{}", "CVAL"},
+      {"POST /programas", "A"},
+      {"PUT /programas/{}", "A"},
+      {"DELETE /programas/{}", "A"},
       {"POST /sesiones", "P"},
       {"POST /sesiones/google", "P"},
       {"POST /sesiones/recuperacion", "P"},
       {"POST /sesiones/recuperacion/restablecimiento", "P"},
-      {"GET /sesiones/actual", "DCVE"},
-      {"GET /sesiones/actual/perfil", "DCVE"},
-      {"PUT /sesiones/actual/contrasena", "DCVE"},
-      {"GET /usuarios", "V"},
-      {"GET /usuarios/{}", "V"},
-      {"POST /usuarios", "V"},
-      {"PUT /usuarios/{}", "V"},
-      {"PATCH /usuarios/{}/estado", "V"},
+      {"GET /sesiones/actual", "DCVEAL"},
+      {"GET /sesiones/actual/perfil", "DCVEAL"},
+      {"PUT /sesiones/actual/contrasena", "DCVEAL"},
+      {"GET /usuarios", "VA"},
+      {"GET /usuarios/{}", "VA"},
+      {"POST /usuarios", "A"},
+      {"PUT /usuarios/{}", "A"},
+      {"PATCH /usuarios/{}/estado", "A"},
       {"GET /verificacion-actas/{}", "P"},
     };
     for (String[] fila : filas) {
@@ -174,6 +176,8 @@ class MatrizAutorizacionTest extends PruebaIntegracion {
   private Usuario coordinador;
   private Usuario vicerrector;
   private Usuario estudiante;
+  private Usuario administrador;
+  private Usuario visualizador;
 
   @BeforeEach
   void crearEscenario() {
@@ -183,13 +187,15 @@ class MatrizAutorizacionTest extends PruebaIntegracion {
     estudiante = escenario.crearEstudiante("Estudiante Uno", programa);
     coordinador = escenario.crearCoordinador("Coordinador Uno", facultad);
     vicerrector = escenario.crearVicerrector("Vicerrector Uno");
+    administrador = escenario.crearConRol("Administrador Uno", Rol.ADMINISTRADOR);
+    visualizador = escenario.crearConRol("Visualizador Uno", Rol.VISUALIZADOR);
   }
 
   static Stream<Arguments> casos() {
     return MATRIZ.entrySet().stream()
         .flatMap(
             fila ->
-                Stream.of('D', 'C', 'V', 'E')
+                Stream.of('D', 'C', 'V', 'E', 'A', 'L')
                     .map(rol -> Arguments.of(fila.getKey(), fila.getValue(), rol)));
   }
 
@@ -239,6 +245,8 @@ class MatrizAutorizacionTest extends PruebaIntegracion {
           case 'D' -> docente;
           case 'C' -> coordinador;
           case 'V' -> vicerrector;
+          case 'A' -> administrador;
+          case 'L' -> visualizador;
           default -> estudiante;
         };
     RequestPostProcessor sesion = como(usuario);
@@ -316,7 +324,8 @@ class MatrizAutorizacionTest extends PruebaIntegracion {
     if (MATRIZ.get(endpoint).equals("P")) {
       return;
     }
-    for (Usuario usuario : List.of(docente, coordinador, vicerrector, estudiante)) {
+    for (Usuario usuario :
+        List.of(docente, coordinador, vicerrector, estudiante, administrador, visualizador)) {
       UsuarioSesion sesion = UsuarioSesion.desde(usuario);
       UsuarioSesion temporal =
           new UsuarioSesion(

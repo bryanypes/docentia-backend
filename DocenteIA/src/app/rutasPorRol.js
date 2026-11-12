@@ -1,16 +1,20 @@
 import { ROLES } from '../shared/constants/dominio.js'
 
-/** Todos los roles entran por la misma ruta; lo que muestra depende del rol (InicioPorRol). */
+/** Casi todos los roles entran por /inicio; lo que muestra depende del rol (InicioPorRol). */
 export const RUTA_INICIO = '/inicio'
 
-export function rutaInicioDelRol() {
-  return RUTA_INICIO
+/** Administración y visualización no tienen panel en /inicio: entran a su primera pantalla. */
+const INICIO_PROPIO = { ADMINISTRADOR: '/usuarios', VISUALIZADOR: '/panel-programas' }
+
+export function rutaInicioDelRol(rol) {
+  return INICIO_PROPIO[rol] ?? RUTA_INICIO
 }
 
 /** Panel principal que ve cada rol en /inicio. */
 export function panelInicioDelRol(rol) {
   if (rol === ROLES.DOCENTE) return 'MI_EVALUACION'
   if (rol === ROLES.ESTUDIANTE) return 'EVALUACION_PROFESORES'
+  if (rol === ROLES.ADMINISTRADOR || rol === ROLES.VISUALIZADOR) return 'REDIRIGIR'
   return 'GESTION'
 }
 
