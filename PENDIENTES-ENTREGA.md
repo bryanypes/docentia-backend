@@ -200,6 +200,8 @@ presentación, en este orden de prioridad:
   autenticadas en 1366×768 y 1280×720 (estimación: 45–90 min).
 - **Verificación visual limitada:** el inicio público no tiene desbordamiento horizontal en ambos
   tamaños. No se pudo comprobar el flujo autenticado con la semilla en navegador en esta corrida.
+- **P2, parcial:** el 401 muestra «Tu sesión venció» y corregir un acta firmada pide confirmación.
+  La prueba de acta, lint y build pasan; falta recorrer las rutas con servicios reales.
 - **P0/P2 pendientes de ensayo:** ejecutar A–J y verificar consola, errores 5xx, expiración de sesión,
   reintentos y doble envío después de estos cambios (estimación: 60–90 min con los servicios de demo).
 - **P3 pendiente:** E8 requiere datos agregados reales por programa y fuente (estimación: 2–4 h,

@@ -9,6 +9,7 @@ import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista
 import { ChipCategoria } from '../../../shared/components/ui/EtiquetaNivel/EtiquetaNivel.jsx'
 import { Modal } from '../../../shared/components/ui/Modal/Modal.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
+import { useAvisos } from '../../../shared/components/ui/Avisos/avisosContext.js'
 import { ETIQUETA_ROL, ROLES } from '../../../shared/constants/dominio.js'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { formatearFecha, formatearFechaHora, formatearNota } from '../../../shared/utils/formatters.js'
@@ -253,10 +254,18 @@ function Firma({ acta, usuario, ejecutar, ocupado, error }) {
 
 function Correccion({ acta, ejecutar, ocupado }) {
   const [motivo, setMotivo] = useState('')
+  const { confirmar } = useAvisos()
   const id = `motivo-correccion-${acta.idActa}`
 
   async function corregir(evento) {
     evento.preventDefault()
+    const seguro = await confirmar({
+      tipo: 'peligro',
+      titulo: '¿Corregir el acta firmada?',
+      mensaje: 'Se creará una versión nueva y se anulará esta. Esta acción no se puede deshacer.',
+      textoConfirmar: 'Corregir acta',
+    })
+    if (!seguro) return
     if (await ejecutar(() => corregirActa(acta.idActa, motivo.trim()))) setMotivo('')
   }
 

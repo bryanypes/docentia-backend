@@ -110,6 +110,8 @@ describe('PanelActa', () => {
     renderizarConSesion(<PanelActa idDocente={3} />, { rol: 'VICERRECTOR' })
     await userEvent.type(await screen.findByLabelText('Motivo de la corrección'), 'Error de digitación')
     await userEvent.click(screen.getByRole('button', { name: /Corregir/ }))
+    const confirmacion = await screen.findByRole('dialog', { name: '¿Corregir el acta firmada?' })
+    await userEvent.click(within(confirmacion).getByRole('button', { name: 'Corregir acta' }))
     expect(corregirActa).toHaveBeenCalledWith(7, 'Error de digitación')
   })
 
