@@ -41,8 +41,8 @@
 .sidebar__nombre {
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  line-height: 1;
+  gap: 3px;
+  line-height: 1.15;
 }
 
 .sidebar__nombre strong {
