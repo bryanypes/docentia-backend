@@ -1,5 +1,5 @@
 import { Lightbulb, RefreshCw } from 'lucide-react'
-import { useCallback, useState } from 'react'
+import { useCallback } from 'react'
 import { Link } from 'react-router-dom'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
@@ -7,8 +7,10 @@ import { Campo } from '../../../shared/components/ui/Campo/Campo.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { ChipCategoria } from '../../../shared/components/ui/EtiquetaNivel/EtiquetaNivel.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
+import { Paginacion } from '../../../shared/components/ui/Paginacion/Paginacion.jsx'
 import { ETIQUETA_ROL } from '../../../shared/constants/dominio.js'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
+import { useFiltrosUrl, usePaginacion } from '../../../shared/hooks/usePaginacion.js'
 import { useSesion } from '../../auth/sesionContext.js'
 import { listarPeriodos } from '../../periodos/services/periodosService.js'
 import { listarAccionesSugeridas } from '../services/actasService.js'
@@ -17,10 +19,12 @@ import '../components/PanelActa.css'
 /** Solo informa lo que indica la Resolución 074: no notifica, no bloquea y no cambia nada. */
 export default function AccionesSugeridas() {
   const { usuario } = useSesion()
-  const [periodo, setPeriodo] = useState('')
+  const [filtros, actualizarFiltros] = useFiltrosUrl({ periodo: '' })
+  const periodo = filtros.periodo
   const periodos = useFetch(listarPeriodos)
   const cargar = useCallback(() => listarAccionesSugeridas(periodo), [periodo])
   const acciones = useFetch(cargar, [cargar])
+  const paginacion = usePaginacion(acciones.datos ?? [])
 
   return (
     <>
@@ -35,7 +39,7 @@ export default function AccionesSugeridas() {
             id="periodoAcciones"
             className="campo__control"
             value={periodo}
-            onChange={(e) => setPeriodo(e.target.value)}
+            onChange={(e) => actualizarFiltros({ periodo: e.target.value })}
           >
             <option value="">Periodo activo</option>
             {(periodos.datos ?? []).map((p) => (
@@ -71,7 +75,7 @@ export default function AccionesSugeridas() {
                   </tr>
                 </thead>
                 <tbody>
-                  {acciones.datos.map((a) => (
+                  {paginacion.visibles.map((a) => (
                     <tr key={a.idDocente}>
                       <td>
                         <Link to={`/docentes/${a.idDocente}`}>{a.nombreDocente}</Link>
@@ -89,6 +93,7 @@ export default function AccionesSugeridas() {
                 </tbody>
               </table>
             </div>
+            <Paginacion {...paginacion} etiqueta="acciones sugeridas" />
           </Panel>
         )}
       </div>
