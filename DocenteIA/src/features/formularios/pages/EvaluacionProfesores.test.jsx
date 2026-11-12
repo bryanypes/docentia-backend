@@ -25,6 +25,17 @@ describe('EvaluacionProfesores', () => {
     expect(screen.queryByRole('link', { name: 'Evaluar a Camilo' })).not.toBeInTheDocument()
   })
 
+  it('con todo enviado agradece y no dice que no tiene evaluaciones', async () => {
+    listarEvaluaciones.mockResolvedValue({
+      periodo: { nombre: '2026-2' },
+      pendientes: 0,
+      evaluaciones: [{ idAsignacion: 8, docente: 'Camilo', curso: 'Bases de datos', grupo: 'A', estado: 'ENVIADA' }],
+    })
+    renderizarConSesion(<EvaluacionProfesores />, { rol: 'ESTUDIANTE' })
+    expect(await screen.findByText('Ya completaste todas tus evaluaciones. ¡Gracias por participar!')).toBeInTheDocument()
+    expect(screen.queryByText('No tienes evaluaciones')).not.toBeInTheDocument()
+  })
+
   it('muestra vacío y error', async () => {
     listarEvaluaciones.mockResolvedValueOnce({ periodo: { nombre: '2026-2' }, pendientes: 0, evaluaciones: [] })
     const { unmount } = renderizarConSesion(<EvaluacionProfesores />, { rol: 'ESTUDIANTE' })
