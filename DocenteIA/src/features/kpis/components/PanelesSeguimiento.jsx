@@ -5,8 +5,6 @@ import {
   CircleCheck,
   GraduationCap,
   HeartHandshake,
-  Medal,
-  Trophy,
   ClipboardCheck,
   Users,
 } from 'lucide-react'
@@ -204,54 +202,6 @@ export function PanelAtencion({ analisis }) {
             <li className="paneles__vacio">Y {atencion.length - visibles.length} más en la lista de docentes.</li>
           )}
         </ul>
-      )}
-    </Panel>
-  )
-}
-
-const MEDALLA = ['oro', 'plata', 'bronce']
-
-/** Las mejores notas del periodo: primeras tres con medalla, el resto numerado. */
-export function PanelHonor({ analisis }) {
-  const { honor, completos, pisoHonor } = analisis
-  const visibles = honor.slice(0, MAXIMO_ATENCION)
-  return (
-    <Panel
-      icono={Trophy}
-      tono="turquesa"
-      className="panel-honor"
-      titulo="Mención de honor"
-      descripcion={`Promedio de ${formatearNota(pisoHonor)} o más: las mejores notas del periodo.`}
-    >
-      {completos === 0 ? (
-        <p className="paneles__vacio">Aparecerán cuando haya docentes con las tres calificaciones.</p>
-      ) : visibles.length === 0 ? (
-        <p className="paneles__vacio">Ningún docente evaluado llega todavía a {formatearNota(pisoHonor)}.</p>
-      ) : (
-        <ol className="honor">
-          {visibles.map(({ docente, promedio }, i) => (
-            <li key={docente.idDocente}>
-              <Link to={`/docentes/${docente.idDocente}`} className={`honor__fila${i < 3 ? ` honor__fila--${MEDALLA[i]}` : ''}`}>
-                <span className="honor__puesto" aria-hidden="true">
-                  {i < 3 ? <Medal size={18} strokeWidth={2.25} /> : i + 1}
-                </span>
-                <span className="solo-lectores">Puesto {i + 1}: </span>
-                <span className="atencion__avatar" aria-hidden="true">
-                  {iniciales(docente.nombreCompleto)}
-                </span>
-                <span className="atencion__datos">
-                  <strong>{docente.nombreCompleto}</strong>
-                  <span>{docente.nombrePrograma}</span>
-                </span>
-                <span className="honor__nota">{formatearNota(promedio.valor)}</span>
-                <ArrowRight size={16} aria-hidden="true" className="atencion__flecha" />
-              </Link>
-            </li>
-          ))}
-          {honor.length > visibles.length && (
-            <li className="paneles__vacio">Y {honor.length - visibles.length} más con nota destacada.</li>
-          )}
-        </ol>
       )}
     </Panel>
   )

@@ -33,11 +33,11 @@ public class Facultad {
   protected Facultad() {}
 
   public Facultad(String nombre) {
-    this.nombre = NombrePropio.normalizar(nombre);
+    this.nombre = nombre;
   }
 
   public Facultad(String nombre, String codigo) {
-    this.nombre = NombrePropio.normalizar(nombre);
+    this.nombre = nombre;
     this.codigo = codigo;
   }
 
@@ -58,7 +58,7 @@ public class Facultad {
   }
 
   public void setNombre(String nombre) {
-    this.nombre = NombrePropio.normalizar(nombre);
+    this.nombre = nombre;
   }
 
   public boolean getEsActiva() {

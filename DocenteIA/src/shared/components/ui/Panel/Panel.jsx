@@ -1,17 +1,14 @@
 import './Panel.css'
 
-/**
- * Tarjeta del maquetado. `icono` (de lucide-react) aparece como insignia junto al título; `tono`
- * ('turquesa' | 'violeta' | 'coral' | 'cielo' | 'rosa') le da color a esa insignia.
- */
-export function Panel({ titulo, descripcion, icono: Icono, tono, acciones, children, className = '', ...props }) {
+/** Tarjeta del maquetado. `icono` (de lucide-react) aparece como insignia junto al título. */
+export function Panel({ titulo, descripcion, icono: Icono, acciones, children, className = '', ...props }) {
   return (
     <section className={`panel ${className}`} {...props}>
       {(titulo || acciones) && (
         <div className="panel__cabecera">
           <div className="panel__encabezado">
             {Icono && (
-              <span className={`panel__icono${tono ? ` panel__icono--${tono}` : ''}`} aria-hidden="true">
+              <span className="panel__icono" aria-hidden="true">
                 <Icono size={19} />
               </span>
             )}

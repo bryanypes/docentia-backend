@@ -47,19 +47,3 @@ export const CATEGORIAS_FILTRO = {
 
 /** Mínimo de encuestas que exige el backend (docentia.ia.minimo-encuestas). */
 export const MINIMO_ENCUESTAS = 10
-
-/** Cómo presentar cada estado del análisis de comentarios (contrato api-comentarios-ia.md). */
-export const ESTADO_ANALISIS = {
-  EN_COLA: { robot: 'esperando', tono: 'violeta', titulo: 'El análisis está en cola' },
-  EN_PROCESO: { robot: 'pensando', tono: 'violeta', titulo: 'Estoy analizando los comentarios' },
-  INSUFICIENTE: { robot: 'error', tono: 'alerta', titulo: 'Evidencia insuficiente' },
-  ERROR: { robot: 'error', tono: 'coral', titulo: 'No pude generar el análisis' },
-  SIN_COMENTARIOS: { robot: 'esperando', tono: 'azul', titulo: 'No hubo comentarios útiles' },
-  NO_DISPONIBLE_AUN: { robot: 'esperando', tono: 'violeta', titulo: 'Todavía no hay análisis' },
-}
-
-/** Texto inicial de un compromiso a partir de una oportunidad de mejora del análisis. */
-export function compromisoDesdeTema(tema) {
-  const nombre = tema.nombre.charAt(0).toLowerCase() + tema.nombre.slice(1)
-  return `Fortalecer ${nombre}, señalado en ${tema.frecuencia} ${tema.frecuencia === 1 ? 'comentario' : 'comentarios'} de estudiantes`
-}

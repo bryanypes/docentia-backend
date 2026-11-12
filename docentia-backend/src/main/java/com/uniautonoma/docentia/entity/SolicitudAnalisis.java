@@ -48,14 +48,6 @@ public class SolicitudAnalisis {
   @Column(length = 500)
   private String mensaje;
 
-  @Enumerated(EnumType.STRING)
-  @Column(nullable = false, length = 20, updatable = false)
-  private FuenteComentarios fuente = FuenteComentarios.CSV;
-
-  /** Detalle de INSUFICIENTE: POCAS_ENCUESTAS, SIN_COMENTARIOS o TODOS_EXCLUIDOS. */
-  @Column(length = 30)
-  private String motivo;
-
   private Integer encuestasCerradas;
 
   private Integer comentariosEnviados;
@@ -94,26 +86,6 @@ public class SolicitudAnalisis {
     this.docente = docente;
     this.periodo = periodo;
     this.solicitante = solicitante;
-  }
-
-  public SolicitudAnalisis(
-      Usuario docente, PeriodoAcademico periodo, Usuario solicitante, FuenteComentarios fuente) {
-    this(docente, periodo, solicitante);
-    this.fuente = fuente;
-  }
-
-  /** Marca la solicitud como insuficiente indicando el motivo, para mostrar el estado preciso. */
-  public void marcarInsuficiente(int encuestas, String mensaje, String motivoInsuficiencia) {
-    marcarInsuficiente(encuestas, mensaje);
-    this.motivo = motivoInsuficiencia;
-  }
-
-  public FuenteComentarios getFuente() {
-    return fuente;
-  }
-
-  public String getMotivo() {
-    return motivo;
   }
 
   public void registrarFiltrados(int filtrados) {

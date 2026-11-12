@@ -1,10 +1,9 @@
-import { RefreshCw, Search, SlidersHorizontal, X } from 'lucide-react'
+import { ChevronRight, RefreshCw, Search } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import robotSenala from '../../../assets/ilustraciones/robot-senala.svg'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
-import { BotonAccion } from '../../../shared/components/ui/BotonAccion/BotonAccion.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { EtiquetaNivel } from '../../../shared/components/ui/EtiquetaNivel/EtiquetaNivel.jsx'
 import { ETIQUETA_FUENTE, FUENTE_DEL_ROL, ROLES } from '../../../shared/constants/dominio.js'
@@ -12,9 +11,6 @@ import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { formatearNota, iniciales, listarFuentes, normalizarTexto } from '../../../shared/utils/formatters.js'
 import { useSesion } from '../../auth/sesionContext.js'
 import { listarFacultades } from '../../facultades/services/facultadesService.js'
-import { ChipProceso } from '../../proceso/components/ChipProceso.jsx'
-import { ESTADOS_PROCESO, ORDEN_ESTADOS } from '../../proceso/estados.js'
-import { listarProcesos } from '../../proceso/services/procesoService.js'
 import { listarSeguimientoDocentes } from '../services/docentesService.js'
 import './Docentes.css'
 
@@ -65,17 +61,9 @@ export default function Docentes() {
     Object.values(ESTADOS).includes(parametros.get('estado')) ? parametros.get('estado') : TODOS,
   )
   const [busqueda, setBusqueda] = useState('')
-  const [estadoProceso, setEstadoProceso] = useState(TODOS)
 
   const cargarDocentes = useCallback(() => listarSeguimientoDocentes(idFacultad || null), [idFacultad])
   const seguimiento = useFetch(cargarDocentes, [cargarDocentes])
-  // El estado del proceso llega aparte: si falla, la lista sigue funcionando sin esa columna.
-  const cargarProcesos = useCallback(() => listarProcesos(idFacultad || null), [idFacultad])
-  const procesos = useFetch(cargarProcesos, [cargarProcesos])
-  const procesoPorDocente = useMemo(
-    () => new Map((procesos.datos ?? []).map((p) => [p.docente.idDocente, p])),
-    [procesos.datos],
-  )
   const facultades = useFetch(() => (esVicerrector ? listarFacultades() : Promise.resolve([])), [esVicerrector])
 
   const periodo = seguimiento.datos?.periodo ?? null
@@ -92,22 +80,20 @@ export default function Docentes() {
       ({ docente, promedio }) =>
         (!programa || docente.nombrePrograma === programa) &&
         cumpleEstado(promedio, estado, miFuente) &&
-        (!estadoProceso || procesoPorDocente.get(docente.idDocente)?.estado === estadoProceso) &&
         (!termino ||
           normalizarTexto(`${docente.nombreCompleto} ${docente.correo} ${docente.nombrePrograma}`).includes(termino)),
     )
-  }, [lista, programa, estado, estadoProceso, procesoPorDocente, miFuente, busqueda])
+  }, [lista, programa, estado, miFuente, busqueda])
 
   function limpiarFiltros() {
     setBusqueda('')
     setPrograma(TODOS)
     setEstado(TODOS)
-    setEstadoProceso(TODOS)
     setIdFacultad(TODOS)
   }
 
   const alcance = esVicerrector ? 'toda la universidad' : (lista[0]?.docente.nombreFacultad ?? 'tu facultad')
-  const hayFiltros = Boolean(busqueda || programa || estado || estadoProceso || idFacultad)
+  const hayFiltros = Boolean(busqueda || programa || estado || idFacultad)
 
   return (
     <>
@@ -133,27 +119,7 @@ export default function Docentes() {
           </div>
         )}
 
-        <section className="docentes__panel" aria-labelledby="docentes-titulo">
-          <div className="docentes__panel-cabecera">
-            <div>
-              <h2 id="docentes-titulo" className="docentes__panel-titulo">
-                Listado de docentes
-              </h2>
-              <span className="docentes__alcance">
-                Alcance: {alcance}
-                {periodo ? ` · Periodo ${periodo.nombre}` : ' · Sin periodo activo'}
-              </span>
-            </div>
-            <span className="docentes__conteo" aria-live="polite">
-              <strong>{filas.length}</strong> de {lista.length} docentes
-            </span>
-          </div>
-
-        <div className="docentes__filtros" role="search" aria-label="Filtrar docentes">
-          <span className="docentes__filtros-rotulo">
-            <SlidersHorizontal size={16} aria-hidden="true" />
-            Filtrar
-          </span>
+        <div className="docentes__filtros">
           <label className="docentes__buscador">
             <Search size={16} aria-hidden="true" />
             <span className="solo-lectores">Buscar docente</span>
@@ -207,28 +173,15 @@ export default function Docentes() {
             </select>
           </label>
 
-          <label className="docentes__selector">
-            <span className="docentes__etiqueta">Proceso</span>
-            <select
-              value={estadoProceso}
-              onChange={(e) => setEstadoProceso(e.target.value)}
-              disabled={!periodo || !procesos.datos}
-            >
-              <option value={TODOS}>Todos</option>
-              {ORDEN_ESTADOS.map((clave) => (
-                <option key={clave} value={clave}>
-                  {ESTADOS_PROCESO[clave].etiqueta}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          {hayFiltros && (
-            <Boton variante="enlace" icono={X} className="docentes__limpiar" onClick={limpiarFiltros}>
-              Limpiar filtros
-            </Boton>
-          )}
+          <span className="docentes__conteo" aria-live="polite">
+            {filas.length} de {lista.length}
+          </span>
         </div>
+
+        <span className="docentes__alcance">
+          Alcance: {alcance}
+          {periodo ? ` · Periodo ${periodo.nombre}` : ' · Sin periodo activo'}
+        </span>
 
         {seguimiento.cargando && <Cargando texto="Cargando docentes" bloques={1} />}
 
@@ -249,19 +202,18 @@ export default function Docentes() {
           <div className="docentes__tabla-contenedor">
             {filas.length > 0 ? (
               <div className="docentes__desplazable">
-                <table className="docentes__tabla tabla--apilable">
+                <table className="docentes__tabla">
                   <caption className="solo-lectores">Docentes</caption>
                   <thead>
                     <tr>
                       <th scope="col">Docente</th>
                       <th scope="col">Programa</th>
                       <th scope="col">Evaluación {periodo?.nombre ?? ''}</th>
-                      <th scope="col">Proceso</th>
                       <th scope="col" className="tabla__numero">
                         Promedio
                       </th>
                       <th scope="col">
-                        <span className="solo-lectores">Acciones</span>
+                        <span className="solo-lectores">Abrir expediente</span>
                       </th>
                     </tr>
                   </thead>
@@ -287,25 +239,18 @@ export default function Docentes() {
                               </span>
                             </div>
                           </td>
-                          <td data-etiqueta="Programa">
+                          <td>
                             {d.nombrePrograma}
                             {esVicerrector && <span className="docentes__correo">{d.nombreFacultad}</span>}
                           </td>
-                          <td data-etiqueta="Evaluación">
+                          <td>
                             <EstadoEvaluacion promedio={promedio} faltaMia={faltaMia} />
                           </td>
-                          <td data-etiqueta="Proceso">
-                            {procesoPorDocente.get(d.idDocente) ? (
-                              <ChipProceso estado={procesoPorDocente.get(d.idDocente).estado} />
-                            ) : (
-                              '—'
-                            )}
-                          </td>
-                          <td className="tabla__numero docentes__promedio" data-etiqueta="Promedio">
+                          <td className="tabla__numero docentes__promedio">
                             {promedio?.estado === 'COMPLETO' ? formatearNota(promedio.valor) : '—'}
                           </td>
-                          <td className="docentes__accion" onClick={(e) => e.stopPropagation()}>
-                            <BotonAccion tipo="ver" nombre={d.nombreCompleto} a={`/docentes/${d.idDocente}`} />
+                          <td className="docentes__flecha" aria-hidden="true">
+                            <ChevronRight size={18} />
                           </td>
                         </tr>
                       )
@@ -333,7 +278,6 @@ export default function Docentes() {
             )}
           </div>
         )}
-        </section>
       </div>
     </>
   )

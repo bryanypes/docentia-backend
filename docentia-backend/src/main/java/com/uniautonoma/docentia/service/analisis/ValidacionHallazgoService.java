@@ -27,7 +27,6 @@ import com.uniautonoma.docentia.repository.VersionHallazgoRepository;
 import com.uniautonoma.docentia.security.UsuarioSesion;
 import com.uniautonoma.docentia.service.DocenteService;
 import com.uniautonoma.docentia.service.PeriodoAcademicoService;
-import com.uniautonoma.docentia.service.ProcesoEvaluacionService;
 import com.uniautonoma.docentia.service.VentanaEtapaService;
 import com.uniautonoma.docentia.service.notificacion.EventoNotificacion;
 import java.util.List;
@@ -54,7 +53,6 @@ public class ValidacionHallazgoService {
   private final DocenteService docenteService;
   private final PeriodoAcademicoService periodoService;
   private final VentanaEtapaService ventanaEtapaService;
-  private final ProcesoEvaluacionService procesoService;
 
   public ValidacionHallazgoService(
       HallazgoRepository hallazgoRepository,
@@ -64,7 +62,6 @@ public class ValidacionHallazgoService {
       DocenteService docenteService,
       PeriodoAcademicoService periodoService,
       VentanaEtapaService ventanaEtapaService,
-      ProcesoEvaluacionService procesoService,
       ApplicationEventPublisher eventos) {
     this.eventos = eventos;
     this.hallazgoRepository = hallazgoRepository;
@@ -74,7 +71,6 @@ public class ValidacionHallazgoService {
     this.docenteService = docenteService;
     this.periodoService = periodoService;
     this.ventanaEtapaService = ventanaEtapaService;
-    this.procesoService = procesoService;
   }
 
   /**
@@ -178,10 +174,7 @@ public class ValidacionHallazgoService {
     return SolicitudAnalisisResponse.desde(guardada);
   }
 
-  /**
-   * Hallazgos incluidos de la última revisión publicada del docente en el periodo activo. Se le
-   * muestran en la reunión, cuando la coordinación registra su asistencia.
-   */
+  /** Hallazgos incluidos de la última revisión publicada del docente en el periodo activo. */
   @Transactional(readOnly = true)
   public ResultadoAnalisisPropioResponse resultadoPropio(UsuarioSesion sesion) {
     Optional<PeriodoAcademico> activo = periodoService.buscarPeriodoActivo();
@@ -192,11 +185,7 @@ public class ValidacionHallazgoService {
                     solicitudRepository
                         .findFirstByDocenteIdUsuarioAndPeriodoIdPeriodoAndEstadoBorradorOrderByIdSolicitudDesc(
                             sesion.idUsuario(), periodo.getIdPeriodo(), "VALIDADO"))
-            .filter(SolicitudAnalisis::esVisibleParaDocente)
-            .filter(
-                solicitud ->
-                    procesoService.resultadoHabilitado(
-                        sesion.idUsuario(), solicitud.getPeriodo().getIdPeriodo()));
+            .filter(SolicitudAnalisis::esVisibleParaDocente);
     return publicada
         .map(
             solicitud ->

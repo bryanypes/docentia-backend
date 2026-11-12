@@ -16,14 +16,6 @@ public interface ModeloIA {
    */
   RespuestaModelo analizar(PeticionAnalisis peticion);
 
-  /**
-   * Tipo de modelo para rotular el resultado con honestidad: REGLAS si no hay un modelo de lenguaje
-   * detrás, LLM si lo hay (o si se simula uno en pruebas).
-   */
-  default String tipo() {
-    return "LLM";
-  }
-
   /** Comentario listo para enviar: sin datos identificables. */
   record ComentarioAnonimo(Long id, String texto) {}
 

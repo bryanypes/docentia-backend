@@ -1,20 +1,17 @@
-import { ClipboardCheck, RefreshCw } from 'lucide-react'
+import { RefreshCw } from 'lucide-react'
 import robotSaludo from '../../../assets/ilustraciones/robot-saludo.svg'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { EtiquetaNivel } from '../../../shared/components/ui/EtiquetaNivel/EtiquetaNivel.jsx'
 import { MensajeNavegacion } from '../../../shared/components/ui/MensajeNavegacion/MensajeNavegacion.jsx'
-import { CifraPortada, Portada } from '../../../shared/components/ui/Portada/Portada.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { formatearNota, listarFuentes, textoFormula } from '../../../shared/utils/formatters.js'
 import { PanelSeguimientoPlan } from '../../actas/components/PanelSeguimientoPlan.jsx'
 import { PanelHallazgosPropios } from '../../analisis/components/PanelHallazgosPropios.jsx'
-import { useSesion } from '../../auth/sesionContext.js'
 import { PanelMiAutoevaluacion } from '../../formularios/components/PanelMiAutoevaluacion.jsx'
 import { obtenerConfiguracionEvaluacion } from '../../kpis/services/configuracionService.js'
 import { LineaTiempo } from '../../periodos/components/LineaTiempo.jsx'
-import { PanelProcesoPropio } from '../../proceso/components/PanelProcesoPropio.jsx'
 import { PanelCompromisos } from '../components/PanelesExpediente.jsx'
 import { obtenerExpedientePropio } from '../services/expedientesService.js'
 import './MiEvaluacion.css'
@@ -24,7 +21,6 @@ import './MiEvaluacion.css'
  * individuales de cada fuente ni un promedio parcial.
  */
 export default function MiEvaluacion() {
-  const { usuario } = useSesion()
   const expediente = useFetch(obtenerExpedientePropio)
   const periodoNombre = expediente.datos?.periodo?.nombre
   const configuracion = useFetch(obtenerConfiguracionEvaluacion)
@@ -62,10 +58,7 @@ export default function MiEvaluacion() {
   }
 
   const { periodo, promedio, compromisosVigentes } = expediente.datos
-  // Sin el campo (backend anterior) se comporta como antes.
-  const habilitado = expediente.datos.resultadoHabilitado !== false
-  const completo = promedio?.estado === 'COMPLETO' && habilitado
-  const esperaReunion = promedio?.estado === 'COMPLETO' && !habilitado
+  const completo = promedio?.estado === 'COMPLETO'
 
   return (
     <>
@@ -79,31 +72,8 @@ export default function MiEvaluacion() {
           />
         ) : (
           <>
-          <Portada
-            id="portada-docente"
-            icono={ClipboardCheck}
-            rotulo={`Tu evaluación ${periodo.nombre}`}
-            titulo={`Hola, ${usuario.nombreCompleto.split(' ')[0]}`}
-            detalle="Aquí ves tu proceso del periodo, tu resultado cuando llegue la reunión y tus compromisos."
-            robot={robotSaludo}
-          >
-            <div className="portada__cifras">
-              <CifraPortada
-                rotulo="Tu promedio"
-                valor={completo ? formatearNota(promedio.valor) : esperaReunion ? 'En tu cita' : 'Pendiente'}
-                nota={completo ? 'Sobre 5' : esperaReunion ? 'Lo verás en la reunión' : 'Faltan calificaciones'}
-              />
-              <CifraPortada
-                rotulo="Compromisos vigentes"
-                valor={compromisosVigentes.length}
-                nota={compromisosVigentes.length ? 'Revísalos abajo' : 'Sin compromisos abiertos'}
-              />
-              <CifraPortada rotulo="Periodo" valor={periodo.nombre} nota={periodo.esActivo === false ? 'Cerrado' : 'En curso'} />
-            </div>
-          </Portada>
           <LineaTiempo />
-          <PanelProcesoPropio />
-          <div className="rejilla mi-evaluacion__rejilla">
+          <div className="rejilla">
             <section className="mi-evaluacion__resumen">
               <div className="mi-evaluacion__cabecera">
                 <span className="mi-evaluacion__ilustracion">
@@ -112,16 +82,12 @@ export default function MiEvaluacion() {
                 <div>
                   <div className="mi-evaluacion__rotulo">Tu promedio {periodo.nombre}</div>
                   <strong className="mi-evaluacion__valor">
-                    {completo ? formatearNota(promedio.valor) : esperaReunion ? 'En tu cita' : 'Pendiente'}
+                    {completo ? formatearNota(promedio.valor) : 'Pendiente'}
                   </strong>
                 </div>
               </div>
 
-              {esperaReunion ? (
-                <span className="pildora pildora--turquesa">Lista para tu reunión</span>
-              ) : (
-                <EtiquetaNivel promedio={promedio} />
-              )}
+              <EtiquetaNivel promedio={promedio} />
 
               {completo && promedio.categoria && (
                 <p className="mi-evaluacion__texto">
@@ -130,9 +96,7 @@ export default function MiEvaluacion() {
               )}
 
               <p className="mi-evaluacion__texto">
-                {esperaReunion
-                  ? 'Tus tres evaluaciones están completas. Tu nota, tus compromisos y el acta se te muestran en la reunión de retroalimentación, cuando la coordinación registre tu asistencia.'
-                  : completo
+                {completo
                   ? 'Promedio ponderado del periodo. Incluye la evaluación de tus estudiantes y las evaluaciones institucionales, que se reportan únicamente dentro de este promedio.'
                   : `Tu promedio estará disponible cuando se registre la calificación de ${listarFuentes(promedio.fuentesPendientes)}.`}
               </p>
@@ -147,11 +111,7 @@ export default function MiEvaluacion() {
             </section>
 
             <PanelMiAutoevaluacion />
-            <PanelCompromisos
-              titulo="Mis compromisos"
-              compromisos={compromisosVigentes}
-              className="mi-evaluacion__compromisos"
-            />
+            <PanelCompromisos titulo="Mis compromisos" compromisos={compromisosVigentes} />
             <PanelHallazgosPropios />
           </div>
           <PanelSeguimientoPlan />

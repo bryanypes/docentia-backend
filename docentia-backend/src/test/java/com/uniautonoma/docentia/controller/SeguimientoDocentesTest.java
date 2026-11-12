@@ -13,7 +13,6 @@ import com.uniautonoma.docentia.entity.Facultad;
 import com.uniautonoma.docentia.entity.FuenteEvaluacion;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.Usuario;
-import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -91,31 +90,6 @@ class SeguimientoDocentesTest extends PruebaIntegracion {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.periodo").value(nullValue()))
         .andExpect(jsonPath("$.docentes[0].promedio").value(nullValue()));
-  }
-
-  @Test
-  void unPeriodoAnteriorTraeSusPromediosYSeFiltraPorPrograma() throws Exception {
-    PeriodoAcademico anterior =
-        escenario.crearPeriodoCerrado("2026-1", LocalDate.of(2026, 2, 2));
-    escenario.crearPeriodoActivo("2026-2");
-    for (FuenteEvaluacion fuente : FuenteEvaluacion.values()) {
-      escenario.registrarCalificacion(julian, anterior, fuente, "3.5");
-    }
-
-    mockMvc
-        .perform(
-            get("/docentes/seguimiento")
-                .param("periodoId", anterior.getIdPeriodo().toString())
-                .param("idPrograma", julian.getPrograma().getIdPrograma().toString())
-                .with(comoVicerrector()))
-        .andExpect(status().isOk())
-        .andExpect(jsonPath("$.periodo.nombre").value("2026-1"))
-        .andExpect(jsonPath("$.docentes[*].docente.nombreCompleto", contains("Julian Hoyos")))
-        .andExpect(jsonPath("$.docentes[0].promedio.valor").value(3.5));
-    mockMvc
-        .perform(
-            get("/docentes/seguimiento").param("periodoId", "999999").with(comoVicerrector()))
-        .andExpect(status().isNotFound());
   }
 
   @Test

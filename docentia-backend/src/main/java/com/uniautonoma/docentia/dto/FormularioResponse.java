@@ -10,7 +10,6 @@ import java.util.List;
  *
  * @param estado nulo si aún no se ha guardado nada
  * @param ventanaAbierta si hoy se puede editar y enviar
- * @param comentario comentario general del formulario, o nulo
  */
 public record FormularioResponse(
     PeriodoResumenResponse periodo,
@@ -24,8 +23,7 @@ public record FormularioResponse(
     int respondidos,
     int total,
     List<OpcionEscala> escala,
-    List<CriterioFormulario> criterios,
-    String comentario) {
+    List<CriterioFormulario> criterios) {
 
   public record OpcionEscala(int valor, String etiqueta) {}
 
