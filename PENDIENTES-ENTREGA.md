@@ -146,3 +146,26 @@ Quedó fuera o por revisar después de la presentación:
 - **Por confirmar a mano:** que la pantalla de carga CSV no deje importar un archivo con errores y qué
   muestra la interfaz cuando la sesión vence.
 - **Docker Desktop se cerró solo dos veces** durante la preparación en esta máquina.
+
+## Correcciones pedidas para la presentación del 12 de noviembre (no hechas)
+
+La ronda de correcciones llegó después de la hora de corte (1:00 a.m. del 12 de noviembre): ninguna se
+empezó y la presentación se hace desde `release/0.4.0` sin cambios. Quedan para después de la
+presentación, en este orden de prioridad:
+
+| Punto | Pedido | Nota |
+|-------|--------|------|
+| A | Ocultar del menú «Matrícula y cobertura», «Auditoría» y «Facultades» para todos los roles | Solo `Sidebar.jsx`; sin borrar rutas |
+| J | Quitar de vicerrectoría el acceso a «Cargas de estudiantes» | Se resuelve junto con A |
+| B | «Docentes destacados» como lista (nombre, programa, puntaje) | Revisar si `GET /kpis` trae los datos o hay que ampliarlo |
+| C | Etiquetas «Facultad» → «Programa» en pantallas de coordinación y vicerrectoría | Solo textos visibles |
+| E | Estudiante: mensaje al terminar todo, etapa cerrada o sin abrir, formulario más compacto | Ya es por pasos; falta el mensaje final y el de etapa |
+| F | Comentario del estudiante obligatorio y con calidad (frontend y backend) | Hoy es opcional; revisar la semilla |
+| H, I | Orden y filtros en Docentes y Coevaluaciones; «Ya evaluaste a este docente» | Docentes ya ordena por puntaje; faltan filtros |
+| K | Nombre del periodo siempre desde los datos; buscar textos fijos | Por confirmar si hay textos fijos |
+| D | Página pública en «/» | Nueva |
+| G | Logo del acta | `resources/marca/` no tiene `logo-uniautonoma.png`: lo debe aportar la universidad |
+| N | Confirmar que el informe de IA se conserva | Por lo probado, el resultado queda guardado y versionado; por confirmar en pantalla |
+| L | Recuperar contraseña | Necesita migración V42, token con hash, vencimiento, límite y pruebas |
+| M | Roles ADMINISTRADOR y VISUALIZADOR | Rehacer desde cero, sin el código del PR #12; si usa V42/V43, coordinar con L y con el PR #12 |
+| O | «Cambiar fuentes (tres fuentes) por …» | El pedido está incompleto: falta saber por qué texto se cambia |
