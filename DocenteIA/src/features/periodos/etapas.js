@@ -50,3 +50,20 @@ export function estadoEtapa(etapa, hoy) {
   if (etapa.fechaApertura > hoy) return 'proxima'
   return 'abierta'
 }
+
+/** Último mes del primer semestre. Regla por confirmar con la institución; el backend usa la misma. */
+export const MES_FIN_PRIMER_SEMESTRE = 6
+
+const FORMATO_NOMBRE = /^\d{4}-[12]$/
+
+/** Nombre del periodo según su fecha de inicio: AAAA-1 de enero a junio, AAAA-2 de julio a diciembre. */
+export function nombrePeriodoDesde(fechaInicio) {
+  const [anio, mes] = (fechaInicio ?? '').split('-').map(Number)
+  if (!anio || !mes) return ''
+  return `${anio}-${mes <= MES_FIN_PRIMER_SEMESTRE ? 1 : 2}`
+}
+
+/** Un nombre ajustado a mano solo es válido como AAAA-1 o AAAA-2. */
+export function nombrePeriodoValido(nombre) {
+  return FORMATO_NOMBRE.test(nombre)
+}

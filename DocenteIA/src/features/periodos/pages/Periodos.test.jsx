@@ -57,6 +57,39 @@ describe('FormularioPeriodo', () => {
   })
 })
 
+describe('FormularioPeriodo · nombre calculado', () => {
+  it('calcula AAAA-1 o AAAA-2 desde la fecha de inicio y no deja editarlo sin ser administración', async () => {
+    const onGuardar = vi.fn().mockResolvedValue()
+    render(<FormularioPeriodo onGuardar={onGuardar} />)
+    const nombre = screen.getByLabelText('Nombre')
+    fireEvent.change(screen.getByLabelText('Inicio'), { target: { value: '2027-08-02' } })
+    fireEvent.change(screen.getByLabelText('Fin'), { target: { value: '2027-12-05' } })
+    expect(nombre).toHaveValue('2027-2')
+    expect(nombre).toHaveAttribute('readonly')
+    fireEvent.change(screen.getByLabelText('Inicio'), { target: { value: '2027-03-01' } })
+    expect(nombre).toHaveValue('2027-1')
+
+    await userEvent.click(screen.getByRole('button', { name: 'Crear periodo' }))
+    expect(onGuardar).toHaveBeenCalledWith(expect.objectContaining({ nombre: '2027-1' }))
+  })
+
+  it('administración ajusta el nombre, pero solo con formato AAAA-1 o AAAA-2', async () => {
+    const onGuardar = vi.fn().mockResolvedValue()
+    render(<FormularioPeriodo onGuardar={onGuardar} puedeAjustarNombre />)
+    fireEvent.change(screen.getByLabelText('Inicio'), { target: { value: '2027-02-01' } })
+    fireEvent.change(screen.getByLabelText('Fin'), { target: { value: '2027-06-05' } })
+    fireEvent.change(screen.getByLabelText('Nombre'), { target: { value: '2027 - primero' } })
+
+    await userEvent.click(screen.getByRole('button', { name: 'Crear periodo' }))
+    expect(onGuardar).not.toHaveBeenCalled()
+    expect(screen.getByRole('alert')).toHaveTextContent('formato AAAA-1 o AAAA-2')
+
+    fireEvent.change(screen.getByLabelText('Nombre'), { target: { value: '2026-2' } })
+    await userEvent.click(screen.getByRole('button', { name: 'Crear periodo' }))
+    expect(onGuardar).toHaveBeenCalledWith(expect.objectContaining({ nombre: '2026-2' }))
+  })
+})
+
 describe('Periodos · activación', () => {
   const PERIODOS = [
     { idPeriodo: 1, nombre: '2026-2', fechaInicio: '2026-07-01', fechaFin: '2026-12-31', esActivo: true, etapas: [] },

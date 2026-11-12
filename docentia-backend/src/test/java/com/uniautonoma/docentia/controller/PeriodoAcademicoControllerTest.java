@@ -157,14 +157,53 @@ class PeriodoAcademicoControllerTest extends PruebaIntegracion {
   }
 
   @Test
-  void rechazaUnNombreQueSoloDifiereEnElCeroDelSemestre() throws Exception {
-    periodoRepository.save(new PeriodoAcademico("2026-2", INICIO, FIN));
+  void unNombreMalEscritoDaUnErrorClaroYNoDejaElSistemaSinPeriodoActivo() throws Exception {
+    PeriodoAcademico vigente =
+        new PeriodoAcademico("2026-1", LocalDate.of(2026, 2, 2), LocalDate.of(2026, 6, 30));
+    vigente.setEsActivo(true);
+    periodoRepository.saveAndFlush(vigente);
 
     crearPeriodo(new PeriodoAcademicoRequest("2026-02", INICIO, FIN, List.of()))
-        .andExpect(status().isConflict())
-        .andExpect(jsonPath("$.mensaje").value(containsString("mismo semestre")));
-    crearPeriodo(new PeriodoAcademicoRequest("2027-1", INICIO, FIN, List.of()))
-        .andExpect(status().isCreated());
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.errores.nombre").value(containsString("solo administración")));
+    crearComo(
+            comoAdministrador(),
+            new PeriodoAcademicoRequest("2026 segundo", INICIO, FIN, List.of()))
+        .andExpect(status().isBadRequest())
+        .andExpect(jsonPath("$.errores.nombre").value(containsString("AAAA-1 o AAAA-2")));
+
+    mockMvc
+        .perform(get("/periodos-academicos/activo").with(comoVicerrector()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.nombre").value("2026-1"));
+    crearPeriodo(new PeriodoAcademicoRequest("", INICIO, FIN, List.of()))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.nombre").value("2026-2"));
+  }
+
+  @Test
+  void elNombreSeCalculaDesdeLaFechaDeInicio() throws Exception {
+    crearPeriodo(
+            new PeriodoAcademicoRequest(
+                null, LocalDate.of(2027, 2, 1), LocalDate.of(2027, 6, 30), List.of()))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.nombre").value("2027-1"));
+    crearPeriodo(
+            new PeriodoAcademicoRequest(
+                null, LocalDate.of(2027, 7, 1), LocalDate.of(2027, 12, 5), List.of()))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.nombre").value("2027-2"));
+  }
+
+  @Test
+  void soloAdministracionAjustaElNombreConFormatoYSinRepetir() throws Exception {
+    crearComo(comoAdministrador(), new PeriodoAcademicoRequest("2027-1", INICIO, FIN, List.of()))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.nombre").value("2027-1"));
+    crearComo(comoAdministrador(), new PeriodoAcademicoRequest("2027-1", INICIO, FIN, List.of()))
+        .andExpect(status().isConflict());
+    crearPeriodo(new PeriodoAcademicoRequest("2028-1", INICIO, FIN, List.of()))
+        .andExpect(status().isBadRequest());
   }
 
   @Test
@@ -180,7 +219,8 @@ class PeriodoAcademicoControllerTest extends PruebaIntegracion {
             put("/periodos-academicos/{id}", duplicado.getIdPeriodo())
                 .with(comoVicerrector())
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(aJson(new PeriodoAcademicoRequest("2026-02", INICIO, FIN, List.of(etapa)))))
+                .content(
+                    aJson(new PeriodoAcademicoRequest("2026-02", INICIO, FIN, List.of(etapa)))))
         .andExpect(status().isOk());
   }
 
@@ -228,8 +268,7 @@ class PeriodoAcademicoControllerTest extends PruebaIntegracion {
   }
 
   private PeriodoAcademico periodoConMatricula(String nombre) {
-    Programa programa =
-        escenario.crearPrograma("Software", escenario.crearFacultad("Ingeniería"));
+    Programa programa = escenario.crearPrograma("Software", escenario.crearFacultad("Ingeniería"));
     PeriodoAcademico periodo =
         periodoRepository.saveAndFlush(new PeriodoAcademico(nombre, INICIO, FIN));
     Clase clase =
@@ -252,9 +291,16 @@ class PeriodoAcademicoControllerTest extends PruebaIntegracion {
   }
 
   private ResultActions crearPeriodo(PeriodoAcademicoRequest solicitud) throws Exception {
+    return crearComo(comoVicerrector(), solicitud);
+  }
+
+  private ResultActions crearComo(
+      org.springframework.test.web.servlet.request.RequestPostProcessor rol,
+      PeriodoAcademicoRequest solicitud)
+      throws Exception {
     return mockMvc.perform(
         post("/periodos-academicos")
-            .with(comoVicerrector())
+            .with(rol)
             .contentType(MediaType.APPLICATION_JSON)
             .content(aJson(solicitud)));
   }

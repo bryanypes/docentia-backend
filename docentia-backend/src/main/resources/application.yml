@@ -80,6 +80,9 @@ docentia:
   # Escala de los formularios, de 1 a 5. La resolución no la define: pendiente de confirmar.
   formularios:
     etiquetas-escala: Muy en desacuerdo,En desacuerdo,Ni de acuerdo ni en desacuerdo,De acuerdo,Muy de acuerdo
+  # Nombre automático del periodo: AAAA-1 si inicia hasta este mes, AAAA-2 después. Por confirmar.
+  periodos:
+    mes-fin-primer-semestre: ${DOCENTIA_PERIODOS_MES_FIN_PRIMER_SEMESTRE:6}
   # Rol que puede corregir un acta firmada (VICERRECTOR o COORDINADOR).
   actas:
     rol-corrector: ${DOCENTIA_ACTAS_ROL_CORRECTOR:VICERRECTOR}
