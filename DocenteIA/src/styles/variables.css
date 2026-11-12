@@ -33,7 +33,7 @@
   --color-crema: #fffdf5;
 
   /* Superficies y bordes */
-  --color-fondo: #f5f7fb;
+  --color-fondo: #f6f8fb;
   --color-superficie: #ffffff;
   --color-superficie-suave: #f2f6fc;
   --color-borde: #d9e3f0;
@@ -47,10 +47,10 @@
   --color-foco-sobre-azul: var(--color-amarillo);
 
   /* Texto */
-  --color-texto: #1e1e1e;
-  --color-texto-secundario: #3a3733;
-  --color-texto-tenue: #66625a;
-  --color-texto-apagado: #6e6a5e;
+  --color-texto: #1b2a40;
+  --color-texto-secundario: #34445b;
+  --color-texto-tenue: #5a687c;
+  --color-texto-apagado: #5f6d81;
 
   /* Estados */
   --color-exito: #1b7f43;
@@ -105,12 +105,16 @@
   --peso-fuerte: 900;
 
   /* Radios y sombras */
-  --radio-sm: 7px;
-  --radio-md: 9px;
-  --radio-lg: 12px;
-  --radio-xl: 18px;
-  --radio-pildora: 20px;
-  --sombra-tarjeta: 0 2px 6px rgba(20, 42, 75, 0.04), 0 16px 34px -22px rgba(5, 54, 134, 0.32);
+  --radio-sm: 8px;
+  --radio-md: 11px;
+  --radio-lg: 14px;
+  --radio-xl: 20px;
+  --radio-pildora: 999px;
+  --sombra-tarjeta: 0 1px 2px rgba(16, 38, 72, 0.05), 0 18px 38px -26px rgba(6, 43, 100, 0.38);
+  --sombra-elevada: 0 2px 4px rgba(16, 38, 72, 0.06), 0 26px 50px -28px rgba(6, 43, 100, 0.5);
+  --gradiente-marca: linear-gradient(120deg, #062b64 0%, #0c428c 58%, #1857a8 100%);
+  --transicion-rapida: 160ms cubic-bezier(0.2, 0.7, 0.2, 1);
+  --transicion-media: 260ms cubic-bezier(0.2, 0.7, 0.2, 1);
   --sombra-boton: 0 1px 2px rgba(5, 54, 134, 0.3);
 
   /* Espaciado */

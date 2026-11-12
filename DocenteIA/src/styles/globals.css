@@ -455,3 +455,102 @@ textarea.campo__control {
     width: 100%;
   }
 }
+
+/* ===== Sistema visual: movimiento, foco y superficies (alineado con la presentación) ===== */
+@keyframes entrar-suave {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes brillo-esqueleto {
+  from {
+    background-position: 200% 0;
+  }
+  to {
+    background-position: -200% 0;
+  }
+}
+
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+.pagina > * {
+  animation: entrar-suave var(--transicion-media) both;
+}
+
+.pagina > *:nth-child(2) {
+  animation-delay: 40ms;
+}
+
+.pagina > *:nth-child(3) {
+  animation-delay: 80ms;
+}
+
+.pagina > *:nth-child(n + 4) {
+  animation-delay: 120ms;
+}
+
+.panel:hover {
+  box-shadow: var(--sombra-elevada);
+}
+
+.boton {
+  transition:
+    transform var(--transicion-rapida),
+    box-shadow var(--transicion-rapida),
+    background-color var(--transicion-rapida),
+    border-color var(--transicion-rapida),
+    color var(--transicion-rapida);
+}
+
+.boton:hover:not(:disabled) {
+  transform: translateY(-1px);
+}
+
+.boton:active:not(:disabled) {
+  transform: translateY(0) scale(0.98);
+}
+
+.tabla tbody tr {
+  transition: background-color var(--transicion-rapida);
+}
+
+.tabla tbody tr:hover {
+  background: var(--color-azul-fondo);
+}
+
+.campo__control {
+  transition: border-color var(--transicion-rapida), box-shadow var(--transicion-rapida);
+}
+
+.campo__control:hover:not(:disabled) {
+  border-color: var(--color-azul);
+}
+
+.campo__control:focus {
+  border-color: var(--color-azul);
+  box-shadow: 0 0 0 4px rgba(5, 54, 134, 0.12);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pagina > *,
+  .boton,
+  .panel,
+  .tabla tbody tr {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .boton:hover:not(:disabled),
+  .boton:active:not(:disabled) {
+    transform: none;
+  }
+}
