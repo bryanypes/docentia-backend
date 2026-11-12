@@ -34,7 +34,7 @@ import { ChipProceso } from '../../proceso/components/ChipProceso.jsx'
 import { ESTADOS_PROCESO } from '../../proceso/estados.js'
 import { listarProcesos } from '../../proceso/services/procesoService.js'
 import { descargarXlsx } from '../../../shared/utils/xlsx.js'
-import { calcular, filtrar, unirDatos } from '../estadisticas.js'
+import { calcular, filtrar, lecturaEstadisticas, unirDatos } from '../estadisticas.js'
 import { hojasDelReporte, nombreDelReporte } from '../reporteExcel.js'
 import './Estadisticas.css'
 
@@ -310,6 +310,12 @@ export default function Estadisticas() {
           </div>
         </section>
 
+        {r.total > 0 && (
+          <p className="estadisticas__lectura" aria-live="polite">
+            <strong>En resumen:</strong> {lecturaEstadisticas(r)}
+          </p>
+        )}
+
         <div className="estadisticas__cifras">
           <Cifra icono={Users} rotulo="Docentes" valor={r.total} detalle={`${r.completos} con evaluación completa`} />
           <Cifra icono={Layers} rotulo="Avance" valor={porcentaje(r.avance)} detalle="Con las tres fuentes" tono="turquesa" />
@@ -317,7 +323,7 @@ export default function Estadisticas() {
             icono={Sigma}
             rotulo="Promedio"
             valor={r.promedioGeneral === null ? '—' : formatearNota(r.promedioGeneral)}
-            detalle={r.mediana === null ? 'Sin evaluaciones completas' : `Mediana ${formatearNota(r.mediana)}`}
+            detalle={r.mediana === null ? 'Sin evaluaciones completas' : `Escala de 1 a 5 · mediana ${formatearNota(r.mediana)}`}
             tono="violeta"
           />
           <Cifra
@@ -352,7 +358,7 @@ export default function Estadisticas() {
         ) : (
           <>
           <div className="estadisticas__mosaico">
-            <Panel titulo="Nivel de desempeño" descripcion="Docentes con evaluación completa. Pulsa un nivel para filtrar." icono={ChartColumnBig} tono="violeta">
+            <Panel titulo="Nivel de desempeño" descripcion={`Número de docentes y % sobre los ${r.completos} con evaluación completa. Pulsa un nivel para filtrar.`} icono={ChartColumnBig} tono="violeta">
               <div className="estadisticas__apilada" aria-hidden="true">
                 {r.porNivel
                   .filter((n) => n.cantidad > 0)
@@ -379,7 +385,7 @@ export default function Estadisticas() {
               </p>
             </Panel>
 
-            <Panel titulo="Avance del proceso" descripcion="Dónde está cada docente, de las evaluaciones al acta firmada." icono={Route} tono="turquesa">
+            <Panel titulo="Avance del proceso" descripcion="Número de docentes en cada paso, en orden: de las evaluaciones al acta firmada." icono={Route} tono="turquesa">
               <ul className="estadisticas__barras">
                 {r.porEstado.map((e) => (
                   <BarraFiltro
@@ -397,7 +403,7 @@ export default function Estadisticas() {
               </ul>
             </Panel>
 
-            <Panel titulo="Distribución de promedios" descripcion="Cuántos docentes hay en cada tramo de medio punto." icono={Sigma} tono="cielo">
+            <Panel titulo="Distribución de promedios" descripcion="Número de docentes por tramo de medio punto del promedio (escala de 1 a 5)." icono={Sigma} tono="cielo">
               <div className="estadisticas__histograma" role="list" aria-label="Docentes por tramo de promedio">
                 {r.histograma.map((h) => (
                   <div key={h.etiqueta} className="estadisticas__columna" role="listitem" aria-label={`${h.etiqueta}: ${plural(h.cantidad, 'docente', 'docentes')}`}>
@@ -412,9 +418,14 @@ export default function Estadisticas() {
                   </div>
                 ))}
               </div>
+              <p className="estadisticas__nota">
+                <span className="estadisticas__leyenda estadisticas__leyenda--bajo" aria-hidden="true" /> Tramos bajo{' '}
+                {formatearNota(r.umbral)}: acta de compromiso.{' '}
+                <span className="estadisticas__leyenda" aria-hidden="true" /> Resto de tramos.
+              </p>
             </Panel>
 
-            <Panel titulo="Calificaciones que faltan" descripcion="Docentes a los que les falta cada fuente." icono={Layers} tono="coral">
+            <Panel titulo="Calificaciones que faltan" descripcion={`Docentes, de ${r.total}, a los que aún les falta cada fuente de calificación.`} icono={Layers} tono="coral">
               <ul className="estadisticas__barras">
                 {r.pendientesPorFuente.map((p) => (
                   <BarraFiltro

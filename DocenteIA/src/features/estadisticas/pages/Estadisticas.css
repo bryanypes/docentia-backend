@@ -554,3 +554,27 @@
     display: none;
   }
 }
+
+.estadisticas__lectura {
+  margin: 0;
+  padding: 0.75rem 1rem;
+  color: var(--color-texto);
+  border-left: 4px solid var(--color-primario, #0b1f4d);
+  border-radius: var(--radio-md, 8px);
+  background: var(--color-superficie, #ffffff);
+  line-height: 1.5;
+}
+
+.estadisticas__leyenda {
+  display: inline-block;
+  width: 0.75rem;
+  height: 0.75rem;
+  margin-right: 0.25rem;
+  vertical-align: -1px;
+  border-radius: 3px;
+  background: var(--color-cielo);
+}
+
+.estadisticas__leyenda--bajo {
+  background: var(--color-coral);
+}

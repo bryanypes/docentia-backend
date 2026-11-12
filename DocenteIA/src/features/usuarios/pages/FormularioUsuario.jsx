@@ -449,7 +449,7 @@ function Formulario({ guardado, registrarSalida }) {
               {requierePrograma(rol) && (
                 <Campo
                   id="idPrograma"
-                  etiqueta={rol === ROLES.ESTUDIANTE ? 'Programa (carrera) del estudiante' : 'Programa del docente'}
+                  etiqueta={rol === ROLES.ESTUDIANTE ? 'Programa del estudiante' : 'Programa del docente'}
                   error={errorDe('idPrograma')}
                 >
                   <select

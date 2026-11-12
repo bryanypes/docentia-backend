@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { calcular, filtrar, unirDatos } from './estadisticas.js'
+import { calcular, filtrar, lecturaEstadisticas, unirDatos } from './estadisticas.js'
 
 const docente = (id, programa, idFacultad = 1) => ({
   idDocente: id,
@@ -59,5 +59,21 @@ describe('estadísticas', () => {
     expect(filtrar(filas, { estado: 'FINALIZADO' }).map((f) => f.docente.idDocente)).toEqual([1])
     expect(filtrar(filas, { busqueda: 'docente 3' })).toHaveLength(1)
     expect(calcular(filtrar(filas, { programa: 'Software' })).promedioGeneral).toBe(3.8)
+  })
+})
+
+describe('lecturaEstadisticas', () => {
+  it('resume los datos visibles en una frase', () => {
+    const r = { total: 12, completos: 9, avance: 75, promedioGeneral: 4.123, bajoUmbral: 2, umbral: 3.8 }
+    expect(lecturaEstadisticas(r)).toBe(
+      'De 12 docentes, 9 tienen la evaluación completa (75 %). El promedio es 4,12 sobre 5. 2 quedan bajo 3,80 y firmarán acta de compromiso.',
+    )
+  })
+
+  it('explica cuando aún no hay promedios y no dice nada sin docentes', () => {
+    expect(lecturaEstadisticas({ total: 1, completos: 0, avance: 0, promedioGeneral: null, bajoUmbral: 0, umbral: 3.8 })).toBe(
+      'De 1 docente, 0 tienen la evaluación completa (0 %). Aún no hay promedios: faltan calificaciones de alguna fuente.',
+    )
+    expect(lecturaEstadisticas({ total: 0 })).toBe('')
   })
 })

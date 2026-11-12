@@ -153,3 +153,26 @@ function mediana(valores) {
   const medio = Math.floor(orden.length / 2)
   return redondear(orden.length % 2 ? orden[medio] : (orden[medio - 1] + orden[medio]) / 2)
 }
+
+const formatoNota = (v) => Number(v).toFixed(2).replace('.', ',')
+
+/**
+ * Lectura en una frase de los datos visibles, para quien no interpreta gráficas. Solo describe lo
+ * calculado; no agrega cálculos nuevos.
+ */
+export function lecturaEstadisticas(r) {
+  if (!r || r.total === 0) return ''
+  const docentes = r.total === 1 ? '1 docente' : `${r.total} docentes`
+  const partes = [`De ${docentes}, ${r.completos} ${r.completos === 1 ? 'tiene' : 'tienen'} la evaluación completa (${r.avance} %).`]
+  if (r.promedioGeneral !== null) {
+    partes.push(`El promedio es ${formatoNota(r.promedioGeneral)} sobre 5.`)
+    partes.push(
+      r.bajoUmbral === 0
+        ? `Nadie está bajo ${formatoNota(r.umbral)}.`
+        : `${r.bajoUmbral} ${r.bajoUmbral === 1 ? 'queda' : 'quedan'} bajo ${formatoNota(r.umbral)} y ${r.bajoUmbral === 1 ? 'firmará' : 'firmarán'} acta de compromiso.`,
+    )
+  } else {
+    partes.push('Aún no hay promedios: faltan calificaciones de alguna fuente.')
+  }
+  return partes.join(' ')
+}
