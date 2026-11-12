@@ -2,6 +2,7 @@ import { ChevronLeft, RefreshCw } from 'lucide-react'
 import { useCallback } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
+import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
@@ -44,6 +45,12 @@ export default function CoevaluacionDocente() {
           >
             {!noEncontrado && <Boton icono={RefreshCw} onClick={recargar}>Intentar de nuevo</Boton>}
           </EstadoVista>
+        )}
+        {datos?.estado === 'ENVIADA' && (
+          <Aviso tipo="info" titulo="Ya evaluaste a este docente">
+            Abajo están las respuestas que enviaste; ya no se pueden cambiar.{' '}
+            <Link to={`/docentes/${datos.idDocente}`}>Ver el expediente del docente</Link>
+          </Aviso>
         )}
         {datos && (
           <FormularioInstrumento
