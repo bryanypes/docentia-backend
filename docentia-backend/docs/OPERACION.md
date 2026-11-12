@@ -68,6 +68,42 @@ valor. Dos réplicas que arrancan a la vez no crean dos administradores: la crea
 PostgreSQL. Pruebas: `PrimerUsuarioTest` y `PrimerUsuarioValidacionTest`. Roles y permisos:
 [ROLES.md](ROLES.md).
 
+## Publicación bajo una subruta (proxy inverso)
+
+En producción DOCENTIA se publica en `https://nova.uniautonoma.edu.co/Evadocente-app/`. El contenedor `web`
+sirve en la raíz; el proxy de la universidad quita el prefijo y reenvía. Se probó en local con este mismo
+esquema: presentación, login, recarga en una ruta profunda (`/Evadocente-app/estadisticas`), logo y API.
+
+**Al compilar la web** (en el `.env` del servidor, antes de `docker compose build web`):
+
+| Variable | Valor en producción | Para qué |
+|---|---|---|
+| `VITE_BASE_PATH` | `/Evadocente-app/` | Prefijo de los recursos y `basename` del router |
+| `VITE_API_URL` | `/Evadocente-app/api` | Dónde llama la web a la API |
+| `DOCENTIA_APP_URL` | `https://nova.uniautonoma.edu.co/Evadocente-app` | Enlaces de los correos (recuperar contraseña, avisos) |
+| `DOCENTIA_CORS_ORIGENES` | vacío | La web y la API comparten origen a través del proxy; no hace falta CORS |
+
+Si la subruta o el dominio cambian, solo cambian estas variables y se vuelve a compilar `web`.
+
+**Proxy de la universidad (nginx de ejemplo):**
+
+```nginx
+location = /Evadocente-app { return 301 /Evadocente-app/; }
+location /Evadocente-app/ {
+    proxy_pass http://SERVIDOR_DOCENTIA:5173/;   # la barra final quita el prefijo
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto https;
+    proxy_read_timeout 120s;                     # la generación del análisis puede tardar
+}
+```
+
+- El nginx del contenedor `web` reenvía `/api/` a la API y agrega `X-Forwarded-For`; la API toma como IP del
+  cliente el último salto de esa cabecera, que es el que agrega el proxy propio.
+- El HTTPS termina en el proxy de la universidad. La web envía HSTS; el navegador solo la aplica bajo HTTPS.
+
 ## Variables de entorno
 
 | Variable | Obligatoria en producción | Uso |
