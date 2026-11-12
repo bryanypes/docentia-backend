@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /** Endpoints de administración de facultades. */
 @RestController
-@PreAuthorize("hasAnyRole('VICERRECTOR', 'COORDINADOR')")
+@PreAuthorize("hasAnyRole('VICERRECTOR', 'COORDINADOR', 'ADMINISTRADOR', 'VISUALIZADOR')")
 @RequestMapping("/facultades")
 public class FacultadController {
 
@@ -61,7 +61,7 @@ public class FacultadController {
    * @param solicitud datos de la facultad
    * @return la facultad creada
    */
-  @PreAuthorize("hasRole('VICERRECTOR')")
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public FacultadResponse crearFacultad(@Valid @RequestBody FacultadRequest solicitud) {
@@ -75,7 +75,7 @@ public class FacultadController {
    * @param solicitud datos nuevos
    * @return la facultad actualizada
    */
-  @PreAuthorize("hasRole('VICERRECTOR')")
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   @PutMapping("/{idFacultad}")
   public FacultadResponse actualizarFacultad(
       @PathVariable Long idFacultad, @Valid @RequestBody FacultadRequest solicitud) {
@@ -87,7 +87,7 @@ public class FacultadController {
    *
    * @param idFacultad identificador de la facultad
    */
-  @PreAuthorize("hasRole('VICERRECTOR')")
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   @DeleteMapping("/{idFacultad}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void eliminarFacultad(@PathVariable Long idFacultad) {

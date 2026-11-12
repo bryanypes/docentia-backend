@@ -55,10 +55,16 @@ const NAVEGACION = {
     { ruta: '/acciones-sugeridas', etiqueta: 'Acciones sugeridas', Icono: Lightbulb },
     { ruta: '/panel-programas', etiqueta: 'Panel por programa', Icono: ChartColumn },
     { ruta: '/periodos', etiqueta: 'Periodos', Icono: CalendarRange },
-    { ruta: '/ponderaciones', etiqueta: 'Ponderaciones', Icono: Scale },
-    { ruta: '/programas', etiqueta: 'Programas', Icono: BookOpen },
-    { ruta: '/usuarios', etiqueta: 'Usuarios', Icono: UserCog },
   ],
+  // Administración: usuarios, catálogos, ponderaciones y fechas. No ve notas ni comentarios.
+  [ROLES.ADMINISTRADOR]: [
+    { ruta: '/usuarios', etiqueta: 'Usuarios', Icono: UserCog },
+    { ruta: '/programas', etiqueta: 'Programas', Icono: BookOpen },
+    { ruta: '/ponderaciones', etiqueta: 'Ponderaciones', Icono: Scale },
+    { ruta: '/periodos', etiqueta: 'Periodos', Icono: CalendarRange },
+  ],
+  // Visualización: solo paneles agregados.
+  [ROLES.VISUALIZADOR]: [{ ruta: '/panel-programas', etiqueta: 'Panel por programa', Icono: ChartColumn }],
 }
 
 function ContadorCoevaluaciones() {

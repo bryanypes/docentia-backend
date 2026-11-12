@@ -19,7 +19,7 @@ public class PoliticaComentarios {
   static final Set<String> COMENTARIOS = Set.of("ROLE_COORDINADOR", "ROLE_VICERRECTOR");
   static final Set<String> RESUMEN = Set.of("ROLE_COORDINADOR", "ROLE_VICERRECTOR");
   static final Set<String> REGENERAR = Set.of("ROLE_COORDINADOR", "ROLE_VICERRECTOR");
-  static final Set<String> USO = Set.of("ROLE_VICERRECTOR");
+  static final Set<String> USO = Set.of("ROLE_VICERRECTOR", "ROLE_ADMINISTRADOR");
 
   public boolean puedeVerAnalisis(Authentication autenticacion) {
     return tieneAlguno(autenticacion, ANALISIS);

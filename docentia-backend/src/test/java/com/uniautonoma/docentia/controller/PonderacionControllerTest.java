@@ -29,7 +29,7 @@ class PonderacionControllerTest extends PruebaIntegracion {
     escenario.crearPeriodoActivo("2026-2");
 
     mockMvc
-        .perform(get(RUTA).with(comoVicerrector()))
+        .perform(get(RUTA).with(comoAdministrador()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.periodo.nombre").value("2026-2"))
         .andExpect(jsonPath("$.pesoEstudiantes").value(50))
@@ -42,13 +42,13 @@ class PonderacionControllerTest extends PruebaIntegracion {
   void elVicerrectorConfiguraPesosQueSumanCien() throws Exception {
     escenario.crearPeriodoActivo("2026-2");
 
-    configurar(pesos("40", "35.5", "24.5"), comoVicerrector())
+    configurar(pesos("40", "35.5", "24.5"), comoAdministrador())
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.pesoCoordinacion").value(35.5))
         .andExpect(jsonPath("$.esPredeterminada").value(false));
 
     mockMvc
-        .perform(get(RUTA).with(comoVicerrector()))
+        .perform(get(RUTA).with(comoAdministrador()))
         .andExpect(jsonPath("$.pesoEstudiantes").value(40.0))
         .andExpect(jsonPath("$.esPredeterminada").value(false));
   }
@@ -56,9 +56,9 @@ class PonderacionControllerTest extends PruebaIntegracion {
   @Test
   void configurarDeNuevoReemplazaLaPonderacionDelPeriodo() throws Exception {
     escenario.crearPeriodoActivo("2026-2");
-    configurar(pesos("40", "40", "20"), comoVicerrector());
+    configurar(pesos("40", "40", "20"), comoAdministrador());
 
-    configurar(pesos("60", "20", "20"), comoVicerrector()).andExpect(status().isOk());
+    configurar(pesos("60", "20", "20"), comoAdministrador()).andExpect(status().isOk());
 
     assertThat(ponderacionRepository.count()).isEqualTo(1);
   }
@@ -67,10 +67,10 @@ class PonderacionControllerTest extends PruebaIntegracion {
   void rechazaPesosQueNoSumanCien() throws Exception {
     escenario.crearPeriodoActivo("2026-2");
 
-    configurar(pesos("50", "30", "10"), comoVicerrector())
+    configurar(pesos("50", "30", "10"), comoAdministrador())
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.mensaje").value("Las ponderaciones deben sumar 100%"));
-    configurar(pesos("50", "30", "20.01"), comoVicerrector()).andExpect(status().isBadRequest());
+    configurar(pesos("50", "30", "20.01"), comoAdministrador()).andExpect(status().isBadRequest());
 
     assertThat(ponderacionRepository.count()).isZero();
   }
@@ -79,7 +79,7 @@ class PonderacionControllerTest extends PruebaIntegracion {
   void rechazaPesosNegativosAunqueLaSumaDeCien() throws Exception {
     escenario.crearPeriodoActivo("2026-2");
 
-    configurar(pesos("120", "-20", "0"), comoVicerrector())
+    configurar(pesos("120", "-20", "0"), comoAdministrador())
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.errores.pesoEstudiantes").exists())
         .andExpect(jsonPath("$.errores.pesoCoordinacion").exists());
@@ -87,8 +87,8 @@ class PonderacionControllerTest extends PruebaIntegracion {
 
   @Test
   void sinPeriodoActivoNoHayPonderacionQueConfigurar() throws Exception {
-    configurar(pesos("50", "30", "20"), comoVicerrector()).andExpect(status().isConflict());
-    mockMvc.perform(get(RUTA).with(comoVicerrector())).andExpect(status().isConflict());
+    configurar(pesos("50", "30", "20"), comoAdministrador()).andExpect(status().isConflict());
+    mockMvc.perform(get(RUTA).with(comoAdministrador())).andExpect(status().isConflict());
   }
 
   @Test

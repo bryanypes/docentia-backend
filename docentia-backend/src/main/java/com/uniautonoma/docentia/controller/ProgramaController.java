@@ -22,7 +22,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /** Endpoints de administración de programas académicos. */
 @RestController
-@PreAuthorize("hasAnyRole('VICERRECTOR', 'COORDINADOR')")
+@PreAuthorize("hasAnyRole('VICERRECTOR', 'COORDINADOR', 'ADMINISTRADOR', 'VISUALIZADOR')")
 @RequestMapping("/programas")
 public class ProgramaController {
 
@@ -65,7 +65,7 @@ public class ProgramaController {
    * @param solicitud datos del programa
    * @return el programa creado
    */
-  @PreAuthorize("hasRole('VICERRECTOR')")
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public ProgramaResponse crearPrograma(@Valid @RequestBody ProgramaRequest solicitud) {
@@ -79,7 +79,7 @@ public class ProgramaController {
    * @param solicitud datos nuevos
    * @return el programa actualizado
    */
-  @PreAuthorize("hasRole('VICERRECTOR')")
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   @PutMapping("/{idPrograma}")
   public ProgramaResponse actualizarPrograma(
       @PathVariable Long idPrograma, @Valid @RequestBody ProgramaRequest solicitud) {
@@ -91,7 +91,7 @@ public class ProgramaController {
    *
    * @param idPrograma identificador del programa
    */
-  @PreAuthorize("hasRole('VICERRECTOR')")
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   @DeleteMapping("/{idPrograma}")
   @ResponseStatus(HttpStatus.NO_CONTENT)
   public void eliminarPrograma(@PathVariable Long idPrograma) {

@@ -22,7 +22,9 @@ const TANDA = 20
 
 /** Facultad y programa al que está vinculado el usuario según su rol. */
 function vinculo(usuario) {
-  if (usuario.rol === ROLES.VICERRECTOR) return { principal: 'Toda la universidad' }
+  if ([ROLES.VICERRECTOR, ROLES.ADMINISTRADOR, ROLES.VISUALIZADOR].includes(usuario.rol)) {
+    return { principal: 'Toda la universidad' }
+  }
   if (usuario.rol === ROLES.DOCENTE || usuario.rol === ROLES.ESTUDIANTE) {
     return { principal: usuario.nombrePrograma, secundario: usuario.nombreFacultad }
   }

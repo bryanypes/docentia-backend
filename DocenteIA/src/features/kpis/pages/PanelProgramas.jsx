@@ -114,7 +114,8 @@ function CoberturaEstudiantes() {
 /** Panel I11: solo agregados. A propósito no enlaza a ningún expediente individual. */
 export default function PanelProgramas() {
   const { usuario } = useSesion()
-  const esVicerrector = usuario.rol === ROLES.VICERRECTOR
+  // Visualización lee el panel de toda la universidad, como vicerrectoría.
+  const esVicerrector = usuario.rol === ROLES.VICERRECTOR || usuario.rol === ROLES.VISUALIZADOR
   const [periodoId, setPeriodoId] = useState('')
   const [facultadId, setFacultadId] = useState('')
   const periodos = useFetch(listarPeriodos)

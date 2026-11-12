@@ -51,7 +51,7 @@ class PrimerUsuarioTest {
   @Autowired private ObjectMapper objectMapper;
 
   @Test
-  void alArrancarCreaUnSoloVicerrectorConContrasenaTemporal() {
+  void alArrancarCreaUnSoloAdministradorConContrasenaTemporal() {
     assertThat(jdbcTemplate.queryForObject("select count(*) from usuarios", Long.class))
         .isEqualTo(1L);
     Map<String, Object> fila =
@@ -60,7 +60,7 @@ class PrimerUsuarioTest {
                 + " from usuarios");
     assertThat(fila.get("correo")).isEqualTo(CORREO);
     assertThat(fila.get("nombre_completo")).isEqualTo("Vicerrectoría Inicial");
-    assertThat(fila.get("rol")).isEqualTo("VICERRECTOR");
+    assertThat(fila.get("rol")).isEqualTo("ADMINISTRADOR");
     assertThat(fila.get("debe_cambiar_contrasena")).isEqualTo(true);
     assertThat(passwordEncoder.matches(CLAVE, (String) fila.get("contrasena_hash"))).isTrue();
   }
@@ -72,7 +72,7 @@ class PrimerUsuarioTest {
     assertThat(jdbcTemplate.queryForObject("select count(*) from usuarios", Long.class))
         .isEqualTo(1L);
     assertThat(salida.getAll())
-        .contains("ya hay usuarios")
+        .contains("ya hay un administrador")
         .doesNotContain(CLAVE)
         .doesNotContain(CORREO);
   }
