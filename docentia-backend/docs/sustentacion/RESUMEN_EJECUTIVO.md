@@ -8,7 +8,7 @@ sus instrumentos hasta que el docente firma su acta y se hace seguimiento a sus 
 
 1. **Recoge las tres evaluaciones** con los instrumentos del Anexo 1: heteroevaluación de estudiantes
    (11 ítems), coevaluación de coordinación (6) y autoevaluación del docente (14), en escala de 1 a 5.
-   Los estudiantes responden en la aplicación y de forma anónima; también se acepta un CSV de respaldo.
+   Los estudiantes responden en la aplicación y de forma anónima. La carga por CSV se retiró en 0.4.0.
 2. **Calcula la nota** ponderada 50 % estudiantes, 30 % coordinación y 20 % autoevaluación, y la
    clasifica en cinco categorías con su acción institucional: muy alto (desde 4,60), alto (3,80),
    aceptable (3,00), bajo (2,20) y muy bajo.
@@ -46,7 +46,8 @@ fechas que fija vicerrectoría; fuera de su ventana, la acción se rechaza.
   cliente OAuth de la universidad (aún sin configurar).
 - **Decisiones pendientes de Vicerrectoría:** umbral de compromisos (3,8 aplicado frente a 4,00 del
   backlog), escala de 1 a 5, qué hacer con docentes con menos de 5 respuestas de estudiantes (hoy su
-  acta no se puede firmar sin CSV de respaldo) y quién corrige un acta.
+  promedio queda PARCIAL y el acta no se puede firmar), quién corrige un acta y la validez de la firma
+  electrónica simple para actas oficiales.
 - **El modelo de lenguaje externo** está desactivado por defecto. Con datos reales exige revisar la
   política de tratamiento de datos (Ley 1581 de 2012). Las métricas del modelo local se midieron con
   comentarios sintéticos, no con comentarios reales.

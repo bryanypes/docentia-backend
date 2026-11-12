@@ -94,6 +94,18 @@ perfil `dev`.
 | Docente | `laura.demo@uniautonoma.edu.co` | 3,50 con 4 respuestas de estudiantes: el caso en vivo |
 | Docente | `oscar.chantre@uniautonoma.edu.co` | Sin notas: sirve para mostrar un promedio PARCIAL |
 | Estudiante | `estudiante.demo5@uniautonoma.edu.co` | Dos evaluaciones pendientes, una de ellas a Laura |
+| Docente | `docente.flujo@uniautonoma.edu.co` | Mariana Ruiz Ortega: sin ninguna nota; 11 estudiantes ya la evaluaron. Flujo limpio de punta a punta |
+| Estudiante | `estudiante.flujo@uniautonoma.edu.co` | Santiago Gómez Ríos: solo le falta evaluar a Mariana |
+| Administración | `administrador.demo@uniautonoma.edu.co` | Usuarios, programas, ponderaciones y fechas |
+| Visualización | `visualizador.demo@uniautonoma.edu.co` | Solo el Panel por programa |
+
+Además hay 36 docentes de estadística (`docente.estadistica1` a `36`) en cinco programas, con notas en
+todos los niveles, para que Estadísticas y el Inicio tengan volumen.
+
+**Flujo corto para presentar (Mariana):** `estudiante.flujo` la evalúa (el comentario es obligatorio) →
+`docente.flujo` hace su autoevaluación → `coordinacion.ingenieria` la coevalúa (en Coevaluaciones,
+buscarla por nombre) y pide el análisis de comentarios → `vicerrectoria` ve su resultado, los
+destacados y las estadísticas.
 
 ## c. Guion de prueba
 
