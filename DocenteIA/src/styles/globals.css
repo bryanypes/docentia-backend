@@ -554,3 +554,8 @@ textarea.campo__control {
     transform: none;
   }
 }
+
+/* Una tabla solo para lectores de pantalla no debe ensanchar la página: la tabla ignora width. */
+table.solo-lectores {
+  display: block;
+}

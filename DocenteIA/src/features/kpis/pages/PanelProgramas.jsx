@@ -129,7 +129,8 @@ function CoberturaEstudiantes() {
 export default function PanelProgramas() {
   const { usuario } = useSesion()
   // Visualización lee el panel de toda la universidad, como vicerrectoría.
-  const esVicerrector = usuario.rol === ROLES.VICERRECTOR || usuario.rol === ROLES.VISUALIZADOR
+  const esVisualizador = usuario.rol === ROLES.VISUALIZADOR
+  const esVicerrector = usuario.rol === ROLES.VICERRECTOR || esVisualizador
   const [filtros, actualizarFiltros] = useFiltrosUrl({ periodo: '', facultad: '' })
   const periodoId = filtros.periodo
   const facultadId = filtros.facultad
@@ -210,8 +211,9 @@ export default function PanelProgramas() {
               ))}
             </div>
             <Paginacion {...paginacionProgramas} etiqueta="programas del panel" />
-            {esVicerrector && <Participacion />}
-            {esVicerrector && <CoberturaEstudiantes />}
+            {/* Visualización solo ve agregados: sin coevaluaciones pendientes ni cobertura detallada. */}
+            {esVicerrector && !esVisualizador && <Participacion />}
+            {esVicerrector && !esVisualizador && <CoberturaEstudiantes />}
           </>
         )}
       </div>
