@@ -29,8 +29,8 @@ public enum TipoNotificacion {
   ACTA_FIRMADA_DOCENTE("Acta firmada por el docente", "Un docente de tu facultad firmó su acta."),
   COMPROMISO_VENCIDO_FACULTAD(
       "Compromiso vencido en tu facultad", "Un compromiso de tu facultad está vencido."),
-  IMPORTACION_EXITOSA("Importación terminada", "Tu carga de CSV terminó correctamente."),
-  IMPORTACION_CON_ERRORES("Importación con errores", "Tu carga de CSV fue rechazada por errores."),
+  IMPORTACION_EXITOSA("Importación terminada", "Tu carga de matrícula terminó correctamente."),
+  IMPORTACION_CON_ERRORES("Importación con errores", "Tu carga de matrícula fue rechazada por errores."),
   AUTOEVALUACION_PENDIENTE(
       "Autoevaluación pendiente", "Tu autoevaluación sigue pendiente y la etapa está por cerrar."),
   COEVALUACIONES_PENDIENTES(
