@@ -1,6 +1,6 @@
 # Cambios
 
-## 0.4.0 (preparada, sin etiqueta ni publicar)
+## 0.4.0 (12 de noviembre de 2026)
 
 ### Resumen
 
@@ -17,12 +17,21 @@
   presupuesto por día y periodo, y regeneración con motivo y espera de una hora.
 - **Cuestionarios por pasos** para docentes y estudiantes, estadísticas con exportación a Excel y
   agenda en calendario.
-- **Operación:** primer vicerrector desde el entorno, aviso sin Google en `prod`, runbook de despliegue,
-  consultas de verificación y pruebas E2E al día.
+- **Recuperar la contraseña por correo**, con enlace de un solo uso que vence en 30 minutos.
+- **Roles ADMINISTRADOR y VISUALIZADOR:** la administración (usuarios, programas, ponderaciones y
+  fechas) sale de la vicerrectoría; el visualizador solo consulta el panel por programa.
+- **Periodos con nombre automático** (AAAA-1 o AAAA-2 según la fecha de inicio) y **firma del acta
+  subiendo un PNG**, además de dibujarla o escribirla.
+- **Rediseño** de toda la interfaz: presentación pública, inicio por rol, destacados, estadísticas con
+  lectura en una frase, paginación en las listas largas y diseño responsive.
+- **Operación:** primer administrador desde el entorno, publicación bajo una subruta, validación de la
+  configuración de producción al arrancar, respaldos verificados, runbook y kit de despliegue.
 
 ### Migraciones
 
-Ocho nuevas, de V34 a V41. V29 a V33 no existen: eran de una rama que se renumeró a V36–V40.
+Diez nuevas, de V34 a V43. V29 a V33 no existen: eran de una rama que se renumeró a V36–V40.
+Además, los callbacks de Flyway `beforeMigrate.sql` y `afterMigrate.sql` apagan el disparador de actas
+firmadas solo mientras se migra: sin ellos, V36 fallaba sobre una base con actas firmadas o anuladas.
 
 | Versión | Qué hace |
 |---------|----------|
@@ -34,6 +43,8 @@ Ocho nuevas, de V34 a V41. V29 a V33 no existen: eran de una rama que se renumer
 | V39 | Tildes en palabras académicas de los nombres (datos) |
 | V40 | Cita cancelada o movida por la coordinación |
 | V41 | Modelo pedido en cada solicitud de análisis (`LOCAL` o `LLM`) |
+| V42 | Recuperación de contraseña: hash del token, vencimiento y uso único |
+| V43 | Roles ADMINISTRADOR y VISUALIZADOR |
 
 ### Agregado
 
@@ -42,8 +53,21 @@ Ocho nuevas, de V34 a V41. V29 a V33 no existen: eran de una rama que se renumer
 - `docs/sustentacion/`: resumen ejecutivo y guía técnica con arquitectura, modelo de datos, flujo,
   anonimato, análisis de comentarios, seguridad, usuarios de demostración y guion por rol.
 - Primer usuario en producción: con `DOCENTIA_BOOTSTRAP_EMAIL`, `_NOMBRE` y `_CONTRASENA` (opcional) se
-  crea una sola vez un vicerrector si la tabla de usuarios está vacía, con contraseña temporal y sin
+  crea una sola vez el primer ADMINISTRADOR si no hay ninguno activo, con contraseña temporal y sin
   nada sensible en el log (`docs/OPERACION.md`).
+- Recuperar la contraseña por correo: respuesta igual exista o no la cuenta, enlace de un solo uso que
+  vence en 30 minutos, solo el hash en la base y límites por correo e IP (V42).
+- Roles ADMINISTRADOR y VISUALIZADOR (V43), con la matriz de autorización generada desde el código en
+  `ROLES.md`.
+- Nombre del periodo calculado desde la fecha de inicio (AAAA-1 o AAAA-2, mes de corte configurable y
+  por confirmar); solo la administración lo ajusta, con formato y sin repetir.
+- Firma del acta subiendo un PNG: se valida por su cabecera, hasta 300 KB y 2000 px, sin SVG, y se guarda
+  recodificado sin metadatos. `docs/FIRMA-ACTAS.md` explica qué es y qué no es esta firma.
+- Presentación pública en `/`, docentes destacados con su clasificación y enlace al expediente, lectura
+  de las estadísticas en una frase y paginación en las listas largas.
+- Publicación bajo una subruta (`VITE_BASE_PATH`), probada detrás de un proxy en `/Evadocente-app/`.
+- Con el perfil `prod`, la API no arranca si `DOCENTIA_APP_URL` está vacía o en localhost.
+- `respaldar.sh` y `restaurar.sh` verifican el respaldo; restaurar ya no borra la base con un archivo vacío.
 - Con el perfil `prod` y sin `DOCENTIA_GOOGLE_CLIENT_ID`, la API avisa al arrancar que los estudiantes
   no podrán iniciar sesión. OPERACION.md explica la configuración de Google y qué pasa si falta.
 - Docentes ordenados por puntaje, de mayor a menor; quienes no tienen promedio completo van al final.
@@ -60,14 +84,14 @@ Ocho nuevas, de V34 a V41. V29 a V33 no existen: eran de una rama que se renumer
 - Panorama del análisis con IA: etapas, fortalezas y oportunidades, citas verificadas y filtrados.
 - Ver información de usuarios, facultades y programas; acciones con ícono de ver, editar y eliminar.
 - Descarga de Estadísticas en Excel (.xlsx): resumen con fórmulas que se recalculan al filtrar la
-  hoja Docentes, y hojas por desempeño, proceso, programa o facultad, distribución y fuentes.
+  hoja Docentes, y hojas por desempeño, proceso, programa, distribución y evaluadores.
 - Certificado de firma electrónica en el PDF del acta, con el logo institucional y los datos del
   docente. El archivo del logo lo pone la institución en el servidor; no está en el repositorio.
 - Reserva de cita desde un calendario de días disponibles, con modal para confirmar o cambiar.
 - Modal para agregar compromisos, con sugerencias y plazos rápidos.
 - La coordinación cancela o cambia de horario una cita desde la agenda; el docente recibe el
   aviso y vuelve a confirmar (V40).
-- Mi perfil (`GET /sesiones/actual/perfil`): datos propios con facultad y programa por nombre; el
+- Mi perfil (`GET /sesiones/actual/perfil`): datos propios con su programa por nombre; el
   cambio de contraseña voluntario es un modal con DocenteIA. El menú muestra el ícono de
   configuración en lugar de la llave.
 - DocenteIA acompaña el análisis de comentarios: guía de tres pasos, resumen de lo encontrado y
@@ -95,7 +119,6 @@ Ocho nuevas, de V34 a V41. V29 a V33 no existen: eran de una rama que se renumer
 - El acta se firma después de registrar la asistencia.
 - Paleta con acentos turquesa, violeta, coral, cielo y rosa para estados y calendario.
 - Calendario compacto con vista Día y Semana; las flechas mueven un día o una semana.
-- Matrícula y cobertura con resumen, importación en tres pasos y semáforo por docente.
 - /inicio es la ruta principal de todos los roles.
 - Cuestionarios de docente y estudiante por pasos, con avance, transición y revisión final.
 - Agenda con la semana o el día visible rotulado, tira de días, Ir a hoy, calendario del mes y
@@ -114,7 +137,25 @@ Ocho nuevas, de V34 a V41. V29 a V33 no existen: eran de una rama que se renumer
 - Cada solicitud de análisis elige `modelo: LOCAL` o `LLM`; `GET /analisis-comentarios/modelos` dice
   qué hay disponible y cuánto consume el modelo de lenguaje (V41).
 
+- La interfaz dice *evaluadores* donde antes decía *fuentes*, y *programas* donde decía *facultades*;
+  los campos de la API no cambian.
+- Carga más liviana: cada pantalla se descarga al abrirla (171 a 111 KB comprimido al entrar), el JSON
+  de la API viaja comprimido y las relaciones se cargan en lotes.
+- El PDF del acta dice "Firma registrada": puede ser dibujada, escrita o un PNG subido.
+
+### Retirado
+
+- Carga de evaluaciones por CSV: la API `/importaciones` y su pantalla. Las tablas y los datos se
+  conservan; la nota de estudiantes llega por el formulario anónimo.
+- Pantallas de matrícula y cobertura, auditoría y facultades. El backend de matrícula sigue (inscribe a
+  los estudiantes en sus cursos) y el registro de auditoría también.
+- Rutas abiertas bajo `/sesiones/**`: solo son públicas `POST /sesiones`, `POST /sesiones/google` y las
+  dos de recuperación de contraseña.
+
 ### Corregido
+
+- V36 ya no falla sobre una base con actas firmadas o anuladas (callbacks de Flyway; ensayado sobre un
+  respaldo de v0.3.3).
 
 - Las pruebas E2E siguen la interfaz nueva (expediente, acta con firma dibujada, asistencia a la cita,
   cuestionarios por pasos) y abren las etapas para el día en que corren: pasan las 11.
