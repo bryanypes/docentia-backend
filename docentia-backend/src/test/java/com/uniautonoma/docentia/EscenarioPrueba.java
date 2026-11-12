@@ -51,6 +51,9 @@ public class EscenarioPrueba {
   private final ClaseRepository claseRepository;
   private final MatriculaRepository matriculaRepository;
 
+  private Facultad ultimaFacultad;
+  private Programa ultimoPrograma;
+
   public EscenarioPrueba(
       FacultadRepository facultadRepository,
       ProgramaRepository programaRepository,
@@ -125,11 +128,21 @@ public class EscenarioPrueba {
   }
 
   public Facultad crearFacultad(String nombre) {
-    return facultadRepository.save(new Facultad(nombre));
+    this.ultimaFacultad = facultadRepository.save(new Facultad(nombre));
+    return ultimaFacultad;
   }
 
   public Programa crearPrograma(String nombre, Facultad facultad) {
-    return programaRepository.save(new Programa(nombre, facultad));
+    this.ultimoPrograma = programaRepository.save(new Programa(nombre, facultad));
+    return ultimoPrograma;
+  }
+
+  public Facultad obtenerFacultad() {
+    return ultimaFacultad;
+  }
+
+  public Programa obtenerPrograma() {
+    return ultimoPrograma;
   }
 
   public Usuario crearDocente(String nombre, Programa programa) {
@@ -162,6 +175,10 @@ public class EscenarioPrueba {
 
   public Usuario crearVicerrector(String nombre) {
     return usuarioRepository.save(Usuario.crearVicerrector(nombre, correoDe(nombre), HASH));
+  }
+
+  public Usuario crearAdministrador(String nombre) {
+    return usuarioRepository.save(Usuario.crearAdministrador(nombre, correoDe(nombre), HASH));
   }
 
   public PeriodoAcademico crearPeriodoActivo(String nombre) {

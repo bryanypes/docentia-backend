@@ -98,7 +98,7 @@ class PeriodoAcademicoControllerTest extends PruebaIntegracion {
     mockMvc
         .perform(
             put("/periodos-academicos/{id}/activacion", nuevo.getIdPeriodo())
-                .with(comoVicerrector()))
+                .with(comoAdministrador()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.esActivo").value(true));
 
@@ -178,7 +178,7 @@ class PeriodoAcademicoControllerTest extends PruebaIntegracion {
     mockMvc
         .perform(
             put("/periodos-academicos/{id}", duplicado.getIdPeriodo())
-                .with(comoVicerrector())
+                .with(comoAdministrador())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(aJson(new PeriodoAcademicoRequest("2026-02", INICIO, FIN, List.of(etapa)))))
         .andExpect(status().isOk());
@@ -193,7 +193,7 @@ class PeriodoAcademicoControllerTest extends PruebaIntegracion {
     mockMvc
         .perform(
             delete("/periodos-academicos/{id}/activacion", periodo.getIdPeriodo())
-                .with(comoVicerrector()))
+                .with(comoAdministrador()))
         .andExpect(status().isNoContent());
 
     mockMvc
@@ -215,7 +215,7 @@ class PeriodoAcademicoControllerTest extends PruebaIntegracion {
     mockMvc
         .perform(
             put("/periodos-academicos/{id}", periodo.getIdPeriodo())
-                .with(comoVicerrector())
+                .with(comoAdministrador())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     aJson(
@@ -254,7 +254,7 @@ class PeriodoAcademicoControllerTest extends PruebaIntegracion {
   private ResultActions crearPeriodo(PeriodoAcademicoRequest solicitud) throws Exception {
     return mockMvc.perform(
         post("/periodos-academicos")
-            .with(comoVicerrector())
+            .with(comoAdministrador())
             .contentType(MediaType.APPLICATION_JSON)
             .content(aJson(solicitud)));
   }

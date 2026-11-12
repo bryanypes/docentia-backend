@@ -56,6 +56,19 @@ public abstract class PruebaIntegracion {
             .aAutenticacion());
   }
 
+  protected RequestPostProcessor comoAdministrador() {
+    return authentication(
+        new UsuarioSesion(
+                9003L,
+                "Administrador de prueba",
+                "admin@prueba.co",
+                Rol.ADMINISTRADOR,
+                null,
+                null,
+                false)
+            .aAutenticacion());
+  }
+
   protected RequestPostProcessor como(Usuario usuario) {
     return authentication(UsuarioSesion.desde(usuario).aAutenticacion());
   }

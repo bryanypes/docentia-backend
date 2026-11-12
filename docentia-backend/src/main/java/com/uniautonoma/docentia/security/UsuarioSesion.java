@@ -60,11 +60,11 @@ public record UsuarioSesion(
   }
 
   /**
-   * El vicerrector alcanza todas las facultades y el coordinador solo la suya. El docente no
-   * consulta información de facultades, así que para él siempre es falso.
+   * El vicerrector y el administrador alcanzan todas las facultades. El coordinador solo la suya.
+   * El docente no consulta información de facultades, así que para él siempre es falso.
    */
   public boolean tieneAlcanceSobreFacultad(Long idFacultadConsultada) {
-    if (esVicerrector()) {
+    if (esVicerrector() || esAdmin()) {
       return true;
     }
     return esCoordinador() && idFacultad.equals(idFacultadConsultada);
@@ -84,5 +84,9 @@ public record UsuarioSesion(
 
   public boolean esEstudiante() {
     return rol == Rol.ESTUDIANTE;
+  }
+
+  public boolean esAdmin() {
+    return rol == Rol.ADMINISTRADOR;
   }
 }

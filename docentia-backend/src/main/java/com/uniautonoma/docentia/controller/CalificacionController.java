@@ -75,7 +75,7 @@ public class CalificacionController {
    * @return correcciones de la más reciente a la más antigua
    */
   @GetMapping("/correcciones")
-  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR', 'ADMINISTRADOR')")
   public List<CorreccionCalificacionResponse> listarCorrecciones(
       @PathVariable Long idDocente,
       @RequestParam(required = false) Long idPeriodo,

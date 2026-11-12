@@ -8,6 +8,8 @@ import { ErrorApi } from '../../../shared/components/ui/ErrorApi/ErrorApi.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
+import { ROLES } from '../../../shared/constants/dominio.js'
+import { useSesion } from '../../auth/sesionContext.js'
 import { ModalAlcance } from '../../facultades/components/ModalAlcance.jsx'
 import { listarFacultades } from '../../facultades/services/facultadesService.js'
 import { AvisoFlotante } from '../../../shared/components/ui/Avisos/AvisoFlotante.jsx'
@@ -23,6 +25,8 @@ const VACIO = { nombre: '', idFacultad: '' }
 
 export default function Programas() {
   const { confirmar } = useAvisos()
+  const { usuario: sesion } = useSesion()
+  const esAdmin = sesion.rol === ROLES.ADMINISTRADOR
   const [filtro, setFiltro] = useState('')
   const [viendo, setViendo] = useState(null)
   const cargar = useCallback(() => listarProgramas(filtro || null), [filtro])
@@ -95,6 +99,7 @@ export default function Programas() {
                 value={formulario.nombre}
                 maxLength={120}
                 onChange={(e) => setFormulario((f) => ({ ...f, nombre: e.target.value }))}
+                disabled={!esAdmin}
                 required
               />
             </Campo>
@@ -104,17 +109,22 @@ export default function Programas() {
                 className="campo__control"
                 value={formulario.idFacultad}
                 onChange={(e) => setFormulario((f) => ({ ...f, idFacultad: e.target.value }))}
+                disabled={!esAdmin}
                 required
               >
                 <option value="">Elige una facultad</option>
                 {opciones}
               </select>
             </Campo>
-            <Boton type="submit">{enEdicion ? 'Guardar cambios' : 'Crear programa'}</Boton>
-            {enEdicion && (
-              <Boton variante="contorno" onClick={() => editar(null)}>
-                Cancelar
-              </Boton>
+            {esAdmin && (
+              <>
+                <Boton type="submit">{enEdicion ? 'Guardar cambios' : 'Crear programa'}</Boton>
+                {enEdicion && (
+                  <Boton variante="contorno" onClick={() => editar(null)}>
+                    Cancelar
+                  </Boton>
+                )}
+              </>
             )}
           </form>
         </Panel>
@@ -158,8 +168,12 @@ export default function Programas() {
                     <td>
                       <div className="acciones-fila">
                         <BotonAccion tipo="ver" nombre={programa.nombre} onClick={() => setViendo(programa)} />
-                        <BotonAccion tipo="editar" nombre={programa.nombre} onClick={() => editar(programa)} />
-                        <BotonAccion tipo="eliminar" nombre={programa.nombre} onClick={() => eliminar(programa)} />
+                        {esAdmin && (
+                          <>
+                            <BotonAccion tipo="editar" nombre={programa.nombre} onClick={() => editar(programa)} />
+                            <BotonAccion tipo="eliminar" nombre={programa.nombre} onClick={() => eliminar(programa)} />
+                          </>
+                        )}
                       </div>
                     </td>
                   </tr>

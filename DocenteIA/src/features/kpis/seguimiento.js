@@ -1,7 +1,7 @@
 import { NIVELES } from '../../shared/constants/dominio.js'
 import { nivelDeNota } from '../../shared/utils/formatters.js'
 
-export const FUENTES = ['ESTUDIANTES', 'COORDINACION', 'AUTOEVALUACION']
+export const EVALUADORES = ['ESTUDIANTES', 'COORDINACION', 'AUTOEVALUACION']
 
 /**
  * Resume el seguimiento del periodo activo (GET /docentes/seguimiento) en lo que el tablero muestra.
@@ -12,7 +12,7 @@ export function analizarSeguimiento(docentes, miFuente, agruparPor, umbral) {
   const total = docentes.length
   const completos = docentes.filter((d) => d.promedio?.estado === 'COMPLETO')
   const faltanPorFuente = Object.fromEntries(
-    FUENTES.map((f) => [f, docentes.filter((d) => d.promedio?.fuentesPendientes?.includes(f)).length]),
+    EVALUADORES.map((f) => [f, docentes.filter((d) => d.promedio?.evaluadoresPendientes?.includes(f)).length]),
   )
 
   // Rango legible de cada nivel, para la leyenda: "desde 4,6", "3,8 a 4,6", "menos de 2,2".

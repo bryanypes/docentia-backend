@@ -40,11 +40,11 @@ public class ExpedienteController {
    * Devuelve el expediente completo de un docente, con las notas de cada fuente.
    *
    * @param idDocente identificador del docente
-   * @param sesion coordinador o vicerrector autenticado
+   * @param sesion coordinador, vicerrector o administrador autenticado
    * @return notas por fuente, resultado por dimensión, histórico y compromisos vigentes
    */
   @GetMapping("/{idDocente}")
-  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR', 'ADMINISTRADOR')")
   public ExpedienteDocenteResponse obtenerExpedienteDocente(
       @PathVariable Long idDocente, @AuthenticationPrincipal UsuarioSesion sesion) {
     return expedienteService.obtenerExpedienteDocente(idDocente, sesion);

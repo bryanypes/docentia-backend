@@ -4,7 +4,7 @@ import robotAprobada from '../../../assets/ilustraciones/robot-aprobada.svg'
 import robotPensando from '../../../assets/ilustraciones/robot-pensando.svg'
 import robotSaludo from '../../../assets/ilustraciones/robot-saludo.svg'
 import robotSenala from '../../../assets/ilustraciones/robot-senala.svg'
-import { ETIQUETA_FUENTE } from '../../../shared/constants/dominio.js'
+import { ETIQUETA_EVALUADOR } from '../../../shared/constants/dominio.js'
 import { formatearFecha, formatearNota } from '../../../shared/utils/formatters.js'
 import './AsistenteResumen.css'
 
@@ -40,7 +40,7 @@ function armarResumen({ analisis, miFuente, recoleccion }) {
       faltaMia > 0
         ? {
             Icono: PenLine,
-            texto: `Te ${faltaMia === 1 ? 'falta 1 calificación' : `faltan ${faltaMia} calificaciones`} de ${ETIQUETA_FUENTE[miFuente].toLowerCase()}.`,
+            texto: `Te ${faltaMia === 1 ? 'falta 1 calificación' : `faltan ${faltaMia} calificaciones`} de ${ETIQUETA_EVALUADOR[miFuente].toLowerCase()}.`,
             destacado: true,
           }
         : { Icono: CircleCheck, texto: 'Ya registraste todas tus calificaciones.' },

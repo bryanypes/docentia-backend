@@ -14,9 +14,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Endpoints de consulta de docentes para coordinación y vicerrectoría. */
+/** Endpoints de consulta de docentes para coordinación, vicerrectoría y administración. */
 @RestController
-@PreAuthorize("hasAnyRole('VICERRECTOR', 'COORDINADOR')")
+@PreAuthorize("hasAnyRole('VICERRECTOR', 'COORDINADOR', 'ADMINISTRADOR')")
 @RequestMapping("/docentes")
 public class DocenteController {
 

@@ -24,7 +24,7 @@ public class PlanSeguimientoController {
   }
 
   @GetMapping("/docentes/{idDocente}/plan-seguimiento")
-  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR', 'ADMINISTRADOR')")
   public PlanSeguimientoResponse consultar(
       @PathVariable Long idDocente, @AuthenticationPrincipal UsuarioSesion sesion) {
     return planService.consultar(idDocente, sesion);

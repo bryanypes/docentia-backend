@@ -13,9 +13,9 @@ import { Link } from 'react-router-dom'
 import { GraficoBarras } from '../../../shared/components/ui/GraficoBarras/GraficoBarras.jsx'
 import { EtiquetaNivel } from '../../../shared/components/ui/EtiquetaNivel/EtiquetaNivel.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
-import { ETIQUETA_FUENTE } from '../../../shared/constants/dominio.js'
+import { ETIQUETA_EVALUADOR } from '../../../shared/constants/dominio.js'
 import { formatearNota, iniciales } from '../../../shared/utils/formatters.js'
-import { FUENTES } from '../seguimiento.js'
+import { EVALUADORES } from '../seguimiento.js'
 import './PanelesSeguimiento.css'
 
 const MAXIMO_ATENCION = 5
@@ -80,7 +80,7 @@ export function PanelAvance({ analisis, miFuente, periodo }) {
 
       <h3 className="avance__subtitulo">Calificaciones que faltan</h3>
       <ul className="avance__faltantes">
-        {FUENTES.map((fuente) => {
+        {EVALUADORES.map((fuente) => {
           const Icono = ICONO_FUENTE[fuente]
           const faltan = faltanPorFuente[fuente]
           const mia = fuente === miFuente
@@ -90,7 +90,7 @@ export function PanelAvance({ analisis, miFuente, periodo }) {
                 {faltan === 0 ? <CircleCheck size={17} /> : <Icono size={17} />}
               </span>
               <span className="avance__fuente-nombre">
-                {ETIQUETA_FUENTE[fuente]}
+                {ETIQUETA_EVALUADOR[fuente]}
                 {mia && <small>la tuya</small>}
               </span>
               <strong>{faltan === 0 ? 'Completa' : `Faltan ${faltan}`}</strong>

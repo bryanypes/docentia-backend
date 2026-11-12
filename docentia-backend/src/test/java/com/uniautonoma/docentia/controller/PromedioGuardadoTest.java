@@ -123,7 +123,7 @@ class PromedioGuardadoTest extends PruebaIntegracion {
     mockMvc
         .perform(
             put("/periodos-academicos/activo/ponderaciones")
-                .with(comoVicerrector())
+                .with(comoAdministrador())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     aJson(

@@ -53,7 +53,7 @@ public class AnalisisIaController {
    * @param idSolicitud identificador de la solicitud
    */
   @GetMapping("/{idSolicitud}")
-  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR', 'ADMINISTRADOR')")
   public SolicitudAnalisisResponse consultar(
       @PathVariable Long idSolicitud, @AuthenticationPrincipal UsuarioSesion sesion) {
     return analisisService.consultar(idSolicitud, sesion);
@@ -65,7 +65,7 @@ public class AnalisisIaController {
    * @param idSolicitud identificador de la solicitud
    */
   @GetMapping("/{idSolicitud}/comentarios-filtrados")
-  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR', 'ADMINISTRADOR')")
   public List<ComentarioFiltradoResponse> listarFiltrados(
       @PathVariable Long idSolicitud, @AuthenticationPrincipal UsuarioSesion sesion) {
     return analisisService.listarFiltrados(idSolicitud, sesion);
@@ -78,7 +78,7 @@ public class AnalisisIaController {
    * @param periodoId periodo consultado
    */
   @GetMapping
-  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR', 'ADMINISTRADOR')")
   public List<SolicitudAnalisisResponse> listar(
       @RequestParam Long docenteId,
       @RequestParam Long periodoId,

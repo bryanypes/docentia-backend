@@ -140,6 +140,9 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
     Usuario vicerrector =
         usuarioRepository.save(
             Usuario.crearVicerrector("Elena Muñoz Cerón", "vicerrectoria" + DOMINIO_CORREO, hash));
+    Usuario admin =
+        usuarioRepository.save(
+            Usuario.crearAdministrador("Admin Sistema", "admin" + DOMINIO_CORREO, hash));
     Usuario coordinadorIngenieria =
         usuarioRepository.save(
             Usuario.crearCoordinador(

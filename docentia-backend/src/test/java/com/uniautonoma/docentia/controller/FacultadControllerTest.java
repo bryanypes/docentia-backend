@@ -29,7 +29,7 @@ class FacultadControllerTest extends PruebaIntegracion {
     mockMvc
         .perform(
             post("/facultades")
-                .with(comoVicerrector())
+                .with(comoAdministrador())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(aJson(new FacultadRequest("  Ingeniería  "))))
         .andExpect(status().isCreated())
@@ -42,7 +42,7 @@ class FacultadControllerTest extends PruebaIntegracion {
     mockMvc
         .perform(
             post("/facultades")
-                .with(comoVicerrector())
+                .with(comoAdministrador())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(aJson(new FacultadRequest(" "))))
         .andExpect(status().isBadRequest())
@@ -56,7 +56,7 @@ class FacultadControllerTest extends PruebaIntegracion {
     mockMvc
         .perform(
             post("/facultades")
-                .with(comoVicerrector())
+                .with(comoAdministrador())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(aJson(new FacultadRequest("ingeniería"))))
         .andExpect(status().isConflict());
@@ -83,7 +83,7 @@ class FacultadControllerTest extends PruebaIntegracion {
     mockMvc
         .perform(
             put("/facultades/{id}", facultad.getIdFacultad())
-                .with(comoVicerrector())
+                .with(comoAdministrador())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(aJson(new FacultadRequest("Ingeniería"))))
         .andExpect(status().isOk())
@@ -96,7 +96,7 @@ class FacultadControllerTest extends PruebaIntegracion {
     programaRepository.save(new Programa("Ingeniería de Software", facultad));
 
     mockMvc
-        .perform(delete("/facultades/{id}", facultad.getIdFacultad()).with(comoVicerrector()))
+        .perform(delete("/facultades/{id}", facultad.getIdFacultad()).with(comoAdministrador()))
         .andExpect(status().isConflict())
         .andExpect(
             jsonPath("$.mensaje")
@@ -114,7 +114,7 @@ class FacultadControllerTest extends PruebaIntegracion {
     programaRepository.save(programa);
 
     mockMvc
-        .perform(delete("/facultades/{id}", facultad.getIdFacultad()).with(comoVicerrector()))
+        .perform(delete("/facultades/{id}", facultad.getIdFacultad()).with(comoAdministrador()))
         .andExpect(status().isNoContent());
 
     mockMvc

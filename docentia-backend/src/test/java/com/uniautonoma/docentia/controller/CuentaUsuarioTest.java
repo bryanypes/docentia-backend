@@ -111,7 +111,7 @@ class CuentaUsuarioTest extends PruebaIntegracion {
     mockMvc
         .perform(
             put("/usuarios/{id}", docente.getIdUsuario())
-                .with(comoVicerrector())
+                .with(comoAdministrador())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     aJson(
@@ -142,18 +142,21 @@ class CuentaUsuarioTest extends PruebaIntegracion {
   }
 
   @Test
-  void nadieDesactivaSuPropiaCuentaYSoloLaVicerrectoriaCambiaElEstado() throws Exception {
+  void nadieDesactivaSuPropiaCuentaYSoloElAdministradorCambiaElEstado() throws Exception {
     Usuario vicerrectora = escenario.crearVicerrector("Elena Munoz");
     Usuario coordinador = escenario.crearCoordinador("Marta Ruiz", ingenieria);
+    Usuario admin = escenario.crearAdministrador("Admin Test");
 
+    // Vicerrector NO puede cambiar estado: 403
     mockMvc
         .perform(
-            patch("/usuarios/{id}/estado", vicerrectora.getIdUsuario())
+            patch("/usuarios/{id}/estado", coordinador.getIdUsuario())
                 .with(como(vicerrectora))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(aJson(new EstadoUsuarioRequest(false))))
-        .andExpect(status().isConflict())
-        .andExpect(jsonPath("$.mensaje").value("No puedes desactivar tu propia cuenta"));
+        .andExpect(status().isForbidden());
+    
+    // Coordinador (rol sin permisos) tampoco puede: 403
     mockMvc
         .perform(
             patch("/usuarios/{id}/estado", vicerrectora.getIdUsuario())
@@ -161,11 +164,25 @@ class CuentaUsuarioTest extends PruebaIntegracion {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(aJson(new EstadoUsuarioRequest(false))))
         .andExpect(status().isForbidden());
+    
+    // Administrador no puede desactivar su propia cuenta: 409
+    mockMvc
+        .perform(
+            patch("/usuarios/{id}/estado", admin.getIdUsuario())
+                .with(como(admin))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(aJson(new EstadoUsuarioRequest(false))))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.mensaje").value("No puedes desactivar tu propia cuenta"));
+    
+    // 404 para usuario inexistente
     cambiarEstado(999_999L, false).andExpect(status().isNotFound());
+    
+    // 400 para datos inválidos
     mockMvc
         .perform(
             patch("/usuarios/{id}/estado", coordinador.getIdUsuario())
-                .with(comoVicerrector())
+                .with(comoAdministrador())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}"))
         .andExpect(status().isBadRequest())
@@ -176,7 +193,7 @@ class CuentaUsuarioTest extends PruebaIntegracion {
     mockMvc
         .perform(
             post("/usuarios")
-                .with(comoVicerrector())
+                .with(comoAdministrador())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     aJson(
@@ -237,7 +254,7 @@ class CuentaUsuarioTest extends PruebaIntegracion {
   private ResultActions cambiarEstado(Long idUsuario, boolean esActivo) throws Exception {
     return mockMvc.perform(
         patch("/usuarios/{id}/estado", idUsuario)
-            .with(comoVicerrector())
+            .with(comoAdministrador())
             .contentType(MediaType.APPLICATION_JSON)
             .content(aJson(new EstadoUsuarioRequest(esActivo))));
   }

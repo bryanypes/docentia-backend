@@ -97,6 +97,11 @@ public class Usuario {
     return new Usuario(nombreCompleto, correo, contrasenaHash, Rol.VICERRECTOR);
   }
 
+  public static Usuario crearAdministrador(
+      String nombreCompleto, String correo, String contrasenaHash) {
+    return new Usuario(nombreCompleto, correo, contrasenaHash, Rol.ADMINISTRADOR);
+  }
+
   /**
    * Crea un usuario con el rol indicado, validando su vínculo.
    *
@@ -147,10 +152,10 @@ public class Usuario {
               quien + " se vincula a un programa; su facultad es la del programa");
         }
       }
-      case VICERRECTOR -> {
+      case VICERRECTOR, ADMINISTRADOR -> {
         if (facultad != null || programa != null) {
           throw new DatosInvalidosException(
-              "El vicerrector no se vincula a una facultad ni a un programa");
+              (rol == Rol.VICERRECTOR ? "El vicerrector" : "El administrador") + " no se vincula a una facultad ni a un programa");
         }
       }
     }
