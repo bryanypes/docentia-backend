@@ -57,7 +57,8 @@ export default function Inicio() {
 
   // El análisis del periodo activo lo comparten el asistente y los paneles de seguimiento.
   const miFuente = FUENTE_DEL_ROL[usuario.rol]
-  const agrupacion = esVicerrector ? 'facultad' : 'programa'
+  // Los paneles hablan de programas para todos los roles; el filtro de facultad solo acota.
+  const agrupacion = 'programa'
   const analisis = useMemo(
     () =>
       seguimiento.datos?.periodo && configuracion.datos

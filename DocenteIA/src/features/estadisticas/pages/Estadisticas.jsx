@@ -104,7 +104,7 @@ export default function Estadisticas() {
   const esVicerrector = usuario.rol === ROLES.VICERRECTOR
   const [filtros, setFiltros] = useState(SIN_FILTROS)
   const [mostrar, setMostrar] = useState(TANDA_FILAS)
-  const agruparPor = esVicerrector && !filtros.facultad ? 'nombreFacultad' : 'nombrePrograma'
+  const agruparPor = 'nombrePrograma'
 
   const cargarSeguimiento = useCallback(() => listarSeguimientoDocentes(null), [])
   const seguimiento = useFetch(cargarSeguimiento, [cargarSeguimiento])
