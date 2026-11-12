@@ -147,6 +147,8 @@ class MatrizAutorizacionTest extends PruebaIntegracion {
       {"DELETE /programas/{}", "V"},
       {"POST /sesiones", "P"},
       {"POST /sesiones/google", "P"},
+      {"POST /sesiones/recuperacion", "P"},
+      {"POST /sesiones/recuperacion/restablecimiento", "P"},
       {"GET /sesiones/actual", "DCVE"},
       {"GET /sesiones/actual/perfil", "DCVE"},
       {"PUT /sesiones/actual/contrasena", "DCVE"},
@@ -270,7 +272,11 @@ class MatrizAutorizacionTest extends PruebaIntegracion {
                 .filter(fila -> fila.getValue().equals("P"))
                 .map(Map.Entry::getKey))
         .containsExactlyInAnyOrder(
-            "POST /sesiones", "POST /sesiones/google", "GET /verificacion-actas/{}");
+            "POST /sesiones",
+            "POST /sesiones/google",
+            "POST /sesiones/recuperacion",
+            "POST /sesiones/recuperacion/restablecimiento",
+            "GET /verificacion-actas/{}");
   }
 
   /** Nada bajo /sesiones/ queda abierto por un comodín: solo las dos rutas de entrada. */
@@ -279,6 +285,8 @@ class MatrizAutorizacionTest extends PruebaIntegracion {
     "POST, /sesiones/iniciar",
     "POST, /sesiones/actual",
     "POST, /sesiones/google/extra",
+    "POST, /sesiones/recuperacion/otra",
+    "GET, /sesiones/recuperacion",
     "POST, /sesiones/actual/contrasena",
     "GET, /sesiones/actual/perfil",
     "PUT, /sesiones/actual/contrasena",

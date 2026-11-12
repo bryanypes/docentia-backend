@@ -21,3 +21,12 @@ export function cambiarContrasena(contrasenaActual, contrasenaNueva) {
 export function obtenerPerfil() {
   return api.get('/sesiones/actual/perfil')
 }
+
+/** Siempre responde lo mismo, exista o no el correo. */
+export function solicitarRecuperacion(correo) {
+  return api.post('/sesiones/recuperacion', { correo }, { publica: true })
+}
+
+export function restablecerContrasena(token, contrasena) {
+  return api.post('/sesiones/recuperacion/restablecimiento', { token, contrasena }, { publica: true })
+}
