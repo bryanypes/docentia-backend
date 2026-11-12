@@ -46,9 +46,10 @@ export function actualizarPeriodo(idPeriodo, periodo) {
   return api.put(`/periodos-academicos/${encodeURIComponent(idPeriodo)}`, periodo)
 }
 
-/** Solo hay un periodo activo: activar uno desactiva el anterior. */
-export function activarPeriodo(idPeriodo) {
-  return api.put(`/periodos-academicos/${encodeURIComponent(idPeriodo)}/activacion`)
+/** Solo hay un periodo activo: activar uno desactiva el anterior. Con `confirmar` se activa aunque no tenga matrículas. */
+export function activarPeriodo(idPeriodo, confirmar = false) {
+  const consulta = confirmar ? '?confirmar=true' : ''
+  return api.put(`/periodos-academicos/${encodeURIComponent(idPeriodo)}/activacion${consulta}`)
 }
 
 export function desactivarPeriodo(idPeriodo) {

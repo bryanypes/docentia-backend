@@ -72,6 +72,12 @@ public class SecurityConfig {
                     .permitAll()
                     .requestMatchers(HttpMethod.POST, "/sesiones/google")
                     .permitAll()
+                    // Recuperar la contraseña es sin sesión: dos rutas exactas, sin comodines.
+                    .requestMatchers(
+                        HttpMethod.POST,
+                        "/sesiones/recuperacion",
+                        "/sesiones/recuperacion/restablecimiento")
+                    .permitAll()
                     // Lo único que puede hacer una sesión con la contraseña temporal.
                     .requestMatchers(HttpMethod.GET, "/sesiones/actual")
                     .authenticated()

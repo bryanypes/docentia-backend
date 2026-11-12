@@ -1,0 +1,127 @@
+.presentacion {
+  min-height: 100vh;
+  background: var(--color-crema, #fffdf5);
+  color: var(--color-azul, #053686);
+  font-family: 'Nunito', system-ui, sans-serif;
+}
+
+.presentacion__cabecera {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem clamp(1rem, 4vw, 3rem);
+  background: var(--color-azul, #053686);
+}
+
+.presentacion__marca {
+  color: #ffffff;
+  font-size: 1.25rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.presentacion__boton {
+  display: inline-block;
+  padding: 0.65rem 1.4rem;
+  border-radius: 999px;
+  background: var(--color-amarillo, #e3c924);
+  color: var(--color-azul, #053686);
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.presentacion__boton:hover,
+.presentacion__boton:focus-visible {
+  background: var(--color-amarillo-oscuro, #c9a812);
+}
+
+.presentacion__boton--claro {
+  padding: 0.45rem 1.1rem;
+}
+
+.presentacion__heroe {
+  max-width: 52rem;
+  margin: 0 auto;
+  padding: clamp(2rem, 6vw, 4.5rem) 1rem 2rem;
+  text-align: center;
+}
+
+.presentacion__antetitulo {
+  margin: 0 0 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.presentacion__heroe h1 {
+  margin: 0 0 1rem;
+  font-size: clamp(1.8rem, 4vw, 2.8rem);
+  line-height: 1.15;
+}
+
+.presentacion__heroe p {
+  max-width: 40rem;
+  margin: 0 auto 1.5rem;
+  color: #24324a;
+  line-height: 1.6;
+}
+
+.presentacion__seccion {
+  max-width: 64rem;
+  margin: 0 auto;
+  padding: 1.5rem 1rem 2rem;
+}
+
+.presentacion__seccion h2 {
+  margin: 0 0 1rem;
+  font-size: 1.4rem;
+}
+
+.presentacion__pasos,
+.presentacion__publico {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 1rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.presentacion__pasos li,
+.presentacion__publico li {
+  padding: 1.25rem;
+  border: 1px solid #e6dfce;
+  border-radius: 1rem;
+  background: #ffffff;
+}
+
+.presentacion__pasos h3,
+.presentacion__publico h3 {
+  margin: 0.5rem 0;
+  font-size: 1.05rem;
+}
+
+.presentacion__pasos p,
+.presentacion__publico p {
+  margin: 0;
+  color: #24324a;
+  line-height: 1.5;
+}
+
+.presentacion__numero {
+  display: inline-grid;
+  place-items: center;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+  background: var(--color-amarillo, #e3c924);
+  font-weight: 800;
+}
+
+.presentacion__pie {
+  padding: 1.5rem 1rem;
+  border-top: 1px solid #e6dfce;
+  font-size: 0.85rem;
+  text-align: center;
+}

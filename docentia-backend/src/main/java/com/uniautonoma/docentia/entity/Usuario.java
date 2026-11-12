@@ -65,7 +65,7 @@ public class Usuario {
   protected Usuario() {}
 
   private Usuario(String nombreCompleto, String correo, String contrasenaHash, Rol rol) {
-    this.nombreCompleto = nombreCompleto;
+    this.nombreCompleto = NombrePropio.normalizar(nombreCompleto);
     this.correo = correo;
     this.contrasenaHash = contrasenaHash;
     this.rol = rol;
@@ -147,10 +147,10 @@ public class Usuario {
               quien + " se vincula a un programa; su facultad es la del programa");
         }
       }
-      case VICERRECTOR -> {
+      case VICERRECTOR, ADMINISTRADOR, VISUALIZADOR -> {
         if (facultad != null || programa != null) {
           throw new DatosInvalidosException(
-              "El vicerrector no se vincula a una facultad ni a un programa");
+              "Este rol no se vincula a una facultad ni a un programa");
         }
       }
     }
@@ -168,7 +168,7 @@ public class Usuario {
   }
 
   public void setNombreCompleto(String nombreCompleto) {
-    this.nombreCompleto = nombreCompleto;
+    this.nombreCompleto = NombrePropio.normalizar(nombreCompleto);
   }
 
   public String getCodigo() {

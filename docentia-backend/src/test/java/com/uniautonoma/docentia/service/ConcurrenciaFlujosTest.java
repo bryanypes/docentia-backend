@@ -256,7 +256,8 @@ class ConcurrenciaFlujosTest extends PruebaIntegracion {
         List.of("D02", "D03", "D04", "D05", "D06", "D07", "D08", "D09", "D10", "D11", "D12")) {
       respuestas.put(codigo, BigDecimal.valueOf(4));
     }
-    EnvioEstudianteRequest envio = new EnvioEstudianteRequest(respuestas, null);
+    EnvioEstudianteRequest envio =
+        new EnvioEstudianteRequest(respuestas, "El curso fue muy claro y útil.");
     UsuarioSesion primero = alumnos.get(0);
 
     int exitos =

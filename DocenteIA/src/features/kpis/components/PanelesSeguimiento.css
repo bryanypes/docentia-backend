@@ -240,6 +240,7 @@
 
 /* ───── Requieren seguimiento ───── */
 .atencion {
+  container-type: inline-size;
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -339,5 +340,48 @@
   .avance__faltantes,
   .distribucion__leyenda {
     grid-template-columns: 1fr;
+  }
+}
+
+/* En tarjetas angostas el nombre ocupa su propia fila y no se corta. */
+@container (max-width: 430px) {
+  .atencion__fila {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-areas:
+      'avatar datos flecha'
+      'avatar nota flecha';
+    row-gap: 4px;
+  }
+
+  .atencion__avatar {
+    grid-area: avatar;
+  }
+
+  .atencion__datos {
+    grid-area: datos;
+  }
+
+  .atencion__datos strong,
+  .atencion__datos span {
+    white-space: normal;
+  }
+
+  .atencion__nota {
+    grid-area: nota;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+  }
+
+  .atencion__fila > .etiqueta-nivel {
+    grid-column: 2;
+    grid-row: 2;
+    justify-self: start;
+    margin-left: 52px;
+  }
+
+  .atencion__flecha {
+    grid-area: flecha;
   }
 }

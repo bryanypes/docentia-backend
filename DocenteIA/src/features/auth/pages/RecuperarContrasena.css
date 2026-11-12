@@ -1,0 +1,36 @@
+.recuperar {
+  display: grid;
+  place-items: center;
+  min-height: 100vh;
+  padding: 1rem;
+  background: var(--color-crema, #fffdf5);
+}
+
+.recuperar__tarjeta {
+  display: grid;
+  gap: 1rem;
+  width: min(100%, 28rem);
+  padding: 1.75rem;
+  border: 1px solid var(--color-borde, #e6dfce);
+  border-radius: 1rem;
+  background: var(--color-superficie, #ffffff);
+}
+
+.recuperar__tarjeta h1 {
+  margin: 0;
+  color: var(--color-azul, #053686);
+  font-size: 1.4rem;
+}
+
+.recuperar__formulario {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.recuperar__formulario p {
+  margin: 0;
+}
+
+.recuperar__volver {
+  font-size: 0.9rem;
+}

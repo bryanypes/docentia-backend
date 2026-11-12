@@ -14,6 +14,8 @@
 
 .encabezado__textos {
   min-width: 0;
+  /* Deja libre la esquina de la campana de notificaciones, que va fija arriba a la derecha. */
+  padding-right: 52px;
 }
 
 .encabezado__miga {
@@ -76,6 +78,11 @@
 @media (max-width: 900px) {
   .encabezado {
     padding: 18px 16px;
+  }
+
+  /* La campana ya va en la barra fija: el título usa todo el ancho. */
+  .encabezado__textos {
+    padding-right: 0;
   }
 
   .encabezado__titulo {

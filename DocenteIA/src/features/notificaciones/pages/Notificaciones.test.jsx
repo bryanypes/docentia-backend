@@ -15,6 +15,7 @@ vi.mock('../services/notificacionesService.js')
 
 const PAGINA = {
   contenido: [{ id: 1, titulo: 'Cita agendada', mensaje: 'Tu cita', leida: true, creadaEn: '2026-10-31T10:00:00' }],
+  totalElementos: 12,
   totalPaginas: 2,
 }
 
@@ -28,15 +29,17 @@ describe('Notificaciones', () => {
   it('muestra el estado con texto y pagina', async () => {
     renderizarConSesion(<Notificaciones />)
     expect(await screen.findByText('Leída')).toBeInTheDocument()
+    await userEvent.selectOptions(screen.getByLabelText('Por página'), '20')
+    expect(listarNotificaciones).toHaveBeenLastCalledWith({ soloNoLeidas: false, pagina: 0, tamano: 20 })
     await userEvent.click(screen.getByRole('button', { name: 'Siguiente' }))
-    expect(listarNotificaciones).toHaveBeenLastCalledWith({ soloNoLeidas: false, pagina: 1 })
+    expect(listarNotificaciones).toHaveBeenLastCalledWith({ soloNoLeidas: false, pagina: 1, tamano: 20 })
   })
 
   it('filtra y marca todas', async () => {
     marcarTodasLeidas.mockResolvedValue(null)
     renderizarConSesion(<Notificaciones />)
     await userEvent.click(await screen.findByLabelText('Solo no leídas'))
-    expect(listarNotificaciones).toHaveBeenLastCalledWith({ soloNoLeidas: true, pagina: 0 })
+    expect(listarNotificaciones).toHaveBeenLastCalledWith({ soloNoLeidas: true, pagina: 0, tamano: 10 })
     await userEvent.click(screen.getByRole('button', { name: 'Marcar todas como leídas' }))
     expect(marcarTodasLeidas).toHaveBeenCalled()
   })
@@ -51,7 +54,7 @@ describe('Notificaciones', () => {
   })
 
   it('muestra vacío y error', async () => {
-    listarNotificaciones.mockResolvedValueOnce({ contenido: [], totalPaginas: 0 })
+    listarNotificaciones.mockResolvedValueOnce({ contenido: [], totalElementos: 0, totalPaginas: 0 })
     const { unmount } = renderizarConSesion(<Notificaciones />)
     expect(await screen.findByText('No hay notificaciones')).toBeInTheDocument()
     unmount()

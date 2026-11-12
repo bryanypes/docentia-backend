@@ -1,0 +1,32 @@
+.paginacion {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-top: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.paginacion__tamano {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.paginacion__tamano select {
+  padding: 0.25rem 0.4rem;
+  border: 1px solid var(--color-borde, #e6dfce);
+  border-radius: 0.5rem;
+  background: var(--color-superficie, #ffffff);
+}
+
+.paginacion__botones {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.paginacion__pagina {
+  white-space: nowrap;
+}

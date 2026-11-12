@@ -1,0 +1,85 @@
+.comparativo-programa__leyenda {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--espacio-3);
+  margin-bottom: var(--espacio-3);
+  color: var(--color-texto-apagado);
+  font-size: 12px;
+}
+
+.comparativo-programa__leyenda span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.comparativo-programa__muestra {
+  width: 10px;
+  height: 10px;
+  border-radius: 3px;
+}
+
+.comparativo-programa__muestra--docente,
+.comparativo-programa__barra--docente {
+  background: var(--color-azul);
+}
+
+.comparativo-programa__muestra--programa,
+.comparativo-programa__barra--programa {
+  background: var(--color-turquesa);
+}
+
+.comparativo-programa__grafico {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--espacio-4);
+}
+
+.comparativo-programa__fuente {
+  min-width: 0;
+  padding: var(--espacio-3);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-2);
+}
+
+.comparativo-programa__fuente h3 {
+  margin: 0 0 var(--espacio-3);
+  font-size: 13px;
+}
+
+.comparativo-programa__serie {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) 36px;
+  align-items: center;
+  gap: 7px;
+  margin-top: 8px;
+  font-size: 11px;
+}
+
+.comparativo-programa__pista {
+  height: 10px;
+  overflow: hidden;
+  border-radius: 99px;
+  background: var(--color-fondo-suave);
+}
+
+.comparativo-programa__barra {
+  height: 100%;
+  min-width: 2px;
+  border-radius: inherit;
+}
+
+.comparativo-programa__serie strong {
+  text-align: right;
+}
+
+.comparativo-programa__vacio {
+  margin: 0;
+  color: var(--color-texto-apagado);
+}
+
+@media (max-width: 900px) {
+  .comparativo-programa__grafico {
+    grid-template-columns: 1fr;
+  }
+}

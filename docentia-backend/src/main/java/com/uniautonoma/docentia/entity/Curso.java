@@ -36,7 +36,7 @@ public class Curso {
 
   public Curso(String codigo, String nombre, Programa programa) {
     this.codigo = codigo;
-    this.nombre = nombre;
+    this.nombre = NombrePropio.normalizar(nombre);
     this.programa = programa;
   }
 

@@ -1,5 +1,137 @@
 # Cambios
 
+## 0.4.0 (preparada, sin etiqueta ni publicar)
+
+### Resumen
+
+0.4.0 cierra el ciclo de la Resolución 074 sobre lo publicado en 0.3.x: el motor de la resolución
+(0.3.0), los formularios AUTO y COEVAL del Anexo 1 (0.3.2) y la heteroevaluación anónima de estudiantes
+(0.3.3). Sobre esa base agrega:
+
+- **Proceso completo hasta el acta:** cita con confirmación, asistencia registrada por coordinación,
+  acta de compromiso o de retroalimentación, firma dibujada con su hash en el PDF y trazabilidad.
+- **Análisis de comentarios de estudiantes** con selector de modelo: `LOCAL` (reglas, sin red ni costo,
+  por defecto) o `LLM` (proveedor externo opcional), incluida la fuente del formulario anónimo una vez
+  cerrada la recolección.
+- **Ahorro de tokens** con el proveedor externo: muestra de 150 comentarios, caché por huella,
+  presupuesto por día y periodo, y regeneración con motivo y espera de una hora.
+- **Cuestionarios por pasos** para docentes y estudiantes, estadísticas con exportación a Excel y
+  agenda en calendario.
+- **Operación:** primer vicerrector desde el entorno, aviso sin Google en `prod`, runbook de despliegue,
+  consultas de verificación y pruebas E2E al día.
+
+### Migraciones
+
+Ocho nuevas, de V34 a V41. V29 a V33 no existen: eran de una rama que se renumeró a V36–V40.
+
+| Versión | Qué hace |
+|---------|----------|
+| V34 | Resultado versionado del análisis de comentarios y copia anonimizada de lo analizado |
+| V35 | Medición del gasto del proveedor externo (`uso_ia`) y caché de sus respuestas |
+| V36 | Confirmación y asistencia de la cita, y tipo de acta |
+| V37 | Trazo de la firma y su hash |
+| V38 | Nombres con mayúscula inicial (datos) |
+| V39 | Tildes en palabras académicas de los nombres (datos) |
+| V40 | Cita cancelada o movida por la coordinación |
+| V41 | Modelo pedido en cada solicitud de análisis (`LOCAL` o `LLM`) |
+
+### Agregado
+
+- Runbook del despliegue de 0.4.0 en OPERACION.md (diagnóstico, respaldo, ensayo de V34–V41 sobre una
+  copia, despliegue, verificación y vuelta atrás) y `docs/consultas-verificacion.sql`, solo lectura.
+- `docs/sustentacion/`: resumen ejecutivo y guía técnica con arquitectura, modelo de datos, flujo,
+  anonimato, análisis de comentarios, seguridad, usuarios de demostración y guion por rol.
+- Primer usuario en producción: con `DOCENTIA_BOOTSTRAP_EMAIL`, `_NOMBRE` y `_CONTRASENA` (opcional) se
+  crea una sola vez un vicerrector si la tabla de usuarios está vacía, con contraseña temporal y sin
+  nada sensible en el log (`docs/OPERACION.md`).
+- Con el perfil `prod` y sin `DOCENTIA_GOOGLE_CLIENT_ID`, la API avisa al arrancar que los estudiantes
+  no podrán iniciar sesión. OPERACION.md explica la configuración de Google y qué pasa si falta.
+- Docentes ordenados por puntaje, de mayor a menor; quienes no tienen promedio completo van al final.
+- Coevaluaciones con búsqueda y filtros por programa y estado; la enviada se muestra como «Realizada».
+- Estado general del proceso por docente, con línea de pasos y trazabilidad para coordinación,
+  vicerrectoría y el propio docente.
+- Confirmación o declinación de la cita por el docente; declinar libera la franja.
+- Registro de asistencia por la coordinación, que habilita al docente su resultado y el acta.
+- Acta de compromiso y acta de retroalimentación, con el tipo en el PDF.
+- Agenda como calendario semanal: se arrastra para abrir franjas y cada reserva muestra su estado.
+- Columna y filtro de proceso en Docentes, y cobertura de estudiantes que respondieron.
+- Firma dibujada (o escrita) del acta en un modal; el trazo va en el PDF con su hash (V37).
+- Vista de Estadísticas con filtros y barras que actualizan todas las gráficas.
+- Panorama del análisis con IA: etapas, fortalezas y oportunidades, citas verificadas y filtrados.
+- Ver información de usuarios, facultades y programas; acciones con ícono de ver, editar y eliminar.
+- Descarga de Estadísticas en Excel (.xlsx): resumen con fórmulas que se recalculan al filtrar la
+  hoja Docentes, y hojas por desempeño, proceso, programa o facultad, distribución y fuentes.
+- Certificado de firma electrónica en el PDF del acta, con el logo institucional y los datos del
+  docente. El archivo del logo lo pone la institución en el servidor; no está en el repositorio.
+- Reserva de cita desde un calendario de días disponibles, con modal para confirmar o cambiar.
+- Modal para agregar compromisos, con sugerencias y plazos rápidos.
+- La coordinación cancela o cambia de horario una cita desde la agenda; el docente recibe el
+  aviso y vuelve a confirmar (V40).
+- Mi perfil (`GET /sesiones/actual/perfil`): datos propios con facultad y programa por nombre; el
+  cambio de contraseña voluntario es un modal con DocenteIA. El menú muestra el ícono de
+  configuración en lugar de la llave.
+- DocenteIA acompaña el análisis de comentarios: guía de tres pasos, resumen de lo encontrado y
+  mensajes para cada estado de la solicitud.
+- Avisos como notificaciones flotantes y confirmaciones en modal en lugar de `window.confirm`.
+- Modelo local por reglas para analizar comentarios: léxico versionado, negaciones, intensificadores,
+  ironía, jerga y descriptores D02 a D12 por criterio. Es el proveedor por defecto y no usa red.
+- Análisis de los comentarios del formulario anónimo, solo con la recolección cerrada.
+- Resultado estructurado versionado: sentimiento, temas, fortalezas, oportunidades, tendencias contra
+  el periodo anterior, criterios y advertencias.
+- Endpoints de análisis por docente, comentarios anonimizados y resumen agregado por programa.
+- Validación con 90 comentarios sintéticos etiquetados y métricas por criterio.
+- Instrucción `analisis-v2` contra inyección y prueba opcional con un proveedor real.
+
+### Cambiado
+
+- Documentación alineada con el código: puertos (con Mailpit y los puertos reservados de Windows),
+  roles existentes, migraciones (V1–V28 y V34–V41), umbral de compromisos como decisión pendiente,
+  mínimos de 5 y 10, y limitaciones que ya no aplicaban.
+- SEGURIDAD.md documenta los roles, las rutas sin sesión, la contraseña temporal y qué va al log;
+  `MatrizAutorizacionTest` fija la lista de rutas públicas, rechaza cualquier ruta nueva bajo
+  `/sesiones/` sin sesión y prueba la contraseña temporal en todas las rutas.
+- El login ya no muestra el panel de usuarios de prueba; se escribe el correo de la cuenta.
+- El docente ve su nota, compromisos, hallazgos y acta del periodo en la reunión, no antes.
+- El acta se firma después de registrar la asistencia.
+- Paleta con acentos turquesa, violeta, coral, cielo y rosa para estados y calendario.
+- Calendario compacto con vista Día y Semana; las flechas mueven un día o una semana.
+- Matrícula y cobertura con resumen, importación en tres pasos y semáforo por docente.
+- /inicio es la ruta principal de todos los roles.
+- Cuestionarios de docente y estudiante por pasos, con avance, transición y revisión final.
+- Agenda con la semana o el día visible rotulado, tira de días, Ir a hoy, calendario del mes y
+  línea de la hora actual.
+- Nombres de personas, programas, facultades y cursos con mayúscula inicial y tildes en las
+  palabras académicas (V38, V39).
+- Listas de Estadísticas y Usuarios en tandas con «Mostrar más» y tarjetas compactas en el celular.
+- El filtro de calidad (vacíos, cortos, duplicados, órdenes al modelo) también se aplica al CSV.
+- Los comentarios se envían ordenados por la huella del texto, no por orden de carga.
+- `temperature` es opcional en el proveedor chat-completions.
+- Ahorro de tokens con proveedor externo: medición en `uso_ia`, muestra estratificada de hasta 150
+  comentarios recortados a 300 caracteres, caché por huella, citas por id, instrucción `analisis-v3`
+  compacta, presupuesto por día y periodo, regeneración con motivo y enfriamiento, y endpoint de uso.
+  Con 1.000 comentarios la llamada pasa de 81.840 a 10.307 tokens de entrada.
+- Salida máxima del proveedor en 4.000 tokens: con 1.500 la respuesta salía cortada.
+- Cada solicitud de análisis elige `modelo: LOCAL` o `LLM`; `GET /analisis-comentarios/modelos` dice
+  qué hay disponible y cuánto consume el modelo de lenguaje (V41).
+
+### Corregido
+
+- Las pruebas E2E siguen la interfaz nueva (expediente, acta con firma dibujada, asistencia a la cita,
+  cuestionarios por pasos) y abren las etapas para el día en que corren: pasan las 11.
+- Un error inesperado al procesar un análisis ya no vuelca su mensaje al log: se registran el tipo
+  y el lugar, porque el mensaje de un error de base de datos puede repetir texto de comentarios.
+- Pedir otro análisis con `POST /analisis-ia/solicitudes` cuando el docente ya tiene uno completado
+  ya no evita el enfriamiento de 60 minutos ni el motivo: se trata como una regeneración. Tras un
+  error o evidencia insuficiente se puede reintentar sin esperar. La pantalla pide el motivo.
+- Activar un periodo sin matrículas deja a los estudiantes sin profesores; ahora pide una
+  confirmación explícita (`?confirmar=true`) y la pantalla de Periodos la solicita.
+- No se puede crear ni renombrar un periodo con el mismo semestre en otro formato (`2026-02` y
+  `2026-2`).
+- La auditoría registra la activación y desactivación de periodos y los envíos de heteroevaluación
+  rechazados; las acciones de envío de formulario, heteroevaluación y matrícula ya tienen etiqueta.
+- Tras salir e iniciar con otro rol ya no se abre el panel del rol anterior.
+- Las páginas ya no se desbordan en el celular; las tablas se apilan como tarjetas.
+
 ## 0.3.3
 
 ### Agregado

@@ -57,7 +57,7 @@ public class ProgramaService {
   @Transactional(readOnly = true)
   public ProgramaResponse obtenerPrograma(Long idPrograma, UsuarioSesion sesion) {
     Programa programa = buscarProgramaActivo(idPrograma);
-    if (!sesion.tieneAlcanceSobreFacultad(programa.getFacultad().getIdFacultad())) {
+    if (!sesion.veCatalogoDeFacultad(programa.getFacultad().getIdFacultad())) {
       throw new RecursoNoEncontradoException(PROGRAMA_NO_ENCONTRADO);
     }
     return ProgramaResponse.desde(programa);

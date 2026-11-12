@@ -19,7 +19,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 22px 20px 18px;
+  padding: 20px 14px 16px 18px;
   border-bottom: 1px solid rgba(254, 251, 244, 0.16);
 }
 
@@ -49,8 +49,9 @@
 }
 
 .sidebar__nombre span {
-  font-size: 11.5px;
-  letter-spacing: 0.09em;
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  white-space: nowrap;
   text-transform: uppercase;
   opacity: 0.7;
 }
@@ -190,57 +191,106 @@
   background: rgba(254, 251, 244, 0.16);
 }
 
+/* Botón de cerrar el menú, a la derecha de la marca. */
+.sidebar__cerrar {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  margin-left: auto;
+  border: 1px solid rgba(254, 251, 244, 0.22);
+  border-radius: var(--radio-sm);
+  background: rgba(254, 251, 244, 0.08);
+  color: var(--color-crema);
+  cursor: pointer;
+}
+
+.sidebar__cerrar:hover {
+  background: rgba(254, 251, 244, 0.18);
+}
+
+/* Escritorio con el menú cerrado: desaparece del todo y el contenido usa todo el ancho. */
+@media (min-width: 901px) {
+  .app-layout--menu-cerrado .sidebar {
+    display: none;
+  }
+}
+
+/* Celular: el menú es un panel que entra desde la izquierda sobre la página. */
 @media (max-width: 900px) {
   .sidebar {
-    position: static;
-    flex: none;
-    flex-flow: row wrap;
-    align-items: center;
-    width: 100%;
-    height: auto;
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 60;
+    width: min(86vw, 320px);
+    height: 100dvh;
+    box-shadow: 8px 0 32px rgba(10, 20, 45, 0.35);
+    transform: translateX(-105%);
+    visibility: hidden;
+    transition:
+      transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1),
+      visibility 0s linear 0.28s;
+  }
+
+  .app-layout--menu-movil .sidebar {
+    transform: none;
+    visibility: visible;
+    transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1);
   }
 
   .sidebar__marca {
-    padding: 14px 16px;
-    border-bottom: 0;
-  }
-
-  /* flex-basis 100% (no solo width): con el flex: 1 de escritorio la fila no salta y el menú queda
-     comprimido junto al usuario */
-  .sidebar__nav {
-    flex: 0 0 100%;
-    flex-direction: row;
-    order: 3;
-    padding: 0 12px 10px;
-    overflow-x: auto;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(254, 251, 244, 0.35) transparent;
+    padding: 16px 16px 14px;
   }
 
   .sidebar__enlace {
-    flex: 0 0 auto;
-    white-space: nowrap;
+    min-height: 46px;
   }
+}
 
-  .sidebar__seccion {
-    display: none;
+@media (max-width: 900px) and (prefers-reduced-motion: reduce) {
+  .sidebar,
+  .app-layout--menu-movil .sidebar {
+    transition: none;
   }
+}
 
-  .sidebar__usuario {
-    margin-left: auto;
-    padding: 10px 16px;
-    border-top: 0;
-  }
+/* Barra de desplazamiento del menú: delgada, con el pulgar amarillo de la marca sobre un riel azul
+   apenas visible. Chrome y Edge usan los pseudoelementos; Firefox, scrollbar-color (en Chrome, si
+   se declara scrollbar-color, se ignoran los pseudoelementos, por eso va solo donde no existen). */
+.sidebar__nav::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
 
-  .sidebar__datos {
-    display: none;
-  }
+.sidebar__nav::-webkit-scrollbar-track {
+  margin: 8px 0;
+  border-radius: 999px;
+  background: rgba(254, 251, 244, 0.08);
+}
 
-  .sidebar__usuario {
-    flex-wrap: nowrap;
-  }
+.sidebar__nav::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 999px;
+  background: var(--color-amarillo) padding-box;
+}
 
-  .sidebar__salir {
-    flex: 0 0 auto;
+.sidebar__nav::-webkit-scrollbar-thumb:hover,
+.sidebar__nav::-webkit-scrollbar-thumb:active {
+  border-width: 1px;
+  background-color: var(--color-amarillo-oscuro);
+}
+
+.sidebar__nav::-webkit-scrollbar-button,
+.sidebar__nav::-webkit-scrollbar-corner {
+  display: none;
+}
+
+@supports not selector(::-webkit-scrollbar) {
+  .sidebar__nav {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-amarillo) rgba(254, 251, 244, 0.08);
   }
 }

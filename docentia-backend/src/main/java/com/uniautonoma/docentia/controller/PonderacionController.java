@@ -34,7 +34,7 @@ public class PonderacionController {
    * @return pesos vigentes e indicación de si son los predeterminados
    */
   @GetMapping
-  @PreAuthorize("hasAnyRole('VICERRECTOR', 'COORDINADOR')")
+  @PreAuthorize("hasAnyRole('VICERRECTOR', 'COORDINADOR', 'ADMINISTRADOR')")
   public PonderacionResponse obtenerPonderacionActiva() {
     return ponderacionService.obtenerPonderacionActiva();
   }
@@ -46,7 +46,7 @@ public class PonderacionController {
    * @return la ponderación guardada
    */
   @PutMapping
-  @PreAuthorize("hasRole('VICERRECTOR')")
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
   public PonderacionResponse configurarPonderacionActiva(
       @Valid @RequestBody PonderacionRequest solicitud,
       @AuthenticationPrincipal UsuarioSesion sesion) {

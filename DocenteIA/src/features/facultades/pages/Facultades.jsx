@@ -1,13 +1,18 @@
-import { Building2, Pencil, RefreshCw, Trash2 } from 'lucide-react'
+import { Building2, RefreshCw } from 'lucide-react'
 import { useState } from 'react'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
-import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
+import { BotonAccion } from '../../../shared/components/ui/BotonAccion/BotonAccion.jsx'
 import { Campo } from '../../../shared/components/ui/Campo/Campo.jsx'
 import { ErrorApi } from '../../../shared/components/ui/ErrorApi/ErrorApi.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
+import { Paginacion } from '../../../shared/components/ui/Paginacion/Paginacion.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
+import { usePaginacion } from '../../../shared/hooks/usePaginacion.js'
+import { ModalAlcance } from '../components/ModalAlcance.jsx'
+import { AvisoFlotante } from '../../../shared/components/ui/Avisos/AvisoFlotante.jsx'
+import { useAvisos } from '../../../shared/components/ui/Avisos/avisosContext.js'
 import {
   actualizarFacultad,
   crearFacultad,
@@ -16,8 +21,10 @@ import {
 } from '../services/facultadesService.js'
 
 export default function Facultades() {
+  const { confirmar } = useAvisos()
   const facultades = useFetch(listarFacultades)
   const [enEdicion, setEnEdicion] = useState(null)
+  const [viendo, setViendo] = useState(null)
   const [nombre, setNombre] = useState('')
   const [error, setError] = useState(null)
   const [resultado, setResultado] = useState(null)
@@ -44,7 +51,13 @@ export default function Facultades() {
   }
 
   async function eliminar(facultad) {
-    if (!window.confirm(`¿Eliminar la facultad «${facultad.nombre}»?`)) return
+    const seguro = await confirmar({
+      tipo: 'peligro',
+      titulo: '¿Eliminar la facultad?',
+      mensaje: `«${facultad.nombre}» se elimina si no tiene programas ni usuarios.`,
+      textoConfirmar: 'Eliminar',
+    })
+    if (!seguro) return
     setError(null)
     setResultado(null)
     try {
@@ -57,12 +70,13 @@ export default function Facultades() {
   }
 
   const lista = facultades.datos ?? []
+  const paginacion = usePaginacion(lista)
 
   return (
     <>
       <Encabezado miga="Vicerrectoría · Facultades" titulo="Facultades" subtitulo="Facultades de la universidad." />
       <div className="pagina">
-        {resultado && <Aviso tipo="exito" titulo={resultado} />}
+        <AvisoFlotante mensaje={resultado} />
         <ErrorApi error={error} nombresCampos={{ nombre: 'Nombre' }} />
         <Panel titulo={enEdicion ? `Editar ${enEdicion.nombre}` : 'Nueva facultad'} icono={Building2}>
           <form className="formulario-simple" onSubmit={guardar}>
@@ -96,7 +110,7 @@ export default function Facultades() {
         )}
         {lista.length > 0 && (
           <div className="tabla-contenedor">
-            <table className="tabla">
+            <table className="tabla tabla--apilable">
               <thead>
                 <tr>
                   <th scope="col">Facultad</th>
@@ -104,27 +118,14 @@ export default function Facultades() {
                 </tr>
               </thead>
               <tbody>
-                {lista.map((facultad) => (
+                {paginacion.visibles.map((facultad) => (
                   <tr key={facultad.idFacultad}>
                     <td className="tabla__fuerte">{facultad.nombre}</td>
                     <td>
                       <div className="acciones-fila">
-                        <Boton
-                          variante="enlace"
-                          icono={Pencil}
-                          aria-label={`Editar ${facultad.nombre}`}
-                          onClick={() => editar(facultad)}
-                        >
-                          Editar
-                        </Boton>
-                        <Boton
-                          variante="enlace"
-                          icono={Trash2}
-                          aria-label={`Eliminar ${facultad.nombre}`}
-                          onClick={() => eliminar(facultad)}
-                        >
-                          Eliminar
-                        </Boton>
+                        <BotonAccion tipo="ver" nombre={facultad.nombre} onClick={() => setViendo(facultad)} />
+                        <BotonAccion tipo="editar" nombre={facultad.nombre} onClick={() => editar(facultad)} />
+                        <BotonAccion tipo="eliminar" nombre={facultad.nombre} onClick={() => eliminar(facultad)} />
                       </div>
                     </td>
                   </tr>
@@ -133,6 +134,8 @@ export default function Facultades() {
             </table>
           </div>
         )}
+        {lista.length > 0 && <Paginacion {...paginacion} etiqueta="facultades" />}
+        {viendo && <ModalAlcance facultad={viendo} onCerrar={() => setViendo(null)} />}
       </div>
     </>
   )

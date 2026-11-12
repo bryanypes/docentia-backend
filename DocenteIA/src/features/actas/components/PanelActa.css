@@ -100,3 +100,188 @@
 .acciones__tabla {
   overflow-x: auto;
 }
+
+/* Compromisos: tarjetas numeradas y un botón claro para agregar. */
+.acta-compromisos {
+  display: grid;
+  gap: 10px;
+}
+
+.acta-compromisos__cabecera {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.acta-compromisos__cabecera .acta__subtitulo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0;
+  font-size: 15px;
+}
+
+.acta-compromisos__contador {
+  min-width: 22px;
+  padding: 1px 8px;
+  border-radius: var(--radio-pildora);
+  background: var(--color-rosa-fondo);
+  color: var(--color-rosa);
+  font-size: 12px;
+  text-align: center;
+}
+
+.acta-compromisos__vacio {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  border: 1px dashed var(--color-borde-control);
+  border-radius: var(--radio-lg);
+  background: var(--color-fondo);
+  color: var(--color-texto-tenue);
+}
+
+.acta-compromisos__vacio div {
+  display: grid;
+  gap: 2px;
+}
+
+.acta-compromisos__vacio strong {
+  color: var(--color-texto);
+}
+
+.acta-compromisos__vacio span {
+  font-size: 13px;
+}
+
+.acta-compromisos__vacio--requerido {
+  border-color: var(--color-rosa);
+  background: var(--color-rosa-fondo);
+  color: var(--color-rosa);
+}
+
+.acta-compromisos__lista {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.acta-compromisos__item {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-borde-suave);
+  border-left: 4px solid var(--color-rosa);
+  border-radius: var(--radio-lg);
+  background: var(--color-superficie);
+  animation: compromiso-entrar 0.3s ease both;
+}
+
+.acta-compromisos__numero {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--color-rosa-fondo);
+  color: var(--color-rosa);
+  font-size: 13px;
+  font-weight: var(--peso-fuerte);
+}
+
+.acta-compromisos__texto {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.acta-compromisos__texto strong {
+  font-size: 14px;
+  font-weight: var(--peso-semi);
+  overflow-wrap: anywhere;
+}
+
+.acta-compromisos__texto span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 12.5px;
+  color: var(--color-texto-tenue);
+}
+
+@keyframes compromiso-entrar {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
+.compromiso-nuevo {
+  display: grid;
+  gap: 12px;
+}
+
+.compromiso-nuevo__sugerencias,
+.compromiso-nuevo__plazos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.compromiso-nuevo__sugerencia,
+.compromiso-nuevo__plazo {
+  padding: 6px 12px;
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-pildora);
+  background: var(--color-superficie);
+  color: var(--color-texto-secundario);
+  font: inherit;
+  font-size: 12.5px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.compromiso-nuevo__sugerencia:hover,
+.compromiso-nuevo__plazo:hover {
+  border-color: var(--color-rosa);
+  color: var(--color-rosa);
+}
+
+.compromiso-nuevo__plazo--activo {
+  border-color: var(--color-rosa);
+  background: var(--color-rosa-fondo);
+  color: var(--color-rosa);
+}
+
+.compromiso-nuevo__sugerencia:focus-visible,
+.compromiso-nuevo__plazo:focus-visible {
+  outline: 3px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+.compromiso-nuevo__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 4px;
+}
+
+@media (max-width: 520px) {
+  .acta-compromisos__item {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .acta-compromisos__item .boton-accion {
+    grid-column: 1 / -1;
+    justify-self: end;
+  }
+}

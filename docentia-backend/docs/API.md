@@ -9,6 +9,7 @@ La matriz completa de rol por endpoint es ejecutable y está en `MatrizAutorizac
 |------|-----------|
 | Resolución 074: actas, acciones, panel, hallazgos | [api-res074.md](api-res074.md) |
 | Heteroevaluación (estudiante → docente), contrato Campus | [api-heteroevaluacion.md](api-heteroevaluacion.md) |
+| Estado del proceso, confirmación y asistencia a la cita | [api-proceso-evaluacion.md](api-proceso-evaluacion.md) |
 | Contrato general para el frontend | [api-contrato-frontend.md](api-contrato-frontend.md) |
 | Sesiones con Google | [api-sesiones-google.md](api-sesiones-google.md) |
 | Periodos, calificaciones, importación | [api-sprint3-semana1.md](api-sprint3-semana1.md) |
@@ -51,6 +52,20 @@ Todas aceptan `?periodo=`; sin él usan el periodo activo.
 | `GET /cobertura-heteroevaluacion?periodo=&page=&size=` | Coordinador, vicerrector | Matriculados y respondieron por docente y programa |
 | `POST /matriculas/csv` | Coordinador, vicerrector | Todo o nada; 422 con errores por fila |
 | `GET /matriculas/plantilla` | Coordinador, vicerrector | CSV de ejemplo |
+
+## Análisis de comentarios (sin publicar)
+
+Contrato completo en [api-comentarios-ia.md](api-comentarios-ia.md).
+
+| Método y ruta | Roles | Respuesta |
+|---------------|-------|-----------|
+| `POST /analisis-ia/solicitudes` | Coordinador | Campo nuevo opcional `fuente`: `CSV` (por defecto) o `FORMULARIO`; 409 con la recolección abierta. Si el docente ya tiene un análisis COMPLETADO en el periodo, exige `motivo` (400 sin él) y respeta el enfriamiento (429), igual que la regeneración |
+| `GET /analisis-comentarios/docentes/{docenteId}?periodo=` | Coordinador, vicerrector | Estado y resultado vigente; 404 fuera de alcance |
+| `GET /comentarios-estudiantes/docentes/{docenteId}?periodo=&criterio=&sentimiento=&page=&size=` | Coordinador, vicerrector | Comentarios anonimizados, máximo 50 por página |
+| `GET /analisis-comentarios/resumen?periodo=&programa=` | Coordinador, vicerrector | Agregado sin docentes; no disponible con menos de 3 |
+| `POST /analisis-comentarios/docentes/{docenteId}/regeneracion` | Coordinador, vicerrector | Con motivo; 429 durante el enfriamiento; pasa por la caché |
+| `GET /analisis-comentarios/uso?periodo=` | Vicerrector | Llamadas, caché, tokens y ahorro; sin texto |
+| `GET /analisis-comentarios/modelos` | Coordinador, vicerrector | Modelos que se pueden elegir (`LOCAL`, `LLM`), tope de tokens y advertencia |
 
 ## Errores
 
