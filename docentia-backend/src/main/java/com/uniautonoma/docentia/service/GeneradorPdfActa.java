@@ -269,7 +269,7 @@ public class GeneradorPdfActa {
       pie.add(new Chunk("Fecha: " + firma.getFecha().format(FORMATO_FECHA) + "\n", texto));
       if (firma.getHashImagen() != null) {
         pie.add(
-            new Chunk("\nFirma dibujada en DOCENTIA · SHA-256 " + firma.getHashImagen(), pequena));
+            new Chunk("\nFirma registrada en DOCENTIA · SHA-256 " + firma.getHashImagen(), pequena));
       }
       PdfPCell datos = new PdfPCell(pie);
       datos.setBorder(Rectangle.NO_BORDER);

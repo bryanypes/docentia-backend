@@ -27,7 +27,6 @@ import com.uniautonoma.docentia.service.analisis.ValidacionHallazgoService;
 import com.uniautonoma.docentia.service.formulario.FormularioService;
 import com.uniautonoma.docentia.service.heteroevaluacion.HeteroevaluacionService;
 import com.uniautonoma.docentia.service.heteroevaluacion.MatriculaService;
-import com.uniautonoma.docentia.service.importacion.ImportacionService;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalTime;
@@ -62,7 +61,6 @@ class ConcurrenciaFlujosTest extends PruebaIntegracion {
   @Autowired private EscenarioPrueba escenario;
   @Autowired private ActaService actaService;
   @Autowired private ValidacionHallazgoService validacionService;
-  @Autowired private ImportacionService importacionService;
   @Autowired private FormularioService formularioService;
   @Autowired private HeteroevaluacionService heteroevaluacion;
   @Autowired private MatriculaService matriculaService;
@@ -354,37 +352,5 @@ class ConcurrenciaFlujosTest extends PruebaIntegracion {
             });
 
     assertThat(exitos).isEqualTo(1);
-  }
-
-  @Test
-  void dosImportacionesSimultaneasNoDuplicanNada() throws Exception {
-    String csv =
-        "Correo docente;Dominio disciplinar;Planeación académica;Metodología de enseñanza;"
-            + "Evaluación del aprendizaje;Compromiso institucional;Comentario\n"
-            + docente.getCorreo()
-            + ";4.0;4.0;4.0;4.0;4.0;Explica muy bien\n";
-    UsuarioSesion sesion = UsuarioSesion.desde(coordinador);
-
-    enParalelo(
-        () ->
-            importacionService.importar(
-                new MockMultipartFile(
-                    "archivo", "e.csv", "text/csv", csv.getBytes(StandardCharsets.UTF_8)),
-                null,
-                null,
-                sesion));
-
-    assertThat(
-            jdbcTemplate.queryForObject(
-                "select count(*) from comentarios_estudiantes where id_docente = ?",
-                Integer.class,
-                docente.getIdUsuario()))
-        .isEqualTo(1);
-    assertThat(
-            jdbcTemplate.queryForObject(
-                "select count(*) from calificaciones where id_docente = ? and fuente = 'ESTUDIANTES'",
-                Integer.class,
-                docente.getIdUsuario()))
-        .isEqualTo(1);
   }
 }

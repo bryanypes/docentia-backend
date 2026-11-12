@@ -49,11 +49,11 @@ describe('MiPerfil', () => {
     })
   })
 
-  it('muestra los datos propios con su facultad y programa', async () => {
+  it('muestra los datos propios con su programa, sin hablar de facultad', async () => {
     renderizar()
     expect(screen.getByRole('heading', { name: 'Julián Camilo Hoyos' })).toBeInTheDocument()
     expect(await screen.findByText('Ingeniería de Software')).toBeInTheDocument()
-    expect(screen.getByText('Facultad de Ingeniería')).toBeInTheDocument()
+    expect(screen.queryByText('Facultad de Ingeniería')).not.toBeInTheDocument()
     expect(screen.getByText('julian.hoyos@uniautonoma.edu.co')).toBeInTheDocument()
   })
 

@@ -1,5 +1,7 @@
 # Roles y permisos
 
+> **Retirado en 0.4.0:** la carga de evaluaciones por CSV (la API `/importaciones` ya no existe) y las pantallas de matrícula, auditoría y facultades. Las API `/auditoria` y `/facultades` siguen para consulta y para el alcance de la coordinación, pero no tienen pantalla.
+
 ## Estado actual (antes de agregar ADMINISTRADOR y VISUALIZADOR)
 
 Sacado del código de `release/0.4.0` más los cambios de esta rama hasta antes de los roles: la matriz de
@@ -95,12 +97,6 @@ D = docente, C = coordinación, V = vicerrectoría, E = estudiante, P = sin sesi
 | `POST /franjas/lote` | Coordinación |
 | `PATCH /franjas/{}/cierre` | Coordinación |
 | `DELETE /franjas/{}` | Coordinación |
-| `POST /importaciones/csv/validar` | Coordinación |
-| `POST /importaciones/csv` | Coordinación |
-| `GET /importaciones` | Coordinación, Vicerrectoría |
-| `GET /importaciones/plantillas` | Coordinación |
-| `POST /importaciones/plantillas` | Coordinación |
-| `DELETE /importaciones/plantillas/{}` | Coordinación |
 | `GET /kpis` | Coordinación, Vicerrectoría |
 | `GET /kpis/panel` | Coordinación, Vicerrectoría |
 | `GET /notificaciones` | Docente, Coordinación, Vicerrectoría, Estudiante |
@@ -249,12 +245,6 @@ D = docente, C = coordinación, V = vicerrectoría, E = estudiante, A = administ
 | `POST /franjas/lote` | Coordinación |
 | `PATCH /franjas/{}/cierre` | Coordinación |
 | `DELETE /franjas/{}` | Coordinación |
-| `POST /importaciones/csv/validar` | Coordinación |
-| `POST /importaciones/csv` | Coordinación |
-| `GET /importaciones` | Coordinación, Vicerrectoría |
-| `GET /importaciones/plantillas` | Coordinación |
-| `POST /importaciones/plantillas` | Coordinación |
-| `DELETE /importaciones/plantillas/{}` | Coordinación |
 | `GET /kpis` | Coordinación, Vicerrectoría, Visualización |
 | `GET /kpis/panel` | Coordinación, Vicerrectoría, Visualización |
 | `GET /notificaciones` | Docente, Coordinación, Vicerrectoría, Estudiante, Administración, Visualización |

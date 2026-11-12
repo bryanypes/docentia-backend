@@ -39,7 +39,7 @@ export function PanelComparativoPrograma({ idDocente, propio = false }) {
 
   if (comparativo.cargando && !comparativo.datos) {
     return (
-      <Panel titulo="Comparativo por fuente">
+      <Panel titulo="Comparativo por evaluador">
         <Cargando texto="Cargando el comparativo" bloques={1} />
       </Panel>
     )
@@ -47,7 +47,7 @@ export function PanelComparativoPrograma({ idDocente, propio = false }) {
 
   if (comparativo.error) {
     return (
-      <Panel titulo="Comparativo por fuente">
+      <Panel titulo="Comparativo por evaluador">
         <EstadoVista tipo="error" titulo="No fue posible cargar el comparativo" mensaje={comparativo.error.message}>
           <Boton icono={RefreshCw} onClick={comparativo.recargar}>Intentar de nuevo</Boton>
         </EstadoVista>
@@ -60,7 +60,7 @@ export function PanelComparativoPrograma({ idDocente, propio = false }) {
 
   return (
     <Panel
-      titulo="Comparativo por fuente"
+      titulo="Comparativo por evaluador"
       descripcion={`Tus notas frente al promedio real del programa ${nombrePrograma}.`}
     >
       {!hayDatos ? (
@@ -81,8 +81,8 @@ export function PanelComparativoPrograma({ idDocente, propio = false }) {
             ))}
           </div>
           <table className="solo-lectores">
-            <caption>Comparativo de notas por fuente en {nombrePrograma}</caption>
-            <thead><tr><th>Fuente</th><th>Docente</th><th>Promedio del programa</th></tr></thead>
+            <caption>Comparativo de notas por evaluador en {nombrePrograma}</caption>
+            <thead><tr><th>Evaluador</th><th>Docente</th><th>Promedio del programa</th></tr></thead>
             <tbody>
               {fuentes.map((fuente) => (
                 <tr key={fuente.fuente}>

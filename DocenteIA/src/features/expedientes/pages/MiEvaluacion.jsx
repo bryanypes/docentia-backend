@@ -116,7 +116,7 @@ export default function MiEvaluacion() {
               <div className="mi-evaluacion__fuentes">
                 <div>
                   <strong>Estudiantes, coordinación y autoevaluación</strong>
-                  <span>{configuracion.datos ? textoFormula(configuracion.datos) : 'Las tres fuentes se combinan según la ponderación del periodo.'}</span>
+                  <span>{configuracion.datos ? textoFormula(configuracion.datos) : 'Los tres evaluadores se combinan según la ponderación del periodo.'}</span>
                 </div>
                 <span className="mi-evaluacion__chip">Solo en el promedio</span>
               </div>

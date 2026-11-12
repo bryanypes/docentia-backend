@@ -87,7 +87,7 @@ export default function Ponderaciones() {
       <Encabezado
         miga="Vicerrectoría · Ponderaciones"
         titulo="Ponderaciones"
-        subtitulo="Peso de cada fuente en el promedio del periodo activo. Debe sumar 100 %."
+        subtitulo="Peso de cada evaluador en el promedio del periodo activo. Debe sumar 100 %."
       />
       <div className="pagina">
         <AvisoFlotante mensaje={resultado} />

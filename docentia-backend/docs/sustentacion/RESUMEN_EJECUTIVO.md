@@ -41,7 +41,7 @@ fechas que fija vicerrectoría; fuera de su ventana, la acción se rechaza.
 ## Lo que quedó fuera o depende de otros
 
 - **HU-09** (evidencias complementarias y grupos focales).
-- **Integración en vivo con Campus/NOVA:** la matrícula se carga por CSV; no hay conexión directa.
+- **Integración en vivo con Campus/NOVA:** no hay conexión directa; la inscripción de estudiantes en sus cursos usa el servicio de matrícula del backend (sin pantalla) mientras se define esa integración (por confirmar).
 - **Ingreso de estudiantes:** fuera de desarrollo solo entran con Google institucional, que necesita un
   cliente OAuth de la universidad (aún sin configurar).
 - **Decisiones pendientes de Vicerrectoría:** umbral de compromisos (3,8 aplicado frente a 4,00 del

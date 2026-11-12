@@ -12,7 +12,6 @@ import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { formatearEntero, formatearNota } from '../../../shared/utils/formatters.js'
 import { useSesion } from '../../auth/sesionContext.js'
 import { listarSeguimientoDocentes } from '../../docentes/services/docentesService.js'
-import { listarFacultades } from '../../facultades/services/facultadesService.js'
 import { PanelEtapas } from '../../periodos/components/PanelEtapas.jsx'
 import { listarPeriodos } from '../../periodos/services/periodosService.js'
 import { PanelAtencion, PanelAvance } from '../components/PanelesSeguimiento.jsx'
@@ -25,39 +24,34 @@ import { obtenerKpis } from '../services/kpisService.js'
 import './Inicio.css'
 
 const ACTIVO = ''
-const TODAS = ''
 
 export default function Inicio() {
   const { usuario } = useSesion()
   const esVicerrector = usuario.rol === ROLES.VICERRECTOR
 
   const [periodoId, setPeriodoId] = useState(ACTIVO)
-  const [facultadId, setFacultadId] = useState(TODAS)
 
   const periodos = useFetch(listarPeriodos)
-  const facultades = useFetch(listarFacultades)
   const cargarKpis = useCallback(
-    () => obtenerKpis({ periodoId, facultadId: esVicerrector ? facultadId : null }),
-    [periodoId, facultadId, esVicerrector],
+    () => obtenerKpis({ periodoId, facultadId: null }),
+    [periodoId],
   )
   const kpis = useFetch(cargarKpis, [cargarKpis])
   const cargarSeguimiento = useCallback(
-    () => listarSeguimientoDocentes(esVicerrector ? facultadId || null : null),
-    [facultadId, esVicerrector],
+    () => listarSeguimientoDocentes(null),
+    [],
   )
   const seguimiento = useFetch(cargarSeguimiento, [cargarSeguimiento])
   const configuracion = useFetch(obtenerConfiguracionEvaluacion)
 
-  const listaFacultades = facultades.datos ?? []
-  const nombreFacultad = esVicerrector
-    ? (listaFacultades.find((f) => String(f.idFacultad) === facultadId)?.nombre ?? 'Toda la universidad')
-    : (listaFacultades.find((f) => f.idFacultad === usuario.idFacultad)?.nombre ?? 'Tu facultad')
+  // En pantalla se habla de programas: la facultad solo define el alcance de la coordinación.
+  const alcance = esVicerrector ? 'Toda la universidad' : 'Tus programas'
   const periodoActivo = (periodos.datos ?? []).find((p) => p.esActivo)
   const viendoActivo = periodoId === ACTIVO || String(periodoActivo?.idPeriodo) === periodoId
 
   // El análisis del periodo activo lo comparten el asistente y los paneles de seguimiento.
   const miFuente = FUENTE_DEL_ROL[usuario.rol]
-  // Los paneles hablan de programas para todos los roles; el filtro de facultad solo acota.
+  // Los paneles hablan de programas para todos los roles.
   const agrupacion = 'programa'
   const analisis = useMemo(
     () =>
@@ -65,11 +59,11 @@ export default function Inicio() {
         ? analizarSeguimiento(
             seguimiento.datos.docentes,
             miFuente,
-            agrupacion === 'facultad' ? 'nombreFacultad' : 'nombrePrograma',
+            'nombrePrograma',
             Number(configuracion.datos.umbralCompromisos),
           )
         : null,
-    [seguimiento.datos, miFuente, agrupacion, configuracion.datos],
+    [seguimiento.datos, miFuente, configuracion.datos],
   )
   const recoleccion = useVentanaEtapa(ETAPAS.RECOLECCION_CALIFICACIONES)
 
@@ -80,8 +74,8 @@ export default function Inicio() {
         titulo="Resumen de la evaluación"
         subtitulo={
           esVicerrector
-            ? 'Cómo va la evaluación docente en toda la universidad o en la facultad que elijas.'
-            : 'Cómo va la evaluación docente en tu facultad y qué falta por hacer.'
+            ? 'Cómo va la evaluación docente en toda la universidad, por programa.'
+            : 'Cómo va la evaluación docente en tus programas y qué falta por hacer.'
         }
       />
 
@@ -110,34 +104,6 @@ export default function Inicio() {
               </select>
             </div>
 
-            {esVicerrector ? (
-              <div className="campo">
-                <label htmlFor="filtro-facultad" className="rotulo">
-                  Facultad
-                </label>
-                <select
-                  id="filtro-facultad"
-                  className="campo__control"
-                  value={facultadId}
-                  onChange={(e) => setFacultadId(e.target.value)}
-                >
-                  <option value={TODAS}>Todas las facultades</option>
-                  {listaFacultades.map((f) => (
-                    <option key={f.idFacultad} value={f.idFacultad}>
-                      {f.nombre}
-                    </option>
-                  ))}
-                </select>
-              </div>
-            ) : (
-              <div className="campo">
-                <span className="rotulo rotulo--campo">Facultad</span>
-                <div className="inicio__fijo">
-                  <span>{nombreFacultad}</span>
-                  <span className="inicio__fijo-etiqueta">Tu facultad</span>
-                </div>
-              </div>
-            )}
           </div>
         </section>
 
@@ -154,7 +120,7 @@ export default function Inicio() {
 
         <h2 className="inicio__seccion">
           Indicadores de {kpis.datos?.periodo.nombre ?? 'el periodo'}
-          <span> · {nombreFacultad}</span>
+          <span> · {alcance}</span>
         </h2>
         <Indicadores kpis={kpis} esVicerrector={esVicerrector} mostrarCompletos={!viendoActivo} />
         {esVicerrector && viendoActivo && (
@@ -242,7 +208,7 @@ function Indicadores({ kpis, esVicerrector, mostrarCompletos }) {
         indicador={datos.promedioGeneral}
         periodo={periodo}
         periodoAnterior={periodoAnterior}
-        ambito={esVicerrector ? 'de los docentes' : 'de los docentes de la facultad'}
+        ambito={esVicerrector ? 'de los docentes' : 'de los docentes de tus programas'}
       />
       {mostrarCompletos && (
       <TarjetaKpi
@@ -262,7 +228,7 @@ function Indicadores({ kpis, esVicerrector, mostrarCompletos }) {
         unidad="en total"
         indicador={datos.evaluacionesRealizadas}
         periodoAnterior={periodoAnterior}
-        explicacion="Cada docente recibe hasta tres: una por fuente."
+        explicacion="Cada docente recibe hasta tres: una por evaluador."
       />
       <TarjetaKpi
         icono={Award}

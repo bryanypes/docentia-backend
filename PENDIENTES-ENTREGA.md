@@ -1,5 +1,32 @@
 # Pendientes de la entrega 0.4.0
 
+## Estado al jueves 12 de noviembre (finalización y publicación)
+
+Rama de trabajo: `integracion/v0.4.0`, que sale de `develop` (2e31e67). Se actualiza al cerrar cada fase.
+
+| Fase | Estado | Qué quedó |
+|------|--------|-----------|
+| 0. Punto de partida | Hecho, con diferencias | `develop` en 2e31e67 (069fe94 más la semilla de la demo, subida a pedido del usuario). `main` en eee2774, no en v0.3.3, y con CI en rojo. `develop` no contiene a `main` por la limpieza de trailers. El PR #25 figura como fusionado. Ver "Decisiones abiertas" |
+| 1. Pendientes funcionales | Hecho | Evaluadores en pantalla; sin CSV, matrícula, auditoría ni facultades en pantalla; E2E 11/11; casos límite de periodos; firma con PNG en el modal real; Google documentado; facultad → programa en lo visible |
+| 2. Autoría y paridad | En curso | 21 commits de Daniel Aranda reaplicados con su autor y fecha, sin cambios de código; `docs/INTEGRACION-PR-8-Y-12.md` |
+| 3 a 9 | Pendiente | |
+
+### Decisiones abiertas (las toma el usuario)
+
+1. Fecha y hora del despliegue en el servidor.
+2. Client ID real de Google y confirmar que `https://nova.uniautonoma.edu.co` está autorizado.
+3. Configuración SMTP real del servidor.
+4. Qué rama usa hoy el servidor (`main` o `develop`) y cómo se despliega.
+5. Política para docentes con menos de 5 respuestas.
+6. Umbral de compromisos: 3,8 o 4,00.
+7. Quién corrige actas (VICERRECTOR por defecto).
+8. Funciones opcionales del PR #8 que se quieran después.
+9. Respuesta de Vicerrectoría sobre la validez de la firma electrónica simple.
+10. Análisis con IA sobre datos reales: con el CSV retirado, la pantalla todavía pide el análisis sobre comentarios importados (fuente CSV). Para datos reales debe leer los del formulario anónimo, que el backend solo permite cuando cierra la recolección.
+11. Cómo llevar `develop` a `main`: propuesta sin forzar, `merge -s ours` de `main` en `develop` y luego el PR `develop` → `main` con merge normal.
+
+## Estado anterior (miércoles 11 de noviembre)
+
 Estado al miércoles 11 de noviembre de 2026. La recolección de 2026-2 sigue abierta hasta el viernes 13.
 Hoy solo se preparó: no se reescribió historial, no se tocó `main`, no se crearon etiquetas y no se
 entró al servidor.

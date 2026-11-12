@@ -76,7 +76,7 @@ export function hojasDelReporte({ filas, r, periodo, descripcionFiltros, nombreG
     filas: [
       ['Filtros de la vista al descargar', descripcionFiltros || 'Ninguno', ''],
       ['Docentes visibles', { formula: `SUBTOTAL(103,${rango('A')})`, formato: 'entero' }, 'Cambia al filtrar la hoja Docentes'],
-      ['Con evaluación completa', { formula: `SUBTOTAL(102,${rango('E')})`, formato: 'entero' }, 'Docentes con las tres fuentes'],
+      ['Con evaluación completa', { formula: `SUBTOTAL(102,${rango('E')})`, formato: 'entero' }, 'Docentes con los tres evaluadores'],
       [
         'Avance',
         { formula: `IFERROR(SUBTOTAL(102,${rango('E')})/SUBTOTAL(103,${rango('A')}),"")`, formato: 'porcentaje' },
@@ -179,7 +179,7 @@ export function hojasDelReporte({ filas, r, periodo, descripcionFiltros, nombreG
   const fuentes = {
     nombre: 'Calificaciones que faltan',
     columnas: [
-      { titulo: 'Fuente', ancho: 24 },
+      { titulo: 'Evaluador', ancho: 24 },
       { titulo: 'Docentes sin ella', ancho: 16, formato: 'entero' },
     ],
     filas: r.pendientesPorFuente.map((p) => [ETIQUETA_FUENTE[p.fuente] ?? p.fuente, p.cantidad]),

@@ -172,7 +172,7 @@ export function lecturaEstadisticas(r) {
         : `${r.bajoUmbral} ${r.bajoUmbral === 1 ? 'queda' : 'quedan'} bajo ${formatoNota(r.umbral)} y ${r.bajoUmbral === 1 ? 'firmará' : 'firmarán'} acta de compromiso.`,
     )
   } else {
-    partes.push('Aún no hay promedios: faltan calificaciones de alguna fuente.')
+    partes.push('Aún no hay promedios: falta la calificación de algún evaluador.')
   }
   return partes.join(' ')
 }

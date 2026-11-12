@@ -256,7 +256,7 @@ public class ActaService {
     congelar(acta);
     if (acta.getEstadoPromedio() != EstadoPromedio.COMPLETO) {
       throw new ReglaNegocioException(
-          "El acta se firma con el promedio completo de las tres fuentes");
+          "El acta se firma con el promedio completo de los tres evaluadores");
     }
     if (acta.requiereCompromisos() && acta.getCompromisos().isEmpty()) {
       throw new NoProcesableException(

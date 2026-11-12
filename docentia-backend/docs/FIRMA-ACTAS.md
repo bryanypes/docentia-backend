@@ -14,7 +14,7 @@ Es una **firma electrónica simple**. Una persona con sesión iniciada en DOCENT
   - La etapa FIRMA_ACTAS está abierta en el periodo.
   - El docente tiene una cita de retroalimentación activa.
   - La coordinación registró la asistencia, salvo que se desactive `exigir-asistencia`.
-  - El promedio está completo con las tres fuentes.
+  - El promedio está completo con los tres evaluadores (estudiantes, coordinación y autoevaluación).
   - Si la nota está por debajo del umbral, el acta tiene al menos un compromiso con plazo.
 - Hay que marcar una casilla para confirmar la lectura. Sin esa confirmación, el servidor rechaza la firma.
 
@@ -67,3 +67,11 @@ En orden de esfuerzo:
 6. **Firma digital con certificado personal** de cada firmante, emitido por una entidad de certificación, si jurídica lo exige.
 
 Los puntos 4 a 6 requieren decisiones y presupuesto institucionales. Están **por confirmar**.
+
+## Decisión pendiente de la institución
+
+DOCENTIA no puede decidir si esta firma electrónica simple sirve para actas oficiales de evaluación docente. Esa respuesta le corresponde a la Vicerrectoría, con la oficina jurídica. Mientras llega:
+
+- El acta firmada en DOCENTIA documenta la reunión de retroalimentación y los compromisos, con su hash y su código de verificación pública.
+- Si la institución exige otra forma de firma para el acta oficial, el PDF se puede imprimir y firmar a mano, o firmar con un certificado institucional (ver "Qué reforzaría la validez").
+- La decisión queda registrada como pendiente en `DECISIONES.md`.

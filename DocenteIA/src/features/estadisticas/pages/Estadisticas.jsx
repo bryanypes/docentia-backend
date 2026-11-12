@@ -230,19 +230,6 @@ export default function Estadisticas() {
                 onChange={(e) => fijar('busqueda', e.target.value)}
               />
             </label>
-            {esVicerrector && (
-              <label className="estadisticas__campo">
-                <span>Facultad</span>
-                <select className="campo__control" value={filtros.facultad} onChange={(e) => fijar('facultad', e.target.value)}>
-                  <option value="">Todas</option>
-                  {(facultades.datos ?? []).map((f) => (
-                    <option key={f.idFacultad} value={f.idFacultad}>
-                      {f.nombre}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            )}
             <label className="estadisticas__campo">
               <span>Programa</span>
               <select className="campo__control" value={filtros.programa} onChange={(e) => fijar('programa', e.target.value)}>
@@ -318,7 +305,7 @@ export default function Estadisticas() {
 
         <div className="estadisticas__cifras">
           <Cifra icono={Users} rotulo="Docentes" valor={r.total} detalle={`${r.completos} con evaluación completa`} />
-          <Cifra icono={Layers} rotulo="Avance" valor={porcentaje(r.avance)} detalle="Con las tres fuentes" tono="turquesa" />
+          <Cifra icono={Layers} rotulo="Avance" valor={porcentaje(r.avance)} detalle="Con los tres evaluadores" tono="turquesa" />
           <Cifra
             icono={Sigma}
             rotulo="Promedio"
@@ -440,7 +427,7 @@ export default function Estadisticas() {
                   />
                 ))}
               </ul>
-              <p className="estadisticas__nota">Pulsa una fuente para ver los docentes en esa etapa.</p>
+              <p className="estadisticas__nota">Pulsa un evaluador para ver los docentes en esa etapa.</p>
             </Panel>
           </div>
           <div className="estadisticas__rejilla">

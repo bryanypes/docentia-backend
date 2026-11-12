@@ -269,7 +269,7 @@ public class GeneradorRecordatorios {
                           TipoNotificacion.COBERTURA_BAJA,
                           EventoNotificacion.Destino.COORDINADORES_FACULTAD,
                           facultad.getIdFacultad(),
-                          "/matricula",
+                          "/panel-programas",
                           "PERIODO",
                           idPeriodo,
                           "cobertura:" + idPeriodo,

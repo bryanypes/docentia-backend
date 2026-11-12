@@ -196,6 +196,45 @@ class PeriodoAcademicoControllerTest extends PruebaIntegracion {
   }
 
   @Test
+  void unPeriodoQueCruzaDeAnioTomaElAnioDeSuInicio() throws Exception {
+    crearPeriodo(
+            new PeriodoAcademicoRequest(
+                null, LocalDate.of(2026, 12, 1), LocalDate.of(2027, 3, 31), List.of()))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.nombre").value("2026-2"));
+    crearPeriodo(
+            new PeriodoAcademicoRequest(
+                null, LocalDate.of(2027, 6, 30), LocalDate.of(2027, 7, 31), List.of()))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.nombre").value("2027-1"));
+  }
+
+  @Test
+  void cambiarLasFechasDeUnPeriodoConEvaluacionesEnviadasConservaSuNombreYSuActivacion()
+      throws Exception {
+    PeriodoAcademico activo = periodoConMatricula("2026-2");
+    activo.setEsActivo(true);
+    periodoRepository.saveAndFlush(activo);
+    jdbcTemplate.update(
+        "insert into participaciones_heteroevaluacion (asignacion_id, estudiante_id, enviada_en)"
+            + " select cd.id, m.estudiante_id, now() from clases_docente cd"
+            + " join clases c on c.id = cd.clase_id join matriculas m on m.clase_id = c.id"
+            + " where c.id_periodo = ?",
+        activo.getIdPeriodo());
+
+    mockMvc
+        .perform(
+            put("/periodos-academicos/{id}", activo.getIdPeriodo())
+                .with(comoVicerrector())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    aJson(new PeriodoAcademicoRequest(null, INICIO, FIN.plusDays(10), List.of()))))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.nombre").value("2026-2"))
+        .andExpect(jsonPath("$.esActivo").value(true));
+  }
+
+  @Test
   void soloAdministracionAjustaElNombreConFormatoYSinRepetir() throws Exception {
     crearComo(comoAdministrador(), new PeriodoAcademicoRequest("2027-1", INICIO, FIN, List.of()))
         .andExpect(status().isCreated())

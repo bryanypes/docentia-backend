@@ -31,8 +31,9 @@
 
 .comparativo-programa__grafico {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: var(--espacio-4);
+  /* Las tarjetas bajan de línea cuando el panel es angosto, en vez de comprimirse y solaparse. */
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: var(--espacio-3);
 }
 
 .comparativo-programa__fuente {
@@ -45,15 +46,21 @@
 .comparativo-programa__fuente h3 {
   margin: 0 0 var(--espacio-3);
   font-size: 13px;
+  overflow-wrap: anywhere;
 }
 
 .comparativo-programa__serie {
   display: grid;
-  grid-template-columns: 72px minmax(0, 1fr) 36px;
+  grid-template-columns: minmax(58px, auto) minmax(32px, 1fr) auto;
   align-items: center;
-  gap: 7px;
+  gap: 8px;
   margin-top: 8px;
-  font-size: 11px;
+  font-size: 12px;
+}
+
+.comparativo-programa__serie span,
+.comparativo-programa__serie strong {
+  white-space: nowrap;
 }
 
 .comparativo-programa__pista {
@@ -78,8 +85,3 @@
   color: var(--color-texto-apagado);
 }
 
-@media (max-width: 900px) {
-  .comparativo-programa__grafico {
-    grid-template-columns: 1fr;
-  }
-}

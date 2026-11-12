@@ -28,7 +28,7 @@ describe('PanelComparativoPrograma', () => {
     expect(screen.getByRole('heading', { name: 'Estudiantes' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Coordinación' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Autoevaluación' })).toBeInTheDocument()
-    expect(screen.getByRole('table', { name: /Comparativo de notas por fuente/ })).toBeInTheDocument()
+    expect(screen.getByRole('table', { name: /Comparativo de notas por evaluador/ })).toBeInTheDocument()
     expect(screen.getAllByText('—')).toHaveLength(4)
   })
 })

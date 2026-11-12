@@ -72,7 +72,7 @@ describe('lecturaEstadisticas', () => {
 
   it('explica cuando aún no hay promedios y no dice nada sin docentes', () => {
     expect(lecturaEstadisticas({ total: 1, completos: 0, avance: 0, promedioGeneral: null, bajoUmbral: 0, umbral: 3.8 })).toBe(
-      'De 1 docente, 0 tienen la evaluación completa (0 %). Aún no hay promedios: faltan calificaciones de alguna fuente.',
+      'De 1 docente, 0 tienen la evaluación completa (0 %). Aún no hay promedios: falta la calificación de algún evaluador.',
     )
     expect(lecturaEstadisticas({ total: 0 })).toBe('')
   })
