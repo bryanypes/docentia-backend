@@ -245,6 +245,10 @@ sección 7 de `ensayo.txt` tener los mismos conteos que `antes.txt`. Al terminar
 > | Log | Sin el correo ni la clave del administrador |
 > | Tamaño | 11 MB antes y después |
 >
+> **Cómo funciona la corrección:** `beforeMigrate.sql` apaga el disparador de actas inmutables solo
+> mientras se migra; `afterMigrate.sql` y `afterMigrateError.sql` lo vuelven a encender, también si una
+> migración falla. Fuera de la migración no se toca (detalle en `SEGURIDAD.md`).
+>
 > **Error encontrado y corregido en el ensayo:** sin los callbacks `beforeMigrate.sql` y `afterMigrate.sql`,
 > V36 fallaba sobre una base con actas firmadas o anuladas y la API quedaba sin arrancar en V35. Por eso
 > el paso 1 debe contar cuántas actas FIRMADA y ANULADA hay en el servidor. Con datos reales del servidor

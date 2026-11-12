@@ -116,6 +116,27 @@ Ningún comentario, respuesta ni dato que identifique a un estudiante va al log.
 El manejador global sí registra la traza completa de un error no controlado en una petición, para
 poder diagnosticarlo con el `correlationId`; los caminos que tocan comentarios no llegan ahí con texto.
 
+## Actas firmadas durante las migraciones
+
+Un disparador de la base (`tr_actas_inmutables`, V20) impide modificar o borrar un acta firmada o anulada.
+Algunas migraciones agregan columnas y les dan valor a las actas existentes: V36 les pone el tipo. Para eso,
+tres callbacks de Flyway en `db/migration` apagan el disparador solo mientras se migra:
+
+| Callback | Cuándo corre | Qué hace |
+|---|---|---|
+| `beforeMigrate.sql` | Antes de aplicar migraciones | Apaga el disparador de la tabla `actas` del esquema que se migra |
+| `afterMigrate.sql` | Al terminar bien, también en cada arranque sin migraciones pendientes | Lo vuelve a encender |
+| `afterMigrateError.sql` | Si una migración falla | Lo vuelve a encender aunque la API no arranque |
+
+Fuera de `migrate` no corre ningún callback: ni la aplicación ni `info` o `validate` tocan el disparador.
+Las migraciones no cambian notas, hashes, códigos ni PDF de las actas. `MigracionesActasFirmadasTest`
+lo prueba sobre un PostgreSQL embebido con un acta firmada y una anulada creadas en V35:
+
+- la migración pasa;
+- después, modificarlas sigue fallando;
+- con una migración que falla a la mitad, el disparador queda encendido;
+- solo existen esos tres callbacks.
+
 ## Escaneos de la versión 0.4.0 (12 de noviembre de 2026)
 
 | Escaneo | Alcance | Resultado |
