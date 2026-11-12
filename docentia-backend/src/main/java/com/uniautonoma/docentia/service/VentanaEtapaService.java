@@ -91,6 +91,15 @@ public class VentanaEtapaService {
         .toList();
   }
 
+  /**
+   * Indica si la etapa ya terminó: está programada y hoy es posterior a su cierre. Una etapa sin
+   * fechas no ha terminado.
+   */
+  public boolean haTerminado(PeriodoAcademico periodo, TipoEtapa etapa) {
+    LocalDate hoy = hoy();
+    return buscarEtapa(periodo, etapa).map(v -> hoy.isAfter(v.getFechaCierre())).orElse(false);
+  }
+
   /** Fecha de hoy en Colombia según el reloj de la aplicación. */
   public LocalDate hoy() {
     return LocalDate.now(reloj);

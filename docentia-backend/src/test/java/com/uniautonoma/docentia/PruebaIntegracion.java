@@ -43,6 +43,19 @@ public abstract class PruebaIntegracion {
             .aAutenticacion());
   }
 
+  protected RequestPostProcessor comoAdministrador() {
+    return authentication(
+        new UsuarioSesion(
+                9002L,
+                "Administración de prueba",
+                "administracion@prueba.co",
+                Rol.ADMINISTRADOR,
+                null,
+                null,
+                false)
+            .aAutenticacion());
+  }
+
   protected RequestPostProcessor comoCoordinador(Long idFacultad) {
     return authentication(
         new UsuarioSesion(

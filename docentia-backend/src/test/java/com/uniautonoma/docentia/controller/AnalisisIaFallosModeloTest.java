@@ -24,7 +24,6 @@ import com.uniautonoma.docentia.service.analisis.ModeloIA.ModeloIAException;
 import com.uniautonoma.docentia.service.analisis.ModeloIA.RespuestaModelo;
 import com.uniautonoma.docentia.service.analisis.ProcesadorSolicitudesAnalisis;
 import jakarta.persistence.EntityManager;
-import java.util.Collections;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +58,12 @@ class AnalisisIaFallosModeloTest extends PruebaIntegracion {
             BaseDatosPruebaConfig.HOY,
             BaseDatosPruebaConfig.HOY);
     escenario.cargarComentarios(
-        docente, periodo, coordinador, Collections.nCopies(10, "Explica bien"));
+        docente,
+        periodo,
+        coordinador,
+        java.util.stream.IntStream.rangeClosed(1, 10)
+            .mapToObj(i -> "Explica bien el tema " + i)
+            .toList());
     idSolicitud =
         analisisService
             .solicitar(

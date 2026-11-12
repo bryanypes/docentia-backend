@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /** Indicadores generales para el dashboard de coordinación y vicerrectoría. */
 @RestController
-@PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
+@PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR', 'VISUALIZADOR')")
 @RequestMapping("/kpis")
 public class KpiController {
 

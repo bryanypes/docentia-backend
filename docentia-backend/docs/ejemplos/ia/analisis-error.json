@@ -1,0 +1,23 @@
+{
+  "estado" : "ERROR",
+  "motivo" : null,
+  "mensaje" : "No fue posible generar el análisis en este momento. Puedes volver a solicitarlo más tarde.",
+  "docenteId" : 9,
+  "nombreDocente" : "Docente Con Error",
+  "periodoId" : 1,
+  "nombrePeriodo" : "2026-2",
+  "programa" : {
+    "id" : 1,
+    "nombre" : "Ingeniería de Software"
+  },
+  "facultad" : {
+    "id" : 1,
+    "nombre" : "Ingeniería"
+  },
+  "fuente" : "FORMULARIO",
+  "idSolicitud" : 6,
+  "version" : null,
+  "generadoEn" : null,
+  "estadoHallazgos" : null,
+  "resultado" : null
+}

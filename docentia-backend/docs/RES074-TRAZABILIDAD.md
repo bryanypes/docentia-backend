@@ -9,7 +9,7 @@ Historias del Excel v2 frente a lo construido. Si difieren, manda la resolución
 | HU-03 Formulario de autoevaluación (14 ítems) | Implementado | `/formularios/autoevaluacion`, `FormulariosTest`, E2E |
 | HU-04 Cálculo de la nota final | Implementado | `CalculadoraPromedioPonderado`, `ClasificadorDesempenoTest`, `AutoevaluacionTest` |
 | HU-05 Clasificación y acción institucional | Implementado | `ClasificadorDesempeno`, `GET /acciones-sugeridas`, `AccionesYPanelTest` |
-| HU-06 Análisis de comentarios | Implementado | `RevisionHallazgosTest`, `AnalisisIaTest`, `CitasVerificablesTest` |
+| HU-06 Análisis de comentarios | Implementado, con CSV o formulario; modelo local por reglas por defecto | `RevisionHallazgosTest`, `AnalisisIaTest`, `CitasVerificablesTest`, `AnalisisComentariosTest`, `ValidacionAnalisisTest` |
 | HU-07 Retroalimentación y plan de mejoramiento | Vía acta | `ActaTest`, `PlanSeguimientoTest` |
 | HU-08 Reportes | Vía I5 e I11 | `GET /kpis`, `GET /kpis/panel`, `AccionesYPanelTest` |
 | HU-09 Evidencias complementarias | Futuro | No implementado |
@@ -44,7 +44,8 @@ obligatorio de la autoevaluación y de la coevaluación.
 
 ## Decisiones pendientes
 
-Fuentes faltantes, umbral de 3,8 frente a 4,00 y regla de corrección de actas. Ver
+Fuentes faltantes, umbral de 3,8 frente a 4,00, regla de corrección de actas, docentes con menos de
+5 respuestas y los mínimos de 5 y 10. Ver
 [DECISIONES.md](DECISIONES.md).
 
 ## Criterios de aceptación de I5 e I11

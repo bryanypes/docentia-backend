@@ -206,49 +206,7 @@
   color: var(--color-texto-secundario);
 }
 
-/* Atajo de desarrollo: no se incluye en producción */
-.login__prueba {
-  padding: 10px 12px;
-  border: 1px dashed var(--color-borde-punteado);
-  border-radius: var(--radio-md);
-  font-size: 13px;
-}
-
-.login__prueba summary {
-  min-height: 28px;
-  font-weight: var(--peso-semi);
-  color: var(--color-texto-tenue);
-  cursor: pointer;
-}
-
-.login__prueba ul {
-  display: grid;
-  gap: 6px;
-  padding: 0;
-  margin: 10px 0 0;
-  list-style: none;
-}
-
-.login__prueba button {
-  display: flex;
-  justify-content: space-between;
-  gap: 10px;
-  width: 100%;
-  min-height: 40px;
-  padding: 8px 10px;
-  border: 1px solid var(--color-borde);
-  border-radius: var(--radio-sm);
-  background: var(--color-superficie);
-  font-size: 13px;
-  text-align: left;
-  color: var(--color-texto);
-  cursor: pointer;
-}
-
-.login__prueba button:hover {
-  background: var(--color-azul-fondo);
-}
-
-.login__prueba button span {
-  color: var(--color-texto-tenue);
+.login__olvide {
+  justify-self: center;
+  font-size: 0.9rem;
 }

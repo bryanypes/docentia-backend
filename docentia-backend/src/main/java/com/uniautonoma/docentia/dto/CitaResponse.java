@@ -1,6 +1,8 @@
 package com.uniautonoma.docentia.dto;
 
+import com.uniautonoma.docentia.entity.AsistenciaCita;
 import com.uniautonoma.docentia.entity.Cita;
+import com.uniautonoma.docentia.entity.ConfirmacionCita;
 import com.uniautonoma.docentia.entity.EstadoCita;
 import com.uniautonoma.docentia.entity.FranjaHoraria;
 import java.time.LocalDate;
@@ -12,6 +14,8 @@ import java.time.LocalTime;
  *
  * @param idCitaLiberada al reservar: la cita anterior del docente en el periodo que quedó liberada,
  *     o nula si no tenía
+ * @param confirmacion respuesta del docente al aviso, o nula si aún no responde
+ * @param asistencia lo que registró la coordinación en la reunión, o nula
  */
 public record CitaResponse(
     Long idCita,
@@ -22,7 +26,9 @@ public record CitaResponse(
     LocalTime horaInicio,
     LocalTime horaFin,
     String nombreCoordinador,
-    Long idCitaLiberada) {
+    Long idCitaLiberada,
+    ConfirmacionCita confirmacion,
+    AsistenciaCita asistencia) {
 
   public static CitaResponse desde(Cita cita, Long idCitaLiberada) {
     FranjaHoraria franja = cita.getFranja();
@@ -35,6 +41,8 @@ public record CitaResponse(
         franja.getHoraInicio(),
         franja.getHoraFin(),
         franja.getCoordinador().getNombreCompleto(),
-        idCitaLiberada);
+        idCitaLiberada,
+        cita.getConfirmacion(),
+        cita.getAsistencia());
   }
 }

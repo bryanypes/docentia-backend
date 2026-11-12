@@ -1,7 +1,7 @@
 import { ArrowRight, CircleAlert, Eye, EyeOff, Info, Lock, Mail } from 'lucide-react'
 import { GoogleLogin } from '@react-oauth/google'
 import { useRef, useState } from 'react'
-import { Navigate, useLocation } from 'react-router-dom'
+import { Link, Navigate, useLocation } from 'react-router-dom'
 import robotError from '../../../assets/ilustraciones/robot-error.svg'
 import robotPensando from '../../../assets/ilustraciones/robot-pensando.svg'
 import robotSaludo from '../../../assets/ilustraciones/robot-saludo.svg'
@@ -11,7 +11,6 @@ import { useTituloDocumento } from '../../../shared/hooks/useTituloDocumento.js'
 import { validarInicioSesion } from '../../../shared/utils/validators.js'
 import { PantallaAcceso } from '../components/PantallaAcceso.jsx'
 import { MOTIVO_CIERRE, useSesion } from '../sesionContext.js'
-import { CONTRASENA_DESARROLLO, USUARIOS_DESARROLLO } from '../usuariosDesarrollo.js'
 import './Login.css'
 
 const CAMPOS = ['correo', 'contrasena']
@@ -21,7 +20,7 @@ const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim() ?? ''
 
 export default function Login() {
   useTituloDocumento('Iniciar sesión')
-  const { usuario, validando, motivoCierre, entrar, entrarConGoogle } = useSesion()
+  const { usuario, validando, motivoCierre, idSesionVencida, entrar, entrarConGoogle } = useSesion()
   const ubicacion = useLocation()
 
   const [formulario, setFormulario] = useState({ correo: '', contrasena: '' })
@@ -35,12 +34,16 @@ export default function Login() {
 
   // Con un token guardado se espera a validarlo: así el formulario no aparece y desaparece.
   if (validando) return null
-  // Al abrirse la sesión, vuelve a la ruta protegida de origen o al inicio del rol. Con contraseña
-  // temporal, primero hay que cambiarla.
+  // Al abrirse la sesión va al inicio del rol. Solo si la sesión anterior venció y entra la misma
+  // persona vuelve a la ruta donde estaba; quien entra después de un "Salir" nunca hereda la ruta
+  // del rol anterior. Con contraseña temporal, primero hay que cambiarla.
   if (usuario) {
+    const volver = ubicacion.state?.desde && idSesionVencida === usuario.idUsuario
     const destino = usuario.debeCambiarContrasena
       ? RUTA_CAMBIO_CONTRASENA
-      : (ubicacion.state?.desde ?? rutaInicioDelRol(usuario.rol))
+      : volver
+        ? ubicacion.state.desde
+        : rutaInicioDelRol(usuario.rol)
     return <Navigate to={destino} replace />
   }
 
@@ -109,12 +112,6 @@ export default function Login() {
     }
   }
 
-  function usarCuentaPrueba(correo) {
-    setFormulario({ correo, contrasena: CONTRASENA_DESARROLLO })
-    setErrorEnvio(null)
-    setIntentoEnviar(false)
-  }
-
   // El avatar reacciona: saluda, piensa mientras se valida y se preocupa si algo falla.
   const hayError = Boolean(errorEnvio) || (intentoEnviar && Object.keys(erroresLocales).length > 0)
   const avatar = enviando ? robotPensando : hayError ? robotError : robotSaludo
@@ -132,7 +129,7 @@ export default function Login() {
         {motivoCierre === MOTIVO_CIERRE.EXPIRADA && !errorGeneral && (
           <div className="login__aviso login__aviso--info" role="status">
             <Info size={18} aria-hidden="true" />
-            <span>Tu sesión expiró por seguridad. Vuelve a ingresar para continuar donde ibas.</span>
+            <span>Tu sesión venció. Vuelve a ingresar para continuar donde ibas.</span>
           </div>
         )}
 
@@ -214,6 +211,9 @@ export default function Login() {
           {enviando ? 'Ingresando…' : 'Ingresar'}
           {!enviando && <ArrowRight size={18} strokeWidth={2.25} aria-hidden="true" className="login__flecha" />}
         </Boton>
+        <Link to="/recuperar-contrasena" className="login__olvide">
+          ¿Olvidaste tu contraseña?
+        </Link>
 
         {googleClientId && (
           <>
@@ -238,28 +238,7 @@ export default function Login() {
         <p className="login__olvido">
           <strong>¿Olvidaste tu contraseña?</strong> Pide una nueva a la Vicerrectoría académica.
         </p>
-
-        {import.meta.env.DEV && <UsuariosPrueba alElegir={usarCuentaPrueba} />}
       </form>
     </PantallaAcceso>
-  )
-}
-
-/** Atajo para las demos: rellena correo y contraseña con un usuario del seed de desarrollo. */
-function UsuariosPrueba({ alElegir }) {
-  return (
-    <details className="login__prueba">
-      <summary>Usuarios de prueba (solo en desarrollo)</summary>
-      <ul>
-        {USUARIOS_DESARROLLO.map((u) => (
-          <li key={u.correo}>
-            <button type="button" onClick={() => alElegir(u.correo)}>
-              <strong>{u.rol}</strong>
-              <span>{u.nombre}</span>
-            </button>
-          </li>
-        ))}
-      </ul>
-    </details>
   )
 }

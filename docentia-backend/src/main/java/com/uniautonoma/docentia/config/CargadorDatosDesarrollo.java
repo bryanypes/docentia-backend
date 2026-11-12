@@ -10,6 +10,7 @@ import com.uniautonoma.docentia.entity.NotasAspectos;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.Programa;
 import com.uniautonoma.docentia.entity.ResultadoImportacion;
+import com.uniautonoma.docentia.entity.Rol;
 import com.uniautonoma.docentia.entity.TipoEtapa;
 import com.uniautonoma.docentia.entity.Usuario;
 import com.uniautonoma.docentia.repository.CalificacionRepository;
@@ -140,6 +141,22 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
     Usuario vicerrector =
         usuarioRepository.save(
             Usuario.crearVicerrector("Elena Muñoz Cerón", "vicerrectoria" + DOMINIO_CORREO, hash));
+    usuarioRepository.save(
+        Usuario.crear(
+            "Administración Demo",
+            "administrador.demo" + DOMINIO_CORREO,
+            hash,
+            Rol.ADMINISTRADOR,
+            null,
+            null));
+    usuarioRepository.save(
+        Usuario.crear(
+            "Visualización Demo",
+            "visualizador.demo" + DOMINIO_CORREO,
+            hash,
+            Rol.VISUALIZADOR,
+            null,
+            null));
     Usuario coordinadorIngenieria =
         usuarioRepository.save(
             Usuario.crearCoordinador(

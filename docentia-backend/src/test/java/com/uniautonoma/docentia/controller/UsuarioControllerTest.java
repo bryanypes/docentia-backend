@@ -100,7 +100,7 @@ class UsuarioControllerTest extends PruebaIntegracion {
     mockMvc
         .perform(
             post("/usuarios")
-                .with(comoVicerrector())
+                .with(comoAdministrador())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     """
@@ -141,7 +141,7 @@ class UsuarioControllerTest extends PruebaIntegracion {
     mockMvc
         .perform(
             put("/usuarios/{id}", docente.getIdUsuario())
-                .with(comoVicerrector())
+                .with(comoAdministrador())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     aJson(
@@ -158,7 +158,7 @@ class UsuarioControllerTest extends PruebaIntegracion {
         .andExpect(jsonPath("$.idPrograma").doesNotExist());
 
     mockMvc
-        .perform(get("/usuarios").param("rol", "COORDINADOR").with(comoVicerrector()))
+        .perform(get("/usuarios").param("rol", "COORDINADOR").with(comoAdministrador()))
         .andExpect(jsonPath("$[*].nombreCompleto", contains("Julian Hoyos")));
   }
 
@@ -167,7 +167,7 @@ class UsuarioControllerTest extends PruebaIntegracion {
     mockMvc
         .perform(
             put("/usuarios/{id}", 999_999)
-                .with(comoVicerrector())
+                .with(comoAdministrador())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(aJson(solicitud("x@prueba.co", Rol.VICERRECTOR, null, null))))
         .andExpect(status().isNotFound());
@@ -240,7 +240,7 @@ class UsuarioControllerTest extends PruebaIntegracion {
   private ResultActions crear(UsuarioRequest solicitud) throws Exception {
     return mockMvc.perform(
         post("/usuarios")
-            .with(comoVicerrector())
+            .with(comoAdministrador())
             .contentType(MediaType.APPLICATION_JSON)
             .content(aJson(solicitud)));
   }

@@ -7,7 +7,9 @@ export const obtenerAutoevaluacion = () => api.get(AUTO)
 export const guardarAutoevaluacion = (borrador) => api.put(AUTO, borrador)
 export const enviarAutoevaluacion = () => api.post(`${AUTO}/enviar`)
 
-export const obtenerCoevaluacion = (idDocente) => api.get(coevaluacion(idDocente))
+/** Sin periodo, la del periodo activo; con periodo, la de ese periodo (solo lectura si ya pasó). */
+export const obtenerCoevaluacion = (idDocente, periodo) =>
+  api.get(periodo ? `${coevaluacion(idDocente)}?periodo=${encodeURIComponent(periodo)}` : coevaluacion(idDocente))
 export const guardarCoevaluacion = (idDocente, borrador) => api.put(coevaluacion(idDocente), borrador)
 export const enviarCoevaluacion = (idDocente) => api.post(`${coevaluacion(idDocente)}/enviar`)
 

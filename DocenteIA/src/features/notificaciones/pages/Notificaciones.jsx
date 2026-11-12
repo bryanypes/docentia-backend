@@ -1,12 +1,14 @@
 import { Bell, RefreshCw } from 'lucide-react'
-import { useCallback, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useCallback, useEffect, useState } from 'react'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { ErrorApi } from '../../../shared/components/ui/ErrorApi/ErrorApi.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
+import { Paginacion } from '../../../shared/components/ui/Paginacion/Paginacion.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
+import { TAMANOS, useFiltrosUrl } from '../../../shared/hooks/usePaginacion.js'
 import { formatearFechaHora } from '../../../shared/utils/formatters.js'
 import {
   guardarPreferencias,
@@ -55,11 +57,15 @@ function Preferencias() {
 
 export default function Notificaciones() {
   const navegar = useNavigate()
-  const [soloNoLeidas, setSoloNoLeidas] = useState(false)
-  const [pagina, setPagina] = useState(0)
+  const [parametros, setParametros] = useSearchParams()
+  const [filtros, actualizarFiltros] = useFiltrosUrl({ soloNoLeidas: 'false' })
+  const soloNoLeidas = filtros.soloNoLeidas === 'true'
+  const pagina = Math.max(0, Number.parseInt(parametros.get('pagina') ?? '1', 10) - 1 || 0)
+  const tamanoSolicitado = Number(parametros.get('tamano'))
+  const tamano = TAMANOS.includes(tamanoSolicitado) ? tamanoSolicitado : TAMANOS[0]
   const [error, setError] = useState(null)
   const [ocupado, setOcupado] = useState(false)
-  const cargar = useCallback(() => listarNotificaciones({ soloNoLeidas, pagina }), [soloNoLeidas, pagina])
+  const cargar = useCallback(() => listarNotificaciones({ soloNoLeidas, pagina, tamano }), [soloNoLeidas, pagina, tamano])
   const lista = useFetch(cargar, [cargar])
 
   async function abrir(notificacion) {
@@ -87,6 +93,37 @@ export default function Notificaciones() {
   }
 
   const datos = lista.datos
+  const paginaActual = Math.min(pagina, Math.max(0, (datos?.totalPaginas ?? 1) - 1))
+
+  const actualizarPagina = useCallback((cambios) => {
+    setParametros(
+      (actuales) => {
+        const nuevos = new URLSearchParams(actuales)
+        if ('pagina' in cambios) {
+          if (cambios.pagina == null || cambios.pagina === 1) nuevos.delete('pagina')
+          else nuevos.set('pagina', String(cambios.pagina))
+        }
+        if ('tamano' in cambios) {
+          if (cambios.tamano == null || cambios.tamano === TAMANOS[0]) nuevos.delete('tamano')
+          else nuevos.set('tamano', String(cambios.tamano))
+        }
+        return nuevos
+      },
+      { replace: true },
+    )
+  }, [setParametros])
+
+  useEffect(() => {
+    if (!datos) return
+    const paginaEnUrl = parametros.get('pagina')
+    if (pagina !== paginaActual || (paginaEnUrl && Number(paginaEnUrl) !== paginaActual + 1)) {
+      actualizarPagina({ pagina: paginaActual + 1 })
+      return
+    }
+    if (parametros.has('tamano') && !TAMANOS.includes(tamanoSolicitado)) {
+      actualizarPagina({ tamano: TAMANOS[0] })
+    }
+  }, [actualizarPagina, datos, pagina, paginaActual, parametros, tamanoSolicitado])
 
   return (
     <>
@@ -102,10 +139,7 @@ export default function Notificaciones() {
                 id="soloNoLeidas"
                 type="checkbox"
                 checked={soloNoLeidas}
-                onChange={(e) => {
-                  setSoloNoLeidas(e.target.checked)
-                  setPagina(0)
-                }}
+                onChange={(e) => actualizarFiltros({ soloNoLeidas: String(e.target.checked) })}
               />{' '}
               Solo no leídas
             </label>
@@ -143,22 +177,18 @@ export default function Notificaciones() {
               ))}
             </ul>
           )}
-          {datos && datos.totalPaginas > 1 && (
-            <div className="notificaciones__paginas">
-              <Boton variante="contorno" disabled={pagina === 0} onClick={() => setPagina((p) => p - 1)}>
-                Anterior
-              </Boton>
-              <span>
-                Página {pagina + 1} de {datos.totalPaginas}
-              </span>
-              <Boton
-                variante="contorno"
-                disabled={pagina + 1 >= datos.totalPaginas}
-                onClick={() => setPagina((p) => p + 1)}
-              >
-                Siguiente
-              </Boton>
-            </div>
+          {datos && (
+            <Paginacion
+              pagina={paginaActual + 1}
+              paginas={Math.max(1, datos.totalPaginas)}
+              tamano={tamano}
+              total={datos.totalElementos}
+              desde={datos.totalElementos === 0 ? 0 : paginaActual * tamano + 1}
+              hasta={Math.min(datos.totalElementos, (paginaActual + 1) * tamano)}
+              irA={(siguiente) => actualizarPagina({ pagina: siguiente })}
+              cambiarTamano={(siguiente) => actualizarPagina({ tamano: siguiente, pagina: null })}
+              etiqueta="notificaciones"
+            />
           )}
         </Panel>
       </div>

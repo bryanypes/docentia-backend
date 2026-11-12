@@ -37,7 +37,7 @@ public class FacultadService {
   @Transactional(readOnly = true)
   public List<FacultadResponse> listarFacultades(UsuarioSesion sesion) {
     return facultadRepository.findByEsActivaTrueOrderByNombreAsc().stream()
-        .filter(facultad -> sesion.tieneAlcanceSobreFacultad(facultad.getIdFacultad()))
+        .filter(facultad -> sesion.veCatalogoDeFacultad(facultad.getIdFacultad()))
         .map(FacultadResponse::desde)
         .toList();
   }
@@ -52,7 +52,7 @@ public class FacultadService {
    */
   @Transactional(readOnly = true)
   public FacultadResponse obtenerFacultad(Long idFacultad, UsuarioSesion sesion) {
-    if (!sesion.tieneAlcanceSobreFacultad(idFacultad)) {
+    if (!sesion.veCatalogoDeFacultad(idFacultad)) {
       throw new RecursoNoEncontradoException(FACULTAD_NO_ENCONTRADA);
     }
     return FacultadResponse.desde(buscarFacultadActiva(idFacultad));

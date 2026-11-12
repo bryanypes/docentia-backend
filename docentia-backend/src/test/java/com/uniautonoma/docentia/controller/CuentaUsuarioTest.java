@@ -111,7 +111,7 @@ class CuentaUsuarioTest extends PruebaIntegracion {
     mockMvc
         .perform(
             put("/usuarios/{id}", docente.getIdUsuario())
-                .with(comoVicerrector())
+                .with(comoAdministrador())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     aJson(
@@ -143,7 +143,7 @@ class CuentaUsuarioTest extends PruebaIntegracion {
 
   @Test
   void nadieDesactivaSuPropiaCuentaYSoloLaVicerrectoriaCambiaElEstado() throws Exception {
-    Usuario vicerrectora = escenario.crearVicerrector("Elena Munoz");
+    Usuario vicerrectora = escenario.crearConRol("Elena Munoz", Rol.ADMINISTRADOR);
     Usuario coordinador = escenario.crearCoordinador("Marta Ruiz", ingenieria);
 
     mockMvc
@@ -165,7 +165,7 @@ class CuentaUsuarioTest extends PruebaIntegracion {
     mockMvc
         .perform(
             patch("/usuarios/{id}/estado", coordinador.getIdUsuario())
-                .with(comoVicerrector())
+                .with(comoAdministrador())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content("{}"))
         .andExpect(status().isBadRequest())
@@ -176,7 +176,7 @@ class CuentaUsuarioTest extends PruebaIntegracion {
     mockMvc
         .perform(
             post("/usuarios")
-                .with(comoVicerrector())
+                .with(comoAdministrador())
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     aJson(
@@ -206,7 +206,7 @@ class CuentaUsuarioTest extends PruebaIntegracion {
   private Long idDe(String correo) throws Exception {
     String cuerpo =
         mockMvc
-            .perform(get("/usuarios").with(comoVicerrector()))
+            .perform(get("/usuarios").with(comoAdministrador()))
             .andReturn()
             .getResponse()
             .getContentAsString();
@@ -237,7 +237,7 @@ class CuentaUsuarioTest extends PruebaIntegracion {
   private ResultActions cambiarEstado(Long idUsuario, boolean esActivo) throws Exception {
     return mockMvc.perform(
         patch("/usuarios/{id}/estado", idUsuario)
-            .with(comoVicerrector())
+            .with(comoAdministrador())
             .contentType(MediaType.APPLICATION_JSON)
             .content(aJson(new EstadoUsuarioRequest(esActivo))));
   }

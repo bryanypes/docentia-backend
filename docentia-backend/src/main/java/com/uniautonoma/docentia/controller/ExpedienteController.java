@@ -2,6 +2,7 @@ package com.uniautonoma.docentia.controller;
 
 import com.uniautonoma.docentia.dto.ExpedienteDocenteResponse;
 import com.uniautonoma.docentia.dto.ExpedientePropioResponse;
+import com.uniautonoma.docentia.dto.ComparativoProgramaResponse;
 import com.uniautonoma.docentia.security.UsuarioSesion;
 import com.uniautonoma.docentia.service.ExpedienteService;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -36,6 +37,13 @@ public class ExpedienteController {
     return expedienteService.obtenerExpedientePropio(sesion);
   }
 
+  @GetMapping("/propio/comparativo")
+  @PreAuthorize("hasRole('DOCENTE')")
+  public ComparativoProgramaResponse obtenerComparativoPropio(
+      @AuthenticationPrincipal UsuarioSesion sesion) {
+    return expedienteService.obtenerComparativoPropio(sesion);
+  }
+
   /**
    * Devuelve el expediente completo de un docente, con las notas de cada fuente.
    *
@@ -48,5 +56,12 @@ public class ExpedienteController {
   public ExpedienteDocenteResponse obtenerExpedienteDocente(
       @PathVariable Long idDocente, @AuthenticationPrincipal UsuarioSesion sesion) {
     return expedienteService.obtenerExpedienteDocente(idDocente, sesion);
+  }
+
+  @GetMapping("/{idDocente}/comparativo")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
+  public ComparativoProgramaResponse obtenerComparativoDocente(
+      @PathVariable Long idDocente, @AuthenticationPrincipal UsuarioSesion sesion) {
+    return expedienteService.obtenerComparativoDocente(idDocente, sesion);
   }
 }

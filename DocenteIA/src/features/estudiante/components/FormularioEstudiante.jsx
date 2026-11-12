@@ -1,14 +1,21 @@
+import { useVentanaEtapa } from '../../../shared/components/layout/AppLayout/periodoContext.js'
+import { ETAPAS } from '../../../shared/constants/dominio.js'
+import { mensajeVentanaCerrada } from '../estadoVentana.js'
+import { errorComentario } from '../validarComentario.js'
 import { Send, ShieldCheck } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { ErrorApi } from '../../../shared/components/ui/ErrorApi/ErrorApi.jsx'
+import { AsistentePasos, PreguntaEscala } from '../../formularios/components/AsistentePasos.jsx'
 import '../../formularios/components/FormularioInstrumento.css'
 
 /**
  * Formulario anónimo del estudiante: once ítems, un comentario opcional y un solo envío. No guarda
  * borradores para no dejar respuestas parciales asociadas a nadie.
  */
+const MENSAJE_CERRADA = { titulo: 'La evaluación ya cerró', texto: 'La ventana de recolección de este periodo terminó.' }
+
 export function FormularioEstudiante({ formulario, onEnviar }) {
   const [respuestas, setRespuestas] = useState({})
   const [comentario, setComentario] = useState('')
@@ -17,8 +24,9 @@ export function FormularioEstudiante({ formulario, onEnviar }) {
   const [error, setError] = useState(null)
   const enCurso = useRef(false)
 
-  const respondidos = Object.keys(respuestas).length
-  const completo = respondidos === formulario.total
+  const completo = Object.keys(respuestas).length === formulario.total
+  const problemaComentario = errorComentario(comentario)
+  const cerrada = mensajeVentanaCerrada(useVentanaEtapa(ETAPAS.RECOLECCION_CALIFICACIONES))
   const editable = formulario.estado === 'PENDIENTE' && formulario.ventanaAbierta
 
   async function enviar() {
@@ -27,7 +35,7 @@ export function FormularioEstudiante({ formulario, onEnviar }) {
     setOcupado(true)
     setError(null)
     try {
-      await onEnviar({ respuestas, comentario: comentario.trim() || null })
+      await onEnviar({ respuestas, comentario: comentario.trim() })
     } catch (errorApi) {
       setError(errorApi)
       enCurso.current = false
@@ -37,7 +45,7 @@ export function FormularioEstudiante({ formulario, onEnviar }) {
   }
 
   return (
-    <div className="instrumento">
+    <div className="instrumento instrumento--estudiante">
       <Aviso tipo="info" titulo="Tus respuestas son anónimas">
         {formulario.aviso}
       </Aviso>
@@ -47,79 +55,80 @@ export function FormularioEstudiante({ formulario, onEnviar }) {
         </Aviso>
       )}
       {formulario.estado === 'PENDIENTE' && !formulario.ventanaAbierta && (
-        <Aviso tipo="alerta" titulo="La evaluación está cerrada">
-          Solo se responde durante la ventana de recolección de calificaciones.
+        <Aviso tipo="alerta" titulo={(cerrada ?? MENSAJE_CERRADA).titulo}>
+          {(cerrada ?? MENSAJE_CERRADA).texto}
         </Aviso>
       )}
 
       {editable && (
-        <>
-          <div className="instrumento__progreso">
-            <span>
-              {respondidos} de {formulario.total} ítems respondidos
-            </span>
-            <progress value={respondidos} max={formulario.total} aria-label="Avance de la evaluación" />
-          </div>
+        <AsistentePasos
+          etiqueta="Criterios de la evaluación"
+          pasos={formulario.criterios.map((criterio) => ({
+            codigo: criterio.codigo,
+            titulo: criterio.nombre,
+            total: criterio.descriptores.length,
+            respondidas: criterio.descriptores.filter((d) => respuestas[d.codigo] !== undefined).length,
+            contenido: (
+              <fieldset className="instrumento__criterio">
+                <legend className="solo-lectores">{criterio.nombre}</legend>
+                {criterio.descriptores.map((descriptor) => (
+                  <PreguntaEscala
+                    key={descriptor.codigo}
+                    descriptor={descriptor}
+                    escala={formulario.escala}
+                    valor={respuestas[descriptor.codigo]}
+                    editable
+                    onResponder={(codigo, valor) => setRespuestas((actuales) => ({ ...actuales, [codigo]: valor }))}
+                  />
+                ))}
+              </fieldset>
+            ),
+          }))}
+          revision={{
+            titulo: 'Revisar y enviar',
+            contenido: (
+              <>
+                <label className="instrumento__comentario">
+                  Comentario sobre el profesor (obligatorio, mínimo 10 caracteres). No incluyas datos personales: ni
+                  tu nombre ni el de otras personas.
+                  <textarea
+                    className="campo__control"
+                    rows={3}
+                    maxLength={1000}
+                    required
+                    aria-invalid={comentario !== '' && Boolean(problemaComentario)}
+                    aria-describedby="ayuda-comentario"
+                    value={comentario}
+                    onChange={(e) => setComentario(e.target.value)}
+                  />
+                </label>
+                {comentario !== '' && problemaComentario && (
+                  <span id="ayuda-comentario" className="campo__error" role="alert">
+                    {problemaComentario}
+                  </span>
+                )}
 
-          <dl className="instrumento__escala" aria-label="Escala de respuesta">
-            {formulario.escala.map(({ valor, etiqueta }) => (
-              <div key={valor}>
-                <dt>{valor}</dt>
-                <dd>{etiqueta}</dd>
-              </div>
-            ))}
-          </dl>
+                <ErrorApi error={error} />
 
-          {formulario.criterios.map((criterio) => (
-            <fieldset key={criterio.codigo} className="instrumento__criterio">
-              <legend>{criterio.nombre}</legend>
-              {criterio.descriptores.map((descriptor) => (
-                <fieldset key={descriptor.codigo} className="instrumento__item">
-                  <legend>{descriptor.texto}</legend>
-                  <div className="instrumento__opciones">
-                    {formulario.escala.map(({ valor, etiqueta }) => (
-                      <label key={valor} className="instrumento__opcion">
-                        <input
-                          type="radio"
-                          name={descriptor.codigo}
-                          value={valor}
-                          checked={respuestas[descriptor.codigo] === valor}
-                          onChange={() => setRespuestas((actuales) => ({ ...actuales, [descriptor.codigo]: valor }))}
-                        />
-                        <span aria-hidden="true">{valor}</span>
-                        <span className="solo-lectores">{etiqueta}</span>
-                      </label>
-                    ))}
-                  </div>
-                </fieldset>
-              ))}
-            </fieldset>
-          ))}
-
-          <label className="instrumento__comentario">
-            Comentario (opcional). No incluyas datos personales: ni tu nombre ni el de otras personas.
-            <textarea
-              className="campo__control"
-              rows={3}
-              maxLength={1000}
-              value={comentario}
-              onChange={(e) => setComentario(e.target.value)}
-            />
-          </label>
-
-          <ErrorApi error={error} />
-
-          <div className="instrumento__acciones">
-            <label className="instrumento__confirmacion">
-              <input type="checkbox" checked={confirmado} onChange={(e) => setConfirmado(e.target.checked)} /> Revisé
-              mis respuestas y entiendo que el envío es definitivo.
-            </label>
-            <Boton icono={Send} disabled={!completo || !confirmado || ocupado} onClick={enviar}>
-              {ocupado ? 'Enviando…' : 'Enviar evaluación'}
-            </Boton>
-            {!completo && <span className="campo__ayuda">Responde los {formulario.total} ítems para poder enviar.</span>}
-          </div>
-        </>
+                <div className="instrumento__acciones">
+                  <label className="instrumento__confirmacion">
+                    <input type="checkbox" checked={confirmado} onChange={(e) => setConfirmado(e.target.checked)} />{' '}
+                    Revisé mis respuestas y entiendo que el envío es definitivo.
+                  </label>
+                  <Boton icono={Send} disabled={!completo || !confirmado || ocupado || Boolean(problemaComentario)} onClick={enviar}>
+                    {ocupado ? 'Enviando…' : 'Enviar evaluación'}
+                  </Boton>
+                  {!completo && (
+                    <span className="campo__ayuda">Responde los {formulario.total} ítems para poder enviar.</span>
+                  )}
+                  {completo && problemaComentario && (
+                    <span className="campo__ayuda">Escribe tu comentario para poder enviar.</span>
+                  )}
+                </div>
+              </>
+            ),
+          }}
+        />
       )}
     </div>
   )

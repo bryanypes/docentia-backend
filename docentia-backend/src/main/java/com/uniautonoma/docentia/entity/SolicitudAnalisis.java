@@ -48,6 +48,21 @@ public class SolicitudAnalisis {
   @Column(length = 500)
   private String mensaje;
 
+  @Enumerated(EnumType.STRING)
+  @Column(nullable = false, length = 20, updatable = false)
+  private FuenteComentarios fuente = FuenteComentarios.CSV;
+
+  /** Detalle de INSUFICIENTE: POCAS_ENCUESTAS, SIN_COMENTARIOS o TODOS_EXCLUIDOS. */
+  @Column(length = 30)
+  private String motivo;
+
+  /** LOCAL o LLM según lo que se pidió; nulo usa el proveedor configurado por defecto. */
+  @Column(length = 10, updatable = false)
+  private String modeloSolicitado;
+
+  @Column(length = 300, updatable = false)
+  private String motivoRegeneracion;
+
   private Integer encuestasCerradas;
 
   private Integer comentariosEnviados;
@@ -86,6 +101,64 @@ public class SolicitudAnalisis {
     this.docente = docente;
     this.periodo = periodo;
     this.solicitante = solicitante;
+  }
+
+  public SolicitudAnalisis(
+      Usuario docente, PeriodoAcademico periodo, Usuario solicitante, FuenteComentarios fuente) {
+    this(docente, periodo, solicitante);
+    this.fuente = fuente;
+  }
+
+  /**
+   * @param modeloPedido LOCAL, LLM o nulo para el configurado por defecto
+   * @param motivoRegeneracion por qué se vuelve a generar; nulo si es la primera vez
+   */
+  public SolicitudAnalisis(
+      Usuario docente,
+      PeriodoAcademico periodo,
+      Usuario solicitante,
+      FuenteComentarios fuente,
+      String modeloPedido,
+      String motivoRegeneracion) {
+    this(docente, periodo, solicitante, fuente);
+    this.modeloSolicitado = modeloPedido;
+    this.motivoRegeneracion = motivoRegeneracion;
+  }
+
+  /** Error con un motivo que la interfaz puede distinguir (por ejemplo PRESUPUESTO_AGOTADO). */
+  public void marcarError(String mensajeError, String motivoError) {
+    marcarError(mensajeError);
+    this.motivo = motivoError;
+  }
+
+  public boolean esSoloLocal() {
+    return "LOCAL".equals(modeloSolicitado);
+  }
+
+  public boolean pideLlm() {
+    return "LLM".equals(modeloSolicitado);
+  }
+
+  public String getModeloSolicitado() {
+    return modeloSolicitado;
+  }
+
+  public String getMotivoRegeneracion() {
+    return motivoRegeneracion;
+  }
+
+  /** Marca la solicitud como insuficiente indicando el motivo, para mostrar el estado preciso. */
+  public void marcarInsuficiente(int encuestas, String mensaje, String motivoInsuficiencia) {
+    marcarInsuficiente(encuestas, mensaje);
+    this.motivo = motivoInsuficiencia;
+  }
+
+  public FuenteComentarios getFuente() {
+    return fuente;
+  }
+
+  public String getMotivo() {
+    return motivo;
   }
 
   public void registrarFiltrados(int filtrados) {

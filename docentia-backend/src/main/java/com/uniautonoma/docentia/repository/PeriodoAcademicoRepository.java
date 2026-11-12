@@ -7,6 +7,7 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 /** Acceso a datos de los periodos académicos. */
 public interface PeriodoAcademicoRepository extends JpaRepository<PeriodoAcademico, Long> {
@@ -49,4 +50,18 @@ public interface PeriodoAcademicoRepository extends JpaRepository<PeriodoAcademi
   @Modifying(flushAutomatically = true, clearAutomatically = true)
   @Query("update PeriodoAcademico p set p.esActivo = false where p.esActivo = true")
   void desactivarPeriodoActivo();
+
+  /**
+   * Cuenta las matrículas activas de un periodo. Sin ellas, los estudiantes no ven a sus
+   * profesores.
+   *
+   * @param idPeriodo identificador del periodo
+   * @return cantidad de matrículas activas en las clases del periodo
+   */
+  @Query(
+      value =
+          "select count(*) from matriculas m join clases c on c.id = m.clase_id"
+              + " where c.id_periodo = :idPeriodo and m.es_activa",
+      nativeQuery = true)
+  long contarMatriculasActivas(@Param("idPeriodo") Long idPeriodo);
 }

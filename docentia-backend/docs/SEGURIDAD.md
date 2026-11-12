@@ -7,7 +7,26 @@
 | Docente | Ver lo propio | Ver notas por fuente de su evaluación o datos de un colega |
 | Coordinador | Gestionar su facultad | Salir de su alcance hacia otra facultad |
 | Vicerrector | Consultar toda la institución | Sobreexposición de datos individuales |
+| Estudiante | Responder la heteroevaluación de sus clases | Ser identificado por lo que respondió |
 | Sin sesión | Iniciar sesión y verificar un código | Fuerza bruta, enumeración de usuarios |
+
+## Roles y rutas
+
+Existen cuatro roles: `VICERRECTOR`, `COORDINADOR`, `DOCENTE` y `ESTUDIANTE`. Los roles `ADMINISTRADOR`
+y `VISUALIZADOR` no existen en `develop`; llegarían solo si se fusiona el PR #12, y entonces esta
+sección y `MatrizAutorizacionTest` deben cambiar en el mismo PR.
+
+| Regla | Control | Evidencia |
+|-------|---------|-----------|
+| Rol por endpoint | `@PreAuthorize` en cada controlador; la matriz completa (116 rutas por cuatro roles) vive en la prueba, que falla si aparece una ruta sin clasificar | `MatrizAutorizacionTest.todoEndpointEstaClasificado`, `cadaRolRecibeLoQueLeToca` |
+| Rutas sin sesión | Solo `POST /sesiones`, `POST /sesiones/google`, `GET /verificacion-actas/{codigo}` y `GET /actuator/health/**`, `/actuator/info`. No hay comodines: cualquier otra ruta bajo `/sesiones/` pide sesión | `MatrizAutorizacionTest.lasRutasPublicasSonSoloLasDeEntradaYVerificacion`, `loQueNoEsPublicoPideSesion` |
+| Contraseña temporal | La sesión no lleva el rol; solo puede leer `GET /sesiones/actual` y cambiar la clave en `PUT /sesiones/actual/contrasena` | `MatrizAutorizacionTest.conContrasenaTemporalSoloSeCambiaLaClave`, `CuentaUsuarioTest` |
+| Alcance | El coordinador solo ve su facultad y el docente lo propio; fuera de alcance responde 404, igual que lo inexistente | `AlcanceRecursosTest` |
+
+En resumen: vicerrectoría administra (periodos, ventanas, ponderaciones, facultades, programas, usuarios,
+auditoría) y consulta toda la institución; coordinación califica, coevalúa, carga CSV, analiza
+comentarios, abre franjas y firma actas de su facultad; el docente ve lo propio, se autoevalúa, reserva
+cita y firma su acta; el estudiante solo responde la heteroevaluación de sus clases.
 
 **Datos sensibles:** notas por fuente, promedio, categoría, comentarios de estudiantes, hallazgos y
 actas. La regla A4 impide que el docente vea notas individuales de cada fuente o un promedio parcial.
@@ -25,6 +44,22 @@ actas. La regla A4 impide que el docente vea notas individuales de cada fuente o
 **Riesgo aceptado.** Un administrador de la base podría intentar correlacionar por el orden físico de las
 filas en disco. La app nunca expone ese orden y las respuestas se listan por UUID.
 
+## Análisis de comentarios
+
+| Amenaza | Control | Evidencia |
+|---------|---------|-----------|
+| Inyección de instrucciones en un comentario | Filtro `INSTRUCCION_SOSPECHOSA` antes del modelo; los comentarios van como datos en el mensaje del usuario; la instrucción `analisis-v2` desautoriza toda orden escrita en ellos; toda cita se verifica contra el texto | `ValidacionAnalisisTest.losIntentosDeInyeccionNoCambianElResultado`, `ModeloIAChatCompletionsTest`, `ProveedorRealOpcionalTest` |
+| Datos personales hacia un proveedor externo | Proveedor externo apagado por defecto; el modelo local no usa red; antes de cualquier modelo se quitan nombres, correos, teléfonos, documentos, enlaces y el nombre del docente; clave solo en `.env` | `ValidacionAnalisisTest.ningunDatoPersonalLlegaALaSalida`, `AnonimizadorTest` |
+| Ligar un comentario del formulario con quien lo envió | Lectura solo con la recolección cerrada (409 antes); copia sin fecha, secuencia ni id de respuesta; orden por huella; el texto no va a logs ni auditoría | `AnalisisComentariosTest` |
+| Docente que ve comentarios o temas | 403 en los tres endpoints; política de roles en `PoliticaComentarios`; el docente solo ve hallazgos publicados (A4) | `MatrizAutorizacionTest`, `AnalisisComentariosTest.elDocenteNoVeCrudosYOtraFacultadRecibe404` |
+| IDOR entre facultades | Alcance por facultad en el servicio; 404 igual que inexistente | `AnalisisComentariosTest.elDocenteNoVeCrudosYOtraFacultadRecibe404` |
+| Deducir a un docente desde el resumen | El resumen no trae docentes y no se muestra con menos de 3 | `AnalisisComentariosTest.elResumenEsLaSumaYNoSeMuestraConPocosDocentes` |
+| Abuso de consulta | 60 consultas por usuario y minuto (429), página máxima de 50, 2.000 comentarios por corrida | `AnalisisComentariosTest.losComentariosSePaginanFiltranYTienenTope` |
+| Texto de comentarios en el registro de gasto o en logs | `uso_ia` solo guarda conteos, tokens y huella; los errores del proveedor se registran por código HTTP, sin cuerpo | `AhorroTokensTest.elUsoNoGuardaTextoNiPersonasYNadaVaAlRegistro`, `HuellaEntradaTest` |
+| Gasto descontrolado del proveedor | Muestra con tope, caché por huella, presupuesto por día y periodo, enfriamiento al regenerar; las lecturas nunca llaman | `AhorroTokensTest` |
+| Cita inventada por el modelo | Cita por id: el texto lo pone el sistema y un id no enviado queda sin verificar | `AhorroTokensTest.lasCitasPorIdSeResuelvenConElTextoEnviadoYUnIdInexistenteNoVale` |
+| Situación grave escondida en un comentario | Se excluye del análisis y queda una advertencia con la cantidad para coordinación | `ValidacionAnalisisTest` |
+
 ## Controles
 
 | Riesgo | Control | Evidencia |
@@ -40,8 +75,25 @@ filas en disco. La app nunca expone ese orden y las respuestas se listan por UUI
 | Secretos | Solo por entorno; gitleaks en CI | `.github/workflows/ci.yml` |
 | CSV malicioso | Límite de tamaño, filas, tipo y codificación | `ImportacionTest` |
 
-No hay exportación a CSV en el sistema. Por eso no aplica la protección contra inyección de fórmulas;
-si se agrega una exportación, debe prefijar `'` a los valores que empiecen por `=`, `+`, `-` o `@`.
+La única exportación es el Excel de Estadísticas, que arma el navegador con datos que la API ya le
+entregó. Los textos se escriben como cadena (`inlineStr` en `shared/utils/xlsx.js`), así que Excel no
+evalúa como fórmula un nombre que empiece por `=`; solo las celdas de resumen que arma el propio código
+son fórmulas. Si se agrega una exportación a CSV, debe prefijar `'` a los valores que empiecen por
+`=`, `+`, `-` o `@`.
+
+## Registros (logs)
+
+Ningún comentario, respuesta ni dato que identifique a un estudiante va al log.
+
+| Qué podría filtrarse | Control | Evidencia |
+|----------------------|---------|-----------|
+| Comentario o respuesta del estudiante | El envío no registra nada; la respuesta no tiene vínculo con quien respondió | `HeteroevaluacionTest.laRespuestaNoTieneNadaQueLaUnaAlEstudiante` (texto, UUID y correo ausentes del log) |
+| Texto de comentarios en un error del análisis | Los fallos del proveedor se registran por código HTTP; los errores inesperados del procesador, solo por tipo y lugar, sin mensaje | `AhorroTokensTest.unFalloInesperadoDelAnalisisNoVuelcaComentariosAlRegistro`, `elUsoNoGuardaTextoNiPersonasYNadaVaAlRegistro` |
+| Correo del destinatario en un fallo SMTP | Solo el tipo de error | `ProcesadorColaCorreo` |
+| Valores de una fila rechazada por la base | Solo la clase de la causa | `ManejadorGlobalExcepciones` |
+
+El manejador global sí registra la traza completa de un error no controlado en una petición, para
+poder diagnosticarlo con el `correlationId`; los caminos que tocan comentarios no llegan ahí con texto.
 
 ## Riesgos aceptados
 
@@ -56,6 +108,9 @@ si se agrega una exportación, debe prefijar `'` a los valores que empiecen por 
 ## Datos personales
 
 La Ley 1581 de 2012 orienta la minimización y la finalidad del tratamiento. El sistema las aplica así:
-guarda solo los datos de la evaluación, anonimiza comentarios antes del análisis, deja la IA externa
-apagada por defecto y no incluye datos de evaluación en los correos. Este documento describe controles
+guarda solo los datos de la evaluación, anonimiza comentarios antes del análisis, analiza por
+defecto con un modelo local sin red, deja el proveedor externo apagado y no incluye datos de evaluación
+en los correos. Activar un proveedor externo es enviar texto de estudiantes, aunque anonimizado, a un
+tercero: requiere revisar la política de tratamiento de datos de la institución y el contrato con el
+proveedor. Este documento describe controles
 técnicos; no afirma cumplimiento legal, que debe revisar la institución.

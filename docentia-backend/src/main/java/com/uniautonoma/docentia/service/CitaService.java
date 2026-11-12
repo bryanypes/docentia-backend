@@ -119,6 +119,9 @@ public class CitaService {
     Long idLiberada = null;
     Optional<Cita> anterior =
         citaRepository.bloquearActiva(sesion.idUsuario(), periodo.getIdPeriodo());
+    if (anterior.isPresent() && anterior.get().asistio()) {
+      throw new ReglaNegocioException("Ya asististe a tu reunión de retroalimentación");
+    }
     if (anterior.isPresent()) {
       anterior.get().liberar(MotivoLiberacion.REEMPLAZADA);
       citaRepository.saveAndFlush(anterior.get());

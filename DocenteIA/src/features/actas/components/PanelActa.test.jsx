@@ -1,4 +1,4 @@
-import { screen, waitFor } from '@testing-library/react'
+import { screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderizarConSesion } from '../../../pruebas/renderizarConSesion.jsx'
@@ -23,8 +23,19 @@ const ACTA = {
   firmas: [],
 }
 
+// jsdom no dibuja: un contexto 2D mínimo y un PNG fijo como resultado del lienzo.
+const TRAZO = 'data:image/png;base64,iVBORw0KGgo='
+const CONTEXTO = new Proxy({}, { get: (_, prop) => (prop === 'measureText' ? () => ({ width: 100 }) : () => {}) })
+
+async function firmarEscribiendo(dialogo) {
+  await userEvent.click(within(dialogo).getByRole('button', { name: 'Escribir' }))
+  await userEvent.type(within(dialogo).getByLabelText('Tu nombre como firma'), 'Ana')
+}
+
 beforeEach(() => {
   vi.clearAllMocks()
+  vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(CONTEXTO)
+  vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockReturnValue(TRAZO)
   obtenerConfiguracionEvaluacion.mockResolvedValue({ umbralCompromisos: 3.8, rolCorrectorActas: 'VICERRECTOR' })
 })
 
@@ -44,15 +55,20 @@ describe('PanelActa', () => {
     expect(crearActa).toHaveBeenCalledWith(3)
   })
 
-  it('firmar exige la confirmación explícita', async () => {
+  it('firmar abre el lienzo y exige el trazo y la confirmación', async () => {
     listarActas.mockResolvedValue([ACTA])
     firmarActa.mockResolvedValue(ACTA)
     renderizarConSesion(<PanelActa idDocente={3} />)
-    const boton = await screen.findByRole('button', { name: 'Firmar acta' })
-    expect(boton).toBeDisabled()
-    await userEvent.click(screen.getByRole('checkbox'))
-    await userEvent.click(boton)
-    expect(firmarActa).toHaveBeenCalledWith(7)
+    await userEvent.click(await screen.findByRole('button', { name: 'Firmar acta' }))
+
+    const dialogo = screen.getByRole('dialog', { name: 'Firmar el acta' })
+    const enviar = within(dialogo).getByRole('button', { name: 'Firmar acta' })
+    expect(enviar).toBeDisabled()
+    await firmarEscribiendo(dialogo)
+    expect(enviar).toBeDisabled()
+    await userEvent.click(within(dialogo).getByRole('checkbox'))
+    await userEvent.click(enviar)
+    expect(firmarActa).toHaveBeenCalledWith(7, TRAZO)
   })
 
   it('un doble clic en firmar envía una sola vez', async () => {
@@ -60,20 +76,25 @@ describe('PanelActa', () => {
     let terminar
     firmarActa.mockReturnValue(new Promise((resolver) => (terminar = resolver)))
     renderizarConSesion(<PanelActa idDocente={3} />)
-    await userEvent.click(await screen.findByRole('checkbox'))
-    const boton = screen.getByRole('button', { name: 'Firmar acta' })
-    await userEvent.dblClick(boton)
+    await userEvent.click(await screen.findByRole('button', { name: 'Firmar acta' }))
+    const dialogo = screen.getByRole('dialog', { name: 'Firmar el acta' })
+    await firmarEscribiendo(dialogo)
+    await userEvent.click(within(dialogo).getByRole('checkbox'))
+    await userEvent.dblClick(within(dialogo).getByRole('button', { name: 'Firmar acta' }))
     expect(firmarActa).toHaveBeenCalledTimes(1)
     terminar(ACTA)
   })
 
-  it('muestra el 409 de firma sin cita', async () => {
+  it('el error de la firma se muestra dentro del modal', async () => {
     listarActas.mockResolvedValue([ACTA])
     firmarActa.mockRejectedValue(new ApiError(409, 'El docente no tiene una cita agendada'))
     renderizarConSesion(<PanelActa idDocente={3} />)
-    await userEvent.click(await screen.findByRole('checkbox'))
-    await userEvent.click(screen.getByRole('button', { name: 'Firmar acta' }))
-    expect(await screen.findByText('El docente no tiene una cita agendada')).toBeInTheDocument()
+    await userEvent.click(await screen.findByRole('button', { name: 'Firmar acta' }))
+    const dialogo = screen.getByRole('dialog', { name: 'Firmar el acta' })
+    await firmarEscribiendo(dialogo)
+    await userEvent.click(within(dialogo).getByRole('checkbox'))
+    await userEvent.click(within(dialogo).getByRole('button', { name: 'Firmar acta' }))
+    expect(await within(dialogo).findByText('El docente no tiene una cita agendada')).toBeInTheDocument()
   })
 
   it('solo el rol corrector corrige un acta firmada', async () => {
@@ -89,6 +110,8 @@ describe('PanelActa', () => {
     renderizarConSesion(<PanelActa idDocente={3} />, { rol: 'VICERRECTOR' })
     await userEvent.type(await screen.findByLabelText('Motivo de la corrección'), 'Error de digitación')
     await userEvent.click(screen.getByRole('button', { name: /Corregir/ }))
+    const confirmacion = await screen.findByRole('dialog', { name: '¿Corregir el acta firmada?' })
+    await userEvent.click(within(confirmacion).getByRole('button', { name: 'Corregir acta' }))
     expect(corregirActa).toHaveBeenCalledWith(7, 'Error de digitación')
   })
 

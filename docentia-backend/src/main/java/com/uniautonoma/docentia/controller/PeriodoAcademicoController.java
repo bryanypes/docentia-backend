@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -89,7 +90,7 @@ public class PeriodoAcademicoController {
    * @param solicitud datos del periodo
    * @return el periodo creado, todavía inactivo
    */
-  @PreAuthorize("hasRole('VICERRECTOR')")
+  @PreAuthorize("hasAnyRole('VICERRECTOR', 'ADMINISTRADOR')")
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public PeriodoAcademicoResponse crearPeriodo(
@@ -104,7 +105,7 @@ public class PeriodoAcademicoController {
    * @param solicitud datos nuevos
    * @return el periodo actualizado
    */
-  @PreAuthorize("hasRole('VICERRECTOR')")
+  @PreAuthorize("hasAnyRole('VICERRECTOR', 'ADMINISTRADOR')")
   @PutMapping("/{idPeriodo}")
   public PeriodoAcademicoResponse actualizarPeriodo(
       @PathVariable Long idPeriodo,
@@ -119,12 +120,18 @@ public class PeriodoAcademicoController {
    * Activa un periodo; el que estuviera activo deja de estarlo.
    *
    * @param idPeriodo identificador del periodo
+   * @param confirmar acepta activar el periodo aunque no tenga matrículas
    * @return el periodo activado
    */
-  @PreAuthorize("hasRole('VICERRECTOR')")
+  @PreAuthorize("hasAnyRole('VICERRECTOR', 'ADMINISTRADOR')")
   @PutMapping("/{idPeriodo}/activacion")
-  public PeriodoAcademicoResponse activarPeriodo(@PathVariable Long idPeriodo) {
-    return periodoService.activarPeriodo(idPeriodo);
+  public PeriodoAcademicoResponse activarPeriodo(
+      @PathVariable Long idPeriodo,
+      @RequestParam(defaultValue = "false") boolean confirmar,
+      @AuthenticationPrincipal UsuarioSesion sesion) {
+    PeriodoAcademicoResponse periodo = periodoService.activarPeriodo(idPeriodo, confirmar);
+    auditoria.registrar(AccionAuditoria.ACTIVACION_PERIODO, "PERIODO", idPeriodo, sesion);
+    return periodo;
   }
 
   /**
@@ -132,10 +139,12 @@ public class PeriodoAcademicoController {
    *
    * @param idPeriodo identificador del periodo
    */
-  @PreAuthorize("hasRole('VICERRECTOR')")
+  @PreAuthorize("hasAnyRole('VICERRECTOR', 'ADMINISTRADOR')")
   @DeleteMapping("/{idPeriodo}/activacion")
   @ResponseStatus(HttpStatus.NO_CONTENT)
-  public void desactivarPeriodo(@PathVariable Long idPeriodo) {
+  public void desactivarPeriodo(
+      @PathVariable Long idPeriodo, @AuthenticationPrincipal UsuarioSesion sesion) {
     periodoService.desactivarPeriodo(idPeriodo);
+    auditoria.registrar(AccionAuditoria.DESACTIVACION_PERIODO, "PERIODO", idPeriodo, sesion);
   }
 }

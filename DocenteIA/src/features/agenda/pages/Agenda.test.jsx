@@ -3,10 +3,15 @@ import userEvent from '@testing-library/user-event'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderizarConSesion } from '../../../pruebas/renderizarConSesion.jsx'
 import { ApiError } from '../../../services/api.js'
+import * as procesoService from '../../proceso/services/procesoService.js'
 import * as agendaService from '../services/agendaService.js'
 import Agenda from './Agenda.jsx'
 
 vi.mock('../services/agendaService.js')
+vi.mock('../../proceso/services/procesoService.js')
+
+// Lunes 9 de noviembre de 2026, mediodía en Colombia.
+const AHORA = new Date('2026-11-09T17:00:00Z')
 
 const FRANJAS = [
   {
@@ -16,11 +21,11 @@ const FRANJAS = [
     horaFin: '08:30:00',
     estado: 'ABIERTA',
     reservada: true,
-    reserva: { idCita: 3, idDocente: 4, nombreDocente: 'Julián Camilo Hoyos' },
+    reserva: { idCita: 3, idDocente: 4, nombreDocente: 'Julián Camilo Hoyos', confirmacion: 'CONFIRMADA', asistencia: null },
   },
   {
     idFranja: 2,
-    fecha: '2026-11-09',
+    fecha: '2026-11-10',
     horaInicio: '08:30:00',
     horaFin: '09:00:00',
     estado: 'ABIERTA',
@@ -32,80 +37,99 @@ const FRANJAS = [
 describe('Agenda', () => {
   beforeEach(() => {
     vi.resetAllMocks()
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(AHORA)
     agendaService.listarFranjas.mockResolvedValue(FRANJAS)
   })
 
   afterEach(() => {
+    vi.useRealTimers()
     vi.restoreAllMocks()
   })
 
-  it('calcula el fin a +30 minutos y abre la franja con él', async () => {
-    agendaService.abrirFranja.mockResolvedValue({ idFranja: 9 })
+  it('muestra la semana con quién reservó y si confirmó', async () => {
     renderizarConSesion(<Agenda />)
 
-    fireEvent.change(screen.getByLabelText('Fecha'), { target: { value: '2099-11-11' } })
-    fireEvent.change(screen.getByLabelText('Hora de inicio'), { target: { value: '10:00' } })
-    expect(screen.getByText('Termina: 10:30')).toBeInTheDocument()
-    await userEvent.click(screen.getByRole('button', { name: 'Abrir franja' }))
-
-    expect(agendaService.abrirFranja).toHaveBeenCalledWith({
-      fecha: '2099-11-11',
-      horaInicio: '10:00',
-      horaFin: '10:30',
-    })
+    const reservada = await screen.findByRole('button', { name: /08:00–08:30: Julián Camilo Hoyos, Confirmó/ })
+    expect(reservada).toHaveTextContent('Julián Camilo Hoyos')
+    expect(screen.getByRole('button', { name: /martes, 10 de noviembre, 08:30–09:00: Libre/ })).toBeInTheDocument()
+    const estados = screen.getByRole('list', { name: 'Estado de las franjas visibles' })
+    expect(estados).toHaveTextContent('1 libres')
+    expect(estados).toHaveTextContent('1 confirmadas')
   })
 
-  it('el lote muestra las aplicadas y las omitidas con su motivo', async () => {
+  it('arrastrar sobre horas vacías abre las franjas del bloque', async () => {
     agendaService.abrirFranjasEnLote.mockResolvedValue({
       accion: 'ABRIR',
-      aplicadas: [{ indice: 0, idFranja: 5 }],
-      omitidas: [
-        {
-          indice: 1,
-          idFranja: null,
-          fecha: '2099-11-11',
-          horaInicio: '08:30:00',
-          horaFin: '09:00:00',
-          motivo: 'Se cruza con otra franja abierta',
-        },
+      aplicadas: [
+        { indice: 0, idFranja: 8 },
+        { indice: 1, idFranja: 9 },
       ],
-    })
-    renderizarConSesion(<Agenda />)
-
-    fireEvent.change(screen.getByLabelText('Fecha del bloque'), { target: { value: '2099-11-11' } })
-    fireEvent.change(screen.getByLabelText('Hasta'), { target: { value: '09:00' } })
-    await userEvent.click(screen.getByRole('button', { name: 'Abrir 2 franjas' }))
-
-    expect(await screen.findByText('Franjas abiertas: 1. Omitidas: 1.')).toBeInTheDocument()
-    expect(screen.getByText(/Se cruza con otra franja abierta/)).toBeInTheDocument()
-  })
-
-  it('eliminar una franja reservada muestra el 409 del backend', async () => {
-    vi.spyOn(window, 'confirm').mockReturnValue(true)
-    agendaService.eliminarFranja.mockRejectedValue(
-      new ApiError(409, 'No se puede eliminar una franja con una cita reservada'),
-    )
-    renderizarConSesion(<Agenda />)
-
-    const fila = (await screen.findByText('Julián Camilo Hoyos')).closest('tr')
-    expect(within(fila).queryByRole('checkbox')).not.toBeInTheDocument()
-    await userEvent.click(within(fila).getByRole('button', { name: /Eliminar/ }))
-
-    expect(await screen.findByRole('alert')).toHaveTextContent('con una cita reservada')
-  })
-
-  it('cierra en lote las seleccionadas', async () => {
-    agendaService.cerrarFranjasEnLote.mockResolvedValue({
-      accion: 'CERRAR',
-      aplicadas: [{ indice: 0, idFranja: 2 }],
       omitidas: [],
     })
     renderizarConSesion(<Agenda />)
 
-    await userEvent.click(await screen.findByRole('checkbox', { name: 'Seleccionar 08:30–09:00' }))
-    await userEvent.click(screen.getByRole('button', { name: 'Cerrar seleccionadas (1)' }))
+    const inicio = await screen.findByRole('button', { name: 'miércoles, 11 de noviembre, 10:00–10:30: vacía' })
+    const fin = screen.getByRole('button', { name: 'miércoles, 11 de noviembre, 10:30–11:00: vacía' })
+    // Con teclado: Enter marca el inicio y Mayús+Enter el final.
+    fireEvent.click(inicio)
+    fireEvent.click(fin, { shiftKey: true })
+    await userEvent.click(screen.getByRole('button', { name: 'Abrir 2 franjas' }))
 
-    expect(agendaService.cerrarFranjasEnLote).toHaveBeenCalledWith([2])
-    expect(await screen.findByText('Franjas cerradas: 1. Omitidas: 0.')).toBeInTheDocument()
+    expect(agendaService.abrirFranjasEnLote).toHaveBeenCalledWith([
+      { fecha: '2026-11-11', horaInicio: '10:00', horaFin: '10:30' },
+      { fecha: '2026-11-11', horaInicio: '10:30', horaFin: '11:00' },
+    ])
+    expect(await screen.findByText('Franjas abiertas: 2. Omitidas: 0.')).toBeInTheDocument()
+  })
+
+  it('los días pasados no se pueden abrir', async () => {
+    renderizarConSesion(<Agenda />)
+    await userEvent.click(await screen.findByRole('button', { name: 'Semana anterior' }))
+    expect(screen.getByRole('button', { name: 'lunes, 2 de noviembre, 10:00–10:30: vacía' })).toBeDisabled()
+  })
+
+  it('el día de la cita la coordinación registra la asistencia desde el calendario', async () => {
+    procesoService.registrarAsistencia.mockResolvedValue({ idCita: 3, asistencia: 'ASISTIO' })
+    renderizarConSesion(<Agenda />)
+
+    await userEvent.click(await screen.findByRole('button', { name: /Julián Camilo Hoyos, Confirmó/ }))
+    expect(screen.getByRole('link', { name: 'Ver expediente y proceso' })).toHaveAttribute('href', '/docentes/4')
+    await userEvent.click(screen.getByRole('button', { name: 'Asistió · habilitar resultado' }))
+
+    expect(procesoService.registrarAsistencia).toHaveBeenCalledWith(3, true)
+    expect(await screen.findByText('Asistencia registrada.')).toBeInTheDocument()
+  })
+
+  it('la coordinación mueve una cita a otra franja libre o la cancela', async () => {
+    agendaService.reprogramarCita.mockResolvedValue({ idCita: 5, idFranja: 2 })
+    agendaService.cancelarCita.mockResolvedValue({ idCita: 3, estado: 'LIBERADA' })
+    renderizarConSesion(<Agenda />)
+
+    await userEvent.click(await screen.findByRole('button', { name: /Julián Camilo Hoyos, Confirmó/ }))
+    await userEvent.click(screen.getByRole('button', { name: 'Cambiar horario' }))
+    await userEvent.selectOptions(screen.getByLabelText('Nuevo horario'), '2')
+    await userEvent.click(screen.getByRole('button', { name: 'Mover la cita' }))
+    expect(agendaService.reprogramarCita).toHaveBeenCalledWith(3, 2)
+    expect(await screen.findByText('Cita movida. Se avisó al docente.')).toBeInTheDocument()
+
+    await userEvent.click(await screen.findByRole('button', { name: /Julián Camilo Hoyos, Confirmó/ }))
+    await userEvent.click(screen.getByRole('button', { name: 'Cancelar cita' }))
+    const confirmacion = await screen.findByRole('dialog', { name: '¿Cancelar la cita?' })
+    await userEvent.click(within(confirmacion).getByRole('button', { name: 'Cancelar cita' }))
+    expect(agendaService.cancelarCita).toHaveBeenCalledWith(3)
+  })
+
+  it('eliminar una franja muestra el error del backend', async () => {
+    agendaService.eliminarFranja.mockRejectedValue(new ApiError(409, 'La franja ya tuvo citas'))
+    renderizarConSesion(<Agenda />)
+
+    await userEvent.click(await screen.findByRole('button', { name: /08:30–09:00: Libre/ }))
+    await userEvent.click(screen.getByRole('button', { name: 'Eliminar' }))
+    // Se confirma en un modal propio, no en el diálogo del navegador.
+    const confirmacion = await screen.findByRole('dialog', { name: '¿Eliminar la franja?' })
+    await userEvent.click(within(confirmacion).getByRole('button', { name: 'Eliminar' }))
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('La franja ya tuvo citas')
   })
 })

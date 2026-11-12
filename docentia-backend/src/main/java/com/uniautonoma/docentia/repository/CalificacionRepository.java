@@ -5,6 +5,7 @@ import com.uniautonoma.docentia.entity.FuenteEvaluacion;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import java.util.List;
 import java.util.Optional;
+import org.springframework.data.repository.query.Param;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
@@ -30,6 +31,17 @@ public interface CalificacionRepository extends JpaRepository<Calificacion, Long
    * @return calificaciones registradas hasta el momento
    */
   List<Calificacion> findByDocenteIdUsuarioAndPeriodoIdPeriodo(Long idDocente, Long idPeriodo);
+
+  /** Calificaciones reales del personal activo de un programa en un periodo. */
+  @Query(
+      """
+      select c from Calificacion c
+      where c.periodo.idPeriodo = :idPeriodo
+        and c.docente.programa.idPrograma = :idPrograma
+        and c.docente.esActivo = true
+      """)
+  List<Calificacion> listarPorProgramaYPeriodo(
+      @Param("idPrograma") Long idPrograma, @Param("idPeriodo") Long idPeriodo);
 
   /**
    * Lista los periodos en los que un docente tiene al menos una calificación.

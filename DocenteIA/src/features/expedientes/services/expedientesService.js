@@ -9,3 +9,11 @@ export function obtenerExpedientePropio() {
 export function obtenerExpedienteDocente(idDocente) {
   return api.get(`/expedientes/${encodeURIComponent(idDocente)}`)
 }
+
+export function obtenerComparativoDocente(idDocente) {
+  return api.get(`/expedientes/${encodeURIComponent(idDocente)}/comparativo`)
+}
+
+export function obtenerComparativoPropio() {
+  return api.get('/expedientes/propio/comparativo')
+}

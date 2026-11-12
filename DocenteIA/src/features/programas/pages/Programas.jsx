@@ -1,14 +1,19 @@
-import { BookOpen, Pencil, RefreshCw, Trash2 } from 'lucide-react'
+import { BookOpen, RefreshCw } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
-import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
+import { BotonAccion } from '../../../shared/components/ui/BotonAccion/BotonAccion.jsx'
 import { Campo } from '../../../shared/components/ui/Campo/Campo.jsx'
 import { ErrorApi } from '../../../shared/components/ui/ErrorApi/ErrorApi.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
+import { Paginacion } from '../../../shared/components/ui/Paginacion/Paginacion.jsx'
+import { useFiltrosUrl, usePaginacion } from '../../../shared/hooks/usePaginacion.js'
+import { ModalAlcance } from '../../facultades/components/ModalAlcance.jsx'
 import { listarFacultades } from '../../facultades/services/facultadesService.js'
+import { AvisoFlotante } from '../../../shared/components/ui/Avisos/AvisoFlotante.jsx'
+import { useAvisos } from '../../../shared/components/ui/Avisos/avisosContext.js'
 import {
   actualizarPrograma,
   crearPrograma,
@@ -19,7 +24,10 @@ import {
 const VACIO = { nombre: '', idFacultad: '' }
 
 export default function Programas() {
-  const [filtro, setFiltro] = useState('')
+  const { confirmar } = useAvisos()
+  const [filtros, actualizarFiltros] = useFiltrosUrl({ facultad: '' })
+  const filtro = filtros.facultad
+  const [viendo, setViendo] = useState(null)
   const cargar = useCallback(() => listarProgramas(filtro || null), [filtro])
   const programas = useFetch(cargar, [cargar])
   const facultades = useFetch(listarFacultades)
@@ -50,7 +58,13 @@ export default function Programas() {
   }
 
   async function eliminar(programa) {
-    if (!window.confirm(`¿Eliminar el programa «${programa.nombre}»?`)) return
+    const seguro = await confirmar({
+      tipo: 'peligro',
+      titulo: '¿Eliminar el programa?',
+      mensaje: `«${programa.nombre}» se elimina si no tiene docentes.`,
+      textoConfirmar: 'Eliminar',
+    })
+    if (!seguro) return
     setError(null)
     setResultado(null)
     try {
@@ -63,6 +77,7 @@ export default function Programas() {
   }
 
   const lista = programas.datos ?? []
+  const paginacion = usePaginacion(lista)
   const opciones = (facultades.datos ?? []).map((facultad) => (
     <option key={facultad.idFacultad} value={facultad.idFacultad}>
       {facultad.nombre}
@@ -73,7 +88,7 @@ export default function Programas() {
     <>
       <Encabezado miga="Vicerrectoría · Programas" titulo="Programas" subtitulo="Programas académicos de cada facultad." />
       <div className="pagina">
-        {resultado && <Aviso tipo="exito" titulo={resultado} />}
+        <AvisoFlotante mensaje={resultado} />
         <ErrorApi error={error} nombresCampos={{ nombre: 'Nombre', idFacultad: 'Facultad' }} />
         <Panel titulo={enEdicion ? `Editar ${enEdicion.nombre}` : 'Nuevo programa'} icono={BookOpen}>
           <form className="formulario-simple" onSubmit={guardar}>
@@ -113,7 +128,7 @@ export default function Programas() {
             id="filtroFacultadProgramas"
             className="campo__control"
             value={filtro}
-            onChange={(e) => setFiltro(e.target.value)}
+            onChange={(e) => actualizarFiltros({ facultad: e.target.value })}
           >
             <option value="">Todas</option>
             {opciones}
@@ -131,7 +146,7 @@ export default function Programas() {
         )}
         {lista.length > 0 && (
           <div className="tabla-contenedor">
-            <table className="tabla">
+            <table className="tabla tabla--apilable">
               <thead>
                 <tr>
                   <th scope="col">Programa</th>
@@ -140,28 +155,15 @@ export default function Programas() {
                 </tr>
               </thead>
               <tbody>
-                {lista.map((programa) => (
+                {paginacion.visibles.map((programa) => (
                   <tr key={programa.idPrograma}>
                     <td className="tabla__fuerte">{programa.nombre}</td>
-                    <td>{programa.nombreFacultad}</td>
+                    <td data-etiqueta="Facultad">{programa.nombreFacultad}</td>
                     <td>
                       <div className="acciones-fila">
-                        <Boton
-                          variante="enlace"
-                          icono={Pencil}
-                          aria-label={`Editar ${programa.nombre}`}
-                          onClick={() => editar(programa)}
-                        >
-                          Editar
-                        </Boton>
-                        <Boton
-                          variante="enlace"
-                          icono={Trash2}
-                          aria-label={`Eliminar ${programa.nombre}`}
-                          onClick={() => eliminar(programa)}
-                        >
-                          Eliminar
-                        </Boton>
+                        <BotonAccion tipo="ver" nombre={programa.nombre} onClick={() => setViendo(programa)} />
+                        <BotonAccion tipo="editar" nombre={programa.nombre} onClick={() => editar(programa)} />
+                        <BotonAccion tipo="eliminar" nombre={programa.nombre} onClick={() => eliminar(programa)} />
                       </div>
                     </td>
                   </tr>
@@ -170,6 +172,8 @@ export default function Programas() {
             </table>
           </div>
         )}
+        {lista.length > 0 && <Paginacion {...paginacion} etiqueta="programas" />}
+        {viendo && <ModalAlcance programa={viendo} onCerrar={() => setViendo(null)} />}
       </div>
     </>
   )

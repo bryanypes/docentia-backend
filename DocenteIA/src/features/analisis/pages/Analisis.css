@@ -117,3 +117,44 @@
 .analisis__versiones p {
   margin: 2px 0 0;
 }
+
+/* Pasos de la guía de DocenteIA. */
+.analisis__pasos-ia {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.analisis__pasos-ia li {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.analisis__pasos-ia span {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  border-radius: 50%;
+  background: var(--color-azul);
+  color: var(--color-crema);
+  font-size: 12px;
+  font-weight: var(--peso-fuerte);
+}
+
+.mensaje-ia--compacto .analisis__pasos-ia {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+  font-size: 13px;
+}
+
+@media (max-width: 900px) {
+  .mensaje-ia--compacto .analisis__pasos-ia {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

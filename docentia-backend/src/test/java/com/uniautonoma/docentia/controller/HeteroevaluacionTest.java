@@ -116,7 +116,28 @@ class HeteroevaluacionTest extends PruebaIntegracion {
   }
 
   private ResultActions enviar(Usuario estudiante, int valor) throws Exception {
-    return enviar(estudiante, todos(valor), null);
+    return enviar(estudiante, todos(valor), "Explica con claridad y da ejemplos.");
+  }
+
+  @Test
+  void elEnvioRechazadoQuedaAuditadoComoFallo() throws Exception {
+    long inexistente = 987655L;
+
+    mockMvc
+        .perform(
+            post(LISTA + "/{id}/enviar", inexistente)
+                .with(como(estudiantes.get(0)))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(aJson(Map.of("respuestas", todos(4)))))
+        .andExpect(status().isNotFound());
+
+    assertThat(
+            jdbcTemplate.queryForObject(
+                "select count(*) from auditoria where accion = 'ENVIO_HETEROEVALUACION'"
+                    + " and entidad_id = ? and resultado = 'FALLO'",
+                Long.class,
+                inexistente))
+        .isEqualTo(1);
   }
 
   private com.uniautonoma.docentia.entity.Calificacion estudiantesDe(Usuario quien) {
@@ -172,8 +193,16 @@ class HeteroevaluacionTest extends PruebaIntegracion {
     ajeno.put("D01", 4);
     enviar(e, ajeno, null).andExpect(status().isUnprocessableEntity());
     enviar(e, todos(4), "x".repeat(1001)).andExpect(status().isUnprocessableEntity());
+    for (String malo :
+        new String[] {
+          null, "   ", "  corto  ", "..........", "1234567890!", "aaaaaaaaaaaa", "a a a a a a a"
+        }) {
+      enviar(e, todos(4), malo)
+          .andExpect(status().isUnprocessableEntity())
+          .andExpect(jsonPath("$.mensaje").exists());
+    }
 
-    enviar(e, todos(4), "Explica con ejemplos")
+    enviar(e, todos(4), "  Explica con ejemplos  ")
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.estado").value("ENVIADA"))
         .andExpect(content().string(not(containsString("4"))));
@@ -281,7 +310,10 @@ class HeteroevaluacionTest extends PruebaIntegracion {
     String idRespuesta =
         jdbcTemplate.queryForObject(
             "select id::text from respuestas_heteroevaluacion", String.class);
-    assertThat(salida.getAll()).doesNotContain(idRespuesta).doesNotContain("Comentario de prueba");
+    assertThat(salida.getAll())
+        .doesNotContain(idRespuesta)
+        .doesNotContain("Comentario de prueba")
+        .doesNotContain(estudiantes.get(0).getCorreo());
     assertThat(
             jdbcTemplate.queryForObject(
                 "select count(*) from auditoria where entidad_id::text = ? or entidad = ?",

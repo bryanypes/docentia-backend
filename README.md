@@ -24,6 +24,7 @@ docker compose up --build -d
 | Aplicación | <http://localhost:5173>       |
 | API        | <http://localhost:8080/api>   |
 | PostgreSQL | `localhost:5433`              |
+| Correos (Mailpit) | <http://localhost:8025> |
 
 Los usuarios de demo están en `docentia-backend/README.md`; su contraseña es `Docentia2026*`. Para
 el flujo de actas, entra con `coordinacion.ingenieria@uniautonoma.edu.co` y `nora.munoz@uniautonoma.edu.co`,
@@ -42,8 +43,23 @@ docker compose down          # apagar y conservar los datos
 docker compose down -v       # apagar y borrar los datos; al subir vuelve el seed
 ```
 
-Si algún puerto está ocupado, copia `.env.example` como `.env` y cambia `POSTGRES_PORT`, `API_PORT`
-o `WEB_PORT`. El archivo `.env` no se sube al repositorio.
+Si algún puerto está ocupado, copia `.env.example` como `.env` y cambia `POSTGRES_PORT`, `API_PORT`,
+`WEB_PORT` o `MAILPIT_PORT`. El archivo `.env` no se sube al repositorio.
+
+**Windows y puertos reservados.** Hyper-V y WSL reservan rangos de puertos que cambian al reiniciar. Si
+Docker dice `An attempt was made to access a socket in a way forbidden by its access permissions` o
+`ports are not available`, el puerto no está ocupado sino reservado. Para ver los rangos:
+
+```powershell
+netsh interface ipv4 show excludedportrange protocol=tcp
+```
+
+Elige en `.env` puertos fuera de esos rangos (por ejemplo `API_PORT=18080`, `WEB_PORT=18173`,
+`POSTGRES_PORT=6543`) y vuelve a levantar.
+
+**Roles.** Seis: vicerrectoría, administración, visualización, coordinación, docente y estudiante.
+Qué puede hacer cada uno está en `docentia-backend/docs/ROLES.md`. Las notas salen solo de los
+formularios; la carga por CSV ya no se usa.
 
 Los correos de desarrollo se ven en <http://localhost:8025>. La operación completa está en
 `docentia-backend/docs/OPERACION.md`; la arquitectura en `ARQUITECTURA.md`, la API en `API.md`, la
