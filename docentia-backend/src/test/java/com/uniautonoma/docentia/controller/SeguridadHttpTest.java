@@ -139,6 +139,9 @@ class SeguridadHttpTest extends PruebaIntegracion {
   void soloSaludEInfoQuedanExpuestos() throws Exception {
     mockMvc.perform(get("/actuator/health/readiness")).andExpect(status().isOk());
     mockMvc.perform(get("/actuator/health/liveness")).andExpect(status().isOk());
+    mockMvc.perform(get("/actuator/health")).andExpect(status().isOk());
+    // Sin comodines: un subcomponente de la salud no queda público.
+    mockMvc.perform(get("/actuator/health/db")).andExpect(status().isUnauthorized());
     mockMvc.perform(get("/actuator/env")).andExpect(status().isUnauthorized());
     mockMvc.perform(get("/actuator/env").with(comoVicerrector())).andExpect(status().isNotFound());
   }

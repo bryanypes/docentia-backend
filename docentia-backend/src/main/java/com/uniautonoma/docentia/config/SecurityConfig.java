@@ -66,7 +66,12 @@ public class SecurityConfig {
                 peticiones
                     .requestMatchers(HttpMethod.POST, "/sesiones")
                     .permitAll()
-                    .requestMatchers(HttpMethod.GET, "/actuator/health/**", "/actuator/info")
+                    .requestMatchers(
+                        HttpMethod.GET,
+                        "/actuator/health",
+                        "/actuator/health/liveness",
+                        "/actuator/health/readiness",
+                        "/actuator/info")
                     .permitAll()
                     .requestMatchers(HttpMethod.GET, "/verificacion-actas/*")
                     .permitAll()
