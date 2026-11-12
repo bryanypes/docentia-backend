@@ -100,7 +100,7 @@ export function describirCobertura(cobertura) {
   if (esperadas === 0) {
     return origenNota
       ? { titulo: 'Sin matrícula en la app', detalle: `La nota de estudiantes está ${ORIGEN[origenNota]}.` }
-      : { titulo: 'Sin matrícula en la app', detalle: 'Importa la matrícula para que los estudiantes respondan.' }
+      : { titulo: 'Sin matrícula en la app', detalle: 'Aún no hay estudiantes matriculados en sus cursos.' }
   }
   const faltan = Math.max(0, minimo - respondidas)
   const umbral =

@@ -14,7 +14,6 @@ import EvaluacionProfesores from '../features/formularios/pages/EvaluacionProfes
 import HeteroevaluacionClase from '../features/formularios/pages/HeteroevaluacionClase.jsx'
 import MiAutoevaluacion from '../features/formularios/pages/MiAutoevaluacion.jsx'
 import Auditoria from '../features/auditoria/pages/Auditoria.jsx'
-import Matricula from '../features/heteroevaluacion/pages/Matricula.jsx'
 import Notificaciones from '../features/notificaciones/pages/Notificaciones.jsx'
 import PanelProgramas from '../features/kpis/pages/PanelProgramas.jsx'
 import Agenda from '../features/agenda/pages/Agenda.jsx'
@@ -25,7 +24,6 @@ import Estadisticas from '../features/estadisticas/pages/Estadisticas.jsx'
 import ExpedienteDocente from '../features/expedientes/pages/ExpedienteDocente.jsx'
 import MiEvaluacion from '../features/expedientes/pages/MiEvaluacion.jsx'
 import Facultades from '../features/facultades/pages/Facultades.jsx'
-import Importaciones from '../features/importaciones/pages/Importaciones.jsx'
 import Periodos from '../features/periodos/pages/Periodos.jsx'
 import Ponderaciones from '../features/ponderaciones/pages/Ponderaciones.jsx'
 import Programas from '../features/programas/pages/Programas.jsx'
@@ -97,9 +95,6 @@ function RutasDocentia() {
               </Route>
 
               <Route element={<ProtectedRoute rolesPermitidos={[ROLES.COORDINADOR]} />}>
-                {/* La carga de estudiantes y la matrícula son solo de coordinación. */}
-                <Route path="/importaciones" element={<Importaciones />} />
-                <Route path="/matricula" element={<Matricula />} />
                 <Route path="/agenda" element={<Agenda />} />
                 <Route path="/coevaluaciones" element={<Coevaluaciones />} />
                 <Route path="/coevaluaciones/:idDocente" element={<CoevaluacionDocente />} />
