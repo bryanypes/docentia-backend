@@ -71,7 +71,7 @@ public class SesionController {
           AuditoriaService.EXITO);
       return sesion;
     } catch (CredencialesInvalidasException rechazo) {
-      limitador.registrarFallo(solicitud.correo(), ip);
+      int usados = limitador.registrarFallo(solicitud.correo(), ip);
       auditoria.registrar(
           AccionAuditoria.LOGIN,
           "USUARIO",
@@ -80,7 +80,7 @@ public class SesionController {
           solicitud.correo(),
           null,
           AuditoriaService.FALLO);
-      throw rechazo;
+      throw rechazo.conIntentos(usados, limitador.getMaximoPorCorreo());
     }
   }
 

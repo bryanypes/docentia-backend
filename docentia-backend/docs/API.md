@@ -81,5 +81,15 @@ Contrato completo en [api-comentarios-ia.md](api-comentarios-ia.md).
 }
 ```
 
-El login responde 429 tras varios intentos fallidos. Un conflicto de versión responde 409. Los listados
+El login con contraseña responde 401 con el mensaje de siempre más `intentosUsados` e
+`intentosMaximos` del correo en la ventana (por defecto 5 en 10 minutos). Al superar el límite responde
+429 con `segundosParaReintentar` y la cabecera `Retry-After`, para mostrar un contador:
+
+```json
+{ "mensaje": "Correo o contraseña incorrectos", "errores": {}, "intentosUsados": 2, "intentosMaximos": 5 }
+{ "mensaje": "Demasiados intentos. Podrás volver a intentarlo en 8 minutos", "errores": {}, "segundosParaReintentar": 472 }
+```
+
+Un correo que no existe cuenta igual que uno que sí, así que el conteo no revela qué cuentas existen.
+Un conflicto de versión responde 409. Los listados
 sin paginación devuelven como máximo 1000 filas e informan el total en `X-Total-Count`.
