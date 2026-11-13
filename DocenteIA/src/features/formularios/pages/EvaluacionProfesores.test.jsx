@@ -33,13 +33,15 @@ describe('EvaluacionProfesores', () => {
     })
     renderizarConSesion(<EvaluacionProfesores />, { rol: 'ESTUDIANTE' })
     expect(await screen.findByText('Ya completaste todas tus evaluaciones. ¡Gracias por participar!')).toBeInTheDocument()
-    expect(screen.queryByText('No tienes evaluaciones')).not.toBeInTheDocument()
+    expect(screen.queryByText('No tienes docentes por evaluar')).not.toBeInTheDocument()
   })
 
   it('muestra vacío y error', async () => {
     listarEvaluaciones.mockResolvedValueOnce({ periodo: { nombre: '2026-2' }, pendientes: 0, evaluaciones: [] })
     const { unmount } = renderizarConSesion(<EvaluacionProfesores />, { rol: 'ESTUDIANTE' })
-    expect(await screen.findByText('No tienes evaluaciones')).toBeInTheDocument()
+    expect(await screen.findByText('No tienes docentes por evaluar')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Solicitar ayuda/ })).toHaveAttribute('href', expect.stringContaining('estudiante'))
+    expect(screen.getByRole('button', { name: 'Intentar nuevamente' })).toBeInTheDocument()
     unmount()
     listarEvaluaciones.mockRejectedValueOnce(new ApiError(500, 'Falló'))
     renderizarConSesion(<EvaluacionProfesores />, { rol: 'ESTUDIANTE' })

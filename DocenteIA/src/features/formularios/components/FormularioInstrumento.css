@@ -248,3 +248,10 @@
   border-radius: 999px;
   background: var(--color-turquesa);
 }
+
+.evaluacion-profesores__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
