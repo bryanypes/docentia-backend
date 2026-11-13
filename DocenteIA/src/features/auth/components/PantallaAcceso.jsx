@@ -10,12 +10,12 @@ const PUNTOS = [
 ]
 
 /**
- * Pantalla de acceso (login y cambio de contraseña). En pantallas anchas muestra a la izquierda un
- * panel de marca con DocenteIA señalando el formulario; en celulares queda solo la tarjeta.
+ * Pantalla de acceso (login, recuperar y cambiar contraseña). Una tarjeta compacta con la marca en
+ * una sola fila; en pantallas anchas, a la izquierda, un panel con DocenteIA y lo esencial.
  *
  * @param avatar ilustración del robot; cambia según el estado del formulario
  * @param estadoAvatar texto breve para lectores de pantalla cuando el avatar comunica algo
- * @param tono 'error' sacude el avatar; 'espera' lo hace respirar mientras corre un contador
+ * @param tono 'error' tiñe el aro del avatar de rojo; 'espera' lo hace latir en ámbar
  * @param volverAlInicio muestra el enlace para regresar a la página de presentación
  */
 export function PantallaAcceso({ avatar, estadoAvatar, tono = null, volverAlInicio = false, children }) {
@@ -27,8 +27,14 @@ export function PantallaAcceso({ avatar, estadoAvatar, tono = null, volverAlInic
           Volver al inicio
         </Link>
       )}
+
       <section className="acceso__presentacion" aria-label="Sobre DOCENTIA">
-        <p className="acceso__eyebrow">Evaluación Docente · Autónoma del Cauca</p>
+        <div className="acceso__presentacion-cabecera">
+          <span className="acceso__presentacion-robot" aria-hidden="true">
+            <img src={robotSenala} alt="" />
+          </span>
+          <p className="acceso__eyebrow">Evaluación Docente · Autónoma del Cauca</p>
+        </div>
         <h2 className="acceso__titular">
           Evaluar para <span>acompañar</span> el crecimiento de cada docente.
         </h2>
@@ -42,29 +48,29 @@ export function PantallaAcceso({ avatar, estadoAvatar, tono = null, volverAlInic
             </li>
           ))}
         </ul>
-        <img className="acceso__robot-grande" src={robotSenala} alt="" />
       </section>
 
       <main className={`acceso__tarjeta${tono ? ` acceso__tarjeta--${tono}` : ''}`}>
-        <div className="acceso__avatar">
-          {/* key: al cambiar de ilustración se hace un fundido corto */}
-          <img key={avatar} src={avatar} alt="" />
-        </div>
-        {estadoAvatar && (
-          <span className="solo-lectores" role="status">
-            {estadoAvatar}
+        <header className="acceso__cabecera">
+          <span className="acceso__avatar">
+            {/* key: al cambiar de ilustración se hace un fundido corto */}
+            <img key={avatar} src={avatar} alt="" />
           </span>
-        )}
-
-        <header className="acceso__marca">
-          <p className="acceso__nombre">DOCENTIA</p>
+          <span className="acceso__marca">
+            <strong>DOCENTIA</strong>
+            <small>Evaluación Docente</small>
+          </span>
           <img
             className="acceso__logo"
             src={`${import.meta.env.BASE_URL}brand/logo-uniautonoma.png`}
             alt="Universidad Autónoma del Cauca"
           />
-          <p className="acceso__institucion">Evaluación docente institucional</p>
         </header>
+        {estadoAvatar && (
+          <span className="solo-lectores" role="status">
+            {estadoAvatar}
+          </span>
+        )}
 
         {children}
       </main>

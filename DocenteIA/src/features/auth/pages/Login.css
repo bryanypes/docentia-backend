@@ -5,13 +5,21 @@
   gap: var(--separacion);
 }
 
+.login__encabezado {
+  display: grid;
+  gap: 2px;
+}
+
 .login__formulario-titulo {
-  padding-top: var(--separacion);
-  border-top: 1px solid var(--color-borde-suave);
-  font-size: 20px;
+  font-size: 21px;
   font-weight: var(--peso-fuerte);
   letter-spacing: -0.02em;
-  text-align: center;
+  color: var(--color-texto);
+}
+
+.login__subtitulo {
+  font-size: 13.5px;
+  color: var(--color-texto-tenue);
 }
 
 .login__aviso {
@@ -152,9 +160,7 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding-top: var(--separacion);
-  border-top: 1px solid var(--color-borde-suave);
+  gap: 8px;
   text-align: center;
 }
 
@@ -267,8 +273,32 @@
   color: var(--color-texto-secundario);
 }
 
+.login__externo-ayuda {
+  margin-top: 6px;
+  font-size: 13px;
+  color: var(--color-texto-secundario);
+}
+
 .login__externo-correo {
   overflow-wrap: anywhere;
+}
+
+.login__limite-ayuda {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-error-borde);
+  font-weight: var(--peso-semi);
+  color: var(--color-texto);
+}
+
+.login__limite-ayuda .solicitar-ayuda__boton {
+  min-height: 36px;
+  padding: 0 12px;
+  font-size: 13px;
 }
 
 .login__problemas {
@@ -280,11 +310,9 @@
 @keyframes login-entrar {
   from {
     opacity: 0;
-    transform: translateY(-4px);
   }
   to {
     opacity: 1;
-    transform: none;
   }
 }
 
@@ -331,7 +359,7 @@
 }
 
 .login__ingresar:hover:not(:disabled) {
-  transform: translateY(-1px);
+  background: var(--color-azul-oscuro);
   box-shadow: 0 12px 24px -12px rgba(5, 54, 134, 0.7);
 }
 
@@ -382,4 +410,32 @@
   justify-self: center;
   font-size: 0.9rem;
   font-weight: var(--peso-semi);
+}
+
+@media (max-height: 760px) {
+  .login__externo {
+    grid-template-columns: 44px minmax(0, 1fr);
+    gap: 10px;
+    padding: 10px 12px;
+  }
+
+  .login__externo-robot {
+    width: 44px;
+  }
+
+  .login__externo-texto {
+    font-size: 13px;
+  }
+
+  .login__cronometro {
+    width: 124px;
+  }
+
+  .login__contador {
+    font-size: 30px;
+  }
+
+  .login__contador-unidad {
+    margin-top: 40px;
+  }
 }

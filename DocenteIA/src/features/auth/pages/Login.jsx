@@ -257,7 +257,10 @@ export default function Login() {
   return (
     <PantallaAcceso avatar={avatar} estadoAvatar={estadoAvatar} tono={hayError ? 'error' : null} volverAlInicio>
       <form className="login__formulario" onSubmit={manejarEnvio} noValidate>
-        <h1 className="login__formulario-titulo">Iniciar sesión</h1>
+        <div className="login__encabezado">
+          <h1 className="login__formulario-titulo">Iniciar sesión</h1>
+          <p className="login__subtitulo">Ingresa con tu correo institucional.</p>
+        </div>
 
         {motivoCierre === MOTIVO_CIERRE.EXPIRADA && !errorGeneral && (
           <div className="login__aviso login__aviso--info" role="status">
@@ -274,9 +277,11 @@ export default function Login() {
                 Este correo no puede ingresar a DOCENTIA
               </h2>
               <p className="login__externo-texto">
-                <strong className="login__externo-correo">{correoExterno}</strong> no hace parte de la Corporación
-                Universitaria Autónoma del Cauca. Ingresa con tu correo institucional, el que termina en{' '}
-                <strong>@{DOMINIO_INSTITUCIONAL}</strong>.
+                <strong className="login__externo-correo">{correoExterno}</strong> no hace parte de la Corporación.
+                Usa tu correo institucional <strong>@{DOMINIO_INSTITUCIONAL}</strong>.
+              </p>
+              <p className="login__externo-ayuda">
+                ¿Aún no tienes correo institucional? <SolicitarAyuda compacto variante="enlace" />
               </p>
             </div>
           </section>
@@ -288,6 +293,12 @@ export default function Login() {
             <span>
               {errorGeneral.message}
               {avisoIntentos && <span className="login__intentos">{avisoIntentos}</span>}
+              {enElLimite && (
+                <span className="login__limite-ayuda">
+                  <span>¿Tienes problemas para ingresar a DOCENTIA?</span>
+                  <SolicitarAyuda compacto />
+                </span>
+              )}
             </span>
           </div>
         )}
@@ -387,13 +398,7 @@ export default function Login() {
           </>
         )}
 
-        {enElLimite || correoExterno ? (
-          <SolicitarAyuda>
-            {correoExterno
-              ? 'Si eres parte de la Corporación y aún no tienes correo institucional, abre una solicitud en la mesa de ayuda.'
-              : undefined}
-          </SolicitarAyuda>
-        ) : (
+        {!enElLimite && !correoExterno && (
           <p className="login__problemas">
             ¿Problemas para ingresar? <SolicitarAyuda compacto variante="enlace" />
           </p>

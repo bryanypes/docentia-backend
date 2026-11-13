@@ -1,35 +1,33 @@
-/* Acceso: en escritorio, panel de marca a la izquierda y tarjeta a la derecha; desde 960 px hacia
-   abajo, solo la tarjeta centrada. Las medidas se escalan con el alto para caber sin desplazarse en
-   portátiles de 720 px, y en pantallas bajas la página simplemente se desplaza. */
+/* Acceso compacto: cabe sin desplazarse en un portátil al 100 % y en un celular. En escritorio, panel
+   de marca a la izquierda y tarjeta a la derecha; desde 960 px hacia abajo, solo la tarjeta. Las
+   animaciones son de color (fondo y aro del avatar) y fundidos: nada se mueve en vertical. */
 .acceso {
-  --avatar: clamp(92px, 15vh, 150px);
-  --separacion: clamp(10px, 1.9vh, 18px);
+  --separacion: clamp(10px, 1.7vh, 16px);
   position: relative;
   isolation: isolate;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 480px);
+  grid-template-columns: minmax(0, 1fr) minmax(0, 440px);
   align-items: center;
   gap: clamp(24px, 5vw, 88px);
   min-height: 100vh;
   min-height: 100dvh;
-  padding: clamp(72px, 9vh, 88px) clamp(16px, 6vw, 96px) clamp(20px, 4vh, 48px);
+  padding: 68px clamp(16px, 6vw, 96px) clamp(16px, 3vh, 32px);
   overflow-x: hidden;
-  background:
-    radial-gradient(circle at 84% 8%, rgba(232, 201, 68, 0.22), transparent 22rem),
-    radial-gradient(circle at 10% 92%, rgba(255, 255, 255, 0.08), transparent 18rem),
-    var(--gradiente-marca);
+  background: linear-gradient(120deg, #062b64, #0c428c, #1857a8, #0c428c, #062b64);
+  background-size: 300% 300%;
+  animation: acceso-tono 18s ease-in-out infinite;
 }
 
 /* Regreso a la presentación: arriba a la izquierda, sobre el fondo azul */
 .acceso__volver {
   position: absolute;
-  top: max(16px, env(safe-area-inset-top, 0px));
+  top: max(14px, env(safe-area-inset-top, 0px));
   left: max(16px, env(safe-area-inset-left, 0px));
   z-index: 2;
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  min-height: var(--alto-tactil);
+  min-height: 40px;
   padding: 0 16px 0 12px;
   border: 1px solid rgba(255, 255, 255, 0.28);
   border-radius: 999px;
@@ -38,15 +36,14 @@
   font-size: 14px;
   font-weight: var(--peso-semi);
   text-decoration: none;
-  backdrop-filter: blur(6px);
-  transition: background 0.16s, transform 0.16s;
+  transition: background 0.2s, border-color 0.2s;
 }
 
 .acceso__volver:hover {
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.24);
+  border-color: var(--color-amarillo);
   color: #fff;
   text-decoration: none;
-  transform: translateX(-2px);
 }
 
 .acceso__volver:focus-visible {
@@ -54,16 +51,35 @@
   outline-offset: 2px;
 }
 
-/* Panel de marca */
+/* Panel de marca (solo escritorio) */
 .acceso__presentacion {
-  position: relative;
   display: flex;
   flex-direction: column;
   gap: clamp(14px, 2.4vh, 22px);
   max-width: 560px;
-  padding-bottom: clamp(120px, 22vh, 210px);
   color: #fff;
-  animation: acceso-entrar 0.45s ease-out both;
+  animation: acceso-fundido 0.5s ease-out both;
+}
+
+.acceso__presentacion-cabecera {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.acceso__presentacion-robot {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  border: 3px solid var(--color-amarillo);
+  background: var(--color-crema);
+}
+
+.acceso__presentacion-robot img {
+  width: 44px;
 }
 
 .acceso__eyebrow {
@@ -75,9 +91,9 @@
 }
 
 .acceso__titular {
-  font-size: clamp(30px, 3.4vw, 46px);
+  font-size: clamp(30px, 3.2vw, 44px);
   font-weight: var(--peso-fuerte);
-  line-height: 1.08;
+  line-height: 1.1;
   letter-spacing: -0.02em;
   text-wrap: balance;
 }
@@ -115,159 +131,122 @@
   color: #f3e27a;
 }
 
-/* DocenteIA señala el formulario desde abajo del panel */
-.acceso__robot-grande {
-  position: absolute;
-  right: clamp(-10px, 1vw, 20px);
-  bottom: 0;
-  width: clamp(130px, 15vw, 200px);
-  filter: drop-shadow(0 18px 24px rgba(0, 0, 0, 0.35));
-  animation: acceso-flotar 4.5s ease-in-out infinite;
-}
-
 /* Tarjeta */
 .acceso__tarjeta {
-  position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--separacion);
   width: 100%;
-  max-width: 480px;
-  margin-top: calc(var(--avatar) / 2);
+  max-width: 440px;
   justify-self: center;
-  padding: calc(var(--avatar) / 2 + var(--separacion)) clamp(20px, 3vw, 38px) clamp(20px, 3vh, 32px);
+  padding: clamp(18px, 2.8vh, 28px) clamp(18px, 2.6vw, 32px);
   background: var(--color-superficie);
-  border-radius: 28px;
+  border-radius: 24px;
   border: 1px solid rgba(255, 255, 255, 0.5);
   box-shadow: 0 30px 70px -30px rgba(0, 20, 55, 0.65);
-  animation: acceso-entrar 0.35s ease-out both;
+  animation: acceso-fundido 0.35s ease-out both;
 }
 
-/* El avatar sobresale de la tarjeta: es el protagonista */
-.acceso__avatar {
-  position: absolute;
-  top: calc(var(--avatar) / -2);
-  left: 50%;
+/* Marca en una fila: avatar, nombre y logo institucional, sin superponerse a nada */
+.acceso__cabecera {
   display: flex;
   align-items: center;
-  justify-content: center;
-  width: var(--avatar);
-  height: var(--avatar);
-  border: clamp(3px, 0.6vh, 5px) solid var(--color-amarillo);
+  gap: 12px;
+  padding-bottom: var(--separacion);
+  border-bottom: 1px solid var(--color-borde-suave);
+}
+
+.acceso__avatar {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border: 3px solid var(--color-amarillo);
   border-radius: 50%;
   background: var(--color-crema);
-  box-shadow: 0 12px 28px -16px rgba(5, 54, 134, 0.45);
-  transform: translateX(-50%);
+  transition: border-color 0.3s, background 0.3s, box-shadow 0.3s;
 }
 
 .acceso__avatar img {
-  width: 72%;
+  width: 36px;
   height: auto;
-  animation: acceso-aparecer 0.25s ease-out both;
+  animation: acceso-fundido 0.25s ease-out both;
 }
 
 .acceso__tarjeta--error .acceso__avatar {
-  border-color: var(--color-error-borde);
-  box-shadow: 0 0 0 8px var(--color-error-fondo);
+  border-color: var(--color-error);
+  background: var(--color-error-fondo);
+  box-shadow: 0 0 0 5px var(--color-error-fondo);
 }
 
-.acceso__tarjeta--error .acceso__avatar img {
-  animation: acceso-aparecer 0.25s ease-out both, acceso-sacudir 0.5s 0.15s ease-in-out both;
-}
-
-.acceso__tarjeta--espera .acceso__avatar img {
-  animation: acceso-aparecer 0.25s ease-out both, acceso-respirar 2.6s ease-in-out infinite;
+.acceso__tarjeta--espera .acceso__avatar {
+  animation: acceso-latido 2.4s ease-in-out infinite;
 }
 
 .acceso__marca {
-  text-align: center;
+  display: grid;
+  min-width: 0;
+  line-height: 1.1;
 }
 
-.acceso__nombre {
-  font-size: clamp(26px, 4vh, 34px);
+.acceso__marca strong {
+  font-size: 20px;
   font-weight: var(--peso-fuerte);
-  letter-spacing: 0.04em;
-  line-height: 1;
+  letter-spacing: 0.06em;
   color: var(--color-azul);
 }
 
-.acceso__logo {
-  display: block;
-  width: min(174px, 72%);
-  max-height: 52px;
-  margin: clamp(5px, 0.9vh, 9px) auto 0;
-  object-fit: contain;
-}
-
-.acceso__institucion {
-  margin-top: clamp(3px, 0.6vh, 6px);
+.acceso__marca small {
   font-size: 12px;
   color: var(--color-texto-tenue);
 }
 
-@keyframes acceso-entrar {
+.acceso__logo {
+  flex: 0 1 auto;
+  width: auto;
+  max-width: 128px;
+  height: 40px;
+  margin-left: auto;
+  object-fit: contain;
+}
+
+@keyframes acceso-tono {
+  0%,
+  100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes acceso-fundido {
   from {
     opacity: 0;
-    transform: translateY(8px);
   }
   to {
     opacity: 1;
-    transform: none;
   }
 }
 
-@keyframes acceso-aparecer {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes acceso-flotar {
+@keyframes acceso-latido {
   0%,
   100% {
-    transform: translateY(0) rotate(-2deg);
+    border-color: var(--color-amarillo);
+    box-shadow: 0 0 0 0 rgba(227, 201, 36, 0);
   }
   50% {
-    transform: translateY(-10px) rotate(1deg);
-  }
-}
-
-@keyframes acceso-sacudir {
-  0%,
-  100% {
-    transform: none;
-  }
-  20% {
-    transform: translateX(-6px) rotate(-6deg);
-  }
-  40% {
-    transform: translateX(6px) rotate(5deg);
-  }
-  60% {
-    transform: translateX(-4px) rotate(-3deg);
-  }
-  80% {
-    transform: translateX(3px) rotate(2deg);
-  }
-}
-
-@keyframes acceso-respirar {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
+    border-color: var(--color-amarillo-oscuro);
+    box-shadow: 0 0 0 6px rgba(227, 201, 36, 0.28);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .acceso__robot-grande,
+  .acceso,
   .acceso__tarjeta,
   .acceso__presentacion,
+  .acceso__avatar,
   .acceso__avatar img {
     animation: none !important;
   }
@@ -278,7 +257,7 @@
   .acceso {
     grid-template-columns: minmax(0, 1fr);
     justify-items: center;
-    padding-top: 76px;
+    align-content: center;
   }
 
   .acceso__presentacion {
@@ -288,14 +267,46 @@
 
 @media (max-width: 560px) {
   .acceso {
-    --avatar: clamp(84px, 24vw, 112px);
-    padding-right: max(12px, env(safe-area-inset-right, 0px));
-    padding-left: max(12px, env(safe-area-inset-left, 0px));
+    padding: 64px max(12px, env(safe-area-inset-right, 0px)) 16px max(12px, env(safe-area-inset-left, 0px));
   }
 
   .acceso__tarjeta {
-    padding-right: 18px;
-    padding-left: 18px;
-    border-radius: 22px;
+    padding: 16px;
+    border-radius: 20px;
+  }
+
+  .acceso__logo {
+    max-width: 96px;
+    height: 32px;
+  }
+}
+
+@media (max-width: 360px) {
+  .acceso__logo {
+    max-width: 72px;
+    height: 26px;
+  }
+}
+
+/* Pantallas bajas (portátiles de 768 px, celulares pequeños): todo un poco más junto */
+@media (max-height: 760px) {
+  .acceso {
+    --separacion: 8px;
+    padding-top: 60px;
+    padding-bottom: 12px;
+  }
+
+  .acceso__tarjeta {
+    padding-top: 14px;
+    padding-bottom: 14px;
+  }
+
+  .acceso__avatar {
+    width: 44px;
+    height: 44px;
+  }
+
+  .acceso__avatar img {
+    width: 30px;
   }
 }

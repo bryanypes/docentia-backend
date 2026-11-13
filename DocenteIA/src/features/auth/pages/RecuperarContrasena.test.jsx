@@ -49,4 +49,19 @@ describe('RecuperarContrasena', () => {
     expect(authService.restablecerContrasena).toHaveBeenCalledWith('abc123', 'Nueva-Clave-2026')
     expect(await screen.findByText('Contraseña actualizada')).toBeInTheDocument()
   })
+
+  it('en todos los casos ofrece ir al inicio, ir al login y solicitar ayuda', async () => {
+    for (const porCorreo of [true, false]) {
+      authService.obtenerDisponibilidadRecuperacion.mockResolvedValue({ porCorreo })
+      const { unmount } = render(
+        <MemoryRouter initialEntries={['/recuperar-contrasena']}>
+          <RecuperarContrasena />
+        </MemoryRouter>,
+      )
+      expect(await screen.findByRole('link', { name: /Ir al inicio/ })).toHaveAttribute('href', '/')
+      expect(screen.getByRole('link', { name: /Ir al login/ })).toHaveAttribute('href', '/login')
+      expect(screen.getByRole('link', { name: /Solicitar ayuda/ })).toHaveAttribute('target', '_blank')
+      unmount()
+    }
+  })
 })

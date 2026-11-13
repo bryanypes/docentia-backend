@@ -143,6 +143,7 @@ describe('Login: correo que no es de la Corporación', () => {
     expect(entrar).not.toHaveBeenCalled()
     expect(screen.getByRole('heading', { name: 'Este correo no puede ingresar a DOCENTIA' })).toBeInTheDocument()
     expect(screen.getByRole('alert')).toHaveTextContent('ana@gmail.com no hace parte de la Corporación')
+    expect(screen.getByRole('link', { name: /Solicitar ayuda/ })).toBeInTheDocument()
     expect(screen.getByLabelText('Correo institucional')).toHaveAttribute('aria-invalid', 'true')
 
     fireEvent.change(screen.getByLabelText('Correo institucional'), { target: { value: 'ana@uniautonoma.edu.co' } })
