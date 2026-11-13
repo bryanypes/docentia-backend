@@ -24,36 +24,37 @@ public enum TipoNotificacion {
   ANALISIS_INSUFICIENTE(
       "Evidencia insuficiente", "El análisis de comentarios no tuvo evidencia suficiente."),
   ANALISIS_ERROR("Análisis con error", "El análisis de comentarios no se pudo completar."),
-  CITA_RESERVADA("Cita reservada", "Un docente de tu facultad reservó una cita."),
-  CITA_REEMPLAZADA("Cita liberada", "Un docente de tu facultad liberó su cita para tomar otra."),
-  ACTA_FIRMADA_DOCENTE("Acta firmada por el docente", "Un docente de tu facultad firmó su acta."),
+  CITA_RESERVADA("Cita reservada", "Un docente de tus programas reservó una cita."),
+  CITA_REEMPLAZADA("Cita liberada", "Un docente de tus programas liberó su cita para tomar otra."),
+  ACTA_FIRMADA_DOCENTE("Acta firmada por el docente", "Un docente de tus programas firmó su acta."),
   COMPROMISO_VENCIDO_FACULTAD(
-      "Compromiso vencido en tu facultad", "Un compromiso de tu facultad está vencido."),
+      "Compromiso vencido en tus programas", "Un compromiso de tus programas está vencido."),
   IMPORTACION_EXITOSA("Importación terminada", "Tu carga de matrícula terminó correctamente."),
-  IMPORTACION_CON_ERRORES("Importación con errores", "Tu carga de matrícula fue rechazada por errores."),
+  IMPORTACION_CON_ERRORES(
+      "Importación con errores", "Tu carga de matrícula fue rechazada por errores."),
   AUTOEVALUACION_PENDIENTE(
       "Autoevaluación pendiente", "Tu autoevaluación sigue pendiente y la etapa está por cerrar."),
   COEVALUACIONES_PENDIENTES(
       "Coevaluaciones pendientes", "Tienes coevaluaciones pendientes y la etapa está por cerrar."),
   AUTOEVALUACION_ENVIADA(
-      "Autoevaluación enviada", "Un docente de tu facultad envió su autoevaluación."),
+      "Autoevaluación enviada", "Un docente de tus programas envió su autoevaluación."),
   HETEROEVALUACION_PENDIENTE(
       "Evaluaciones pendientes",
       "Tienes evaluaciones de tus profesores pendientes. Ingresa para responderlas."),
   COBERTURA_BAJA(
       "Cobertura baja",
-      "Menos de la mitad de los estudiantes de tu facultad ha respondido y la etapa está por cerrar."),
+      "Menos de la mitad de los estudiantes de tus programas ha respondido y la etapa está por cerrar."),
   VENTANA_POR_CERRAR(
       "Etapa próxima a cerrar",
-      "Una etapa del periodo cierra en 3 días. Revisa los pendientes de tu facultad."),
+      "Una etapa del periodo cierra en 3 días. Revisa los pendientes de tus programas."),
   ALERTA_INFORMATIVA(
       "Alerta informativa", "Hay una nueva alerta informativa en acciones sugeridas."),
   VENTANA_CERRADA("Etapa cerrada", "Una etapa del periodo se cerró. Revisa el panel por programa."),
   VENTANA_ABIERTA("Etapa abierta", "Se abrió una etapa del periodo en la que participas."),
   ASISTENCIA_CONFIRMADA(
-      "Asistencia confirmada", "Un docente de tu facultad confirmó su asistencia a la cita."),
+      "Asistencia confirmada", "Un docente de tus programas confirmó su asistencia a la cita."),
   CITA_DECLINADA(
-      "Cita declinada", "Un docente de tu facultad declinó su cita; la franja quedó libre."),
+      "Cita declinada", "Un docente de tus programas declinó su cita; la franja quedó libre."),
   CITA_CANCELADA(
       "Cita cancelada",
       "La coordinación canceló tu cita de retroalimentación. Reserva una nueva franja en Mi cita."),
