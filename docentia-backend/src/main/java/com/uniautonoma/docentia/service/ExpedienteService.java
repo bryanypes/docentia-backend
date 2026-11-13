@@ -22,6 +22,7 @@ import com.uniautonoma.docentia.entity.Usuario;
 import com.uniautonoma.docentia.exception.RecursoNoEncontradoException;
 import com.uniautonoma.docentia.exception.ReglaNegocioException;
 import com.uniautonoma.docentia.repository.CalificacionRepository;
+import com.uniautonoma.docentia.repository.ClaseRepository;
 import com.uniautonoma.docentia.repository.CompromisoRepository;
 import com.uniautonoma.docentia.repository.UsuarioRepository;
 import com.uniautonoma.docentia.security.UsuarioSesion;
@@ -46,6 +47,7 @@ public class ExpedienteService {
   private final UsuarioRepository usuarioRepository;
   private final CalificacionRepository calificacionRepository;
   private final CompromisoRepository compromisoRepository;
+  private final ClaseRepository claseRepository;
   private final DocenteService docenteService;
   private final PeriodoAcademicoService periodoService;
   private final PromedioService promedioService;
@@ -55,6 +57,7 @@ public class ExpedienteService {
       UsuarioRepository usuarioRepository,
       CalificacionRepository calificacionRepository,
       CompromisoRepository compromisoRepository,
+      ClaseRepository claseRepository,
       DocenteService docenteService,
       PeriodoAcademicoService periodoService,
       PromedioService promedioService,
@@ -62,6 +65,7 @@ public class ExpedienteService {
     this.usuarioRepository = usuarioRepository;
     this.calificacionRepository = calificacionRepository;
     this.compromisoRepository = compromisoRepository;
+    this.claseRepository = claseRepository;
     this.docenteService = docenteService;
     this.periodoService = periodoService;
     this.promedioService = promedioService;
@@ -133,7 +137,15 @@ public class ExpedienteService {
                     habilitado ? dimensiones : dimensiones.stream().map(this::sinValor).toList())
             .orElse(List.of()),
         listarCompromisosVigentes(docente.getIdUsuario()),
-        habilitado);
+        habilitado,
+        periodoActivo
+            .map(
+                periodo ->
+                    claseRepository
+                        .findByPeriodoIdPeriodoAndDocentesIdUsuario(
+                            periodo.getIdPeriodo(), docente.getIdUsuario())
+                        .size())
+            .orElse(0));
   }
 
   /** Comparativo completo dentro del alcance autorizado de coordinación o vicerrectoría. */
