@@ -156,6 +156,11 @@ firmadas solo mientras se migra: sin ellos, V36 fallaba sobre una base con actas
 
 - V36 ya no falla sobre una base con actas firmadas o anuladas (callbacks de Flyway; ensayado sobre un
   respaldo de v0.3.3).
+- El análisis de comentarios desde la pantalla lee el formulario anónimo de estudiantes, la única fuente
+  en producción; antes partía de comentarios importados por CSV. El panorama cuenta esos comentarios.
+- Sin SMTP configurado, recuperar contraseña no promete un correo: pide solicitar la clave a la
+  Vicerrectoría (`GET /sesiones/recuperacion/disponibilidad`).
+- Un corte de red o una recarga rápida al validar la sesión ya no la cierran; solo un 401 lo hace.
 
 - Las pruebas E2E siguen la interfaz nueva (expediente, acta con firma dibujada, asistencia a la cita,
   cuestionarios por pasos) y abren las etapas para el día en que corren: pasan las 11.

@@ -42,6 +42,12 @@ if [ "$GOOGLE" = "503" ]; then
 else
   revisar "api: Google configurado (token inválido rechazado)" "$GOOGLE" "400 401"
 fi
+if curl -s --max-time 20 "$API/sesiones/recuperacion/disponibilidad" | grep -q '"porCorreo":true'; then
+  echo "OK    correo configurado: recuperar contraseña envía el enlace"
+else
+  echo "AVISO correo: sin SMTP, recuperar contraseña pide la clave a la Vicerrectoría"
+  AVISOS=$((AVISOS + 1))
+fi
 if [ -n "${CORREO:-}" ] && [ -n "${CLAVE:-}" ]; then
   CUERPO=$(printf '{"correo":"%s","contrasena":"%s"}' "$CORREO" "$CLAVE")
   revisar "api: login real con contraseña" "$(estado -X POST -H 'Content-Type: application/json' -d "$CUERPO" "$API/sesiones")" "200 201"

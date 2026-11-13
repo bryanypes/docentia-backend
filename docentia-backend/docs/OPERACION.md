@@ -114,7 +114,7 @@ location /Evadocente-app/ {
 | `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_DB` | Sí, si la base va en Compose | Servicio `db` |
 | `DOCENTIA_APP_URL` | Sí | URL pública para los enlaces de los correos. Con `prod`, la API no arranca si está vacía o en localhost |
 | `DOCENTIA_BOOTSTRAP_EMAIL`, `_NOMBRE`, `_CONTRASENA` | Solo el primer arranque | Primer administrador (ver arriba) |
-| `DOCENTIA_MAIL_HOST`, `_PORT`, `_USER`, `_PASS`, `_FROM`, `_TLS` | Sí, para recuperar contraseña y avisos | SMTP. Sin host, la API arranca pero solo registra el asunto en el log |
+| `DOCENTIA_MAIL_HOST`, `_PORT`, `_USER`, `_PASS`, `_FROM`, `_TLS` | Sí, para recuperar contraseña y avisos | SMTP. Sin host, la API arranca y solo registra el asunto en el log; la pantalla de recuperar contraseña no promete un correo y pide solicitar la clave a la Vicerrectoría |
 | `DOCENTIA_GOOGLE_CLIENT_ID` | Sí, si entran estudiantes | Valida el token de Google. Sin él, `POST /api/sesiones/google` responde 503 |
 | `VITE_GOOGLE_CLIENT_ID` | Sí, si entran estudiantes | Botón de Google; se incrusta al compilar `web` |
 | `VITE_BASE_PATH` | Sí, `/Evadocente-app/` | Subruta pública; se incrusta al compilar `web` |
@@ -244,6 +244,10 @@ sección 7 de `ensayo.txt` tener los mismos conteos que `antes.txt`. Al terminar
 > | Actas existentes | Toman su tipo (V36); la firmada sigue inmutable: un `update` sobre ella responde "Un acta firmada es inmutable" |
 > | Log | Sin el correo ni la clave del administrador |
 > | Tamaño | 11 MB antes y después |
+>
+> **Cómo funciona la corrección:** `beforeMigrate.sql` apaga el disparador de actas inmutables solo
+> mientras se migra; `afterMigrate.sql` y `afterMigrateError.sql` lo vuelven a encender, también si una
+> migración falla. Fuera de la migración no se toca (detalle en `SEGURIDAD.md`).
 >
 > **Error encontrado y corregido en el ensayo:** sin los callbacks `beforeMigrate.sql` y `afterMigrate.sql`,
 > V36 fallaba sobre una base con actas firmadas o anuladas y la API quedaba sin arrancar en V35. Por eso

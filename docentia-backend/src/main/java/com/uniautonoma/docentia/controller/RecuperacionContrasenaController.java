@@ -9,21 +9,35 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import java.util.Map;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-/** Recuperación de contraseña sin sesión: solo estas dos rutas son públicas. */
+/** Recuperación de contraseña sin sesión: solo estas tres rutas son públicas. */
 @RestController
 @RequestMapping("/sesiones/recuperacion")
 public class RecuperacionContrasenaController {
 
   private final RecuperacionContrasenaService servicio;
+  private final boolean hayCorreo;
 
-  public RecuperacionContrasenaController(RecuperacionContrasenaService servicio) {
+  public RecuperacionContrasenaController(
+      RecuperacionContrasenaService servicio,
+      com.uniautonoma.docentia.config.NotificacionProperties notificaciones) {
     this.servicio = servicio;
+    this.hayCorreo = notificaciones.correo().configurado();
+  }
+
+  /**
+   * Si el servidor puede enviar el enlace por correo. Sin SMTP la pantalla no promete un correo y
+   * dice a quién pedir una contraseña nueva. Solo dice sí o no; no expone la configuración.
+   */
+  @GetMapping("/disponibilidad")
+  public Map<String, Boolean> disponibilidad() {
+    return Map.of("porCorreo", hayCorreo);
   }
 
   /** Siempre responde lo mismo, exista o no el correo. */

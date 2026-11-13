@@ -12,7 +12,7 @@ describe('describirCobertura', () => {
   it('bajo el mínimo de anonimato avisa cuántas faltan y el origen de la nota vigente', () => {
     const r = describirCobertura({ respondidas: 4, esperadas: 6, minimoRespuestas: 5, origenNota: 'CSV' })
     expect(r.titulo).toBe('4 de 6 respondieron')
-    expect(r.detalle).toBe('Falta 1 para usar el formulario (mínimo 5, por anonimato). La nota actual está cargada por CSV.')
+    expect(r.detalle).toBe('Falta 1 para usar el formulario (mínimo 5, por anonimato). La nota actual está cargada desde un archivo en una versión anterior.')
   })
 
   it('con la nota del formulario lo dice', () => {

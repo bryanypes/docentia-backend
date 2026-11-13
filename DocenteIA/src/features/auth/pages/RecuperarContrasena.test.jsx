@@ -18,13 +18,22 @@ function abrir(ruta) {
 describe('RecuperarContrasena', () => {
   beforeEach(() => vi.resetAllMocks())
 
-  it('pide el correo y muestra el mensaje genérico', async () => {
+  it('con correo configurado pide el correo y muestra el mensaje genérico', async () => {
+    authService.obtenerDisponibilidadRecuperacion.mockResolvedValue({ porCorreo: true })
     authService.solicitarRecuperacion.mockResolvedValue({ mensaje: 'Si el correo está registrado, te enviamos un enlace.' })
     abrir('/recuperar-contrasena')
     await userEvent.type(screen.getByLabelText('Correo institucional'), 'alguien@uniautonoma.edu.co')
     await userEvent.click(screen.getByRole('button', { name: 'Enviar enlace' }))
     expect(authService.solicitarRecuperacion).toHaveBeenCalledWith('alguien@uniautonoma.edu.co')
     expect(await screen.findByText('Si el correo está registrado, te enviamos un enlace.')).toBeInTheDocument()
+  })
+
+  it('sin correo configurado no promete un enlace y dice a quién pedir la contraseña', async () => {
+    authService.obtenerDisponibilidadRecuperacion.mockResolvedValue({ porCorreo: false })
+    abrir('/recuperar-contrasena')
+    expect(await screen.findByText('Pide una nueva contraseña a la Vicerrectoría')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Enviar enlace' })).not.toBeInTheDocument()
+    expect(authService.solicitarRecuperacion).not.toHaveBeenCalled()
   })
 
   it('con token fija la contraseña nueva si coinciden', async () => {

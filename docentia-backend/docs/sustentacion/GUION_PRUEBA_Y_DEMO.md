@@ -104,8 +104,10 @@ todos los niveles, para que Estadísticas y el Inicio tengan volumen.
 
 **Flujo corto para presentar (Mariana):** `estudiante.flujo` la evalúa (el comentario es obligatorio) →
 `docente.flujo` hace su autoevaluación → `coordinacion.ingenieria` la coevalúa (en Coevaluaciones,
-buscarla por nombre) y pide el análisis de comentarios → `vicerrectoria` ve su resultado, los
-destacados y las estadísticas.
+buscarla por nombre) → `vicerrectoria` cierra la recolección en **Periodos** (cierre de
+Recolección de calificaciones en el día anterior) → `coordinacion.ingenieria` pide el análisis de
+comentarios de Mariana, que lee el formulario anónimo y muestra dos temas: explicaciones claras y
+retroalimentación tardía → `vicerrectoria` ve su resultado, los destacados y las estadísticas.
 
 ## c. Guion de prueba
 

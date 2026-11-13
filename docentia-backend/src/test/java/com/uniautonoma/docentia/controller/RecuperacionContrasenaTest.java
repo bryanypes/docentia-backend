@@ -1,6 +1,7 @@
 package com.uniautonoma.docentia.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -145,5 +146,13 @@ class RecuperacionContrasenaTest extends PruebaIntegracion {
       solicitar("persona" + i + "@uniautonoma.edu.co", ip).andExpect(status().isAccepted());
     }
     solicitar("persona9@uniautonoma.edu.co", ip).andExpect(status().isTooManyRequests());
+  }
+
+  @Test
+  void sinSmtpLaPantallaSabeQueNoHayCorreoSinIniciarSesion() throws Exception {
+    mockMvc
+        .perform(get("/sesiones/recuperacion/disponibilidad"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.porCorreo").value(false));
   }
 }

@@ -4,7 +4,9 @@
 -- afterMigrateError. En una base nueva la tabla aún no existe y no se hace nada.
 do $$
 begin
-    if exists (select 1 from pg_trigger where tgname = 'tr_actas_inmutables') then
+    if to_regclass('actas') is not null
+       and exists (select 1 from pg_trigger
+                   where tgname = 'tr_actas_inmutables' and tgrelid = to_regclass('actas')) then
         alter table actas disable trigger tr_actas_inmutables;
     end if;
 end

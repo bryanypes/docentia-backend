@@ -217,40 +217,6 @@ test('la vicerrectoría corrige con una versión nueva y queda en la auditoría'
   await pagina.context().close()
 })
 
-test('la coordinación revisa y publica los hallazgos, ocultos al docente hasta su reunión', async () => {
-  const pagina = await entrar(COORDINACION)
-  await pagina.click('a[href="/analisis"]')
-  const valor = await pagina
-    .locator('#docenteAnalisis option', { hasText: 'Julián' })
-    .getAttribute('value')
-  await pagina.selectOption('#docenteAnalisis', valor)
-  await pagina.getByRole('button', { name: 'Solicitar análisis' }).click()
-  await pagina.getByText('Borrador del análisis').waitFor({ timeout: 45000 })
-
-  const hallazgos = pagina.locator('.analisis__hallazgo')
-  const cantidad = await hallazgos.count()
-  await hallazgos.first().getByRole('button', { name: 'Editar texto' }).click()
-  await pagina.getByLabel('Texto del hallazgo').fill('Redacción revisada por coordinación')
-  await pagina.getByRole('button', { name: 'Guardar texto' }).click()
-  await pagina.getByText('Redacción revisada por coordinación').first().waitFor()
-  await hallazgos.first().getByRole('button', { name: 'Marcar como válido' }).click()
-  await hallazgos.first().getByText('Validado').waitFor()
-  for (let i = 1; i < cantidad; i += 1) {
-    await hallazgos.nth(i).getByRole('button', { name: 'Descartar' }).click()
-    await hallazgos.nth(i).getByRole('button', { name: 'Confirmar descarte' }).click()
-    await hallazgos.nth(i).getByText('Descartado').waitFor()
-  }
-  await pagina.getByRole('button', { name: 'Publicar revisión' }).click()
-  await pagina.getByText('Revisión publicada').waitFor()
-  await pagina.context().close()
-
-  // Julián no ha tenido su reunión: lo publicado no le llega todavía.
-  const docente = await entrar('julian.hoyos')
-  const propio = await llamar(docente, 'GET', '/analisis-ia/resultados/propio')
-  assert.ok(!JSON.stringify(propio.datos ?? '').includes('Redacción revisada por coordinación'))
-  await docente.context().close()
-})
-
 test('el panel por programa no identifica docentes', async () => {
   const pagina = await entrar(COORDINACION)
   await pagina.click('a[href="/panel-programas"]')
@@ -361,4 +327,72 @@ test('el estudiante evalúa de forma anónima y la nota cambia al llegar al mín
   const propio = await llamar(docente, 'GET', '/expedientes/propio')
   assert.equal(propio.datos.notasPorFuente, undefined)
   await docente.context().close()
+})
+
+test('el análisis lee los comentarios del formulario al cerrar la recolección, se conserva y se publica revisado', async () => {
+  const coordinacion = await entrar(COORDINACION)
+  const docentes = await llamar(coordinacion, 'GET', '/docentes?size=500')
+  const mariana = (docentes.datos.content ?? docentes.datos).find((d) => d.nombreCompleto === 'Mariana Ruiz Ortega')
+  const activo = await llamar(coordinacion, 'GET', '/periodos-academicos/activo')
+  const idPeriodo = activo.datos.idPeriodo
+  const pedido = { docenteId: mariana.idDocente, periodoId: idPeriodo, fuente: 'FORMULARIO' }
+
+  // Con la recolección abierta no se analiza, y el mensaje lo dice.
+  const antes = await llamar(coordinacion, 'POST', '/analisis-ia/solicitudes', pedido)
+  assert.equal(antes.estado, 409)
+  assert.match(antes.datos.mensaje, /La recolección aún no termina/)
+
+  // La vicerrectoría cierra la recolección ayer.
+  const vicerrectoria = await entrar('vicerrectoria')
+  const periodo = await llamar(vicerrectoria, 'GET', `/periodos-academicos/${idPeriodo}`)
+  const etapas = periodo.datos.etapas.map(({ tipoEtapa, fechaApertura, fechaCierre }) => ({
+    tipoEtapa,
+    fechaApertura,
+    fechaCierre: tipoEtapa === 'RECOLECCION_CALIFICACIONES' ? sumarDias(hoy(), -1) : fechaCierre,
+  }))
+  const cierre = await llamar(vicerrectoria, 'PUT', `/periodos-academicos/${idPeriodo}`, {
+    fechaInicio: periodo.datos.fechaInicio,
+    fechaFin: periodo.datos.fechaFin,
+    etapas,
+  })
+  assert.equal(cierre.estado, 200, JSON.stringify(cierre.datos))
+  await vicerrectoria.context().close()
+
+  // Desde la pantalla, con el modelo local por defecto.
+  await coordinacion.goto(`${BASE}/analisis?docente=${mariana.idDocente}&periodo=${idPeriodo}`)
+  await coordinacion.getByText('Se analizan los comentarios del formulario anónimo').waitFor()
+  await coordinacion.getByRole('button', { name: 'Solicitar análisis' }).click()
+  await coordinacion.getByText('Borrador del análisis').waitFor({ timeout: 60000 })
+
+  // Al salir y volver el resultado sigue ahí; pedir otro ya es regenerar.
+  await coordinacion.goto(`${BASE}/inicio`)
+  await coordinacion.goto(`${BASE}/analisis?docente=${mariana.idDocente}&periodo=${idPeriodo}`)
+  await coordinacion.getByText('Borrador del análisis').waitFor()
+  await coordinacion.getByRole('button', { name: 'Regenerar análisis' }).waitFor()
+
+  // La coordinación revisa los hallazgos y publica la revisión.
+  const hallazgos = coordinacion.locator('.analisis__hallazgo')
+  const cantidad = await hallazgos.count()
+  await hallazgos.first().getByRole('button', { name: 'Editar texto' }).click()
+  await coordinacion.getByLabel('Texto del hallazgo').fill('Redacción revisada por coordinación')
+  await coordinacion.getByRole('button', { name: 'Guardar texto' }).click()
+  await coordinacion.getByText('Redacción revisada por coordinación').first().waitFor()
+  await hallazgos.first().getByRole('button', { name: 'Marcar como válido' }).click()
+  await hallazgos.first().getByText('Validado').waitFor()
+  for (let i = 1; i < cantidad; i += 1) {
+    await hallazgos.nth(i).getByRole('button', { name: 'Descartar' }).click()
+    await hallazgos.nth(i).getByRole('button', { name: 'Confirmar descarte' }).click()
+    await hallazgos.nth(i).getByText('Descartado').waitFor()
+  }
+  await coordinacion.getByRole('button', { name: 'Publicar revisión' }).click()
+  await coordinacion.getByText('Revisión publicada').waitFor()
+  await coordinacion.context().close()
+
+
+  // Mariana no ha tenido su reunión: lo publicado no le llega todavía.
+  const docente = await entrar('docente.flujo')
+  const propio = await llamar(docente, 'GET', '/analisis-ia/resultados/propio')
+  assert.ok(!JSON.stringify(propio.datos ?? '').includes('Redacción revisada por coordinación'))
+  await docente.context().close()
+  await coordinacion.context().close()
 })

@@ -51,11 +51,18 @@ class PanoramaAnalisisTest extends PruebaIntegracion {
             TipoEtapa.REVISION_HALLAZGOS,
             BaseDatosPruebaConfig.HOY,
             BaseDatosPruebaConfig.HOY);
+    // La recolección ya cerró: es cuando se pueden analizar los comentarios del formulario.
+    periodo =
+        escenario.abrirEtapa(
+            periodo,
+            TipoEtapa.RECOLECCION_CALIFICACIONES,
+            BaseDatosPruebaConfig.HOY.minusDays(10),
+            BaseDatosPruebaConfig.HOY.minusDays(1));
     List<String> comentarios = new ArrayList<>();
     for (int i = 1; i <= 12; i++) {
       comentarios.add(i % 2 == 0 ? "Las notas se demoran en el corte " + i : "Domina el tema " + i);
     }
-    escenario.cargarComentarios(julian, periodo, coordinador, comentarios);
+    escenario.responderFormularioAnonimo(julian, periodo, comentarios);
   }
 
   @Test
@@ -68,7 +75,9 @@ class PanoramaAnalisisTest extends PruebaIntegracion {
                 .content(
                     aJson(
                         new SolicitudAnalisisRequest(
-                            julian.getIdUsuario(), periodo.getIdPeriodo()))))
+                            julian.getIdUsuario(),
+                            periodo.getIdPeriodo(),
+                            com.uniautonoma.docentia.entity.FuenteComentarios.FORMULARIO))))
         .andExpect(status().isAccepted());
     entityManager.flush();
     entityManager.clear();

@@ -1,14 +1,24 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Link, useSearchParams } from 'react-router-dom'
 import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { Campo } from '../../../shared/components/ui/Campo/Campo.jsx'
 import { ErrorApi } from '../../../shared/components/ui/ErrorApi/ErrorApi.jsx'
-import { restablecerContrasena, solicitarRecuperacion } from '../services/authService.js'
+import { useFetch } from '../../../shared/hooks/useFetch.js'
+import {
+  obtenerDisponibilidadRecuperacion,
+  restablecerContrasena,
+  solicitarRecuperacion,
+} from '../services/authService.js'
 import './RecuperarContrasena.css'
 
-/** Pide el correo; la respuesta es siempre la misma, exista o no la cuenta. */
+/**
+ * Pide el correo; la respuesta es siempre la misma, exista o no la cuenta. Si el servidor no tiene
+ * correo configurado, no promete un enlace: dice a quién pedir una contraseña nueva.
+ */
 function Solicitud() {
+  const cargarDisponibilidad = useCallback(() => obtenerDisponibilidadRecuperacion(), [])
+  const disponibilidad = useFetch(cargarDisponibilidad, [cargarDisponibilidad])
   const [correo, setCorreo] = useState('')
   const [mensaje, setMensaje] = useState(null)
   const [error, setError] = useState(null)
@@ -26,6 +36,15 @@ function Solicitud() {
     } finally {
       setEnviando(false)
     }
+  }
+
+  if (disponibilidad.datos && !disponibilidad.datos.porCorreo) {
+    return (
+      <Aviso tipo="info" titulo="Pide una nueva contraseña a la Vicerrectoría">
+        En este servidor DOCENTIA no envía correos. Escribe a la Vicerrectoría: la administración de DOCENTIA
+        te asigna una contraseña temporal que cambias al entrar. Los estudiantes entran con su cuenta de Google.
+      </Aviso>
+    )
   }
 
   if (mensaje) {

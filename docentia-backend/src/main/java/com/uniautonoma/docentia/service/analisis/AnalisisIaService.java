@@ -197,7 +197,8 @@ public class AnalisisIaService {
     if (fuente == FuenteComentarios.FORMULARIO
         && !ventanaEtapaService.haTerminado(periodo, TipoEtapa.RECOLECCION_CALIFICACIONES)) {
       throw new ReglaNegocioException(
-          "Los comentarios del formulario se pueden analizar cuando cierre la recolección");
+          "La recolección aún no termina: los comentarios de los estudiantes se analizan cuando cierre,"
+              + " para que el momento del análisis no permita saber quién acaba de responder");
     }
     solicitudRepository
         .findFirstByDocenteIdUsuarioAndPeriodoIdPeriodoAndEstadoIn(

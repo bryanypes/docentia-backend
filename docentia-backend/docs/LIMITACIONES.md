@@ -26,6 +26,6 @@ Lo que el sistema no hace hoy y por qué.
 | Varias instancias con límite de login compartido | El contador vive en memoria |
 | Revocar un token antes de que venza | La sesión dura 8 horas |
 | Paginación en base de datos de todos los listados | Los listados pequeños devuelven hasta 1000 filas; notificaciones y auditoría sí paginan |
-| Nota de estudiantes con menos de 5 respuestas | Por k-anonimato no se usa: sin CSV de respaldo el promedio queda PARCIAL y el acta no se firma. Política pendiente (DECISIONES P1 y P4) |
+| Nota de estudiantes con menos de 5 respuestas | Por k-anonimato no se usa: el promedio queda PARCIAL y el acta no se firma. Política pendiente (DECISIONES P1 y P4) |
 | Análisis de comentarios del formulario con 5 a 9 respuestas | El análisis exige 10 respuestas; con 5 a 9 el docente tiene nota de estudiantes pero no análisis |
 | Cerrar etapas a mano | No hay botón ni tarea: cada etapa abre y cierra por las fechas que fija vicerrectoría |
