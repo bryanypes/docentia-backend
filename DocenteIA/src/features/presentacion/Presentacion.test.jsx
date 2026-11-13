@@ -25,6 +25,14 @@ describe('Presentacion', () => {
     )
   })
 
+  it('invita a ver los tutoriales', () => {
+    renderPresentacion()
+    expect(screen.getByRole('heading', { name: '¿No sabes cómo usar Evaluación Docente?' })).toBeInTheDocument()
+    for (const enlace of screen.getAllByRole('link', { name: /Ver tutoriales|Tutoriales/ })) {
+      expect(enlace).toHaveAttribute('href', '/tutoriales')
+    }
+  })
+
   it('pone el anonimato de los comentarios en primer plano', () => {
     renderPresentacion()
     expect(screen.getByRole('heading', { name: 'Tus comentarios siempre son anónimos' })).toBeInTheDocument()
