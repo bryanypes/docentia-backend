@@ -88,6 +88,8 @@ usuarios, todos con la contraseña `Docentia2026*`:
 | Docente      | hector.quilindo@uniautonoma.edu.co         | Derecho                |
 | Estudiante   | karen.mancilla@uniautonoma.edu.co          | Administración (3 clases Campus) |
 | Estudiante   | andrea.nieto@uniautonoma.edu.co            | Administración (Zulema grupo B) |
+| Estudiante   | estudiante.sinmaterias@uniautonoma.edu.co  | Sin matrículas: «No tienes docentes por evaluar» |
+| Docente      | docente.sinmaterias@uniautonoma.edu.co     | Sin clases ni notas: «No tienes materias asignadas» |
 
 Si la base arranca vacía, el seed de Campus (`campus-clases-demo.json`) también crea a Zulema León,
 Martín Valencia y Francisco Ramírez como docentes, y a Karen Mancilla y Andrea Nieto como

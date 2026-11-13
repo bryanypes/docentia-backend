@@ -89,6 +89,7 @@ services:
         VITE_API_URL: ${VITE_API_URL:-/api}
         VITE_BASE_PATH: ${VITE_BASE_PATH:-/}
         VITE_GOOGLE_CLIENT_ID: ${VITE_GOOGLE_CLIENT_ID:-}
+        VITE_URL_NOVA: ${VITE_URL_NOVA:-}
     restart: unless-stopped
     ports:
       - "${WEB_PORT:-5173}:80"

@@ -12,6 +12,7 @@ import { PaginaNoEncontrada } from './PaginasSistema.jsx'
 import { ProtectedRoute } from './ProtectedRoute.jsx'
 import RecuperarContrasena from '../features/auth/pages/RecuperarContrasena.jsx'
 import Presentacion from '../features/presentacion/Presentacion.jsx'
+import Tutoriales from '../features/presentacion/Tutoriales.jsx'
 import { RUTA_CAMBIO_CONTRASENA, rutaInicioDelRol } from './rutasPorRol.js'
 
 // Cada pantalla se descarga al abrirla: la carga inicial solo trae el login y el marco.
@@ -60,6 +61,7 @@ function RutasDocentia() {
         <Routes>
           <Route path="/" element={<RedirigirAlInicio />} />
           <Route path="/login" element={<Login />} />
+          <Route path="/tutoriales" element={<Tutoriales />} />
           <Route path="/recuperar-contrasena" element={<RecuperarContrasena />} />
           <Route path="/restablecer-contrasena" element={<RecuperarContrasena />} />
           <Route path="/verificar-acta/:codigo" element={<VerificarActa />} />

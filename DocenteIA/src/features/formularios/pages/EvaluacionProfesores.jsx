@@ -4,6 +4,7 @@ import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabez
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
+import { SolicitarAyuda } from '../../../shared/components/ui/SolicitarAyuda/SolicitarAyuda.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { useVentanaEtapa } from '../../../shared/components/layout/AppLayout/periodoContext.js'
 import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
@@ -44,7 +45,17 @@ export default function EvaluacionProfesores() {
           <EstadoVista titulo="No hay un periodo activo" mensaje="Cuando abra la evaluación verás aquí a tus profesores." />
         )}
         {datos?.evaluaciones.length === 0 && (
-          <EstadoVista titulo="No tienes evaluaciones" mensaje="Cuando te matriculen en un curso verás aquí a cada profesor." />
+          <EstadoVista
+            titulo="No tienes docentes por evaluar"
+            mensaje="En este momento no tienes docentes por evaluar o no te encuentras inscrito en ninguna materia del periodo. Intenta nuevamente más tarde o solicita ayuda para revisar tu inscripción."
+          >
+            <div className="evaluacion-profesores__acciones">
+              <Boton variante="contorno" icono={RefreshCw} onClick={recargar}>
+                Intentar nuevamente
+              </Boton>
+              <SolicitarAyuda compacto perfil="ESTUDIANTE" />
+            </div>
+          </EstadoVista>
         )}
         {terminadas && (
           <Aviso tipo="exito" titulo="Ya completaste todas tus evaluaciones. ¡Gracias por participar!">

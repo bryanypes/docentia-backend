@@ -1,5 +1,7 @@
 package com.uniautonoma.docentia.exception;
 
+import com.uniautonoma.docentia.dto.CredencialesInvalidasResponse;
+import com.uniautonoma.docentia.dto.DemasiadosIntentosResponse;
 import com.uniautonoma.docentia.dto.ErrorResponse;
 import com.uniautonoma.docentia.dto.EtapaCerradaResponse;
 import java.util.LinkedHashMap;
@@ -8,6 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.TypeMismatchException;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -65,9 +68,14 @@ public class ManejadorGlobalExcepciones {
   }
 
   @ExceptionHandler(DemasiadosIntentosException.class)
-  @ResponseStatus(HttpStatus.TOO_MANY_REQUESTS)
-  public ErrorResponse manejarDemasiadosIntentos(DemasiadosIntentosException excepcion) {
-    return new ErrorResponse(excepcion.getMessage());
+  public ResponseEntity<DemasiadosIntentosResponse> manejarDemasiadosIntentos(
+      DemasiadosIntentosException excepcion) {
+    ResponseEntity.BodyBuilder respuesta = ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS);
+    if (excepcion.getSegundosParaReintentar() > 0) {
+      respuesta.header(
+          HttpHeaders.RETRY_AFTER, String.valueOf(excepcion.getSegundosParaReintentar()));
+    }
+    return respuesta.body(DemasiadosIntentosResponse.desde(excepcion));
   }
 
   /**
@@ -85,8 +93,9 @@ public class ManejadorGlobalExcepciones {
 
   @ExceptionHandler(CredencialesInvalidasException.class)
   @ResponseStatus(HttpStatus.UNAUTHORIZED)
-  public ErrorResponse manejarCredencialesInvalidas(CredencialesInvalidasException excepcion) {
-    return new ErrorResponse(excepcion.getMessage());
+  public CredencialesInvalidasResponse manejarCredencialesInvalidas(
+      CredencialesInvalidasException excepcion) {
+    return CredencialesInvalidasResponse.desde(excepcion);
   }
 
   @ExceptionHandler(DatosInvalidosException.class)

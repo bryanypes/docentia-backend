@@ -40,20 +40,33 @@ public class LimitadorIntentos {
   }
 
   /**
-   * @throws DemasiadosIntentosException si el correo o la IP superaron el límite
+   * @throws DemasiadosIntentosException si el correo o la IP superaron el límite, con los segundos
+   *     que faltan para volver a intentar
    */
   public void exigirPermitido(String correo, String ip) {
-    if (contar(claveCorreo(correo)) >= maximoPorCorreo || contar("ip:" + ip) >= maximoPorIp) {
-      throw new DemasiadosIntentosException();
+    long espera =
+        Math.max(
+            segundosHastaLiberar(claveCorreo(correo), maximoPorCorreo),
+            segundosHastaLiberar("ip:" + ip, maximoPorIp));
+    if (espera > 0) {
+      throw new DemasiadosIntentosException(espera);
     }
   }
 
-  public void registrarFallo(String correo, String ip) {
+  /**
+   * @return intentos fallidos del correo dentro de la ventana, contando este
+   */
+  public int registrarFallo(String correo, String ip) {
     if (fallos.size() >= MAXIMO_CLAVES) {
       fallos.keySet().removeIf(clave -> contar(clave) == 0);
     }
     agregar(claveCorreo(correo));
     agregar("ip:" + ip);
+    return contar(claveCorreo(correo));
+  }
+
+  public int getMaximoPorCorreo() {
+    return maximoPorCorreo;
   }
 
   public void registrarExito(String correo) {
@@ -78,6 +91,22 @@ public class LimitadorIntentos {
         intentos.removeFirst();
       }
       return intentos.size();
+    }
+  }
+
+  /**
+   * Segundos hasta que la clave baje del máximo: vence el fallo que la mantiene en el límite. Cero
+   * si no está bloqueada.
+   */
+  private long segundosHastaLiberar(String clave, int maximo) {
+    if (contar(clave) < maximo) {
+      return 0;
+    }
+    Deque<Instant> intentos = fallos.get(clave);
+    synchronized (intentos) {
+      Instant decisivo = intentos.stream().skip(intentos.size() - maximo).findFirst().orElseThrow();
+      long milis = Duration.between(reloj.instant(), decisivo.plus(ventana)).toMillis();
+      return Math.max(1, (milis + 999) / 1000);
     }
   }
 

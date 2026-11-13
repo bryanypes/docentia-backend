@@ -5,6 +5,7 @@ import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { EtiquetaNivel } from '../../../shared/components/ui/EtiquetaNivel/EtiquetaNivel.jsx'
 import { MensajeNavegacion } from '../../../shared/components/ui/MensajeNavegacion/MensajeNavegacion.jsx'
+import { SolicitarAyuda } from '../../../shared/components/ui/SolicitarAyuda/SolicitarAyuda.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { formatearNota, listarFuentes, textoFormula } from '../../../shared/utils/formatters.js'
 import { PanelSeguimientoPlan } from '../../actas/components/PanelSeguimientoPlan.jsx'
@@ -64,6 +65,30 @@ export default function MiEvaluacion() {
   const habilitado = expediente.datos.resultadoHabilitado !== false
   const completo = promedio?.estado === 'COMPLETO' && habilitado
   const esperaReunion = promedio?.estado === 'COMPLETO' && !habilitado
+  // Sin clases en el periodo y sin ninguna nota: no hay materias que evaluar. Un backend anterior no
+  // manda clasesEnPeriodo y no entra aquí.
+  const sinMaterias = expediente.datos.clasesEnPeriodo === 0 && promedio?.estado === 'SIN_NOTA'
+
+  if (periodo && sinMaterias) {
+    return (
+      <>
+        {encabezado}
+        <div className="pagina">
+          <EstadoVista
+            titulo="No tienes materias asignadas en este periodo"
+            mensaje={`En el periodo ${periodo.nombre} no apareces como docente de ninguna materia, así que aún no hay una evaluación para ti. Intenta nuevamente más tarde o solicita ayuda para revisar tu carga académica.`}
+          >
+            <div className="mi-evaluacion__acciones-vacio">
+              <Boton variante="contorno" icono={RefreshCw} onClick={expediente.recargar}>
+                Intentar nuevamente
+              </Boton>
+              <SolicitarAyuda compacto perfil="DOCENTE" />
+            </div>
+          </EstadoVista>
+        </div>
+      </>
+    )
+  }
 
   return (
     <>

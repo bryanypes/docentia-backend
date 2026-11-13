@@ -123,6 +123,7 @@ class SemillaDemoVicerrectoria {
       return;
     }
     sembrarFlujo(periodo.get(), software.get(), hash);
+    sembrarSinMaterias(software.get(), hash);
     Programa ambiental =
         programaRepository.save(new Programa("Ingeniería Ambiental", software.get().getFacultad()));
     Programa politica =
@@ -163,6 +164,19 @@ class SemillaDemoVicerrectoria {
     }
     // La nota de estudiantes sale por el mismo camino que un envío real.
     heteroevaluacionService.recalcular(docente, periodo);
+  }
+
+  /**
+   * Un estudiante sin matrículas y un docente sin clases ni notas en el periodo: muestran lo que ve
+   * cada uno cuando no tiene materias.
+   */
+  private void sembrarSinMaterias(Programa software, String hash) {
+    usuarioRepository.save(
+        Usuario.crearEstudiante(
+            "Valentina Ruiz Cerón", "estudiante.sinmaterias" + DOMINIO, hash, software));
+    usuarioRepository.save(
+        Usuario.crearDocente(
+            "Felipe Andrade Mora", "docente.sinmaterias" + DOMINIO, hash, software));
   }
 
   private void responder(

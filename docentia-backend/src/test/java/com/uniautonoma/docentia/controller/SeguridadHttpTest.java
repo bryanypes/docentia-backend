@@ -174,6 +174,27 @@ class SeguridadHttpTest extends PruebaIntegracion {
     intentar(real.getCorreo(), "mala").andExpect(status().isTooManyRequests());
   }
 
+  @Test
+  void cadaFalloDiceCuantosIntentosLlevaYElBloqueoCuantoFalta() throws Exception {
+    Usuario real = escenario.crearVicerrector("Cuenta Intentos");
+    for (int i = 1; i <= 3; i++) {
+      intentar(real.getCorreo(), "mala")
+          .andExpect(status().isUnauthorized())
+          .andExpect(jsonPath("$.mensaje").value("Correo o contraseña incorrectos"))
+          .andExpect(jsonPath("$.intentosUsados").value(i))
+          .andExpect(jsonPath("$.intentosMaximos").value(3));
+    }
+    // Un correo que no existe cuenta igual: el conteo no revela cuáles sí existen.
+    intentar("tampoco-existe@uniautonoma.edu.co", "x")
+        .andExpect(jsonPath("$.intentosUsados").value(1));
+
+    intentar(real.getCorreo(), "mala")
+        .andExpect(status().isTooManyRequests())
+        .andExpect(header().exists(HttpHeaders.RETRY_AFTER))
+        .andExpect(jsonPath("$.segundosParaReintentar").isNumber())
+        .andExpect(jsonPath("$.mensaje").value(containsString("10 minutos")));
+  }
+
   private org.springframework.test.web.servlet.ResultActions intentar(String correo, String clave)
       throws Exception {
     return mockMvc.perform(

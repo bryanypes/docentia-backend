@@ -88,6 +88,10 @@ Hasta que la coordinación registre la asistencia, el docente recibe `GET /exped
 `promedio.valor`, sin categoría ni resultado por dimensión, `GET /actas` sin el borrador del periodo
 y `GET /analisis-ia/resultados/propio` sin hallazgos.
 
+`GET /expedientes/propio` trae además `clasesEnPeriodo`: cuántas clases (materia y grupo) tiene el
+docente en el periodo activo, o cero si no hay periodo. Con cero clases y el promedio en `SIN_NOTA`, la
+pantalla explica que el docente no tiene materias asignadas.
+
 ## Notificaciones
 
 | Tipo | Destino | Cuándo |

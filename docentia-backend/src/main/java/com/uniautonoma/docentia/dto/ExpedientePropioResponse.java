@@ -11,6 +11,8 @@ import java.util.List;
  * @param dimensiones resultado ya ponderado de cada dimensión en el periodo activo
  * @param resultadoHabilitado falso mientras la coordinación no registre la asistencia a la cita:
  *     entonces promedio y dimensiones llegan sin valor
+ * @param clasesEnPeriodo clases (materias y grupos) del docente en el periodo activo; cero si no
+ *     hay periodo. Con cero y sin ninguna nota, el docente no tiene materias que evaluar
  */
 public record ExpedientePropioResponse(
     DocenteResponse docente,
@@ -18,4 +20,5 @@ public record ExpedientePropioResponse(
     PromedioPonderadoResponse promedio,
     List<ResultadoDimensionResponse> dimensiones,
     List<CompromisoResponse> compromisosVigentes,
-    boolean resultadoHabilitado) {}
+    boolean resultadoHabilitado,
+    int clasesEnPeriodo) {}

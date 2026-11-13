@@ -87,7 +87,7 @@ Mitigaciones propuestas (no aplicadas; se deciden con la institución):
 |--------|---------|-----------|
 | Acceso indebido | Autorización por método y alcance por facultad | `MatrizAutorizacionTest`, `AlcanceRecursosTest` |
 | Token forjado | HS256 explícito; secreto de 32 bytes o más; `prod` rechaza secretos de desarrollo | `SeguridadHttpTest`, `ValidacionProduccion` |
-| Fuerza bruta | 5 fallos por correo y 30 por IP en 10 minutos, respuesta 429 genérica | `SeguridadHttpTest` |
+| Fuerza bruta | 5 fallos por correo y 30 por IP en 10 minutos. Cada 401 dice cuántos intentos lleva el correo y el 429 cuántos segundos faltan (`Retry-After`), sin decir si falló el correo o la clave | `SeguridadHttpTest`, `LimitadorIntentosTest` |
 | Enumeración | Mismo mensaje y siempre se compara un hash BCrypt | `AutenticacionService` |
 | Fuga en errores | RFC 7807 sin trazas, con `correlationId` | `SeguridadHttpTest` |
 | Fuga por correo | Textos fijos por tipo | `NotificacionesTest` |

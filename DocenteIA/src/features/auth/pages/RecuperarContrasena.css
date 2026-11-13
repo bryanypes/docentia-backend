@@ -1,29 +1,15 @@
-.recuperar {
+/* El layout (fondo, tarjeta y cabecera) lo pone PantallaAcceso; aquí el contenido y las acciones. */
+.recuperar__contenido {
   display: grid;
-  place-items: center;
-  min-height: 100vh;
-  padding: 1rem;
-  background:
-    radial-gradient(circle at 84% 8%, rgba(232, 201, 68, 0.22), transparent 22rem),
-    var(--gradiente-marca);
+  gap: var(--separacion);
 }
 
-.recuperar__tarjeta {
-  display: grid;
-  gap: 1rem;
-  width: min(100%, 28rem);
-  padding: 1.75rem;
-  border: 1px solid var(--color-borde, #e6dfce);
-  border-radius: 28px;
-  background: var(--color-superficie, #ffffff);
-  box-shadow: 0 30px 70px -30px rgba(0, 20, 55, 0.65);
-  animation: entrar-suave var(--transicion-media) both;
-}
-
-.recuperar__tarjeta h1 {
+.recuperar__titulo {
   margin: 0;
-  color: var(--color-azul, #053686);
-  font-size: 1.4rem;
+  font-size: 21px;
+  font-weight: var(--peso-fuerte);
+  letter-spacing: -0.02em;
+  color: var(--color-texto);
 }
 
 .recuperar__formulario {
@@ -33,8 +19,42 @@
 
 .recuperar__formulario p {
   margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-texto-secundario);
 }
 
-.recuperar__volver {
-  font-size: 0.9rem;
+/* Inicio, login y ayuda siempre a mano, en una fila que se acomoda en celular */
+.recuperar__acciones {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  padding-top: var(--separacion);
+  border-top: 1px solid var(--color-borde-suave);
+}
+
+.recuperar__acciones > a {
+  justify-content: center;
+  min-height: var(--alto-tactil);
+  padding: 0 10px;
+  font-size: 13.5px;
+  text-align: center;
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.recuperar__accion {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+@media (max-width: 420px) {
+  .recuperar__acciones {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .recuperar__acciones > a:last-child {
+    grid-column: 1 / -1;
+  }
 }

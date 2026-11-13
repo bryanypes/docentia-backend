@@ -23,7 +23,9 @@ Una evaluación enviada no se puede cambiar. Cuando terminas todas, la pantalla 
 
 - **"La evaluación aún no está habilitada"**: la recolección no ha abierto; la pantalla dice desde qué fecha.
 - **"La evaluación ya cerró"**: terminó la ventana del periodo.
-- **"No tienes evaluaciones"**: no tienes cursos con profesor asignado en el periodo activo. Si crees que es un error, avisa a la coordinación.
+- **"No tienes docentes por evaluar"**: no estás inscrito en ninguna materia del periodo activo. Pulsa **Intentar nuevamente** o **Solicitar ayuda**, que abre tus tickets de estudiante en NOVA.
+
+¿No sabes cómo usar la plataforma? En la página de inicio pulsa **Ver tutoriales**.
 
 ## Qué pasa con tus respuestas
 

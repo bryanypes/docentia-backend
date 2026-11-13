@@ -1,5 +1,36 @@
 # Cambios
 
+## Sin publicar
+
+- **Inicio de sesión:** cada intento fallido dice cuántos lleva la persona («Llevas 2 de 5 intentos.
+  Te quedan 3.») y, al superar el límite, la pantalla muestra un contador con el tiempo que falta y
+  desactiva **Ingresar** hasta que termina. El mensaje sigue sin decir si falló el correo o la
+  contraseña. La API agrega `intentosUsados` e `intentosMaximos` al 401 del login, y
+  `segundosParaReintentar` con la cabecera `Retry-After` al 429.
+- **Ingreso pausado:** el bloqueo reemplaza el formulario por un cronómetro centrado con anillo de
+  progreso. El fin del bloqueo se guarda en el navegador, así que recargar la página no lo esconde.
+- **Correo externo:** si el correo no termina en `@uniautonoma.edu.co`, DocenteIA lo explica antes de
+  enviar nada al servidor (el intento no cuenta).
+- **Solicitar ayuda:** enlace a los tickets de NOVA en el login (siempre al pie, y destacado al llegar
+  al límite o en el bloqueo) y en «No tienes docentes por evaluar», que reemplaza a «No tienes
+  evaluaciones» con **Intentar nuevamente**. Los enlaces van según el perfil y se pueden cambiar con
+  `VITE_URL_NOVA`.
+- **Acceso compacto y sin scroll:** login, recuperar contraseña y cambio de contraseña comparten una
+  tarjeta con la marca en una sola fila (DocenteIA, DOCENTIA y el logo de la Universidad) que cabe sin
+  desplazarse en un portátil al 100 % y en un celular. El robot ya no se superpone al texto y las
+  animaciones son solo de color. El login tiene **Volver al inicio**; recuperar contraseña ofrece
+  siempre **Ir al inicio**, **Ir al login** y **Solicitar ayuda**, haya o no correo configurado.
+- **Logo institucional con fondo transparente.**
+- **Página de inicio compacta:** sin animaciones de desplazamiento; foco en el anonimato, cómo funciona
+  en tres pasos, invitación a los tutoriales y buzón de ayuda con los servicios de NOVA (tickets por
+  perfil, PQRS, directorio y manual).
+- **Tutoriales:** página pública `/tutoriales` con un video por rol. Mientras no tengan enlace se
+  muestran como pendientes; los enlaces se ponen en `src/shared/constants/tutoriales.js`.
+- **Docente sin materias:** `GET /expedientes/propio` agrega `clasesEnPeriodo`. Con cero clases y sin
+  ninguna nota, **Mi evaluación** dice «No tienes materias asignadas en este periodo» con **Intentar
+  nuevamente** y **Solicitar ayuda**.
+- **Semilla de desarrollo:** `estudiante.sinmaterias` y `docente.sinmaterias` para probar esos estados.
+
 ## 0.4.0 (12 de noviembre de 2026)
 
 ### Resumen
