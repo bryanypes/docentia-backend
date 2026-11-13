@@ -1,5 +1,26 @@
 # Cambios
 
+## Sin publicar
+
+- **Inicio de sesión:** cada intento fallido dice cuántos lleva la persona («Llevas 2 de 5 intentos.
+  Te quedan 3.») y, al superar el límite, la pantalla muestra un contador con el tiempo que falta y
+  desactiva **Ingresar** hasta que termina. El mensaje sigue sin decir si falló el correo o la
+  contraseña. La API agrega `intentosUsados` e `intentosMaximos` al 401 del login, y
+  `segundosParaReintentar` con la cabecera `Retry-After` al 429.
+- **Ingreso pausado:** el bloqueo reemplaza el formulario por un cronómetro centrado con anillo de
+  progreso. El fin del bloqueo se guarda en el navegador, así que recargar la página no lo esconde.
+- **Correo externo:** si el correo no termina en `@uniautonoma.edu.co`, DocenteIA lo explica antes de
+  enviar nada al servidor (el intento no cuenta).
+- **Solicitar ayuda:** enlace a los tickets de NOVA en el login (siempre al pie, y destacado al llegar
+  al límite o en el bloqueo) y en «No tienes docentes por evaluar», que reemplaza a «No tienes
+  evaluaciones» con **Intentar nuevamente**. Los enlaces van según el perfil y se pueden cambiar con
+  `VITE_URL_NOVA`.
+- **Login rediseñado y responsivo:** panel de marca en escritorio, avatar que reacciona (sacude ante un
+  error, respira durante la espera) y botón **Volver al inicio**.
+- **Página de inicio nueva:** foco en que los comentarios siempre son anónimos, cómo funciona en tres
+  momentos con DocenteIA, tarjetas por rol con animaciones y un buzón de ayuda con los servicios de
+  NOVA (tickets por perfil, PQRS, directorio y manual).
+
 ## 0.4.0 (12 de noviembre de 2026)
 
 ### Resumen
