@@ -6,6 +6,10 @@ Tu evaluación del periodo combina tres evaluadores: estudiantes (50 %), coordin
 
 En **Iniciar sesión** escribe tu correo institucional y tu contraseña, o usa el botón de Google. La primera vez DOCENTIA te pide cambiar la contraseña temporal. Si la olvidaste, pulsa **¿Olvidaste tu contraseña?**: llega un enlace a tu correo que sirve una vez y vence en 30 minutos. Si el servidor no tiene correo configurado, la pantalla te pide solicitar una contraseña nueva a la Vicerrectoría.
 
+Si te equivocas, la pantalla dice cuántos intentos llevas; tras 5 fallos el ingreso se pausa 10 minutos con un cronómetro. Si necesitas ayuda, pulsa **Solicitar ayuda**: abre tus tickets en NOVA.
+
+Si en el periodo no tienes materias asignadas, **Mi evaluación** lo dice y te ofrece **Intentar nuevamente** y **Solicitar ayuda**.
+
 ## Menú
 
 | Entrada | Para qué |
