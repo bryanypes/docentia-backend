@@ -1,30 +1,141 @@
-/* Todo se escala con la altura de la pantalla para que la tarjeta quepa sin desplazarse,
-   desde portátiles de 720 px de alto hasta monitores grandes. */
+/* Acceso: en escritorio, panel de marca a la izquierda y tarjeta a la derecha; desde 960 px hacia
+   abajo, solo la tarjeta centrada. Las medidas se escalan con el alto para caber sin desplazarse en
+   portátiles de 720 px, y en pantallas bajas la página simplemente se desplaza. */
 .acceso {
-  --avatar: clamp(96px, 17vh, 164px);
-  --separacion: clamp(10px, 2.1vh, 20px);
+  --avatar: clamp(92px, 15vh, 150px);
+  --separacion: clamp(10px, 1.9vh, 18px);
   position: relative;
   isolation: isolate;
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 480px);
   align-items: center;
-  justify-content: center;
+  gap: clamp(24px, 5vw, 88px);
   min-height: 100vh;
   min-height: 100dvh;
-  padding: calc(var(--avatar) / 2 + clamp(12px, 3vh, 32px)) var(--espacio-4) clamp(12px, 3vh, 40px);
+  padding: clamp(72px, 9vh, 88px) clamp(16px, 6vw, 96px) clamp(20px, 4vh, 48px);
+  overflow-x: hidden;
   background:
     radial-gradient(circle at 84% 8%, rgba(232, 201, 68, 0.22), transparent 22rem),
     radial-gradient(circle at 10% 92%, rgba(255, 255, 255, 0.08), transparent 18rem),
     var(--gradiente-marca);
 }
 
+/* Regreso a la presentación: arriba a la izquierda, sobre el fondo azul */
+.acceso__volver {
+  position: absolute;
+  top: max(16px, env(safe-area-inset-top, 0px));
+  left: max(16px, env(safe-area-inset-left, 0px));
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--alto-tactil);
+  padding: 0 16px 0 12px;
+  border: 1px solid rgba(255, 255, 255, 0.28);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.12);
+  color: #fff;
+  font-size: 14px;
+  font-weight: var(--peso-semi);
+  text-decoration: none;
+  backdrop-filter: blur(6px);
+  transition: background 0.16s, transform 0.16s;
+}
+
+.acceso__volver:hover {
+  background: rgba(255, 255, 255, 0.22);
+  color: #fff;
+  text-decoration: none;
+  transform: translateX(-2px);
+}
+
+.acceso__volver:focus-visible {
+  outline: 3px solid var(--color-amarillo);
+  outline-offset: 2px;
+}
+
+/* Panel de marca */
+.acceso__presentacion {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: clamp(14px, 2.4vh, 22px);
+  max-width: 560px;
+  padding-bottom: clamp(120px, 22vh, 210px);
+  color: #fff;
+  animation: acceso-entrar 0.45s ease-out both;
+}
+
+.acceso__eyebrow {
+  font-size: 12px;
+  font-weight: var(--peso-fuerte);
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: #f3e27a;
+}
+
+.acceso__titular {
+  font-size: clamp(30px, 3.4vw, 46px);
+  font-weight: var(--peso-fuerte);
+  line-height: 1.08;
+  letter-spacing: -0.02em;
+  text-wrap: balance;
+}
+
+.acceso__titular span {
+  color: #f3e27a;
+}
+
+.acceso__puntos {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  font-size: 15px;
+  line-height: 1.45;
+  color: #dbe5f7;
+}
+
+.acceso__puntos li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.acceso__punto-icono {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 11px;
+  background: rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #f3e27a;
+}
+
+/* DocenteIA señala el formulario desde abajo del panel */
+.acceso__robot-grande {
+  position: absolute;
+  right: clamp(-10px, 1vw, 20px);
+  bottom: 0;
+  width: clamp(130px, 15vw, 200px);
+  filter: drop-shadow(0 18px 24px rgba(0, 0, 0, 0.35));
+  animation: acceso-flotar 4.5s ease-in-out infinite;
+}
+
+/* Tarjeta */
 .acceso__tarjeta {
   position: relative;
   display: flex;
   flex-direction: column;
   gap: var(--separacion);
   width: 100%;
-  max-width: 440px;
-  padding: calc(var(--avatar) / 2 + var(--separacion)) 34px clamp(18px, 3.2vh, 32px);
+  max-width: 480px;
+  margin-top: calc(var(--avatar) / 2);
+  justify-self: center;
+  padding: calc(var(--avatar) / 2 + var(--separacion)) clamp(20px, 3vw, 38px) clamp(20px, 3vh, 32px);
   background: var(--color-superficie);
   border-radius: 28px;
   border: 1px solid rgba(255, 255, 255, 0.5);
@@ -55,12 +166,25 @@
   animation: acceso-aparecer 0.25s ease-out both;
 }
 
+.acceso__tarjeta--error .acceso__avatar {
+  border-color: var(--color-error-borde);
+  box-shadow: 0 0 0 8px var(--color-error-fondo);
+}
+
+.acceso__tarjeta--error .acceso__avatar img {
+  animation: acceso-aparecer 0.25s ease-out both, acceso-sacudir 0.5s 0.15s ease-in-out both;
+}
+
+.acceso__tarjeta--espera .acceso__avatar img {
+  animation: acceso-aparecer 0.25s ease-out both, acceso-respirar 2.6s ease-in-out infinite;
+}
+
 .acceso__marca {
   text-align: center;
 }
 
 .acceso__nombre {
-  font-size: clamp(26px, 4.2vh, 34px);
+  font-size: clamp(26px, 4vh, 34px);
   font-weight: var(--peso-fuerte);
   letter-spacing: 0.04em;
   line-height: 1;
@@ -98,14 +222,80 @@
   }
   to {
     opacity: 1;
+  }
+}
+
+@keyframes acceso-flotar {
+  0%,
+  100% {
+    transform: translateY(0) rotate(-2deg);
+  }
+  50% {
+    transform: translateY(-10px) rotate(1deg);
+  }
+}
+
+@keyframes acceso-sacudir {
+  0%,
+  100% {
     transform: none;
+  }
+  20% {
+    transform: translateX(-6px) rotate(-6deg);
+  }
+  40% {
+    transform: translateX(6px) rotate(5deg);
+  }
+  60% {
+    transform: translateX(-4px) rotate(-3deg);
+  }
+  80% {
+    transform: translateX(3px) rotate(2deg);
+  }
+}
+
+@keyframes acceso-respirar {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .acceso__robot-grande,
+  .acceso__tarjeta,
+  .acceso__presentacion,
+  .acceso__avatar img {
+    animation: none !important;
+  }
+}
+
+/* Tabletas y celulares: solo la tarjeta, centrada */
+@media (max-width: 960px) {
+  .acceso {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    padding-top: 76px;
+  }
+
+  .acceso__presentacion {
+    display: none;
   }
 }
 
 @media (max-width: 560px) {
+  .acceso {
+    --avatar: clamp(84px, 24vw, 112px);
+    padding-right: max(12px, env(safe-area-inset-right, 0px));
+    padding-left: max(12px, env(safe-area-inset-left, 0px));
+  }
+
   .acceso__tarjeta {
-    padding-right: 20px;
-    padding-left: 20px;
-    border-radius: 20px;
+    padding-right: 18px;
+    padding-left: 18px;
+    border-radius: 22px;
   }
 }

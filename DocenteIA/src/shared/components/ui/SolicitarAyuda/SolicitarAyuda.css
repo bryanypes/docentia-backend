@@ -1,0 +1,43 @@
+.solicitar-ayuda {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 16px 18px;
+  text-align: center;
+  background: var(--color-azul-fondo);
+  border: 1px solid var(--color-azul-claro);
+  border-radius: var(--radio-lg);
+}
+
+.solicitar-ayuda__titulo {
+  font-size: 15px;
+  font-weight: var(--peso-fuerte);
+  color: var(--color-azul);
+}
+
+.solicitar-ayuda__texto {
+  max-width: 42ch;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--color-texto-secundario);
+}
+
+.solicitar-ayuda__enlace {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: var(--peso-semi);
+  color: var(--color-azul);
+}
+
+.solicitar-ayuda__enlace:hover {
+  color: var(--color-azul-oscuro);
+}
+
+.solicitar-ayuda__boton {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: var(--alto-tactil);
+  text-decoration: none;
+}

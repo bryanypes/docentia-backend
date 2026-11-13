@@ -141,6 +141,186 @@
   color: var(--color-alerta-texto);
 }
 
+.login__intentos {
+  display: block;
+  margin-top: 2px;
+  font-weight: var(--peso-semi);
+}
+
+/* Bloqueo por intentos: todo centrado, con el cronómetro como protagonista */
+.login__bloqueo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  padding-top: var(--separacion);
+  border-top: 1px solid var(--color-borde-suave);
+  text-align: center;
+}
+
+.login__bloqueo-icono {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--color-error-fondo);
+  color: var(--color-error);
+}
+
+.login__bloqueo-titulo {
+  font-size: 20px;
+  font-weight: var(--peso-fuerte);
+  letter-spacing: -0.02em;
+  color: var(--color-texto);
+}
+
+.login__bloqueo-texto {
+  max-width: 34ch;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--color-texto-secundario);
+}
+
+.login__cronometro {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: clamp(136px, 18vh, 172px);
+  aspect-ratio: 1;
+  margin: 4px auto 2px;
+}
+
+.login__cronometro svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+
+.login__anillo-fondo,
+.login__anillo {
+  fill: none;
+  stroke-width: 9;
+}
+
+.login__anillo-fondo {
+  stroke: var(--color-azul-suave);
+}
+
+.login__anillo {
+  stroke: var(--color-azul);
+  stroke-linecap: round;
+  transition: stroke-dashoffset 1s linear;
+}
+
+.login__contador {
+  grid-area: 1 / 1;
+  margin-top: -12px;
+  font-size: clamp(32px, 5vh, 42px);
+  font-weight: var(--peso-fuerte);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  color: var(--color-azul);
+}
+
+.login__contador-unidad {
+  grid-area: 1 / 1;
+  margin-top: 46px;
+  font-size: 11px;
+  font-weight: var(--peso-semi);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-texto-tenue);
+}
+
+/* Correo que no es de la Corporación: DocenteIA lo explica */
+.login__externo {
+  display: grid;
+  grid-template-columns: 64px minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--color-alerta-fondo);
+  border: 1px solid var(--color-amarillo);
+  border-radius: var(--radio-lg);
+  animation: login-entrar 0.3s ease-out both;
+}
+
+.login__externo-robot {
+  width: 64px;
+  height: auto;
+  animation: login-sacudir 0.6s 0.1s ease-in-out both;
+}
+
+.login__externo-titulo {
+  font-size: 15px;
+  font-weight: var(--peso-fuerte);
+  color: var(--color-texto);
+}
+
+.login__externo-texto {
+  margin-top: 4px;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--color-texto-secundario);
+}
+
+.login__externo-correo {
+  overflow-wrap: anywhere;
+}
+
+.login__problemas {
+  font-size: 13px;
+  text-align: center;
+  color: var(--color-texto-tenue);
+}
+
+@keyframes login-entrar {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes login-sacudir {
+  0%,
+  100% {
+    transform: none;
+  }
+  25% {
+    transform: rotate(-8deg);
+  }
+  50% {
+    transform: rotate(7deg);
+  }
+  75% {
+    transform: rotate(-4deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .login__externo,
+  .login__externo-robot,
+  .login__anillo {
+    animation: none;
+    transition: none;
+  }
+}
+
+@media (max-width: 400px) {
+  .login__externo {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+    text-align: center;
+  }
+}
+
 .login__ingresar {
   min-height: clamp(44px, 6.4vh, 52px);
   font-size: 15.5px;
