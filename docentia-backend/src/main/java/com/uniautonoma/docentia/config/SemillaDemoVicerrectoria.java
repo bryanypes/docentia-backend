@@ -2,16 +2,12 @@ package com.uniautonoma.docentia.config;
 
 import com.uniautonoma.docentia.entity.Calificacion;
 import com.uniautonoma.docentia.entity.FuenteEvaluacion;
-import com.uniautonoma.docentia.entity.Importacion;
 import com.uniautonoma.docentia.entity.NotasAspectos;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.Programa;
-import com.uniautonoma.docentia.entity.ResultadoImportacion;
 import com.uniautonoma.docentia.entity.TipoFormulario;
 import com.uniautonoma.docentia.entity.Usuario;
 import com.uniautonoma.docentia.repository.CalificacionRepository;
-import com.uniautonoma.docentia.repository.ComentarioEstudianteRepository;
-import com.uniautonoma.docentia.repository.ImportacionRepository;
 import com.uniautonoma.docentia.repository.PeriodoAcademicoRepository;
 import com.uniautonoma.docentia.repository.ProgramaRepository;
 import com.uniautonoma.docentia.repository.UsuarioRepository;
@@ -19,7 +15,6 @@ import com.uniautonoma.docentia.service.CalificacionService;
 import com.uniautonoma.docentia.service.PromedioService;
 import com.uniautonoma.docentia.service.formulario.CatalogoInstrumento;
 import com.uniautonoma.docentia.service.heteroevaluacion.HeteroevaluacionService;
-import com.uniautonoma.docentia.service.importacion.ValidadorEvaluacionEstudiantes;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.sql.Timestamp;
@@ -36,9 +31,10 @@ import org.springframework.stereotype.Component;
  * Datos para presentar a la vicerrectoría, solo en desarrollo.
  *
  * <p>Un flujo limpio de punta a punta: la docente Mariana Ruiz no tiene ninguna nota. Once
- * estudiantes ya la evaluaron con comentarios (alcanza para el análisis con IA) y el estudiante de
- * la demo es el que falta. En vivo: el estudiante evalúa, la docente se autoevalúa, la coordinación
- * la coevalúa y la vicerrectoría ve el resultado y el análisis de comentarios.
+ * estudiantes ya la evaluaron con comentarios en el formulario anónimo (alcanza para el análisis
+ * con IA, que se pide con la recolección cerrada) y el estudiante de la demo es el que falta. En
+ * vivo: el estudiante evalúa, la docente se autoevalúa, la coordinación la coevalúa y la
+ * vicerrectoría ve el resultado y el análisis de comentarios.
  *
  * <p>Además siembra 36 docentes en cinco programas con notas variadas (todos los niveles, unos
  * completos y otros a medias) para que las estadísticas se vean con volumen. No toca a nadie más.
@@ -53,17 +49,17 @@ class SemillaDemoVicerrectoria {
   /** Comentarios de los once estudiantes que ya evaluaron a la docente de la demo. */
   private static final List<String> COMENTARIOS =
       List.of(
-          "Explica los requisitos con casos reales de empresas de la región y se entiende todo.",
-          "Las clases son muy organizadas y siempre comparte el material antes.",
-          "Las notas de los talleres tardan en publicarse, casi tres semanas.",
-          "Responde las dudas con paciencia, incluso fuera de clase.",
-          "El ritmo es rápido en los temas de modelado y cuesta seguirlo.",
-          "Los ejercicios en grupo ayudan mucho a entender las historias de usuario.",
-          "Los criterios de calificación del proyecto final no quedaron claros al inicio.",
+          "Explica muy claro y con ejemplos de empresas reales.",
+          "Sus explicaciones son claras, se entiende todo a la primera.",
+          "Explica con paciencia y deja claro cada concepto.",
+          "Muy buena para explicar los requisitos, todo queda claro.",
+          "La retroalimentación de los talleres llega muy tarde.",
+          "Se demora mucho en devolver las correcciones de las entregas.",
+          "Las correcciones del proyecto tardan y no sabemos en qué fallamos.",
+          "La retroalimentación de los parciales se demora más de dos semanas.",
           "Es puntual y llega con la clase preparada.",
-          "Retroalimenta las entregas con comentarios concretos que sirven para mejorar.",
           "Podría dejar más ejercicios para practicar antes de los parciales.",
-          "Recomiendo la materia, se aprende a trabajar con clientes de verdad.");
+          "Recomiendo la materia, se aprende a trabajar con clientes reales.");
 
   /** Puntaje de cada uno de los once estudiantes, de 1 a 5, para una nota cercana a 4,1. */
   private static final int[] PUNTAJES = {5, 4, 4, 5, 3, 4, 4, 5, 4, 4, 4};
@@ -77,8 +73,6 @@ class SemillaDemoVicerrectoria {
   private final PromedioService promedioService;
   private final HeteroevaluacionService heteroevaluacionService;
   private final CatalogoInstrumento catalogo;
-  private final ImportacionRepository importacionRepository;
-  private final ComentarioEstudianteRepository comentarioRepository;
   private final Clock reloj;
 
   SemillaDemoVicerrectoria(
@@ -91,8 +85,6 @@ class SemillaDemoVicerrectoria {
       PromedioService promedioService,
       HeteroevaluacionService heteroevaluacionService,
       CatalogoInstrumento catalogo,
-      ImportacionRepository importacionRepository,
-      ComentarioEstudianteRepository comentarioRepository,
       Clock reloj) {
     this.jdbcTemplate = jdbcTemplate;
     this.usuarioRepository = usuarioRepository;
@@ -103,8 +95,6 @@ class SemillaDemoVicerrectoria {
     this.promedioService = promedioService;
     this.heteroevaluacionService = heteroevaluacionService;
     this.catalogo = catalogo;
-    this.importacionRepository = importacionRepository;
-    this.comentarioRepository = comentarioRepository;
     this.reloj = reloj;
   }
 
@@ -132,7 +122,7 @@ class SemillaDemoVicerrectoria {
         || derecho.isEmpty()) {
       return;
     }
-    sembrarFlujo(periodo.get(), software.get(), coordIngenieria.get(), hash);
+    sembrarFlujo(periodo.get(), software.get(), hash);
     Programa ambiental =
         programaRepository.save(new Programa("Ingeniería Ambiental", software.get().getFacultad()));
     Programa politica =
@@ -145,8 +135,7 @@ class SemillaDemoVicerrectoria {
         hash);
   }
 
-  private void sembrarFlujo(
-      PeriodoAcademico periodo, Programa software, Usuario coordinador, String hash) {
+  private void sembrarFlujo(PeriodoAcademico periodo, Programa software, String hash) {
     Usuario docente =
         usuarioRepository.save(Usuario.crearDocente("Mariana Ruiz Ortega", MARCA, hash, software));
     Usuario estudianteDemo =
@@ -174,38 +163,6 @@ class SemillaDemoVicerrectoria {
     }
     // La nota de estudiantes sale por el mismo camino que un envío real.
     heteroevaluacionService.recalcular(docente, periodo);
-    // El análisis con IA que se pide desde la pantalla lee los comentarios importados de la
-    // encuesta institucional (fuente CSV), igual que en el seed de Julián: se cargan los mismos
-    // comentarios más uno, para superar el mínimo de 10 encuestas.
-    List<String> encuesta = new java.util.ArrayList<>(COMENTARIOS);
-    encuesta.add(
-        "Sus clases son claras y las prácticas con clientes reales ayudan mucho a aprender.");
-    cargarComentarios(coordinador, periodo, docente, encuesta);
-  }
-
-  private void cargarComentarios(
-      Usuario coordinador, PeriodoAcademico periodo, Usuario docente, List<String> textos) {
-    Importacion carga =
-        importacionRepository.save(
-            new Importacion(
-                "seed-evaluacion-estudiantes.csv",
-                "seed-" + docente.getCorreo(),
-                periodo,
-                coordinador,
-                ResultadoImportacion.EXITOSA,
-                "UTF-8",
-                ";",
-                textos.size(),
-                0));
-    importacionRepository.flush();
-    for (String texto : textos) {
-      comentarioRepository.insertarSiNoExiste(
-          docente.getIdUsuario(),
-          periodo.getIdPeriodo(),
-          texto,
-          ValidadorEvaluacionEstudiantes.huellaComentario(texto, 1),
-          carga.getIdImportacion());
-    }
   }
 
   private void responder(
