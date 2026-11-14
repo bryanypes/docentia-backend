@@ -1,7 +1,14 @@
 # Cambios
 
-## Sin publicar
+## 0.4.1 (13 de noviembre de 2026)
 
+Mejoras de acceso y ayuda (PR #30, Verónica) y una corrección del límite de intentos. Sin migraciones:
+la base queda en V43. Backend y frontend se despliegan juntos desde esta etiqueta, porque el login usa
+los campos nuevos del 401 y del 429.
+
+- **Corrección del bloqueo:** si otra petición del mismo correo entraba bien o limpiaba los intentos
+  vencidos justo mientras se calculaba la espera, el login respondía 500. Ahora la purga, el conteo y
+  el cálculo ocurren juntos.
 - **Inicio de sesión:** cada intento fallido dice cuántos lleva la persona («Llevas 2 de 5 intentos.
   Te quedan 3.») y, al superar el límite, la pantalla muestra un contador con el tiempo que falta y
   desactiva **Ingresar** hasta que termina. El mensaje sigue sin decir si falló el correo o la

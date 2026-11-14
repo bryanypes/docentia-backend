@@ -119,6 +119,7 @@ location /Evadocente-app/ {
 | `VITE_GOOGLE_CLIENT_ID` | Sí, si entran estudiantes | Botón de Google; se incrusta al compilar `web` |
 | `VITE_BASE_PATH` | Sí, `/Evadocente-app/` | Subruta pública; se incrusta al compilar `web` |
 | `VITE_API_URL` | Sí, `/Evadocente-app/api` | Ruta de la API desde la web; se incrusta al compilar `web` |
+| `VITE_URL_NOVA` | No | Portal de los enlaces «Solicitar ayuda». Vacía: `https://nova.uniautonoma.edu.co`. Se incrusta al compilar `web` |
 | `DOCENTIA_CORS_ORIGENES` | Solo si la web vive en otro dominio | Orígenes exactos, separados por coma |
 | `DOCENTIA_DB_POOL_MAXIMO` | No, 15 | Pool de conexiones |
 | `DOCENTIA_COMPROMISOS_UMBRAL` | No, 3.8 | Bajo esta nota el acta exige compromisos (por confirmar: 3,8 o 4,00) |
