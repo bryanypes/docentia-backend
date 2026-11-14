@@ -2,6 +2,7 @@ package com.uniautonoma.docentia.security;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
+import static org.assertj.core.api.Assertions.catchThrowable;
 import static org.assertj.core.api.Assertions.catchThrowableOfType;
 
 import com.uniautonoma.docentia.exception.DemasiadosIntentosException;
@@ -58,6 +59,21 @@ class LimitadorIntentosTest {
         .isEqualTo("Demasiados intentos. Podrás volver a intentarlo en 10 minutos");
   }
 
+  @Test
+  void unLoginExitosoEnMedioDeLaConsultaNoRompeElCalculo() {
+    for (int i = 0; i < 3; i++) {
+      limitador.registrarFallo(CORREO, IP);
+    }
+    // Otra petición del mismo correo entra bien justo mientras esta consulta el bloqueo.
+    reloj.alConsultar(() -> limitador.registrarExito(CORREO));
+
+    Throwable error = catchThrowable(() -> limitador.exigirPermitido(CORREO, IP));
+    if (error != null) {
+      assertThat(error).isInstanceOf(DemasiadosIntentosException.class);
+    }
+    assertThatCode(() -> limitador.exigirPermitido(CORREO, IP)).doesNotThrowAnyException();
+  }
+
   private long esperaDe() {
     return catchThrowableOfType(
             DemasiadosIntentosException.class, () -> limitador.exigirPermitido(CORREO, IP))
@@ -67,6 +83,7 @@ class LimitadorIntentosTest {
   private static final class RelojMovil extends Clock {
 
     private Instant ahora;
+    private Runnable unaVez;
 
     RelojMovil(Instant inicio) {
       this.ahora = inicio;
@@ -74,6 +91,11 @@ class LimitadorIntentosTest {
 
     void avanzar(Duration tiempo) {
       ahora = ahora.plus(tiempo);
+    }
+
+    /** Corre la acción la próxima vez que alguien lea la hora, para simular otra petición. */
+    void alConsultar(Runnable accion) {
+      unaVez = accion;
     }
 
     @Override
@@ -88,6 +110,11 @@ class LimitadorIntentosTest {
 
     @Override
     public Instant instant() {
+      Runnable accion = unaVez;
+      unaVez = null;
+      if (accion != null) {
+        accion.run();
+      }
       return ahora;
     }
   }

@@ -99,13 +99,23 @@ public class LimitadorIntentos {
    * si no está bloqueada.
    */
   private long segundosHastaLiberar(String clave, int maximo) {
-    if (contar(clave) < maximo) {
+    Deque<Instant> intentos = fallos.get(clave);
+    if (intentos == null) {
       return 0;
     }
-    Deque<Instant> intentos = fallos.get(clave);
+    Instant ahora = reloj.instant();
+    Instant limite = ahora.minus(ventana);
+    // Purga, conteo y cálculo bajo el mismo candado: un login exitoso u otra petición no pueden
+    // quitar la cola ni acortarla entre el conteo y el cálculo de la espera.
     synchronized (intentos) {
+      while (!intentos.isEmpty() && intentos.peekFirst().isBefore(limite)) {
+        intentos.removeFirst();
+      }
+      if (intentos.size() < maximo) {
+        return 0;
+      }
       Instant decisivo = intentos.stream().skip(intentos.size() - maximo).findFirst().orElseThrow();
-      long milis = Duration.between(reloj.instant(), decisivo.plus(ventana)).toMillis();
+      long milis = Duration.between(ahora, decisivo.plus(ventana)).toMillis();
       return Math.max(1, (milis + 999) / 1000);
     }
   }
