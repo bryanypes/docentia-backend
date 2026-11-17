@@ -1,6 +1,9 @@
 # Cambios
 
-## Sin publicar
+## 0.4.2 (17 de noviembre de 2026)
+
+Solo frontend, sin migraciones: la base sigue en V43. Backend y frontend se despliegan juntos desde la
+etiqueta `v0.4.2`.
 
 - **Confirmación al enviar una evaluación** (PR #32, Verónica): al enviar la heteroevaluación, la
   autoevaluación o la coevaluación ya no queda el asistente de pasos. Se ve solo «Tu evaluación ha sido
