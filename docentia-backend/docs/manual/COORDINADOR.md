@@ -19,7 +19,7 @@ La coordinación ve los docentes de sus programas, los coevalúa, agenda y condu
 
 1. En **Coevaluaciones** busca al docente; puedes filtrar por programa y estado.
 2. Abre su coevaluación y responde los seis criterios por pasos.
-3. Marca la confirmación y pulsa **Enviar formulario**. Si ya la enviaste, la pantalla dice **Ya evaluaste a este docente**.
+3. Marca la confirmación y pulsa **Enviar formulario**. Al enviarla, la pantalla muestra **Tu evaluación ha sido recibida** con el resumen por criterio, **Volver al inicio** y **Ver el expediente del docente**. Después ya no se puede cambiar.
 
 ## Agenda y reunión
 

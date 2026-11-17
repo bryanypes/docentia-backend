@@ -1,5 +1,13 @@
 # Cambios
 
+## Sin publicar
+
+- **Confirmación al enviar una evaluación** (PR #32, Verónica): al enviar la heteroevaluación, la
+  autoevaluación o la coevaluación ya no queda el asistente de pasos. Se ve solo «Tu evaluación ha sido
+  recibida», con la fecha o el aviso de anonimato, el resumen por criterio y **Volver al inicio**; en la
+  coevaluación, también **Ver el expediente del docente**. Lo mismo al abrir una evaluación ya enviada:
+  las respuestas ya no se muestran, solo el resumen. El foco pasa al título para el lector de pantalla.
+
 ## 0.4.1 (13 de noviembre de 2026)
 
 Mejoras de acceso y ayuda (PR #30, Verónica) y una corrección del límite de intentos. Sin migraciones:

@@ -241,7 +241,7 @@ test('las notificaciones llegan a la campana y se leen', async () => {
 async function enviarFormulario(pagina) {
   await pagina.getByRole('checkbox').check()
   await pagina.getByRole('button', { name: 'Enviar formulario' }).click()
-  await pagina.getByText('Formulario enviado').waitFor()
+  await pagina.getByRole('heading', { name: 'Tu evaluación ha sido recibida' }).waitFor()
 }
 
 test('los formularios cambian la nota y el docente no ve la coevaluación', async () => {

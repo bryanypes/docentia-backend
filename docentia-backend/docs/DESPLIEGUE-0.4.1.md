@@ -76,4 +76,13 @@ No se usa `docker compose down -v`: borra el volumen de la base.
 
 ## SHA publicados
 
-Se completa al crear las etiquetas.
+| Repositorio | Etiqueta | Commit (SHA) | Rama `main` |
+|---|---|---|---|
+| `bryanypes/docentia-backend` (monorepo) | `v0.4.1` | `af03c63c5f1e79807bf674b0d27dc7ac88ab1598` | mismo commit |
+| `bryanypes/docentia-docker` | `v0.4.1` | `e26cb6b0ccdfcf522ec47bc07dcb88e21963c9d2` | mismo commit |
+| `vXro1/DocenteIA` | `v0.4.1` | `e15e1696cbcd3c26e47d7e093aa2cac1add54039` | mismo commit |
+| `bryanypes/docentia-frontend` | `v0.4.1` | `0a2352030f2c5beec2e6f1c76c747a0659b82716` | mismo commit |
+
+Si el servidor usa submódulos, el del backend apunta a `af03c63` (monorepo) o a `e26cb6b` (docentia-docker), y el del frontend a `e15e169` (vXro1/DocenteIA) o a `0a23520` (docentia-frontend), según de cuál repositorio se tome. Las cuatro etiquetas tienen el mismo código: backend y frontend se actualizan juntos desde `v0.4.1`.
+
+`develop` tiene, además, el commit que agregó esta tabla (solo documentación). Lo que se despliega es la etiqueta.

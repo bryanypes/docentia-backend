@@ -5,6 +5,7 @@ import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { ErrorApi } from '../../../shared/components/ui/ErrorApi/ErrorApi.jsx'
 import { formatearFechaHora } from '../../../shared/utils/formatters.js'
 import { AsistentePasos, PreguntaEscala } from './AsistentePasos.jsx'
+import { EvaluacionRecibida } from './EvaluacionRecibida.jsx'
 import './FormularioInstrumento.css'
 
 export const INTERVALO_AUTOGUARDADO_MS = 30000
@@ -25,9 +26,12 @@ function comentariosDe(formulario) {
 
 /**
  * Instrumento del Anexo 1 por pasos: un criterio por paso y la revisión al final. Guarda el borrador
- * con el botón y cada 30 s si hubo cambios; enviar es irreversible y exige confirmación.
+ * con el botón y cada 30 s si hubo cambios; enviar es irreversible y exige confirmación. Una vez
+ * enviado solo se muestra la confirmación con el resumen, sin los pasos.
+ *
+ * @param accionSecundaria enlace opcional junto a "Volver al inicio" en la confirmación
  */
-export function FormularioInstrumento({ formulario, onGuardar, onEnviar }) {
+export function FormularioInstrumento({ formulario, onGuardar, onEnviar, accionSecundaria }) {
   const [respuestas, setRespuestas] = useState(() => respuestasDe(formulario))
   const [comentarios, setComentarios] = useState(() => comentariosDe(formulario))
   const [confirmado, setConfirmado] = useState(false)
@@ -121,7 +125,7 @@ export function FormularioInstrumento({ formulario, onGuardar, onEnviar }) {
   }))
 
   const revision = {
-    titulo: enviada ? 'Resumen' : 'Revisar y enviar',
+    titulo: 'Revisar y enviar',
     contenido: (
       <>
         <ul className="revision">
@@ -183,13 +187,18 @@ export function FormularioInstrumento({ formulario, onGuardar, onEnviar }) {
     ),
   }
 
+  if (enviada) {
+    return (
+      <EvaluacionRecibida
+        detalle={`Se envió el ${formatearFechaHora(formulario.enviadaEn)}. Ya no se puede cambiar.`}
+        resumen={pasos}
+        accionSecundaria={accionSecundaria}
+      />
+    )
+  }
+
   return (
     <div className="instrumento">
-      {enviada && (
-        <Aviso tipo="exito" titulo="Formulario enviado">
-          Se envió el {formatearFechaHora(formulario.enviadaEn)}. Ya no se puede cambiar.
-        </Aviso>
-      )}
       {!enviada && !formulario.ventanaAbierta && (
         <Aviso tipo="alerta" titulo="La recolección está cerrada">
           Este formulario solo se responde en la ventana de recolección de calificaciones.
