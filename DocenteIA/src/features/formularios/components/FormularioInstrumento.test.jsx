@@ -1,6 +1,8 @@
 import { act, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router-dom'
 import { afterEach, describe, expect, it, vi } from 'vitest'
+import { SesionContext } from '../../auth/sesionContext.js'
 import { FormularioInstrumento, INTERVALO_AUTOGUARDADO_MS } from './FormularioInstrumento.jsx'
 
 const FORMULARIO = {
@@ -69,17 +71,31 @@ describe('FormularioInstrumento', () => {
     expect(onGuardar).toHaveBeenCalledTimes(1)
   })
 
-  it('enviada queda de solo lectura con su fecha', async () => {
+  it('enviada muestra solo la confirmación con el resumen, sin los pasos', () => {
+    const respondido = {
+      ...FORMULARIO.criterios[0],
+      descriptores: FORMULARIO.criterios[0].descriptores.map((d) => ({ ...d, valor: 4 })),
+    }
     render(
-      <FormularioInstrumento
-        formulario={{ ...FORMULARIO, estado: 'ENVIADA', enviadaEn: '2026-10-31T10:00:00' }}
-        onGuardar={vi.fn()}
-        onEnviar={vi.fn()}
-      />,
+      <MemoryRouter>
+        <SesionContext.Provider value={{ usuario: { rol: 'DOCENTE' }, validando: false }}>
+          <FormularioInstrumento
+            formulario={{ ...FORMULARIO, criterios: [respondido], estado: 'ENVIADA', enviadaEn: '2026-10-31T10:00:00' }}
+            onGuardar={vi.fn()}
+            onEnviar={vi.fn()}
+          />
+        </SesionContext.Provider>
+      </MemoryRouter>,
     )
+    expect(screen.getByRole('heading', { name: 'Tu evaluación ha sido recibida' })).toHaveFocus()
     expect(screen.getByText(/Se envió el/)).toBeInTheDocument()
-    expect(screen.getAllByRole('radio')[0]).toBeDisabled()
-    await userEvent.click(screen.getByRole('button', { name: 'Revisar' }))
+    expect(screen.getByText('2 de 2 ítems respondidos')).toBeInTheDocument()
+    expect(screen.getByText('Capacidad para planear')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Volver al inicio' })).toHaveAttribute('href', '/inicio')
+    // Nada del asistente: ni preguntas, ni barra de pasos, ni botones de navegación o envío.
+    expect(screen.queryAllByRole('radio')).toHaveLength(0)
+    expect(screen.queryByRole('list', { name: 'Criterios del instrumento' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Anterior' })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Enviar formulario' })).not.toBeInTheDocument()
   })
 

@@ -3,7 +3,6 @@ import { useCallback } from 'react'
 import { Link, useParams, useSearchParams } from 'react-router-dom'
 import { listarPeriodos } from '../../periodos/services/periodosService.js'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
-import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
@@ -69,18 +68,17 @@ export default function CoevaluacionDocente() {
             {!noEncontrado && <Boton icono={RefreshCw} onClick={recargar}>Intentar de nuevo</Boton>}
           </EstadoVista>
         )}
-        {datos?.estado === 'ENVIADA' && (
-          <Aviso tipo="info" titulo="Ya evaluaste a este docente">
-            Abajo están las respuestas que enviaste; ya no se pueden cambiar.{' '}
-            <Link to={`/docentes/${datos.idDocente}`}>Ver el expediente del docente</Link>
-          </Aviso>
-        )}
         {datos && (
           <FormularioInstrumento
             key={`${datos.idDocente}-${periodo}-${datos.estado}`}
             formulario={datos}
             onGuardar={guardar}
             onEnviar={enviar}
+            accionSecundaria={
+              <Link to={`/docentes/${datos.idDocente}`} className="boton boton--contorno">
+                Ver el expediente del docente
+              </Link>
+            }
           />
         )}
       </div>
