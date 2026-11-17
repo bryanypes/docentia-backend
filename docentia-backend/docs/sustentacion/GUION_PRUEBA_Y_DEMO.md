@@ -153,8 +153,8 @@ que corrige un acta ya firmada (`DOCENTIA_ACTAS_ROL_CORRECTOR=VICERRECTOR`).
 | # | Acción | Esperado | Resultado |
 |---|--------|----------|-----------|
 | C1 | **Docentes**; luego entra con `coordinacion.derecho` y abre `http://localhost:5173/docentes/7` | Ingeniería ve sus 8 docentes. Derecho ve solo a Héctor y Luisa, y Nora le responde «no encontrado» | [ ] PASA [ ] FALLA |
-| C4 | Entrar con `ramiro.paz` → **Mi autoevaluación**, responder los 14 ítems con 5, revisar, marcar la casilla y **Enviar formulario** | «Formulario enviado». En el expediente de Ramiro (coordinación) pasa de 1,90 a 2,52: el cambio sale de la autoevaluación por formulario | [ ] PASA [ ] FALLA |
-| C5 | **Coevaluaciones** → fila de Óscar Chantre → responder los 6 ítems → enviar | Óscar queda **PARCIAL**: falta la autoevaluación. Al volver a abrir su coevaluación: «Ya evaluaste a este docente» | [ ] PASA [ ] FALLA |
+| C4 | Entrar con `ramiro.paz` → **Mi autoevaluación**, responder los 14 ítems con 5, revisar, marcar la casilla y **Enviar formulario** | «Tu evaluación ha sido recibida», con el resumen por criterio. En el expediente de Ramiro (coordinación) pasa de 1,90 a 2,52: el cambio sale de la autoevaluación por formulario | [ ] PASA [ ] FALLA |
+| C5 | **Coevaluaciones** → fila de Óscar Chantre → responder los 6 ítems → enviar | Óscar queda **PARCIAL**: falta la autoevaluación. Al volver a abrir su coevaluación: «Tu evaluación ha sido recibida», sin los pasos | [ ] PASA [ ] FALLA |
 | C6 | **Docentes → Nora → Generar acta** → **Agregar compromiso** (texto y plazo) → **Guardar compromiso** | Acta de compromiso: «Nota menor a 3,80» y el compromiso en la lista | [ ] PASA [ ] FALLA |
 | C7 | **Agenda de citas** → vista Día → clic en una celda vacía de hoy → **Abrir 1 franja**. Abre tres: para Nora, Julián y Óscar | Cada una queda abierta, de 30 minutos | [ ] PASA [ ] FALLA |
 | C8 | Al final: `Docentes → Nora → Seguimiento del plan` | Muestra los compromisos del periodo **anterior** (2026-1) y su estado; en la semilla Nora no tiene. Los de esta acta se siguen en el periodo siguiente | [ ] PASA [ ] FALLA |

@@ -199,7 +199,6 @@ export function FormularioInstrumento({ formulario, onGuardar, onEnviar, accionS
 
   return (
     <div className="instrumento">
-
       {!enviada && !formulario.ventanaAbierta && (
         <Aviso tipo="alerta" titulo="La recolección está cerrada">
           Este formulario solo se responde en la ventana de recolección de calificaciones.
