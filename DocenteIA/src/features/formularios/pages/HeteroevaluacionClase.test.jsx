@@ -74,7 +74,13 @@ describe('HeteroevaluacionClase', () => {
     expect(enviarEvaluacion).toHaveBeenCalledTimes(1)
     expect(enviarEvaluacion).toHaveBeenCalledWith('7', { respuestas: { D02: 4, D05: 5 }, comentario: 'Explica con ejemplos' })
     terminar({ estado: 'ENVIADA' })
-    expect(await screen.findByText('¡Gracias por tu evaluación!')).toBeInTheDocument()
+    // Tras enviar queda solo la confirmación: el avatar, el resumen y la vuelta al inicio.
+    expect(await screen.findByRole('heading', { name: 'Tu evaluación ha sido recibida' })).toBeInTheDocument()
+    expect(screen.getByText(/Gracias por tu evaluación/)).toBeInTheDocument()
+    expect(screen.getByText('2 de 2 ítems respondidos')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Volver al inicio' })).toHaveAttribute('href', '/inicio')
+    expect(screen.queryByRole('heading', { name: 'Capacidad para ejecutar' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: /Volver a mis evaluaciones/ })).not.toBeInTheDocument()
   })
 
   it('muestra el 409 del doble envío', async () => {
@@ -92,7 +98,9 @@ describe('HeteroevaluacionClase', () => {
   it('una evaluación enviada o cerrada no se puede responder', async () => {
     obtenerEvaluacion.mockResolvedValue({ ...FORMULARIO, estado: 'ENVIADA' })
     abrir()
-    expect(await screen.findByText('Ya enviaste esta evaluación')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Tu evaluación ha sido recibida' })).toBeInTheDocument()
+    expect(screen.getByText(/Ya enviaste esta evaluación/)).toBeInTheDocument()
+    expect(screen.queryAllByRole('radio')).toHaveLength(0)
     expect(screen.queryByRole('button', { name: 'Enviar evaluación' })).not.toBeInTheDocument()
   })
 

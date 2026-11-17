@@ -30,10 +30,13 @@ export default function HeteroevaluacionClase() {
         subtitulo={datos ? `${datos.curso} · Grupo ${datos.grupo}. Once ítems del Anexo 1.` : 'Once ítems del Anexo 1.'}
       />
       <div className="pagina">
-        <Link to="/evaluacion-profesores" className="enlace-volver">
-          <ChevronLeft size={16} aria-hidden="true" />
-          Volver a mis evaluaciones
-        </Link>
+        {/* Ya enviada, la confirmación trae su propio "Volver al inicio" */}
+        {!enviada && datos?.estado !== 'ENVIADA' && (
+          <Link to="/evaluacion-profesores" className="enlace-volver">
+            <ChevronLeft size={16} aria-hidden="true" />
+            Volver a mis evaluaciones
+          </Link>
+        )}
         {cargando && !datos && <Cargando texto="Cargando la evaluación" bloques={2} />}
         {error && (
           <EstadoVista
@@ -44,7 +47,7 @@ export default function HeteroevaluacionClase() {
             {!noEncontrado && <Boton icono={RefreshCw} onClick={recargar}>Intentar de nuevo</Boton>}
           </EstadoVista>
         )}
-        {enviada && <Agradecimiento />}
+        {enviada && datos && <Agradecimiento formulario={datos} />}
         {datos && !enviada && <FormularioEstudiante formulario={datos} onEnviar={enviar} />}
       </div>
     </>
