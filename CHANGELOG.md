@@ -1,8 +1,8 @@
 # Cambios
 
-## Sin versión (18 de noviembre de 2026)
+## 0.4.3 (18 de noviembre de 2026)
 
-Backend y frontend juntos. Migraciones nuevas: la base pasa de V43 a **V48**.
+Backend y frontend se despliegan juntos desde la etiqueta `v0.4.3`. Migraciones nuevas: la base pasa de V43 a **V48**.
 
 - **El coordinador también es docente evaluado** (V44): lo evalúan sus estudiantes, su autoevaluación
   y la vicerrectoría en el lugar de la coordinación, con el mismo peso. Para los estudiantes es un
