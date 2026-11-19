@@ -83,7 +83,7 @@ class ExpedienteDocenteTest extends PruebaIntegracion {
         .andExpect(jsonPath("$.dimensiones[0].notaCoordinacion").value(4.0))
         .andExpect(jsonPath("$.dimensiones[0].notaAutoevaluacion").value(3.0))
         .andExpect(jsonPath("$.dimensiones[0].estado").value("PARCIAL"))
-        .andExpect(jsonPath("$.dimensiones[0].resultado").value(3.6))
+        .andExpect(jsonPath("$.dimensiones[0].resultado").doesNotExist())
         .andExpect(jsonPath("$.dimensiones[2].notaCoordinacion").value(5.0));
   }
 

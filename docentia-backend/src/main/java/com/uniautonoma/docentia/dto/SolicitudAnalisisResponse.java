@@ -33,10 +33,36 @@ public record SolicitudAnalisisResponse(
     LocalDateTime fechaFin,
     Borrador borrador,
     FuenteComentarios fuente,
-    String motivo) {
+    String motivo,
+    Integer comentariosNuevos) {
 
   public static SolicitudAnalisisResponse desde(SolicitudAnalisis solicitud) {
     return desde(solicitud, Map.of());
+  }
+
+  /**
+   * Con los comentarios que llegaron después del análisis: si es mayor que 0 la coordinación ve
+   * "tenemos nuevos comentarios de estudiantes, por favor actualiza el análisis de IA".
+   */
+  public SolicitudAnalisisResponse conComentariosNuevos(Integer nuevos) {
+    return new SolicitudAnalisisResponse(
+        idSolicitud,
+        idDocente,
+        nombreDocente,
+        idPeriodo,
+        nombrePeriodo,
+        estado,
+        mensaje,
+        encuestasCerradas,
+        comentariosEnviados,
+        comentariosFiltrados,
+        fechaSolicitud,
+        fechaInicio,
+        fechaFin,
+        borrador,
+        fuente,
+        motivo,
+        nuevos);
   }
 
   /**
@@ -72,7 +98,8 @@ public record SolicitudAnalisisResponse(
         solicitud.getFechaFin(),
         borrador,
         solicitud.getFuente(),
-        solicitud.getMotivo());
+        solicitud.getMotivo(),
+        null);
   }
 
   /**

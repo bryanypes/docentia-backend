@@ -125,7 +125,7 @@ public class GeneradorRecordatorios {
                 id,
                 "compromiso:" + id + ":vencido"));
         notificaciones.notificar(
-            EventoNotificacion.aCoordinadores(
+            EventoNotificacion.aEvaluadores(
                 TipoNotificacion.COMPROMISO_VENCIDO_FACULTAD,
                 docente,
                 "/docentes/" + docente.getIdUsuario(),
@@ -190,8 +190,13 @@ public class GeneradorRecordatorios {
     Set<Long> conAutoevaluacion = enviadas(avance, TipoFormulario.AUTO);
     Set<Long> conCoevaluacion = enviadas(avance, TipoFormulario.COEVAL);
     Map<Long, Long> coevaluacionesPorFacultad = new HashMap<>();
-    for (Usuario docente :
-        usuarioRepository.findByRolAndEsActivoTrueOrderByNombreCompletoAsc(Rol.DOCENTE)) {
+    long coevaluacionesDeCoordinadores = 0;
+    List<Usuario> evaluados =
+        new java.util.ArrayList<>(
+            usuarioRepository.findByRolAndEsActivoTrueOrderByNombreCompletoAsc(Rol.DOCENTE));
+    evaluados.addAll(
+        usuarioRepository.findByRolAndEsActivoTrueOrderByNombreCompletoAsc(Rol.COORDINADOR));
+    for (Usuario docente : evaluados) {
       if (!conAutoevaluacion.contains(docente.getIdUsuario())) {
         notificaciones.notificar(
             EventoNotificacion.aUsuario(
@@ -202,10 +207,26 @@ public class GeneradorRecordatorios {
                 idPeriodo,
                 "autoevaluacion:" + idPeriodo + ":" + plazo));
       }
-      if (!conCoevaluacion.contains(docente.getIdUsuario())) {
-        coevaluacionesPorFacultad.merge(
-            docente.getPrograma().getFacultad().getIdFacultad(), 1L, Long::sum);
+      if (conCoevaluacion.contains(docente.getIdUsuario())) {
+        continue;
       }
+      // Al coordinador lo coevalúa la vicerrectoría, no su propia facultad.
+      if (docente.getRol() == Rol.COORDINADOR) {
+        coevaluacionesDeCoordinadores++;
+      } else {
+        coevaluacionesPorFacultad.merge(
+            docente.getFacultadDeAdscripcion().getIdFacultad(), 1L, Long::sum);
+      }
+    }
+    if (coevaluacionesDeCoordinadores > 0) {
+      notificaciones.notificar(
+          EventoNotificacion.aVicerrectores(
+                  TipoNotificacion.COEVALUACIONES_PENDIENTES,
+                  "/coevaluaciones",
+                  "PERIODO",
+                  idPeriodo,
+                  "coevaluacion:" + idPeriodo + ":" + plazo)
+              .conDetalle("Coordinadores pendientes: " + coevaluacionesDeCoordinadores + "."));
     }
     coevaluacionesPorFacultad.forEach(
         (idFacultad, cantidad) ->

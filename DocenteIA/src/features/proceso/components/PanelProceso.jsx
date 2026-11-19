@@ -30,9 +30,11 @@ function describirCita(cita) {
   return `${horario} · ${cita.confirmacion ? ETIQUETA_CONFIRMACION[cita.confirmacion] : 'Sin confirmar'}`
 }
 
-function describirActa(acta) {
+function describirActa(acta, evaluadoEsCoordinador) {
   if (!acta) return 'Sin generar'
-  const firmas = [acta.firmadaPorDocente && 'docente', acta.firmadaPorCoordinacion && 'coordinación'].filter(Boolean)
+  // Al coordinador evaluado lo firma la vicerrectoría; el backend lo reporta en firmadaPorCoordinacion.
+  const evaluador = evaluadoEsCoordinador ? 'vicerrectoría' : 'coordinación'
+  const firmas = [acta.firmadaPorDocente && 'docente', acta.firmadaPorCoordinacion && evaluador].filter(Boolean)
   const estado = acta.estado === 'FIRMADA' ? 'firmada' : firmas.length ? `firmó ${firmas.join(' y ')}` : 'sin firmas'
   return `${ETIQUETA_TIPO_ACTA[acta.tipo]} · ${estado}`
 }
@@ -69,7 +71,8 @@ export function PanelProceso({ idDocente, onCambio, onDatos }) {
 
   const datos = proceso.datos
   const { cita, coberturaEstudiantes: cobertura } = datos
-  const registrar = usuario.rol === ROLES.COORDINADOR && puedeRegistrarAsistencia(cita, hoyEnColombia())
+  const rolEvaluador = datos.docente?.esCoordinador ? ROLES.VICERRECTOR : ROLES.COORDINADOR
+  const registrar = usuario.rol === rolEvaluador && puedeRegistrarAsistencia(cita, hoyEnColombia())
 
   return (
     <Panel
@@ -105,7 +108,7 @@ export function PanelProceso({ idDocente, onCambio, onDatos }) {
         </div>
         <div>
           <dt>Acta</dt>
-          <dd>{describirActa(datos.acta)}</dd>
+          <dd>{describirActa(datos.acta, datos.docente?.esCoordinador)}</dd>
         </div>
         <div>
           <dt>Resultado para el docente</dt>

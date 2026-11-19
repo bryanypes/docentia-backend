@@ -24,8 +24,8 @@ export function PanelProcesoPropio({ version = 0 }) {
     return (
       <Panel titulo="Mi proceso de evaluación" icono={Hourglass} tono="cielo">
         <p className="proceso__texto">
-          Tu evaluación está en curso. Cuando tus estudiantes y la coordinación terminen, aquí verás cada paso: tu
-          autoevaluación, tu cita, la reunión y el acta.
+          Tu evaluación está en curso. Cuando tus estudiantes y {datos.docente?.esCoordinador ? 'la vicerrectoría' : 'la coordinación'} terminen, aquí
+          verás cada paso: tu autoevaluación, tu cita, la reunión y el acta.
         </p>
       </Panel>
     )

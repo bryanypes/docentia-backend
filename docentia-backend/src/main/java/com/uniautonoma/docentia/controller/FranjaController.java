@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /** Franjas de atención que el coordinador abre para las citas con docentes. */
 @RestController
-@PreAuthorize("hasRole('COORDINADOR')")
+@PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
 @RequestMapping("/franjas")
 public class FranjaController {
 

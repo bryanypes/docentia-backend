@@ -1,0 +1,334 @@
+/* Tutorial del primer inicio: la pantalla queda bloqueada y el enlace del paso se resalta. */
+.tutorial {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 24px 16px;
+}
+
+.tutorial__velo,
+.tutorial__foco {
+  position: fixed;
+  pointer-events: none;
+}
+
+.tutorial__velo {
+  inset: 0;
+  background: rgba(8, 22, 48, 0.62);
+}
+
+/* Un hueco claro sobre el enlace; la sombra enorme oscurece todo lo demás. */
+.tutorial__foco {
+  border-radius: 12px;
+  box-shadow:
+    0 0 0 3px var(--color-amarillo),
+    0 0 0 9999px rgba(8, 22, 48, 0.62);
+  transition:
+    top 0.35s ease,
+    left 0.35s ease,
+    width 0.35s ease,
+    height 0.35s ease;
+}
+
+.tutorial__tarjeta {
+  position: relative;
+  display: flex;
+  gap: 20px;
+  align-items: flex-end;
+  width: min(760px, 100%);
+  margin-left: auto;
+  margin-right: auto;
+  padding: 22px 24px;
+  background: var(--color-superficie);
+  border-radius: var(--radio-xl);
+  box-shadow: var(--sombra-elevada);
+  animation: tutorial-entra 0.35s ease;
+}
+
+.tutorial__robot {
+  flex: 0 0 auto;
+  width: 112px;
+  height: auto;
+  margin-top: -64px;
+  animation: tutorial-robot 2.4s ease-in-out infinite;
+}
+
+.tutorial__cuerpo {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 0;
+}
+
+.tutorial__paso {
+  margin: 0;
+  font-size: 12px;
+  font-weight: var(--peso-semi);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-texto-tenue);
+}
+
+.tutorial__titulo {
+  margin: 0;
+  font-size: 21px;
+  color: var(--color-azul);
+}
+
+.tutorial__titulo:focus {
+  outline: none;
+}
+
+.tutorial__texto {
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--color-texto-secundario);
+}
+
+/* Barra tipo video: una pista por paso que se llena mientras avanza. */
+.tutorial__reproductor {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 4px;
+}
+
+.tutorial__icono {
+  display: grid;
+  flex: 0 0 auto;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--color-borde-control);
+  border-radius: 50%;
+  background: var(--color-superficie);
+  color: var(--color-azul);
+  cursor: pointer;
+}
+
+.tutorial__pistas {
+  display: flex;
+  flex: 1;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tutorial__pista {
+  flex: 1;
+}
+
+.tutorial__pista button {
+  display: block;
+  width: 100%;
+  height: 6px;
+  padding: 0;
+  overflow: hidden;
+  border: 0;
+  border-radius: 999px;
+  background: var(--color-borde-suave);
+  cursor: pointer;
+}
+
+.tutorial__pista button span {
+  display: block;
+  height: 100%;
+  background: var(--color-azul);
+  border-radius: inherit;
+}
+
+.tutorial__pista button:focus-visible,
+.tutorial__icono:focus-visible,
+.tutorial__enlace:focus-visible {
+  outline: 2px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+.tutorial__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 6px;
+}
+
+.tutorial__navegacion {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tutorial__enlace {
+  display: inline-flex;
+  gap: 4px;
+  align-items: center;
+  padding: 6px 2px;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 13.5px;
+  color: var(--color-texto-tenue);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+@keyframes tutorial-entra {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+@keyframes tutorial-robot {
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@media (max-width: 640px) {
+  .tutorial__tarjeta {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 18px 16px;
+  }
+
+  .tutorial__robot {
+    width: 84px;
+    margin: -52px auto 0;
+  }
+
+  .tutorial__acciones,
+  .tutorial__navegacion {
+    flex-direction: column-reverse;
+    align-items: stretch;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tutorial__tarjeta,
+  .tutorial__robot {
+    animation: none;
+  }
+
+  .tutorial__foco {
+    transition: none;
+  }
+}
+
+/* Signo de interrogación junto a la campana: el tutorial queda guardado aquí. */
+.tutorial-ayuda {
+  position: absolute;
+  top: 14px;
+  right: calc(var(--espacio-7) + 50px);
+  z-index: 20;
+}
+
+.tutorial-ayuda__boton {
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  color: var(--color-azul);
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.tutorial-ayuda__boton:hover {
+  border-color: var(--color-borde-control);
+}
+
+.tutorial-ayuda__boton:focus-visible,
+.tutorial-ayuda__cerrar:focus-visible {
+  outline: 2px solid var(--color-foco);
+  outline-offset: 2px;
+}
+
+.tutorial-ayuda__globo {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: -8px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  width: min(330px, calc(100vw - 32px));
+  padding: 12px 36px 12px 12px;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: var(--radio-xl);
+  box-shadow: var(--sombra-elevada);
+  animation: tutorial-entra 0.3s ease;
+}
+
+/* Piquito que apunta al "?". */
+.tutorial-ayuda__globo::before {
+  content: '';
+  position: absolute;
+  top: -7px;
+  right: 21px;
+  width: 12px;
+  height: 12px;
+  background: var(--color-superficie);
+  border-top: 1px solid var(--color-borde);
+  border-left: 1px solid var(--color-borde);
+  transform: rotate(45deg);
+}
+
+.tutorial-ayuda__globo img {
+  flex: 0 0 auto;
+  width: 46px;
+  height: auto;
+}
+
+.tutorial-ayuda__globo p {
+  margin: 0;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--color-texto-secundario);
+}
+
+.tutorial-ayuda__cerrar {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 50%;
+  background: none;
+  color: var(--color-texto-tenue);
+  cursor: pointer;
+}
+
+@media (max-width: 900px) {
+  .tutorial-ayuda {
+    position: fixed;
+    top: 9px;
+    right: 62px;
+    z-index: 45;
+  }
+
+  .tutorial-ayuda__boton {
+    width: 42px;
+    height: 42px;
+    border-color: rgba(254, 251, 244, 0.25);
+    background: rgba(254, 251, 244, 0.1);
+    color: var(--color-crema);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tutorial-ayuda__globo {
+    animation: none;
+  }
+}

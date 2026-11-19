@@ -61,10 +61,10 @@ function compararPorPuntaje(a, b, ascendente = false) {
  * Una sola etiqueta por fila: el nivel si está completa; si no, cuántas faltan (o que falta la tuya,
  * que es lo accionable). Qué fuentes faltan se ve al pasar el mouse y lo leen los lectores de pantalla.
  */
-function EstadoEvaluacion({ promedio, faltaMia }) {
+function EstadoEvaluacion({ promedio, faltaMia, evaluadoEsCoordinador }) {
   if (!promedio || promedio.estado === 'COMPLETO') return <EtiquetaNivel promedio={promedio} />
   const faltan = promedio.fuentesPendientes.length
-  const detalle = `Falta: ${listarFuentes(promedio.fuentesPendientes)}`
+  const detalle = `Falta: ${listarFuentes(promedio.fuentesPendientes, evaluadoEsCoordinador)}`
   return (
     <span className={`pildora ${faltaMia ? 'pildora--info' : 'pildora--alerta'}`} title={detalle}>
       {faltaMia ? 'Falta tu calificación' : `Pendiente · faltan ${faltan}`}
@@ -318,10 +318,10 @@ export default function Docentes() {
                             </div>
                           </td>
                           <td data-etiqueta="Programa">
-                            {d.nombrePrograma}
+                            {d.nombrePrograma ?? `Coordinación · ${d.nombreFacultad}`}
                           </td>
                           <td data-etiqueta="Evaluación">
-                            <EstadoEvaluacion promedio={promedio} faltaMia={faltaMia} />
+                            <EstadoEvaluacion promedio={promedio} faltaMia={faltaMia} evaluadoEsCoordinador={d.esCoordinador} />
                           </td>
                           <td data-etiqueta="Proceso">
                             {procesoPorDocente.get(d.idDocente) ? (

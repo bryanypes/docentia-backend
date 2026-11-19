@@ -41,7 +41,7 @@ public class CalificacionController {
    * @return la calificación, o 204 si todavía no existe
    */
   @GetMapping("/coordinacion")
-  @PreAuthorize("hasRole('COORDINADOR')")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
   public ResponseEntity<CalificacionResponse> obtenerCalificacionCoordinacion(
       @PathVariable Long idDocente, @AuthenticationPrincipal UsuarioSesion sesion) {
     return responder(idDocente, FuenteEvaluacion.COORDINACION, sesion);
@@ -56,7 +56,7 @@ public class CalificacionController {
    * @return la calificación guardada
    */
   @PutMapping("/coordinacion")
-  @PreAuthorize("hasRole('COORDINADOR')")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
   public CalificacionResponse calificarComoCoordinacion(
       @PathVariable Long idDocente,
       @Valid @RequestBody CalificacionRequest solicitud,

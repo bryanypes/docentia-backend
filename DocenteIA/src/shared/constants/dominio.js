@@ -16,6 +16,21 @@ export const ETIQUETA_ROL = {
   VISUALIZADOR: 'Visualización',
 }
 
+/**
+ * Quién evalúa (coevaluación, cita y acta) a alguien con este rol: al docente, la coordinación; al
+ * coordinador, que también es docente, la vicerrectoría.
+ */
+export function evaluadorDe(rol) {
+  return rol === ROLES.COORDINADOR
+    ? { rol: ROLES.VICERRECTOR, nombre: 'la vicerrectoría' }
+    : { rol: ROLES.COORDINADOR, nombre: 'la coordinación' }
+}
+
+/** Miga de las páginas propias del evaluado: el coordinador las ve como docente. */
+export function migaEvaluado(rol, pagina) {
+  return `${rol === ROLES.COORDINADOR ? 'Coordinación · Como docente' : 'Docente'} · ${pagina}`
+}
+
 export const ETIQUETA_FUENTE = {
   ESTUDIANTES: 'Estudiantes',
   COORDINACION: 'Coordinación',

@@ -9,6 +9,7 @@ import {
   FileSignature,
   GraduationCap,
   LayoutDashboard,
+  LifeBuoy,
   Lightbulb,
   LogOut,
   Menu,
@@ -29,42 +30,85 @@ import { ETIQUETA_ROL, ROLES } from '../../../constants/dominio.js'
 import { iniciales } from '../../../utils/formatters.js'
 import './Sidebar.css'
 
-const NAVEGACION = {
-  [ROLES.ESTUDIANTE]: [{ ruta: '/inicio', etiqueta: 'Mis evaluaciones', Icono: ClipboardCheck }],
-  [ROLES.DOCENTE]: [
-    { ruta: '/inicio', etiqueta: 'Mi evaluación', Icono: ClipboardCheck },
+// El coordinador también es docente evaluado: esta sección le da su propio proceso.
+const COMO_DOCENTE = {
+  titulo: 'Mi evaluación como docente',
+  enlaces: [
+    { ruta: '/mi-evaluacion', etiqueta: 'Mi evaluación', Icono: ClipboardCheck },
     { ruta: '/mi-autoevaluacion', etiqueta: 'Mi autoevaluación', Icono: PenLine },
-    { ruta: '/mi-cita', etiqueta: 'Mi cita', Icono: CalendarDays },
+    { ruta: '/mi-cita', etiqueta: 'Mi cita con vicerrectoría', Icono: CalendarDays },
     { ruta: '/mi-acta', etiqueta: 'Mi acta', Icono: FileSignature },
   ],
+}
+
+/** Secciones del menú por rol; la primera lleva el nombre del rol. */
+const NAVEGACION = {
+  [ROLES.ESTUDIANTE]: [{ enlaces: [{ ruta: '/inicio', etiqueta: 'Mis evaluaciones', Icono: ClipboardCheck }] }],
+  [ROLES.DOCENTE]: [
+    {
+      enlaces: [
+        { ruta: '/inicio', etiqueta: 'Mi evaluación', Icono: ClipboardCheck },
+        { ruta: '/mi-autoevaluacion', etiqueta: 'Mi autoevaluación', Icono: PenLine },
+        { ruta: '/mi-cita', etiqueta: 'Mi cita', Icono: CalendarDays },
+        { ruta: '/mi-acta', etiqueta: 'Mi acta', Icono: FileSignature },
+        { ruta: '/solicitudes-correccion', etiqueta: 'Solicitudes de corrección', Icono: LifeBuoy },
+      ],
+    },
+  ],
   [ROLES.COORDINADOR]: [
-    { ruta: '/inicio', etiqueta: 'Inicio', Icono: LayoutDashboard },
-    { ruta: '/estadisticas', etiqueta: 'Estadísticas', Icono: ChartColumnBig },
-    { ruta: '/docentes', etiqueta: 'Docentes', Icono: Users },
-    { ruta: '/coevaluaciones', etiqueta: 'Coevaluaciones', Icono: ClipboardList },
-    { ruta: '/analisis', etiqueta: 'Análisis de comentarios', Icono: MessagesSquare },
-    { ruta: '/agenda', etiqueta: 'Agenda de citas', Icono: CalendarDays },
-    { ruta: '/acciones-sugeridas', etiqueta: 'Acciones sugeridas', Icono: Lightbulb },
-    { ruta: '/panel-programas', etiqueta: 'Panel por programa', Icono: ChartColumn },
+    {
+      enlaces: [
+        { ruta: '/inicio', etiqueta: 'Inicio', Icono: LayoutDashboard },
+        { ruta: '/estadisticas', etiqueta: 'Estadísticas', Icono: ChartColumnBig },
+        { ruta: '/docentes', etiqueta: 'Docentes', Icono: Users },
+        { ruta: '/coevaluaciones', etiqueta: 'Coevaluaciones', Icono: ClipboardList },
+        { ruta: '/analisis', etiqueta: 'Análisis de comentarios', Icono: MessagesSquare },
+        { ruta: '/agenda', etiqueta: 'Agenda de citas', Icono: CalendarDays },
+        { ruta: '/acciones-sugeridas', etiqueta: 'Acciones sugeridas', Icono: Lightbulb },
+        { ruta: '/panel-programas', etiqueta: 'Panel por programa', Icono: ChartColumn },
+        { ruta: '/solicitudes-correccion', etiqueta: 'Solicitudes de corrección', Icono: LifeBuoy },
+      ],
+    },
+    COMO_DOCENTE,
   ],
   [ROLES.VICERRECTOR]: [
-    { ruta: '/inicio', etiqueta: 'Inicio', Icono: LayoutDashboard },
-    { ruta: '/estadisticas', etiqueta: 'Estadísticas', Icono: ChartColumnBig },
-    { ruta: '/docentes', etiqueta: 'Docentes', Icono: Users },
-    { ruta: '/analisis', etiqueta: 'Análisis de comentarios', Icono: MessagesSquare },
-    { ruta: '/acciones-sugeridas', etiqueta: 'Acciones sugeridas', Icono: Lightbulb },
-    { ruta: '/panel-programas', etiqueta: 'Panel por programa', Icono: ChartColumn },
-    { ruta: '/periodos', etiqueta: 'Periodos', Icono: CalendarRange },
+    {
+      enlaces: [
+        { ruta: '/inicio', etiqueta: 'Inicio', Icono: LayoutDashboard },
+        { ruta: '/estadisticas', etiqueta: 'Estadísticas', Icono: ChartColumnBig },
+        { ruta: '/docentes', etiqueta: 'Docentes', Icono: Users },
+        { ruta: '/analisis', etiqueta: 'Análisis de comentarios', Icono: MessagesSquare },
+        { ruta: '/acciones-sugeridas', etiqueta: 'Acciones sugeridas', Icono: Lightbulb },
+        { ruta: '/panel-programas', etiqueta: 'Panel por programa', Icono: ChartColumn },
+        { ruta: '/periodos', etiqueta: 'Periodos', Icono: CalendarRange },
+        { ruta: '/solicitudes-correccion', etiqueta: 'Solicitudes de corrección', Icono: LifeBuoy },
+      ],
+    },
+    // La vicerrectoría evalúa a los coordinadores en el lugar de la coordinación.
+    {
+      titulo: 'Evaluación de coordinadores',
+      enlaces: [
+        { ruta: '/coevaluaciones', etiqueta: 'Coevaluaciones', Icono: ClipboardList },
+        { ruta: '/agenda', etiqueta: 'Agenda de citas', Icono: CalendarDays },
+      ],
+    },
   ],
   // Administración: usuarios, catálogos, ponderaciones y fechas. No ve notas ni comentarios.
   [ROLES.ADMINISTRADOR]: [
-    { ruta: '/usuarios', etiqueta: 'Usuarios', Icono: UserCog },
-    { ruta: '/programas', etiqueta: 'Programas', Icono: BookOpen },
-    { ruta: '/ponderaciones', etiqueta: 'Ponderaciones', Icono: Scale },
-    { ruta: '/periodos', etiqueta: 'Periodos', Icono: CalendarRange },
+    {
+      enlaces: [
+        { ruta: '/usuarios', etiqueta: 'Usuarios', Icono: UserCog },
+        { ruta: '/programas', etiqueta: 'Programas', Icono: BookOpen },
+        { ruta: '/ponderaciones', etiqueta: 'Ponderaciones', Icono: Scale },
+        { ruta: '/periodos', etiqueta: 'Periodos', Icono: CalendarRange },
+        { ruta: '/solicitudes-correccion', etiqueta: 'Solicitudes de corrección', Icono: LifeBuoy },
+      ],
+    },
   ],
   // Visualización: solo paneles agregados.
-  [ROLES.VISUALIZADOR]: [{ ruta: '/panel-programas', etiqueta: 'Panel por programa', Icono: ChartColumn }],
+  [ROLES.VISUALIZADOR]: [
+    { enlaces: [{ ruta: '/panel-programas', etiqueta: 'Panel por programa', Icono: ChartColumn }] },
+  ],
 }
 
 function ContadorCoevaluaciones() {
@@ -84,7 +128,7 @@ function ContadorCoevaluaciones() {
  */
 export function Sidebar({ id, movil = false, onCerrar, onNavegar }) {
   const { usuario, cerrarSesion } = useSesion()
-  const enlaces = NAVEGACION[usuario.rol] ?? []
+  const secciones = NAVEGACION[usuario.rol] ?? []
 
   return (
     <aside id={id} className="sidebar" aria-label="Menú principal">
@@ -111,13 +155,17 @@ export function Sidebar({ id, movil = false, onCerrar, onNavegar }) {
       </div>
 
       <nav className="sidebar__nav" aria-label="Navegación principal">
-        <span className="sidebar__seccion">{ETIQUETA_ROL[usuario.rol]}</span>
-        {enlaces.map(({ ruta, etiqueta, Icono }) => (
-          <NavLink key={ruta} to={ruta} className="sidebar__enlace" onClick={onNavegar}>
-            <Icono size={18} strokeWidth={1.75} aria-hidden="true" className="sidebar__icono" />
-            {etiqueta}
-            {ruta === '/coevaluaciones' && <ContadorCoevaluaciones />}
-          </NavLink>
+        {secciones.map(({ titulo, enlaces }, indice) => (
+          <div key={titulo ?? 'principal'} className="sidebar__grupo">
+            <span className="sidebar__seccion">{indice === 0 ? ETIQUETA_ROL[usuario.rol] : titulo}</span>
+            {enlaces.map(({ ruta, etiqueta, Icono }) => (
+              <NavLink key={ruta} to={ruta} className="sidebar__enlace" onClick={onNavegar}>
+                <Icono size={18} strokeWidth={1.75} aria-hidden="true" className="sidebar__icono" />
+                {etiqueta}
+                {ruta === '/coevaluaciones' && <ContadorCoevaluaciones />}
+              </NavLink>
+            ))}
+          </div>
         ))}
       </nav>
 

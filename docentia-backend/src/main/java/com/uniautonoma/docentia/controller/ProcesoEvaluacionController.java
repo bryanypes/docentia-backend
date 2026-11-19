@@ -48,7 +48,7 @@ public class ProcesoEvaluacionController {
 
   /** Proceso del docente autenticado; mientras las evaluaciones estén en curso, sin detalle. */
   @GetMapping("/procesos-evaluacion/propio")
-  @PreAuthorize("hasRole('DOCENTE')")
+  @PreAuthorize("hasAnyRole('DOCENTE', 'COORDINADOR')")
   public ProcesoEvaluacionResponse propio(@AuthenticationPrincipal UsuarioSesion sesion) {
     return procesoService.obtenerPropio(sesion);
   }
@@ -63,7 +63,7 @@ public class ProcesoEvaluacionController {
 
   /** El docente confirma o declina su cita activa. */
   @PostMapping("/citas/mia/confirmacion")
-  @PreAuthorize("hasRole('DOCENTE')")
+  @PreAuthorize("hasAnyRole('DOCENTE', 'COORDINADOR')")
   public CitaResponse confirmar(
       @Valid @RequestBody ConfirmacionCitaRequest solicitud,
       @AuthenticationPrincipal UsuarioSesion sesion) {
@@ -72,7 +72,7 @@ public class ProcesoEvaluacionController {
 
   /** La coordinación registra si el docente asistió a la reunión. */
   @PostMapping("/citas/{idCita}/asistencia")
-  @PreAuthorize("hasRole('COORDINADOR')")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
   public CitaResponse registrarAsistencia(
       @PathVariable Long idCita,
       @Valid @RequestBody AsistenciaCitaRequest solicitud,
@@ -82,7 +82,7 @@ public class ProcesoEvaluacionController {
 
   /** La coordinación cancela una cita de sus franjas; la franja queda libre. */
   @PostMapping("/citas/{idCita}/cancelacion")
-  @PreAuthorize("hasRole('COORDINADOR')")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
   public CitaResponse cancelar(
       @PathVariable Long idCita, @AuthenticationPrincipal UsuarioSesion sesion) {
     return gestionCitaService.cancelar(idCita, sesion);
@@ -90,7 +90,7 @@ public class ProcesoEvaluacionController {
 
   /** La coordinación mueve una cita a otra de sus franjas libres. */
   @PostMapping("/citas/{idCita}/reprogramacion")
-  @PreAuthorize("hasRole('COORDINADOR')")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
   public CitaResponse reprogramar(
       @PathVariable Long idCita,
       @Valid @RequestBody ReprogramacionCitaRequest solicitud,

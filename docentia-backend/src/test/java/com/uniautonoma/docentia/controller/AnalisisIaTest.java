@@ -65,10 +65,7 @@ class AnalisisIaTest extends PruebaIntegracion {
     }
     escenario.cargarComentarios(julian, periodo, coordinador, comentarios);
     escenario.cargarComentarios(
-        diana,
-        periodo,
-        coordinador,
-        List.of("Muy clara", "Puntual", "Excelente", "Bien", "Buena", "Ok"));
+        diana, periodo, coordinador, List.of("Muy clara", "Puntual", "Excelente", "Bien"));
   }
 
   @Test
@@ -123,7 +120,7 @@ class AnalisisIaTest extends PruebaIntegracion {
   }
 
   @Test
-  void conMenosDeDiezEncuestasNoHayBorradorYElMensajeLoDice() throws Exception {
+  void conMenosDeCincoComentariosNoHayBorradorYElMensajeLoDice() throws Exception {
     long id = idDe(solicitar(diana).andReturn().getResponse().getContentAsString());
 
     procesarCola();
@@ -131,9 +128,64 @@ class AnalisisIaTest extends PruebaIntegracion {
     mockMvc
         .perform(get("/analisis-ia/solicitudes/{id}", id).with(como(coordinador)))
         .andExpect(jsonPath("$.estado").value("INSUFICIENTE"))
-        .andExpect(jsonPath("$.mensaje").value("evidencia insuficiente (6 de 10 requeridas)"))
-        .andExpect(jsonPath("$.encuestasCerradas").value(6))
+        .andExpect(
+            jsonPath("$.mensaje").value("evidencia insuficiente (4 de 5 comentarios requeridos)"))
         .andExpect(jsonPath("$.borrador").doesNotExist());
+  }
+
+  @Test
+  void conCincoComentariosYaSePuedeAnalizar() throws Exception {
+    Usuario camilo = escenario.crearDocente("Camilo Vidal", julian.getPrograma());
+    escenario.cargarComentarios(
+        camilo,
+        periodo,
+        coordinador,
+        List.of(
+            "Explica con ejemplos reales del sector y se entiende muy bien",
+            "Las notas de los parciales se demoran más de dos semanas",
+            "Responde las dudas en clase con mucha paciencia",
+            "El ritmo de la clase a veces es muy rápido para seguirlo",
+            "Los talleres prácticos ayudan a entender los patrones de diseño"));
+    long id = idDe(solicitar(camilo).andReturn().getResponse().getContentAsString());
+
+    procesarCola();
+
+    mockMvc
+        .perform(get("/analisis-ia/solicitudes/{id}", id).with(como(coordinador)))
+        .andExpect(jsonPath("$.estado").value("COMPLETADO"))
+        .andExpect(jsonPath("$.comentariosNuevos").value(0));
+  }
+
+  @Test
+  void conComentariosNuevosAvisaYPermiteActualizarSinEsperar() throws Exception {
+    solicitar(julian);
+    procesarCola();
+
+    escenario.cargarComentarios(
+        julian, periodo, coordinador, List.of("Comentario nuevo uno", "Comentario nuevo dos"));
+
+    mockMvc
+        .perform(
+            get("/analisis-ia/solicitudes")
+                .param("docenteId", julian.getIdUsuario().toString())
+                .param("periodoId", periodo.getIdPeriodo().toString())
+                .with(como(coordinador)))
+        .andExpect(jsonPath("$[0].comentariosNuevos").value(2));
+    // Sin comentarios nuevos habría que esperar el enfriamiento de una hora.
+    mockMvc
+        .perform(
+            post("/analisis-ia/solicitudes")
+                .with(como(coordinador))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(
+                    aJson(
+                        new SolicitudAnalisisRequest(
+                            julian.getIdUsuario(),
+                            periodo.getIdPeriodo(),
+                            null,
+                            null,
+                            "Llegaron comentarios nuevos de estudiantes"))))
+        .andExpect(status().isAccepted());
   }
 
   @Test

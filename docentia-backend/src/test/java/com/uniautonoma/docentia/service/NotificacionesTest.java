@@ -180,7 +180,7 @@ class NotificacionesTest extends PruebaIntegracion {
         estado -> {
           Usuario enSesion = escenario.recargar(docente);
           eventos.publishEvent(
-              EventoNotificacion.aCoordinadores(
+              EventoNotificacion.aEvaluadores(
                   TipoNotificacion.ACTA_FIRMADA_DOCENTE, enSesion, "/x", "ACTA", 1L, "acta:1"));
         });
 

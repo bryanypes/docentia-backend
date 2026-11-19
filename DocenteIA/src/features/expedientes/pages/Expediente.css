@@ -56,18 +56,13 @@
     margin: 12mm;
   }
 
-  body * {
-    visibility: hidden !important;
-  }
-
-  .expediente-impresion,
-  .expediente-impresion * {
-    visibility: visible !important;
+  /* Solo el resumen: la app entera se oculta y el resumen (hijo directo de body) fluye por páginas. */
+  body > *:not(.expediente-impresion) {
+    display: none !important;
   }
 
   .expediente-impresion {
-    position: absolute;
-    inset: 0;
+    position: static;
     display: block;
     width: 100%;
     color: #17212b;

@@ -49,7 +49,7 @@ public class ActaController {
 
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
-  @PreAuthorize("hasRole('COORDINADOR')")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
   public ActaResponse crear(
       @Valid @RequestBody NuevaActaRequest solicitud,
       @AuthenticationPrincipal UsuarioSesion sesion) {
@@ -58,7 +58,7 @@ public class ActaController {
 
   /** Acta de compromiso o de retroalimentación; solo antes de la primera firma. */
   @PatchMapping("/{idActa}/tipo")
-  @PreAuthorize("hasRole('COORDINADOR')")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
   public ActaResponse cambiarTipo(
       @PathVariable Long idActa,
       @Valid @RequestBody TipoActaRequest solicitud,
@@ -85,7 +85,7 @@ public class ActaController {
 
   @PostMapping("/{idActa}/compromisos")
   @ResponseStatus(HttpStatus.CREATED)
-  @PreAuthorize("hasRole('COORDINADOR')")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
   public ActaResponse agregarCompromiso(
       @PathVariable Long idActa,
       @Valid @RequestBody CompromisoActaRequest solicitud,
@@ -94,7 +94,7 @@ public class ActaController {
   }
 
   @DeleteMapping("/{idActa}/compromisos/{idCompromiso}")
-  @PreAuthorize("hasRole('COORDINADOR')")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
   public ActaResponse quitarCompromiso(
       @PathVariable Long idActa,
       @PathVariable Long idCompromiso,
@@ -104,7 +104,7 @@ public class ActaController {
 
   /** Firma de docente o coordinación. La IP real es la última que agregó el proxy propio. */
   @PostMapping("/{idActa}/firmas")
-  @PreAuthorize("hasAnyRole('COORDINADOR', 'DOCENTE')")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'DOCENTE', 'VICERRECTOR')")
   public ActaResponse firmar(
       @PathVariable Long idActa,
       @Valid @RequestBody FirmaActaRequest solicitud,

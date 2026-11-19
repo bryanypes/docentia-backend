@@ -5,6 +5,7 @@ import com.uniautonoma.docentia.dto.InicioSesionGoogleRequest;
 import com.uniautonoma.docentia.dto.InicioSesionRequest;
 import com.uniautonoma.docentia.dto.PerfilResponse;
 import com.uniautonoma.docentia.dto.SesionResponse;
+import com.uniautonoma.docentia.dto.TutorialResponse;
 import com.uniautonoma.docentia.entity.AccionAuditoria;
 import com.uniautonoma.docentia.exception.CredencialesInvalidasException;
 import com.uniautonoma.docentia.security.DireccionCliente;
@@ -17,6 +18,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -118,6 +120,24 @@ public class SesionController {
   @GetMapping("/actual/perfil")
   public PerfilResponse obtenerPerfil(@AuthenticationPrincipal UsuarioSesion sesion) {
     return perfilService.obtener(sesion);
+  }
+
+  /** Si el usuario ya vio el tutorial guiado; sin verlo, la app se lo muestra al entrar. */
+  @GetMapping("/actual/tutorial")
+  public TutorialResponse obtenerTutorial(@AuthenticationPrincipal UsuarioSesion sesion) {
+    return perfilService.estadoTutorial(sesion);
+  }
+
+  /** Terminó o saltó el tutorial. */
+  @PutMapping("/actual/tutorial")
+  public TutorialResponse marcarTutorialVisto(@AuthenticationPrincipal UsuarioSesion sesion) {
+    return perfilService.marcarTutorialVisto(sesion);
+  }
+
+  /** Volver a ver el tutorial desde el perfil. */
+  @DeleteMapping("/actual/tutorial")
+  public TutorialResponse reiniciarTutorial(@AuthenticationPrincipal UsuarioSesion sesion) {
+    return perfilService.reiniciarTutorial(sesion);
   }
 
   /**

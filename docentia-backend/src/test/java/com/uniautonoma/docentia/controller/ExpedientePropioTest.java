@@ -99,12 +99,15 @@ class ExpedientePropioTest extends PruebaIntegracion {
   }
 
   @Test
-  void elExpedientePropioEsSoloParaDocentes() throws Exception {
+  void elExpedientePropioEsSoloParaLosEvaluados() throws Exception {
     mockMvc
         .perform(get("/expedientes/propio").with(comoVicerrector()))
         .andExpect(status().isForbidden());
+    // El coordinador también es docente evaluado y tiene su expediente propio.
     mockMvc
-        .perform(get("/expedientes/propio").with(comoCoordinador(ingenieria.getIdFacultad())))
-        .andExpect(status().isForbidden());
+        .perform(
+            get("/expedientes/propio")
+                .with(como(escenario.crearCoordinador("Marta Ruiz", ingenieria))))
+        .andExpect(status().isOk());
   }
 }

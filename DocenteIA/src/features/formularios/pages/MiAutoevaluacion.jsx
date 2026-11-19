@@ -4,6 +4,9 @@ import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabez
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
+import { migaEvaluado } from '../../../shared/constants/dominio.js'
+import { useSesion } from '../../auth/sesionContext.js'
+import { SolicitarCorreccion } from '../../correcciones/SolicitarCorreccion.jsx'
 import { FormularioInstrumento } from '../components/FormularioInstrumento.jsx'
 import {
   enviarAutoevaluacion,
@@ -12,6 +15,7 @@ import {
 } from '../services/formulariosService.js'
 
 export default function MiAutoevaluacion() {
+  const { usuario } = useSesion()
   const formulario = useFetch(obtenerAutoevaluacion)
   const { datos, error, cargando, recargar } = formulario
   const enviar = useCallback(async () => {
@@ -22,7 +26,7 @@ export default function MiAutoevaluacion() {
   return (
     <>
       <Encabezado
-        miga="Docente · Mi autoevaluación"
+        miga={migaEvaluado(usuario.rol, 'Mi autoevaluación')}
         titulo="Mi autoevaluación"
         subtitulo="Catorce ítems del Anexo 1 de la Resolución 074. Pesa el 20 % de tu resultado por defecto."
       />
@@ -43,6 +47,7 @@ export default function MiAutoevaluacion() {
             formulario={datos}
             onGuardar={guardarAutoevaluacion}
             onEnviar={enviar}
+            pieEnviado={<SolicitarCorreccion tipo="AUTO" />}
           />
         )}
       </div>

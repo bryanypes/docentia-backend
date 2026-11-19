@@ -58,6 +58,12 @@ public class EvaluacionFormulario {
   @Column(name = "enviada_en")
   private LocalDateTime enviadaEn;
 
+  /**
+   * Reabierto por la administración tras una solicitud aprobada: se corrige fuera de la ventana.
+   */
+  @Column(nullable = false)
+  private boolean reabierto;
+
   @Version private long version;
 
   /** Valor de cada descriptor respondido, por id del descriptor. */
@@ -102,6 +108,23 @@ public class EvaluacionFormulario {
     estado = EstadoFormulario.ENVIADA;
     valor = valorFuente;
     enviadaEn = ahora;
+    reabierto = false;
+  }
+
+  /**
+   * Vuelve a borrador con las respuestas que tenía, para que quien lo envió lo corrija y lo envíe
+   * otra vez. La nota anterior sigue contando hasta el nuevo envío, que la reemplaza.
+   */
+  public void reabrir() {
+    estado = EstadoFormulario.BORRADOR;
+    // Un borrador no tiene envío (ck_evaluaciones_envio); la nota vigente vive en calificaciones.
+    valor = null;
+    enviadaEn = null;
+    reabierto = true;
+  }
+
+  public boolean getReabierto() {
+    return reabierto;
   }
 
   public boolean estaEnviada() {

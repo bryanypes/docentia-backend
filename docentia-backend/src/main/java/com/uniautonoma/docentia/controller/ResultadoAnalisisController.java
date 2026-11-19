@@ -45,7 +45,7 @@ public class ResultadoAnalisisController {
 
   /** Hallazgos incluidos en la última revisión publicada del docente autenticado. */
   @GetMapping("/resultados/propio")
-  @PreAuthorize("hasRole('DOCENTE')")
+  @PreAuthorize("hasAnyRole('DOCENTE', 'COORDINADOR')")
   public ResultadoAnalisisPropioResponse resultadoPropio(
       @AuthenticationPrincipal UsuarioSesion sesion) {
     return validacionService.resultadoPropio(sesion);

@@ -34,14 +34,14 @@ public class FormularioController {
   }
 
   @GetMapping("/autoevaluacion")
-  @PreAuthorize("hasRole('DOCENTE')")
+  @PreAuthorize("hasAnyRole('DOCENTE', 'COORDINADOR')")
   public FormularioResponse leerAutoevaluacion(
       @RequestParam(required = false) Long periodo, @AuthenticationPrincipal UsuarioSesion sesion) {
     return formularioService.leerAutoevaluacion(periodo, sesion);
   }
 
   @PutMapping("/autoevaluacion")
-  @PreAuthorize("hasRole('DOCENTE')")
+  @PreAuthorize("hasAnyRole('DOCENTE', 'COORDINADOR')")
   public FormularioResponse guardarAutoevaluacion(
       @RequestParam(required = false) Long periodo,
       @RequestBody FormularioRequest solicitud,
@@ -50,7 +50,7 @@ public class FormularioController {
   }
 
   @PostMapping("/autoevaluacion/enviar")
-  @PreAuthorize("hasRole('DOCENTE')")
+  @PreAuthorize("hasAnyRole('DOCENTE', 'COORDINADOR')")
   public FormularioResponse enviarAutoevaluacion(
       @RequestParam(required = false) Long periodo, @AuthenticationPrincipal UsuarioSesion sesion) {
     return auditar(
@@ -65,7 +65,7 @@ public class FormularioController {
   }
 
   @GetMapping("/coevaluacion/{idDocente}")
-  @PreAuthorize("hasRole('COORDINADOR')")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
   public FormularioResponse leerCoevaluacion(
       @PathVariable Long idDocente,
       @RequestParam(required = false) Long periodo,
@@ -74,7 +74,7 @@ public class FormularioController {
   }
 
   @PutMapping("/coevaluacion/{idDocente}")
-  @PreAuthorize("hasRole('COORDINADOR')")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
   public FormularioResponse guardarCoevaluacion(
       @PathVariable Long idDocente,
       @RequestParam(required = false) Long periodo,
@@ -84,7 +84,7 @@ public class FormularioController {
   }
 
   @PostMapping("/coevaluacion/{idDocente}/enviar")
-  @PreAuthorize("hasRole('COORDINADOR')")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
   public FormularioResponse enviarCoevaluacion(
       @PathVariable Long idDocente,
       @RequestParam(required = false) Long periodo,

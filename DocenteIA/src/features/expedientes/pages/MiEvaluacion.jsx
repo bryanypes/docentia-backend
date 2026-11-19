@@ -17,6 +17,8 @@ import { PanelProcesoPropio } from '../../proceso/components/PanelProcesoPropio.
 import { PanelCompromisos } from '../components/PanelesExpediente.jsx'
 import { PanelComparativoPrograma } from '../components/PanelComparativoPrograma.jsx'
 import { obtenerExpedientePropio } from '../services/expedientesService.js'
+import { ROLES, evaluadorDe, migaEvaluado } from '../../../shared/constants/dominio.js'
+import { useSesion } from '../../auth/sesionContext.js'
 import './MiEvaluacion.css'
 
 /**
@@ -24,13 +26,15 @@ import './MiEvaluacion.css'
  * individuales de cada fuente ni un promedio parcial.
  */
 export default function MiEvaluacion() {
+  const { usuario } = useSesion()
+  const evaluador = evaluadorDe(usuario.rol)
   const expediente = useFetch(obtenerExpedientePropio)
   const periodoNombre = expediente.datos?.periodo?.nombre
   const configuracion = useFetch(obtenerConfiguracionEvaluacion)
 
   const encabezado = (
     <Encabezado
-      miga="Docente · Mi evaluación"
+      miga={migaEvaluado(usuario.rol, 'Mi evaluación')}
       titulo={periodoNombre ? `Mi evaluación ${periodoNombre}` : 'Mi evaluación'}
       subtitulo="Tu resultado del periodo y los compromisos de mejora acordados."
     />
@@ -121,7 +125,7 @@ export default function MiEvaluacion() {
               {esperaReunion ? (
                 <span className="pildora pildora--turquesa">Lista para tu reunión</span>
               ) : (
-                <EtiquetaNivel promedio={promedio} />
+                <EtiquetaNivel promedio={promedio} evaluadoEsCoordinador={usuario.rol === ROLES.COORDINADOR} />
               )}
 
               {completo && promedio.categoria && (
@@ -132,16 +136,18 @@ export default function MiEvaluacion() {
 
               <p className="mi-evaluacion__texto">
                 {esperaReunion
-                  ? 'Tus tres evaluaciones están completas. Tu nota, tus compromisos y el acta se te muestran en la reunión de retroalimentación, cuando la coordinación registre tu asistencia.'
+                  ? `Tus tres evaluaciones están completas. Tu nota, tus compromisos y el acta se te muestran en la reunión de retroalimentación, cuando ${evaluador.nombre} registre tu asistencia.`
                   : completo
                   ? 'Promedio ponderado del periodo. Incluye la evaluación de tus estudiantes y las evaluaciones institucionales, que se reportan únicamente dentro de este promedio.'
-                  : `Tu promedio estará disponible cuando se registre la calificación de ${listarFuentes(promedio.fuentesPendientes)}.`}
+                  : `Tu promedio estará disponible cuando se registre la calificación de ${listarFuentes(promedio.fuentesPendientes, usuario.rol === ROLES.COORDINADOR)}.`}
               </p>
 
               <div className="mi-evaluacion__fuentes">
                 <div>
-                  <strong>Estudiantes, coordinación y autoevaluación</strong>
-                  <span>{configuracion.datos ? textoFormula(configuracion.datos) : 'Los tres evaluadores se combinan según la ponderación del periodo.'}</span>
+                  <strong>
+                    Estudiantes, {usuario.rol === ROLES.COORDINADOR ? 'vicerrectoría' : 'coordinación'} y autoevaluación
+                  </strong>
+                  <span>{configuracion.datos ? textoFormula(configuracion.datos, usuario.rol === ROLES.COORDINADOR ? 'vicerrectoría' : 'coordinación') : 'Los tres evaluadores se combinan según la ponderación del periodo.'}</span>
                 </div>
                 <span className="mi-evaluacion__chip">Solo en el promedio</span>
               </div>
@@ -156,7 +162,7 @@ export default function MiEvaluacion() {
             <PanelHallazgosPropios />
           </div>
           <PanelSeguimientoPlan />
-          {completo && <PanelComparativoPrograma propio />}
+          {completo && <PanelComparativoPrograma propio evaluadoEsCoordinador={usuario.rol === ROLES.COORDINADOR} />}
           </>
         )}
       </div>

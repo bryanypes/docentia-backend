@@ -317,7 +317,8 @@ class ProcesoEvaluacionTest extends PruebaIntegracion {
                 .with(como(coordinador))
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(aJson(new ConfirmacionCitaRequest(true))))
-        .andExpect(status().isForbidden());
+        // El coordinador confirma solo su propia cita como evaluado; aquí no tiene ninguna.
+        .andExpect(status().isNotFound());
     mockMvc
         .perform(
             get("/procesos-evaluacion/{id}", docente.getIdUsuario()).with(como(otraCoordinacion)))

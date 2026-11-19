@@ -1,4 +1,16 @@
-import { BadgeCheck, BookOpen, Building2, CalendarDays, IdCard, KeyRound, Mail, RefreshCw, ShieldCheck, UserRound } from 'lucide-react'
+import {
+  BadgeCheck,
+  BookOpen,
+  Building2,
+  CalendarDays,
+  GraduationCap,
+  IdCard,
+  KeyRound,
+  Mail,
+  RefreshCw,
+  ShieldCheck,
+  UserRound,
+} from 'lucide-react'
 import { useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import robotSaludo from '../../../assets/ilustraciones/robot-saludo.svg'
@@ -14,6 +26,7 @@ import { FormularioContrasena } from '../../auth/components/FormularioContrasena
 import { useCambioContrasena } from '../../auth/components/useCambioContrasena.js'
 import { useSesion } from '../../auth/sesionContext.js'
 import { obtenerPerfil } from '../../auth/services/authService.js'
+import { pedirTutorial, reiniciarTutorial } from '../../tutorial/tutorialService.js'
 import './MiPerfil.css'
 
 const iniciales = (nombre) =>
@@ -112,6 +125,22 @@ export default function MiPerfil() {
               </div>
               <Boton variante="contorno" icono={KeyRound} onClick={() => setCambiando(true)}>
                 Cambiar contraseña
+              </Boton>
+            </div>
+            <div className="perfil__opcion">
+              <span className="perfil__opcion-icono" aria-hidden="true">
+                <GraduationCap size={20} />
+              </span>
+              <div>
+                <strong>Tutorial</strong>
+                <span>El recorrido guiado por la plataforma que viste al entrar por primera vez.</span>
+              </div>
+              <Boton
+                variante="contorno"
+                icono={GraduationCap}
+                onClick={() => reiniciarTutorial().catch(() => {}).finally(pedirTutorial)}
+              >
+                Ver el tutorial otra vez
               </Boton>
             </div>
           </section>

@@ -3,6 +3,7 @@ package com.uniautonoma.docentia.controller;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -185,9 +186,11 @@ class ReservaFranjaTest extends PruebaIntegracion {
     mockMvc
         .perform(post("/franjas/{id}/reserva", ocho.getIdFranja()).with(comoVicerrector()))
         .andExpect(status().isForbidden());
+    // El coordinador reserva como docente evaluado, pero solo franjas de la vicerrectoría.
     mockMvc
         .perform(get("/franjas/disponibles").with(comoCoordinador(1L)))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$", hasSize(0)));
     mockMvc
         .perform(post("/franjas/{id}/reserva", 999_999).with(como(julian)))
         .andExpect(status().isNotFound())

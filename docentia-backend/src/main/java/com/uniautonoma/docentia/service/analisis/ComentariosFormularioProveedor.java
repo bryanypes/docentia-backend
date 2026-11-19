@@ -30,13 +30,14 @@ public class ComentariosFormularioProveedor implements ProveedorComentarios {
     this.jdbcTemplate = jdbcTemplate;
   }
 
-  /** Respuestas con un comentario escrito, para el panorama. Solo cuenta; no lee el texto. */
-  public long contarComentarios(Long idDocente, Long idPeriodo) {
-    Long total =
+  /** Respuestas con un comentario escrito. Solo cuenta; no lee el texto. */
+  @Override
+  public int contarComentarios(Long idDocente, Long idPeriodo) {
+    Integer total =
         jdbcTemplate.queryForObject(
             "select count(*) from respuestas_heteroevaluacion where docente_id = ? and periodo_id = ?"
                 + " and comentario is not null and btrim(comentario) <> ''",
-            Long.class,
+            Integer.class,
             idDocente,
             idPeriodo);
     return total == null ? 0 : total;

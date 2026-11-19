@@ -92,7 +92,8 @@ class CorreccionCalificacionTest extends PruebaIntegracion {
         .perform(get(RUTA_HISTORIAL, docente.getIdUsuario()).with(comoVicerrector()))
         .andExpect(jsonPath("$", hasSize(1)))
         .andExpect(jsonPath("$[0].promedioAnterior.estado").value("PARCIAL"))
-        .andExpect(jsonPath("$[0].promedioAnterior.valor").value(3.0))
+        // Sin las tres notas el promedio no tiene valor.
+        .andExpect(jsonPath("$[0].promedioAnterior.valor").doesNotExist())
         .andExpect(jsonPath("$[0].motivo").doesNotExist());
   }
 

@@ -208,6 +208,19 @@ public class Acta {
     return firmas.stream().anyMatch(firma -> firma.getRol() == rol);
   }
 
+  /**
+   * Rol con el que firma quien evaluó al docente: la coordinación o, si el evaluado es un
+   * coordinador, la vicerrectoría. El evaluado firma siempre como DOCENTE.
+   */
+  public Rol rolEvaluador() {
+    return docente.getRol().evaluador();
+  }
+
+  /** Firmaron el evaluado y su evaluador: el acta puede cerrarse. */
+  public boolean firmadaPorAmbos() {
+    return firmadaPor(Rol.DOCENTE) && firmadaPor(rolEvaluador());
+  }
+
   public void registrarFirma(FirmaActa firma) {
     firmas.add(firma);
   }

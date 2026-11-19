@@ -239,6 +239,18 @@ public class GeneradorPdfActa {
     return cabecera;
   }
 
+  /**
+   * Rótulo de la firma; la vicerrectoría firma en lugar de la coordinación al evaluar
+   * coordinadores.
+   */
+  static String rotuloFirma(Rol rol) {
+    return switch (rol) {
+      case DOCENTE -> "Docente: ";
+      case VICERRECTOR -> "Firma vicerrectoría: ";
+      default -> "Firma coordinación: ";
+    };
+  }
+
   /** Una columna por firma: el trazo sobre la línea, y debajo quién, con qué rol y cuándo. */
   private PdfPTable firmas(Acta acta, Font texto, Font fuerte, Font rotulo, Font pequena)
       throws DocumentException {
@@ -263,7 +275,7 @@ public class GeneradorPdfActa {
       espacio.setBorderColor(TENUE);
       bloque.addCell(espacio);
       Paragraph pie = new Paragraph();
-      pie.add(new Chunk(firma.getRol() == Rol.DOCENTE ? "Docente: " : "Coordinación: ", rotulo));
+      pie.add(new Chunk(rotuloFirma(firma.getRol()), rotulo));
       pie.add(new Chunk(firma.getNombre() + "\n", fuerte));
       pie.add(new Chunk(firma.getCorreo() + "\n", texto));
       pie.add(new Chunk("Fecha: " + firma.getFecha().format(FORMATO_FECHA) + "\n", texto));

@@ -12,6 +12,7 @@ import com.uniautonoma.docentia.dto.ResumenComentariosResponse;
 import com.uniautonoma.docentia.dto.ResumenComentariosResponse.CriterioAgregado;
 import com.uniautonoma.docentia.dto.ResumenComentariosResponse.TemaAgregado;
 import com.uniautonoma.docentia.dto.UsoIaResponse;
+import com.uniautonoma.docentia.entity.Facultad;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.Programa;
 import com.uniautonoma.docentia.entity.SolicitudAnalisis;
@@ -112,6 +113,7 @@ public class AnalisisComentariosService {
             .map(SolicitudAnalisis::getEstadoBorrador)
             .orElse(null);
     Programa programa = docente.getPrograma();
+    Facultad facultad = docente.getFacultadDeAdscripcion();
     return new AnalisisComentariosResponse(
         estado.codigo(),
         estado.motivo(),
@@ -120,8 +122,10 @@ public class AnalisisComentariosService {
         docente.getNombreCompleto(),
         idPeriodo,
         periodo.getNombre(),
-        new Referencia(programa.getIdPrograma(), programa.getNombre()),
-        new Referencia(programa.getFacultad().getIdFacultad(), programa.getFacultad().getNombre()),
+        programa == null
+            ? new Referencia(null, "Coordinación de " + facultad.getNombre())
+            : new Referencia(programa.getIdPrograma(), programa.getNombre()),
+        new Referencia(facultad.getIdFacultad(), facultad.getNombre()),
         vigente.map(Guardado::fuente).orElse(ultima.map(SolicitudAnalisis::getFuente).orElse(null)),
         ultima.map(SolicitudAnalisis::getIdSolicitud).orElse(null),
         vigente.map(Guardado::version).orElse(null),

@@ -172,9 +172,11 @@ class ActaTest extends PruebaIntegracion {
     mockMvc
         .perform(get("/actas").with(como(docente)))
         .andExpect(jsonPath("$[0].promedio").value(org.hamcrest.Matchers.nullValue()));
+    // Con una sola nota no hay promedio para nadie: se calcula cuando estén las tres.
     mockMvc
         .perform(get("/actas/{id}", acta).with(como(coordinador)))
-        .andExpect(jsonPath("$.promedio").value(2.0));
+        .andExpect(jsonPath("$.estadoPromedio").value("PARCIAL"))
+        .andExpect(jsonPath("$.promedio").value(org.hamcrest.Matchers.nullValue()));
   }
 
   @Test

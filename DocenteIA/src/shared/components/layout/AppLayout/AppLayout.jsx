@@ -3,6 +3,7 @@ import { Suspense, useCallback, useEffect, useMemo, useRef, useState } from 'rea
 import { Outlet, useLocation } from 'react-router-dom'
 import { Cargando } from '../../ui/EstadoVista/EstadoVista.jsx'
 import { Campana } from '../../../../features/notificaciones/components/Campana.jsx'
+import { TutorialGuiado } from '../../../../features/tutorial/TutorialGuiado.jsx'
 import {
   obtenerPeriodoActivo,
   obtenerVentanasActivas,
@@ -165,6 +166,8 @@ export function AppLayout() {
           </LimiteError>
         </main>
       </div>
+      {/* Primer inicio de sesión: recorrido guiado por las páginas del rol. */}
+      <TutorialGuiado />
     </PeriodoContext.Provider>
   )
 }

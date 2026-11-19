@@ -134,6 +134,8 @@ public class NotificacionService {
           usuarioRepository.buscarCoordinadoresActivos(evento.idDestino());
       case VICERRECTORES ->
           usuarioRepository.findByRolAndEsActivoTrueOrderByNombreCompletoAsc(Rol.VICERRECTOR);
+      case ADMINISTRADORES ->
+          usuarioRepository.findByRolAndEsActivoTrueOrderByNombreCompletoAsc(Rol.ADMINISTRADOR);
     };
   }
 

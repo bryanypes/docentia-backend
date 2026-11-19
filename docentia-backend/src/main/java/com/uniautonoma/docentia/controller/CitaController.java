@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 /** Reserva de franjas por el docente. */
 @RestController
-@PreAuthorize("hasRole('DOCENTE')")
+@PreAuthorize("hasAnyRole('DOCENTE', 'COORDINADOR')")
 public class CitaController {
 
   private final CitaService citaService;

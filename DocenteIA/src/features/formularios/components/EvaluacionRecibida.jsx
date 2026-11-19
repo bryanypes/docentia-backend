@@ -14,8 +14,9 @@ import './EvaluacionRecibida.css'
  * @param detalle frase bajo el título (fecha de envío, anonimato…)
  * @param resumen [{ codigo, titulo, respondidas, total }] un renglón por criterio
  * @param accionSecundaria enlace opcional junto a "Volver al inicio"
+ * @param pie contenido opcional bajo las acciones, como pedir una corrección
  */
-export function EvaluacionRecibida({ detalle, resumen, accionSecundaria }) {
+export function EvaluacionRecibida({ detalle, resumen, accionSecundaria, pie }) {
   const { usuario } = useSesion()
   const titulo = useRef(null)
   const respondidas = resumen.reduce((suma, c) => suma + c.respondidas, 0)
@@ -64,6 +65,7 @@ export function EvaluacionRecibida({ detalle, resumen, accionSecundaria }) {
         </Link>
         {accionSecundaria}
       </div>
+      {pie}
     </section>
   )
 }

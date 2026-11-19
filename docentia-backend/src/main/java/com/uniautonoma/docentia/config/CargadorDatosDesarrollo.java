@@ -266,6 +266,23 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
         new FranjaHoraria(
             coordinadorDerecho, periodoActivo, LocalDate.of(2026, 11, 9), LocalTime.of(10, 0)));
 
+    // Los coordinadores también son docentes evaluados: la vicerrectoría pone la nota que a un
+    // docente le pondría la coordinación y abre franjas que solo ven ellos. Andrés tiene las tres
+    // fuentes; a Paola le falta la coevaluación de la vicerrectoría.
+    calificarTresFuentes(coordinadorIngenieria, periodoActivo, vicerrector, "4.4", "4.2", "4.5");
+    calificar(
+        coordinadorDerecho,
+        periodoActivo,
+        FuenteEvaluacion.AUTOEVALUACION,
+        coordinadorDerecho,
+        "4.6");
+    calificarEstudiantes(coordinadorDerecho, periodoActivo, "4.3");
+    for (String hora : List.of("10:00", "10:30", "11:00")) {
+      franjaRepository.save(
+          new FranjaHoraria(
+              vicerrector, periodoActivo, LocalDate.of(2026, 11, 24), LocalTime.parse(hora)));
+    }
+
     compromisoRepository.save(
         new Compromiso(
             julian,

@@ -3,9 +3,8 @@ import { useCallback } from 'react'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
-import { ETIQUETA_FUENTE } from '../../../shared/constants/dominio.js'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
-import { formatearNota } from '../../../shared/utils/formatters.js'
+import { etiquetaFuente, formatearNota, formatearNotaFuente } from '../../../shared/utils/formatters.js'
 import { obtenerComparativoDocente, obtenerComparativoPropio } from '../services/expedientesService.js'
 import './PanelComparativoPrograma.css'
 
@@ -26,12 +25,13 @@ function Serie({ nombre, nota, tipo }) {
           />
         )}
       </div>
-      <strong>{formatearNota(nota)}</strong>
+      <strong>{tipo === 'docente' ? formatearNotaFuente(nota) : formatearNota(nota)}</strong>
     </div>
   )
 }
 
-export function PanelComparativoPrograma({ idDocente, propio = false }) {
+/** `evaluadoEsCoordinador`: se compara con los demás coordinadores y lo califica la vicerrectoría. */
+export function PanelComparativoPrograma({ idDocente, propio = false, evaluadoEsCoordinador = false }) {
   const cargar = useCallback(() => (
     propio ? obtenerComparativoPropio() : obtenerComparativoDocente(idDocente)
   ), [idDocente, propio])
@@ -74,7 +74,7 @@ export function PanelComparativoPrograma({ idDocente, propio = false }) {
           <div className="comparativo-programa__grafico">
             {fuentes.map((fuente) => (
               <section key={fuente.fuente} className="comparativo-programa__fuente">
-                <h3>{ETIQUETA_FUENTE[fuente.fuente] ?? fuente.fuente}</h3>
+                <h3>{etiquetaFuente(fuente.fuente, evaluadoEsCoordinador)}</h3>
                 <Serie nombre="Docente" nota={fuente.notaDocente} tipo="docente" />
                 <Serie nombre="Programa" nota={fuente.promedioPrograma} tipo="programa" />
               </section>
@@ -86,8 +86,8 @@ export function PanelComparativoPrograma({ idDocente, propio = false }) {
             <tbody>
               {fuentes.map((fuente) => (
                 <tr key={fuente.fuente}>
-                  <th scope="row">{ETIQUETA_FUENTE[fuente.fuente] ?? fuente.fuente}</th>
-                  <td>{formatearNota(fuente.notaDocente)}</td>
+                  <th scope="row">{etiquetaFuente(fuente.fuente, evaluadoEsCoordinador)}</th>
+                  <td>{formatearNotaFuente(fuente.notaDocente)}</td>
                   <td>{formatearNota(fuente.promedioPrograma)}</td>
                 </tr>
               ))}

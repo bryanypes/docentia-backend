@@ -120,19 +120,41 @@ describe('Analisis', () => {
     expect(analisisService.validarHallazgo).toHaveBeenCalledWith(32)
   })
 
-  it('con poca evidencia dice cuántas encuestas hay de las 10', async () => {
+  it('con poca evidencia dice que hacen falta 5 comentarios', async () => {
     const insuficiente = {
       ...COMPLETADO,
       estado: 'INSUFICIENTE',
-      encuestasCerradas: 6,
-      mensaje: 'evidencia insuficiente (6 de 10 requeridas)',
+      encuestasCerradas: 4,
+      mensaje: 'evidencia insuficiente (4 de 5 comentarios requeridos)',
       borrador: null,
     }
     analisisService.listarSolicitudes.mockResolvedValue([insuficiente])
     analisisService.obtenerSolicitud.mockResolvedValue(insuficiente)
     renderizar()
 
-    expect(await screen.findByText(/6 de 10 encuestas con comentario/)).toBeInTheDocument()
+    expect(await screen.findByText(/al menos 5 comentarios de estudiantes/)).toBeInTheDocument()
+    expect(screen.getByText(/4 de 5 comentarios requeridos/)).toBeInTheDocument()
+  })
+
+  it('con comentarios nuevos pide actualizar el análisis y lo actualiza sin escribir motivo', async () => {
+    const conNuevos = { ...COMPLETADO, comentariosNuevos: 3 }
+    const enCola = { ...COMPLETADO, idSolicitud: 2, estado: 'EN_COLA', borrador: null }
+    analisisService.listarSolicitudes.mockResolvedValue([conNuevos])
+    analisisService.obtenerSolicitud.mockResolvedValue(conNuevos)
+    analisisService.solicitarAnalisis.mockResolvedValue(enCola)
+    renderizar()
+
+    expect(await screen.findByText('Tenemos nuevos comentarios de estudiantes')).toBeInTheDocument()
+    expect(screen.getByText(/Por favor, actualiza el análisis de IA/)).toBeInTheDocument()
+    await userEvent.click(screen.getByRole('button', { name: 'Actualizar análisis de IA' }))
+
+    expect(analisisService.solicitarAnalisis).toHaveBeenCalledWith(
+      '4',
+      '2',
+      'Llegaron 3 comentarios nuevos de estudiantes',
+      'LOCAL',
+    )
+    expect(screen.queryByText('Tenemos nuevos comentarios de estudiantes')).not.toBeInTheDocument()
   })
 
   it('solicitar un análisis lo pone en cola y lo sigue', async () => {

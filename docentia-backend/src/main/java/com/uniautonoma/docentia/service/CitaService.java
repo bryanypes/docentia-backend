@@ -9,6 +9,7 @@ import com.uniautonoma.docentia.entity.MotivoLiberacion;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.TipoEtapa;
 import com.uniautonoma.docentia.entity.TipoNotificacion;
+import com.uniautonoma.docentia.entity.Usuario;
 import com.uniautonoma.docentia.exception.EtapaCerradaException;
 import com.uniautonoma.docentia.exception.RecursoNoEncontradoException;
 import com.uniautonoma.docentia.exception.ReglaNegocioException;
@@ -60,17 +61,30 @@ public class CitaService {
   }
 
   /**
-   * Franjas que el docente puede reservar: abiertas, sin reserva, de hoy en adelante y de un
-   * coordinador de su facultad, en el periodo activo.
+   * Franjas que el docente puede reservar: abiertas, sin reserva, de hoy en adelante y de quien lo
+   * evalúa (un coordinador de su facultad o, si es coordinador, la vicerrectoría), en el periodo
+   * activo.
    */
   @Transactional(readOnly = true)
   public List<FranjaDisponibleResponse> listarDisponibles(UsuarioSesion sesion) {
     PeriodoAcademico periodo = periodoService.exigirPeriodoActivo();
-    return franjaRepository
-        .buscarDisponibles(periodo.getIdPeriodo(), sesion.idFacultad(), ventanaEtapaService.hoy())
-        .stream()
-        .map(FranjaDisponibleResponse::desde)
-        .toList();
+    List<FranjaHoraria> franjas =
+        sesion.esCoordinador()
+            ? franjaRepository.buscarDisponiblesDeVicerrectoria(
+                periodo.getIdPeriodo(), ventanaEtapaService.hoy())
+            : franjaRepository.buscarDisponibles(
+                periodo.getIdPeriodo(), sesion.idFacultad(), ventanaEtapaService.hoy());
+    return franjas.stream().map(FranjaDisponibleResponse::desde).toList();
+  }
+
+  /** La franja es de quien evalúa al que reserva. */
+  private static boolean esDeSuEvaluador(FranjaHoraria franja, UsuarioSesion sesion) {
+    Usuario duenio = franja.getCoordinador();
+    if (duenio.getRol() != sesion.rol().evaluador()) {
+      return false;
+    }
+    return sesion.esCoordinador()
+        || Objects.equals(duenio.getFacultad().getIdFacultad(), sesion.idFacultad());
   }
 
   /**
@@ -78,8 +92,8 @@ public class CitaService {
    * misma transacción.
    *
    * @return la cita nueva, con el identificador de la que se liberó
-   * @throws RecursoNoEncontradoException si la franja no existe, es de otro periodo o de un
-   *     coordinador de otra facultad
+   * @throws RecursoNoEncontradoException si la franja no existe, es de otro periodo o no es de
+   *     quien lo evalúa
    * @throws ReglaNegocioException si la franja está cerrada, ya pasó o ya está reservada
    * @throws EtapaCerradaException si la agenda de citas está cerrada
    */
@@ -94,11 +108,7 @@ public class CitaService {
             .bloquear(idFranja)
             .filter(
                 encontrada -> encontrada.getPeriodo().getIdPeriodo().equals(periodo.getIdPeriodo()))
-            .filter(
-                encontrada ->
-                    Objects.equals(
-                        encontrada.getCoordinador().getFacultad().getIdFacultad(),
-                        sesion.idFacultad()))
+            .filter(encontrada -> esDeSuEvaluador(encontrada, sesion))
             .orElseThrow(() -> new RecursoNoEncontradoException(FRANJA_NO_ENCONTRADA));
     if (!franja.estaAbierta()) {
       throw new ReglaNegocioException("La franja está cerrada");
@@ -165,16 +175,14 @@ public class CitaService {
             cita.getIdCita(),
             clave));
     eventos.publishEvent(
-        new EventoNotificacion(
+        EventoNotificacion.aEvaluadores(
             idLiberada == null
                 ? TipoNotificacion.CITA_RESERVADA
                 : TipoNotificacion.CITA_REEMPLAZADA,
-            EventoNotificacion.Destino.COORDINADORES_FACULTAD,
-            sesion.idFacultad(),
+            cita.getDocente(),
             "/agenda",
             "CITA",
             cita.getIdCita(),
-            clave,
-            null));
+            clave));
   }
 }

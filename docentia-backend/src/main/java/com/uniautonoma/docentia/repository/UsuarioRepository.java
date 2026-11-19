@@ -70,8 +70,30 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
    * @param rol rol buscado
    * @return usuarios ordenados por nombre
    */
-  @EntityGraph(attributePaths = {"programa", "programa.facultad"})
+  @EntityGraph(attributePaths = {"facultad", "programa", "programa.facultad"})
   List<Usuario> findByRolAndEsActivoTrueOrderByNombreCompletoAsc(Rol rol);
+
+  /**
+   * Lista los coordinadores activos de una facultad, con la facultad cargada. Sirve cuando la
+   * vicerrectoría los ve como docentes evaluados.
+   *
+   * @param rol rol buscado (COORDINADOR)
+   * @param idFacultad facultad que coordinan
+   * @return usuarios ordenados por nombre
+   */
+  @EntityGraph(attributePaths = {"facultad"})
+  List<Usuario> findByRolAndFacultadIdFacultadAndEsActivoTrueOrderByNombreCompletoAsc(
+      Rol rol, Long idFacultad);
+
+  /**
+   * Busca un usuario activo por identificador entre varios roles, con su alcance cargado.
+   *
+   * @param idUsuario identificador del usuario
+   * @param roles roles admitidos
+   * @return el usuario, o vacío si no existe, está inactivo o tiene otro rol
+   */
+  @EntityGraph(attributePaths = {"facultad", "programa", "programa.facultad"})
+  Optional<Usuario> findByIdUsuarioAndRolInAndEsActivoTrue(Long idUsuario, Collection<Rol> roles);
 
   /**
    * Lista los usuarios activos de un rol cuyos programas pertenecen a una facultad.

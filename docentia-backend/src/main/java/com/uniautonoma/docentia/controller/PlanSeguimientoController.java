@@ -31,7 +31,7 @@ public class PlanSeguimientoController {
   }
 
   @GetMapping("/plan-seguimiento/propio")
-  @PreAuthorize("hasRole('DOCENTE')")
+  @PreAuthorize("hasAnyRole('DOCENTE', 'COORDINADOR')")
   public PlanSeguimientoResponse consultarPropio(@AuthenticationPrincipal UsuarioSesion sesion) {
     return planService.consultarPropio(sesion);
   }

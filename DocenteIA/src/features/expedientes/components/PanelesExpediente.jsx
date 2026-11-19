@@ -2,11 +2,13 @@ import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
 import { BarraNota } from '../../../shared/components/ui/BarraNota/BarraNota.jsx'
 import { EtiquetaNivel } from '../../../shared/components/ui/EtiquetaNivel/EtiquetaNivel.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
-import { ETIQUETA_FUENTE, ORIGEN_FUENTE } from '../../../shared/constants/dominio.js'
+import { ORIGEN_FUENTE } from '../../../shared/constants/dominio.js'
 import {
   formatearFecha,
   formatearNota,
+  formatearNotaFuente,
   formatearPeso,
+  etiquetaFuente,
   listarFuentes,
   nivelDeNota,
   textoFormula,
@@ -36,19 +38,24 @@ export function ValorPromedio({ promedio, tamano = 'grande' }) {
 }
 
 /** Nota de cada fuente con su peso y el promedio ponderado. Solo para coordinación y vicerrectoría. */
-export function PanelFuentes({ notasPorFuente, promedio, descripcion, children }) {
+export function PanelFuentes({ notasPorFuente, promedio, descripcion, evaluadoEsCoordinador = false, children }) {
+  // Al coordinador evaluado la segunda nota se la pone la vicerrectoría.
   return (
     <Panel titulo="Calificación por evaluador" descripcion={descripcion}>
-      <p className="fuentes__formula">{textoFormula(pesosDe(notasPorFuente))}</p>
+      <p className="fuentes__formula">
+        {textoFormula(pesosDe(notasPorFuente), evaluadoEsCoordinador ? 'vicerrectoría' : 'coordinación')}
+      </p>
       <ul className="fuentes">
         {notasPorFuente.map((f) => (
           <li key={f.fuente} className="fuentes__fila">
             <span className="fuentes__nombre">
-              <strong>{ETIQUETA_FUENTE[f.fuente]}</strong>
+              <strong>{etiquetaFuente(f.fuente, evaluadoEsCoordinador)}</strong>
               <span>{f.nota === null ? 'Sin registrar' : ORIGEN_FUENTE[f.fuente]}</span>
             </span>
             <span className="fuentes__peso">{formatearPeso(f.peso)}</span>
-            <strong className="fuentes__nota">{formatearNota(f.nota)}</strong>
+            <strong className={`fuentes__nota${f.nota === null ? ' fuentes__nota--inicial' : ''}`}>
+              {formatearNotaFuente(f.nota)}
+            </strong>
           </li>
         ))}
       </ul>
@@ -57,8 +64,9 @@ export function PanelFuentes({ notasPorFuente, promedio, descripcion, children }
         <ValorPromedio promedio={promedio} />
       </div>
       {promedio?.estado === 'PARCIAL' && (
-        <Aviso tipo="alerta" titulo="Promedio parcial">
-          Falta {listarFuentes(promedio.fuentesPendientes)}. Se calculó con las fuentes disponibles y puede cambiar.
+        <Aviso tipo="alerta" titulo="Promedio pendiente">
+          Falta {listarFuentes(promedio.fuentesPendientes, evaluadoEsCoordinador)}. El promedio se calcula cuando estén las tres notas; mientras
+          tanto cada nota pendiente figura con 0,00.
         </Aviso>
       )}
       {promedio?.estado === 'SIN_NOTA' && <p className="fuentes__nota-pie">Aún no hay calificaciones registradas.</p>}
@@ -182,9 +190,9 @@ export function PanelCompromisos({ titulo = 'Compromisos vigentes', compromisos,
 /** Fila de datos clave del docente (programa, periodo, estado). */
 export function DatosDocente({ docente, periodo, promedio }) {
   const datos = [
-    { clave: 'Programa', valor: docente.nombrePrograma },
+    { clave: 'Programa', valor: docente.nombrePrograma ?? `Coordinación · ${docente.nombreFacultad}` },
     { clave: 'Periodo', valor: periodo?.nombre ?? 'Sin periodo activo' },
-    { clave: 'Estado', valor: <EtiquetaNivel promedio={promedio} /> },
+    { clave: 'Estado', valor: <EtiquetaNivel promedio={promedio} evaluadoEsCoordinador={docente.esCoordinador} /> },
   ]
   return (
     <dl className="datos-docente">

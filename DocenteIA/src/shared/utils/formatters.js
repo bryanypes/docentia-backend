@@ -16,14 +16,20 @@ export function formatearNota(valor) {
   return valor === null || valor === undefined ? '—' : formatoNota.format(Number(valor))
 }
 
+/** Nota de una fuente: 0,00 mientras no se registre (la nota inicial; no entra al promedio). */
+export function formatearNotaFuente(valor) {
+  return formatearNota(valor ?? 0)
+}
+
 /** 50 → "50 %" */
 export function formatearPeso(peso) {
   return `${Number(peso).toLocaleString('es-CO')} %`
 }
 
 /** "50 % estudiantes · 30 % coordinación · 20 % autoevaluación" */
-export function textoFormula({ pesoEstudiantes, pesoCoordinacion, pesoAutoevaluacion }) {
-  return `${formatearPeso(pesoEstudiantes)} estudiantes · ${formatearPeso(pesoCoordinacion)} coordinación · ${formatearPeso(pesoAutoevaluacion)} autoevaluación`
+/** `evaluador` nombra la segunda fuente: "vicerrectoría" para un coordinador evaluado. */
+export function textoFormula({ pesoEstudiantes, pesoCoordinacion, pesoAutoevaluacion }, evaluador = 'coordinación') {
+  return `${formatearPeso(pesoEstudiantes)} estudiantes · ${formatearPeso(pesoCoordinacion)} ${evaluador} · ${formatearPeso(pesoAutoevaluacion)} autoevaluación`
 }
 
 /** "2026-11-30" → "30 nov 2026", sin desfases de zona horaria. */
@@ -75,8 +81,14 @@ export function porcentajeNota(valor) {
 }
 
 /** ["COORDINACION", "AUTOEVALUACION"] → "Coordinación y Autoevaluación" */
-export function listarFuentes(fuentes = []) {
-  const nombres = fuentes.map((fuente) => ETIQUETA_FUENTE[fuente] ?? fuente)
+/** Nombre de la fuente; al coordinador evaluado la nota de coordinación la pone la vicerrectoría. */
+export function etiquetaFuente(fuente, evaluadoEsCoordinador = false) {
+  if (evaluadoEsCoordinador && fuente === 'COORDINACION') return 'Vicerrectoría'
+  return ETIQUETA_FUENTE[fuente] ?? fuente
+}
+
+export function listarFuentes(fuentes = [], evaluadoEsCoordinador = false) {
+  const nombres = fuentes.map((fuente) => etiquetaFuente(fuente, evaluadoEsCoordinador))
   if (nombres.length <= 1) return nombres.join('')
   return `${nombres.slice(0, -1).join(', ')} y ${nombres.at(-1)}`
 }

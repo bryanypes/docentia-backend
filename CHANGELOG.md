@@ -1,5 +1,38 @@
 # Cambios
 
+## Sin versión (18 de noviembre de 2026)
+
+Backend y frontend juntos. Migraciones nuevas: la base pasa de V43 a **V48**.
+
+- **El coordinador también es docente evaluado** (V44): lo evalúan sus estudiantes, su autoevaluación
+  y la vicerrectoría en el lugar de la coordinación, con el mismo peso. Para los estudiantes es un
+  docente más. La vicerrectoría abre franjas que solo ven los coordinadores, los coevalúa, registra su
+  asistencia y firma su acta («Firma vicerrectoría» en el PDF). El coordinador tiene en su menú
+  «Mi evaluación como docente» (evaluación, autoevaluación, cita y acta) y ve su promedio en cuanto
+  tiene las tres notas.
+- **Promedio solo con las tres notas** (V45): ya no hay promedio parcial renormalizado. Mientras falte
+  una nota, cada fuente pendiente figura con 0,00 y el promedio dice «Pendiente»; sin categoría ni
+  acción sugerida.
+- **Análisis de comentarios con IA** (V46): basta un mínimo de **5 comentarios** de estudiantes
+  (`DOCENTIA_IA_MINIMO_COMENTARIOS`), en lugar de 10 encuestas. Si llegan comentarios después de un
+  análisis, la coordinación ve «Tenemos nuevos comentarios de estudiantes, por favor actualiza el
+  análisis de IA» y lo actualiza sin motivo ni hora de espera.
+- **Estadísticas de comentarios**: el resumen «Lo que dicen los comentarios» (sentimiento, balance por
+  criterio y temas) llega a Estadísticas de coordinación y vicerrectoría. Venía de la rama
+  `feature/V1-vistas-paneles-y-comentarios`, que nunca se integró.
+- **Tutorial del primer inicio de sesión** (V47): todos lo ven al entrar. Bloquea la pantalla con el
+  robot, recorre las páginas del rol paso a paso, avanza solo como un video (con pausa) y se puede
+  saltar un paso o todo. Al terminar queda en el botón **?** junto a la campana y en Mi perfil.
+- **Solicitudes de corrección** (V48): quien envió una autoevaluación o coevaluación pide corregirla
+  con un motivo; la verifica su superior (coordinación para docentes, vicerrectoría para coordinadores
+  y para las coevaluaciones de la coordinación) y la administración reabre el formulario, que se
+  corrige aunque la recolección haya cerrado. Avisos en la plataforma y por correo en cada paso. No se
+  pide si el acta del periodo ya está firmada.
+- **Administración de usuarios**: resumen «Dónde están los usuarios» por facultad y rol, filtro por
+  facultad y agrupación por facultad, rol o programa. Los coordinadores llevan «También docente».
+- **Correcciones**: el expediente ya no se desborda en el celular y «Imprimir resumen» imprime el
+  resumen completo aunque el proceso no haya cargado.
+
 ## 0.4.2 (17 de noviembre de 2026)
 
 Solo frontend, sin migraciones: la base sigue en V43. Backend y frontend se despliegan juntos desde la

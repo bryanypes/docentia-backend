@@ -284,9 +284,13 @@ class FranjaTest extends PruebaIntegracion {
   }
 
   @Test
-  void soloElCoordinadorManejaFranjas() throws Exception {
+  void soloQuienEvaluaManejaFranjas() throws Exception {
     abrir(docente, "09:00", "09:30").andExpect(status().isForbidden());
-    mockMvc.perform(get("/franjas").with(comoVicerrector())).andExpect(status().isForbidden());
+    // La vicerrectoría abre franjas para los coordinadores; ve solo las suyas.
+    mockMvc
+        .perform(get("/franjas").with(comoVicerrector()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$", hasSize(0)));
   }
 
   private FranjaHoraria crear(Usuario dueno, String inicio) {

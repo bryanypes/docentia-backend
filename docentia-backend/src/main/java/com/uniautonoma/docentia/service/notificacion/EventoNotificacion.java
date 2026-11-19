@@ -1,5 +1,6 @@
 package com.uniautonoma.docentia.service.notificacion;
 
+import com.uniautonoma.docentia.entity.Rol;
 import com.uniautonoma.docentia.entity.TipoNotificacion;
 import com.uniautonoma.docentia.entity.Usuario;
 
@@ -25,7 +26,8 @@ public record EventoNotificacion(
   public enum Destino {
     USUARIO,
     COORDINADORES_FACULTAD,
-    VICERRECTORES
+    VICERRECTORES,
+    ADMINISTRADORES
   }
 
   public static EventoNotificacion aUsuario(
@@ -34,17 +36,24 @@ public record EventoNotificacion(
         tipo, Destino.USUARIO, idUsuario, enlace, entidad, id, clave, null);
   }
 
-  public static EventoNotificacion aCoordinadores(
+  /**
+   * Avisa a quien evalúa al docente: la coordinación de su facultad o, si el evaluado es un
+   * coordinador, la vicerrectoría.
+   */
+  public static EventoNotificacion aEvaluadores(
       TipoNotificacion tipo,
       Usuario docente,
       String enlace,
       String entidad,
       Long id,
       String clave) {
+    if (docente.getRol() == Rol.COORDINADOR) {
+      return aVicerrectores(tipo, enlace, entidad, id, clave);
+    }
     return new EventoNotificacion(
         tipo,
         Destino.COORDINADORES_FACULTAD,
-        docente.getPrograma().getFacultad().getIdFacultad(),
+        docente.getFacultadDeAdscripcion().getIdFacultad(),
         enlace,
         entidad,
         id,
@@ -56,6 +65,12 @@ public record EventoNotificacion(
       TipoNotificacion tipo, String enlace, String entidad, Long id, String clave) {
     return new EventoNotificacion(
         tipo, Destino.VICERRECTORES, null, enlace, entidad, id, clave, null);
+  }
+
+  public static EventoNotificacion aAdministradores(
+      TipoNotificacion tipo, String enlace, String entidad, Long id, String clave) {
+    return new EventoNotificacion(
+        tipo, Destino.ADMINISTRADORES, null, enlace, entidad, id, clave, null);
   }
 
   public EventoNotificacion conDetalle(String texto) {

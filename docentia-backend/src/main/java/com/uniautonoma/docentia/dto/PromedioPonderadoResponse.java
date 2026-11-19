@@ -7,8 +7,9 @@ import java.util.Arrays;
 import java.util.List;
 
 /**
- * Resultado del promedio ponderado. Si faltan fuentes pero hay al menos una, es PARCIAL: los pesos
- * se renormalizan entre las disponibles. Sin ninguna fuente no hay nota, nunca un 0.
+ * Resultado del promedio ponderado. Solo hay valor y categoría con las tres fuentes (COMPLETO). Si
+ * falta alguna es PARCIAL, sin valor: las fuentes pendientes figuran con 0,00 en pantalla, pero el
+ * promedio no se calcula hasta tenerlas todas.
  *
  * @param categoria categoría de desempeño de la Resolución 074, nula si no hay nota
  */
@@ -31,9 +32,8 @@ public record PromedioPonderadoResponse(
     return new PromedioPonderadoResponse(EstadoPromedio.COMPLETO, valor, List.of());
   }
 
-  public static PromedioPonderadoResponse parcial(
-      BigDecimal valor, List<FuenteEvaluacion> fuentesPendientes) {
-    return new PromedioPonderadoResponse(EstadoPromedio.PARCIAL, valor, fuentesPendientes);
+  public static PromedioPonderadoResponse parcial(List<FuenteEvaluacion> fuentesPendientes) {
+    return new PromedioPonderadoResponse(EstadoPromedio.PARCIAL, null, fuentesPendientes);
   }
 
   public static PromedioPonderadoResponse sinNota() {

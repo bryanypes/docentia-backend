@@ -9,7 +9,8 @@ import { ErrorApi } from '../../../shared/components/ui/ErrorApi/ErrorApi.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { Modal } from '../../../shared/components/ui/Modal/Modal.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
-import { ETAPAS } from '../../../shared/constants/dominio.js'
+import { ETAPAS, ROLES, evaluadorDe, migaEvaluado } from '../../../shared/constants/dominio.js'
+import { useSesion } from '../../auth/sesionContext.js'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { formatearFecha } from '../../../shared/utils/formatters.js'
 import { AvisoEtapaCerrada } from '../../periodos/components/AvisoEtapaCerrada.jsx'
@@ -28,6 +29,7 @@ function describir(franja) {
 /** Confirmar o declinar la cita. Declinar la libera y la franja queda para otro docente. */
 function ConfirmacionCita({ cita, onRespondida, onError, onCambiar }) {
   const { confirmar } = useAvisos()
+  const { usuario } = useSesion()
   const [enviando, setEnviando] = useState(false)
 
   async function responder(asiste) {
@@ -46,7 +48,11 @@ function ConfirmacionCita({ cita, onRespondida, onError, onCambiar }) {
     onError(null)
     try {
       await responderCita(asiste)
-      onRespondida(asiste ? 'Confirmaste tu asistencia. La coordinación ya fue avisada.' : 'Declinaste la cita; reserva otra franja.')
+      onRespondida(
+        asiste
+          ? `Confirmaste tu asistencia. Ya avisamos a ${evaluadorDe(usuario.rol).nombre}.`
+          : 'Declinaste la cita; reserva otra franja.',
+      )
     } catch (errorApi) {
       onError(errorApi)
     } finally {
@@ -138,6 +144,7 @@ function ModalReserva({ franja, citaActual, enviando, onReservar, onCerrar }) {
  * Al elegir un día salen sus horarios; al elegir uno se confirma en un modal.
  */
 export default function MiCita() {
+  const { usuario } = useSesion()
   const ventana = useVentanaEtapa(ETAPAS.AGENDA_CITAS)
   const hoy = hoyEnColombia()
   const cita = useFetch(obtenerMiCita)
@@ -199,9 +206,13 @@ export default function MiCita() {
   return (
     <>
       <Encabezado
-        miga="Docente · Mi cita"
+        miga={migaEvaluado(usuario.rol, 'Mi cita')}
         titulo="Mi cita de retroalimentación"
-        subtitulo="Elige en el calendario un horario de 30 minutos con la coordinación de tu programa."
+        subtitulo={
+          usuario.rol === ROLES.COORDINADOR
+            ? 'Elige en el calendario un horario de 30 minutos con la vicerrectoría.'
+            : 'Elige en el calendario un horario de 30 minutos con la coordinación de tu programa.'
+        }
       />
       <div className="pagina">
         <AvisoEtapaCerrada ventana={ventana} accion="Reservar una cita" />
@@ -286,7 +297,9 @@ export default function MiCita() {
             {!disponibles.cargando && !disponibles.error && lista.length === 0 && (
               <EstadoVista
                 titulo="No hay horarios disponibles"
-                mensaje="La coordinación aún no ha abierto horarios o ya están todos reservados."
+                mensaje={`${
+                  usuario.rol === ROLES.COORDINADOR ? 'La vicerrectoría' : 'La coordinación'
+                } aún no ha abierto horarios o ya están todos reservados.`}
               />
             )}
             {lista.length > 0 && delDia.length === 0 && (

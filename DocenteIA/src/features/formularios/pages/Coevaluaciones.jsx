@@ -10,6 +10,8 @@ import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { useFiltrosUrl, usePaginacion } from '../../../shared/hooks/usePaginacion.js'
 import { normalizarTexto } from '../../../shared/utils/formatters.js'
 import { obtenerPendientesCoevaluacion } from '../services/formulariosService.js'
+import { ROLES } from '../../../shared/constants/dominio.js'
+import { useSesion } from '../../auth/sesionContext.js'
 import '../components/FormularioInstrumento.css'
 
 const TODOS = ''
@@ -22,6 +24,8 @@ const ESTADO = {
 }
 
 export default function Coevaluaciones() {
+  const { usuario } = useSesion()
+  const esVicerrector = usuario.rol === ROLES.VICERRECTOR
   const { datos, error, cargando, recargar } = useFetch(obtenerPendientesCoevaluacion)
   const [filtros, actualizarFiltros] = useFiltrosUrl(FILTROS_PREDETERMINADOS)
   const { busqueda, programa, estado } = filtros
@@ -47,9 +51,15 @@ export default function Coevaluaciones() {
   return (
     <>
       <Encabezado
-        miga="Coordinación · Coevaluaciones"
-        titulo="Coevaluaciones"
-        subtitulo={datos ? `Periodo ${datos.periodo.nombre}. ${datos.pendientes} pendientes.` : 'Docentes de tus programas.'}
+        miga={esVicerrector ? 'Vicerrectoría · Coevaluación de coordinadores' : 'Coordinación · Coevaluaciones'}
+        titulo={esVicerrector ? 'Coevaluación de coordinadores' : 'Coevaluaciones'}
+        subtitulo={
+          datos
+            ? `Periodo ${datos.periodo.nombre}. ${datos.pendientes} pendientes.`
+            : esVicerrector
+              ? 'Los coordinadores también son docentes: la vicerrectoría los coevalúa.'
+              : 'Docentes de tus programas.'
+        }
       />
       <div className="pagina">
         {cargando && !datos && <Cargando texto="Cargando coevaluaciones" bloques={1} />}
@@ -62,10 +72,13 @@ export default function Coevaluaciones() {
           <EstadoVista titulo="No hay un periodo activo" mensaje="La vicerrectoría debe activar uno." />
         )}
         {datos?.docentes.length === 0 && (
-          <EstadoVista titulo="Sin docentes" mensaje="Tus programas no tienen docentes activos." />
+          <EstadoVista
+            titulo={esVicerrector ? 'Sin coordinadores' : 'Sin docentes'}
+            mensaje={esVicerrector ? 'No hay coordinadores activos.' : 'Tus programas no tienen docentes activos.'}
+          />
         )}
         {datos?.docentes.length > 0 && (
-          <Panel titulo="Docentes de tus programas" icono={ClipboardList}>
+          <Panel titulo={esVicerrector ? 'Coordinadores por facultad' : 'Docentes de tus programas'} icono={ClipboardList}>
             <div className="coevaluaciones__filtros" role="search" aria-label="Filtrar coevaluaciones">
               <span className="coevaluaciones__filtros-rotulo">
                 <SlidersHorizontal size={16} aria-hidden="true" />

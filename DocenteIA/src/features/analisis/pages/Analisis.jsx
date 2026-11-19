@@ -24,7 +24,7 @@ import {
   ESTADOS_SOLICITUD,
   estaEnCurso,
   ETIQUETA_SOLICITUD,
-  MINIMO_ENCUESTAS,
+  MINIMO_COMENTARIOS,
   TIPOS_HALLAZGO,
 } from '../estados.js'
 import { useSeguimientoSolicitud } from '../hooks/useSeguimientoSolicitud.js'
@@ -138,8 +138,7 @@ function EstadoSolicitud({ solicitud, agotado, onReanudar }) {
     return (
       <MensajeIA robot="error" tono="alerta" titulo="Evidencia insuficiente" role="status">
         <p>
-          Llegaron {solicitud.encuestasCerradas ?? 0} de {MINIMO_ENCUESTAS} encuestas con comentario que necesito para
-          analizar.{' '}
+          Necesito al menos {MINIMO_COMENTARIOS} comentarios de estudiantes para analizar.{' '}
           {solicitud.mensaje}
         </p>
       </MensajeIA>
@@ -385,12 +384,20 @@ export default function Analisis() {
   const pideMotivo = Boolean(idSolicitud)
   const motivoListo = motivo.trim().length >= MOTIVO_MINIMO
 
-  async function solicitar() {
+  // La última solicitud dice cuántos comentarios llegaron después de analizarla.
+  const comentariosNuevos = solicitudNueva?.clave === clave ? 0 : (ultima.datos?.comentariosNuevos ?? 0)
+
+  function actualizarPorNuevos() {
+    solicitar(`Llegaron ${comentariosNuevos} comentarios nuevos de estudiantes`)
+  }
+
+  async function solicitar(motivoAutomatico) {
     if (!modeloDisponible || !modeloConfirmado) return
+    const motivoFinal = typeof motivoAutomatico === 'string' ? motivoAutomatico : pideMotivo ? motivo.trim() : null
     setEnviando(true)
     setErrorSolicitar(null)
     try {
-      const nueva = await solicitarAnalisis(docenteId, periodoId, pideMotivo ? motivo.trim() : null, modelo)
+      const nueva = await solicitarAnalisis(docenteId, periodoId, motivoFinal, modelo)
       setSolicitudNueva({ clave, id: nueva.idSolicitud })
       setSolicitudPendienteClave(clave)
       setMotivo('')
@@ -507,7 +514,7 @@ export default function Analisis() {
             {esCoordinador && (
               <p className="campo__ayuda analisis__fuente">
                 Se analizan los comentarios del formulario anónimo de los estudiantes, cuando la recolección ya
-                terminó y la revisión de hallazgos está abierta. Hacen falta al menos 10 respuestas.
+                terminó y la revisión de hallazgos está abierta. Hacen falta al menos {MINIMO_COMENTARIOS} comentarios.
               </p>
             )}
             {esCoordinador && (
@@ -516,7 +523,7 @@ export default function Analisis() {
                   <Campo
                     id="motivoAnalisis"
                     etiqueta="Motivo para pedir otro análisis"
-                    ayuda="Entre 10 y 300 caracteres. Debe pasar una hora desde la última solicitud."
+                    ayuda="Entre 10 y 300 caracteres. Debe pasar una hora desde la última solicitud, salvo que hayan llegado comentarios nuevos."
                   >
                     <input
                       id="motivoAnalisis"
@@ -543,6 +550,27 @@ export default function Analisis() {
               </div>
             )}
             <ErrorApi error={errorSolicitar} />
+            {comentariosNuevos > 0 && (
+              <MensajeIA robot="senala" tono="violeta" titulo="Tenemos nuevos comentarios de estudiantes" role="status">
+                <p>
+                  {comentariosNuevos === 1
+                    ? 'Llegó 1 comentario nuevo'
+                    : `Llegaron ${comentariosNuevos} comentarios nuevos`}{' '}
+                  después del último análisis. Por favor, actualiza el análisis de IA para incluirlos.
+                </p>
+                {esCoordinador && (
+                  <div>
+                    <Boton
+                      icono={RefreshCw}
+                      disabled={enviando || !modeloDisponible || !modeloConfirmado || estaEnCurso(ultima.datos)}
+                      onClick={actualizarPorNuevos}
+                    >
+                      Actualizar análisis de IA
+                    </Boton>
+                  </div>
+                )}
+              </MensajeIA>
+            )}
             {idSolicitud ? (
               <DetalleSolicitud
                 key={idSolicitud}
@@ -555,7 +583,7 @@ export default function Analisis() {
               <MensajeIA robot="esperando" tono="violeta" titulo="Todavía no he analizado a este docente en este periodo">
                 <p>
                   {esCoordinador
-                    ? `Pídemelo con «Solicitar análisis». Necesito al menos ${MINIMO_ENCUESTAS} encuestas con comentario.`
+                    ? `Pídemelo con «Solicitar análisis». Necesito al menos ${MINIMO_COMENTARIOS} comentarios de estudiantes.`
                     : 'La coordinación aún no lo ha solicitado.'}
                 </p>
               </MensajeIA>

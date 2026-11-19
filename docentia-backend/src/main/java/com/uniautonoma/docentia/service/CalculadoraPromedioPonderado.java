@@ -22,8 +22,9 @@ public class CalculadoraPromedioPonderado {
    *
    * @param notasPorFuente nota de cada fuente que ya calificó
    * @param pesos porcentaje de cada fuente, que debe sumar 100
-   * @return el promedio redondeado a dos decimales; si faltan fuentes los pesos se renormalizan
-   *     entre las disponibles y queda PARCIAL; sin ninguna fuente, SIN_NOTA
+   * @return el promedio redondeado a dos decimales, solo con las tres fuentes; si falta alguna
+   *     queda PARCIAL y sin valor (cada fuente pendiente cuenta como 0,00 hasta que se registre,
+   *     pero no se promedia); sin ninguna fuente, SIN_NOTA
    */
   public PromedioPonderadoResponse calcularPromedio(
       Map<FuenteEvaluacion, BigDecimal> notasPorFuente, PesosFuentes pesos) {
@@ -41,9 +42,10 @@ public class CalculadoraPromedioPonderado {
     if (sumaPesos.signum() == 0) {
       return PromedioPonderadoResponse.sinNota();
     }
-    BigDecimal valor = sumaPonderada.divide(sumaPesos, DECIMALES_PROMEDIO, RoundingMode.HALF_UP);
-    return pendientes.isEmpty()
-        ? PromedioPonderadoResponse.completo(valor)
-        : PromedioPonderadoResponse.parcial(valor, pendientes);
+    if (!pendientes.isEmpty()) {
+      return PromedioPonderadoResponse.parcial(pendientes);
+    }
+    return PromedioPonderadoResponse.completo(
+        sumaPonderada.divide(sumaPesos, DECIMALES_PROMEDIO, RoundingMode.HALF_UP));
   }
 }

@@ -31,14 +31,14 @@ public class ExpedienteController {
    * @return expediente sin las notas individuales de coordinación ni de vicerrectoría
    */
   @GetMapping("/propio")
-  @PreAuthorize("hasRole('DOCENTE')")
+  @PreAuthorize("hasAnyRole('DOCENTE', 'COORDINADOR')")
   public ExpedientePropioResponse obtenerExpedientePropio(
       @AuthenticationPrincipal UsuarioSesion sesion) {
     return expedienteService.obtenerExpedientePropio(sesion);
   }
 
   @GetMapping("/propio/comparativo")
-  @PreAuthorize("hasRole('DOCENTE')")
+  @PreAuthorize("hasAnyRole('DOCENTE', 'COORDINADOR')")
   public ComparativoProgramaResponse obtenerComparativoPropio(
       @AuthenticationPrincipal UsuarioSesion sesion) {
     return expedienteService.obtenerComparativoPropio(sesion);

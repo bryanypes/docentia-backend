@@ -8,7 +8,8 @@ import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { ErrorApi } from '../../../shared/components/ui/ErrorApi/ErrorApi.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { Modal } from '../../../shared/components/ui/Modal/Modal.jsx'
-import { ETAPAS } from '../../../shared/constants/dominio.js'
+import { ETAPAS, ROLES } from '../../../shared/constants/dominio.js'
+import { useSesion } from '../../auth/sesionContext.js'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { formatearFecha } from '../../../shared/utils/formatters.js'
 import { AvisoEtapaCerrada } from '../../periodos/components/AvisoEtapaCerrada.jsx'
@@ -711,13 +712,19 @@ function FilaHora({ min, dias, hoy, porCelda, enSeleccion, idDetalle, onIniciar,
 
 export default function Agenda() {
   const ventana = useVentanaEtapa(ETAPAS.AGENDA_CITAS)
+  const { usuario } = useSesion()
+  const esVicerrector = usuario.rol === ROLES.VICERRECTOR
 
   return (
     <>
       <Encabezado
-        miga="Coordinación · Agenda de citas"
-        titulo="Agenda de citas"
-        subtitulo="Abre horarios, mira quién reservó y si confirmó, y registra la asistencia el día de la reunión."
+        miga={esVicerrector ? 'Vicerrectoría · Agenda con coordinadores' : 'Coordinación · Agenda de citas'}
+        titulo={esVicerrector ? 'Agenda con coordinadores' : 'Agenda de citas'}
+        subtitulo={
+          esVicerrector
+            ? 'Tus horarios solo los ven los coordinadores: abre franjas para su reunión de retroalimentación y registra la asistencia.'
+            : 'Abre horarios, mira quién reservó y si confirmó, y registra la asistencia el día de la reunión.'
+        }
       />
       <div className="pagina">
         <AvisoEtapaCerrada ventana={ventana} accion="Abrir, cerrar o eliminar franjas" />

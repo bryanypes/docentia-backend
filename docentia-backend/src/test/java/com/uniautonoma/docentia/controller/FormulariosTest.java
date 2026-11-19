@@ -1,9 +1,12 @@
 package com.uniautonoma.docentia.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.everyItem;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
+import static org.hamcrest.Matchers.startsWith;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -353,9 +356,9 @@ class FormulariosTest extends PruebaIntegracion {
     mockMvc
         .perform(get("/formularios/coevaluacion/pendientes").with(como(vicerrector)))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.docentes", hasSize(0)))
-        .andExpect(jsonPath("$.programas[0].programa").value("Software"))
-        .andExpect(jsonPath("$.programas[0].borrador").value(1))
+        // La vicerrectoría solo ve el detalle de los coordinadores, que son a quienes coevalúa.
+        .andExpect(jsonPath("$.docentes[*].programa", everyItem(startsWith("Coordinación de "))))
+        .andExpect(jsonPath("$.programas[?(@.programa == 'Software')].borrador").value(contains(1)))
         .andExpect(content().string(not(containsString("Docente Uno"))));
     mockMvc
         .perform(get("/formularios/coevaluacion/pendientes").with(como(coordinadorOtraFacultad)))

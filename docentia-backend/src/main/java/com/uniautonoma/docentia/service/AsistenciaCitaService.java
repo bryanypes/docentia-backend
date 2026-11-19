@@ -78,7 +78,7 @@ public class AsistenciaCitaService {
     cita.responderConfirmacion(asiste, ahora);
     Cita guardada = citaRepository.saveAndFlush(cita);
     eventos.publishEvent(
-        EventoNotificacion.aCoordinadores(
+        EventoNotificacion.aEvaluadores(
             asiste ? TipoNotificacion.ASISTENCIA_CONFIRMADA : TipoNotificacion.CITA_DECLINADA,
             guardada.getDocente(),
             "/agenda",
@@ -102,7 +102,7 @@ public class AsistenciaCitaService {
             .findById(idCita)
             .orElseThrow(() -> new RecursoNoEncontradoException(CITA_NO_ENCONTRADA));
     try {
-      docenteService.buscarDocenteVisible(cita.getDocente().getIdUsuario(), sesion);
+      docenteService.buscarEvaluadoDe(cita.getDocente().getIdUsuario(), sesion);
     } catch (RecursoNoEncontradoException fueraDeAlcance) {
       throw new RecursoNoEncontradoException(CITA_NO_ENCONTRADA);
     }

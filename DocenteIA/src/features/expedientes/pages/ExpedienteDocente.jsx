@@ -1,5 +1,6 @@
 import { ChevronLeft, PenLine, Printer, RefreshCw } from 'lucide-react'
 import { useCallback, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
 import { useVentanaEtapa } from '../../../shared/components/layout/AppLayout/periodoContext.js'
@@ -7,9 +8,16 @@ import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
-import { ETAPAS, ETIQUETA_FUENTE, FUENTE_DEL_ROL, ROLES } from '../../../shared/constants/dominio.js'
+import { ETAPAS, FUENTE_DEL_ROL, ROLES } from '../../../shared/constants/dominio.js'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
-import { formatearFecha, formatearNota, formatearPeso, iniciales } from '../../../shared/utils/formatters.js'
+import {
+  etiquetaFuente,
+  formatearFecha,
+  formatearNota,
+  formatearNotaFuente,
+  formatearPeso,
+  iniciales,
+} from '../../../shared/utils/formatters.js'
 import { EtiquetaNivel } from '../../../shared/components/ui/EtiquetaNivel/EtiquetaNivel.jsx'
 import { PanelActa } from '../../actas/components/PanelActa.jsx'
 import { PanelSeguimientoPlan } from '../../actas/components/PanelSeguimientoPlan.jsx'
@@ -101,7 +109,6 @@ export default function ExpedienteDocente() {
           <Boton
             className="expediente__imprimir"
             icono={Printer}
-            disabled={!datosProceso}
             onClick={() => window.print()}
           >
             Imprimir resumen
@@ -129,12 +136,13 @@ export default function ExpedienteDocente() {
           </Panel>
 
           {periodo && puedeImprimir && (
-            <PanelComparativoPrograma idDocente={docente.idDocente} />
+            <PanelComparativoPrograma idDocente={docente.idDocente} evaluadoEsCoordinador={docente.esCoordinador} />
           )}
           <PanelFuentes
             notasPorFuente={notasPorFuente}
             promedio={promedio}
             descripcion="Las tres notas llegan por sus formularios: heteroevaluación, coevaluación y autoevaluación."
+            evaluadoEsCoordinador={docente.esCoordinador}
           >
             {miFuente && (
               <>
@@ -163,11 +171,13 @@ export default function ExpedienteDocente() {
         </div>
 
         {periodo && <PanelProceso idDocente={docente.idDocente} onDatos={guardarProceso} />}
-        <PanelActa idDocente={docente.idDocente} />
+        <PanelActa idDocente={docente.idDocente} evaluadoEsCoordinador={docente.esCoordinador} />
         <PanelSeguimientoPlan idDocente={docente.idDocente} puedeMarcar={usuario.rol === ROLES.COORDINADOR} />
         <PanelCorrecciones idDocente={docente.idDocente} />
 
-        {puedeImprimir && datosProceso && (
+        {/* Va directo en <body>: dentro del contenedor con scroll de la app el navegador lo recorta. */}
+        {puedeImprimir &&
+          createPortal(
           <article className="expediente-impresion" aria-label="Resumen imprimible del docente">
             <header>
               <p>DOCENTIA</p>
@@ -175,13 +185,13 @@ export default function ExpedienteDocente() {
             </header>
             <dl>
               <div><dt>Docente</dt><dd>{docente.nombreCompleto}</dd></div>
-              <div><dt>Programa</dt><dd>{docente.nombrePrograma}</dd></div>
+              <div><dt>Programa</dt><dd>{docente.nombrePrograma ?? `Coordinación · ${docente.nombreFacultad}`}</dd></div>
               <div><dt>Periodo</dt><dd>{periodo?.nombre ?? 'Sin periodo activo'}</dd></div>
-              <div><dt>Nota final</dt><dd>{formatearNota(promedio?.valor)}</dd></div>
-              <div><dt>Clasificación</dt><dd><EtiquetaNivel promedio={promedio} /></dd></div>
+              <div><dt>Nota final</dt><dd>{promedio?.estado === 'COMPLETO' ? formatearNota(promedio.valor) : 'Pendiente: faltan notas'}</dd></div>
+              <div><dt>Clasificación</dt><dd><EtiquetaNivel promedio={promedio} evaluadoEsCoordinador={docente.esCoordinador} /></dd></div>
               <div>
                 <dt>Estado del proceso</dt>
-                <dd>{ESTADOS_PROCESO[datosProceso.estado]?.etiqueta ?? 'No disponible'}</dd>
+                <dd>{ESTADOS_PROCESO[datosProceso?.estado]?.etiqueta ?? 'No disponible'}</dd>
               </div>
             </dl>
             <h2>Evaluadores</h2>
@@ -190,8 +200,8 @@ export default function ExpedienteDocente() {
               <tbody>
                 {notasPorFuente.map((fuente) => (
                   <tr key={fuente.fuente}>
-                    <th scope="row">{ETIQUETA_FUENTE[fuente.fuente] ?? fuente.fuente}</th>
-                    <td>{fuente.nota === null ? 'Sin registrar' : formatearNota(fuente.nota)}</td>
+                    <th scope="row">{etiquetaFuente(fuente.fuente, docente.esCoordinador)}</th>
+                    <td>{fuente.nota === null ? `${formatearNotaFuente(null)} (sin registrar)` : formatearNota(fuente.nota)}</td>
                     <td>{formatearPeso(fuente.peso)}</td>
                   </tr>
                 ))}
@@ -207,7 +217,8 @@ export default function ExpedienteDocente() {
                 ))}
               </ul>
             ) : <p>No hay compromisos de mejora vigentes.</p>}
-          </article>
+          </article>,
+          document.body,
         )}
       </div>
     </>

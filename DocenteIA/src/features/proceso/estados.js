@@ -46,7 +46,7 @@ export const ESTADOS_PROCESO = {
   FINALIZADO: {
     etiqueta: 'Proceso finalizado',
     tono: 'exito',
-    ayuda: 'Acta firmada por el docente y la coordinación.',
+    ayuda: 'Acta firmada por el docente y quien lo evaluó.',
   },
 }
 

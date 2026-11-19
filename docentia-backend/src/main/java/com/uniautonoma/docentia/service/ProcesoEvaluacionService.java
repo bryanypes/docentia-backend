@@ -107,7 +107,7 @@ public class ProcesoEvaluacionService {
   public ProcesoEvaluacionResponse obtenerPropio(UsuarioSesion sesion) {
     Usuario docente =
         usuarioRepository
-            .findByIdUsuarioAndRolAndEsActivoTrue(sesion.idUsuario(), Rol.DOCENTE)
+            .findByIdUsuarioAndRolInAndEsActivoTrue(sesion.idUsuario(), Rol.EVALUABLES)
             .orElseThrow(() -> new RecursoNoEncontradoException("Docente no encontrado"));
     PeriodoAcademico periodo = periodoService.exigirPeriodoActivo();
     ProcesoEvaluacionResponse completo =
@@ -277,7 +277,7 @@ public class ProcesoEvaluacionService {
         acta.getTipo(),
         acta.getEstado(),
         acta.firmadaPor(Rol.DOCENTE),
-        acta.firmadaPor(Rol.COORDINADOR),
+        acta.firmadaPor(acta.rolEvaluador()),
         acta.getFechaFirma());
   }
 
@@ -295,7 +295,7 @@ public class ProcesoEvaluacionService {
             new Hito(
                 "ASISTENCIA",
                 "Asistió a la reunión",
-                "La coordinación habilitó el resultado",
+                "Se habilitó el resultado",
                 cita.getFechaAsistencia()));
       }
       if (cita.getMotivoLiberacion() != null) {
@@ -314,7 +314,11 @@ public class ProcesoEvaluacionService {
         hitos.add(
             new Hito(
                 "FIRMA",
-                firma.getRol() == Rol.DOCENTE ? "Firmó el docente" : "Firmó la coordinación",
+                switch (firma.getRol()) {
+                  case DOCENTE -> "Firmó el docente";
+                  case VICERRECTOR -> "Firmó la vicerrectoría";
+                  default -> "Firmó la coordinación";
+                },
                 firma.getNombre(),
                 firma.getFecha()));
       }

@@ -118,7 +118,12 @@ public class CalificacionService {
       FuenteEvaluacion fuente,
       CalificacionRequest solicitud,
       UsuarioSesion sesion) {
-    Usuario docente = docenteService.buscarDocenteVisible(idDocente, sesion);
+    // La nota de coordinación la pone quien evalúa al docente: la vicerrectoría para un
+    // coordinador.
+    Usuario docente =
+        fuente == FuenteEvaluacion.COORDINACION
+            ? docenteService.buscarEvaluadoDe(idDocente, sesion)
+            : docenteService.buscarDocenteVisible(idDocente, sesion);
     PeriodoAcademico periodo = periodoService.exigirPeriodoActivo();
     ventanaEtapaService.exigirEtapaAbierta(periodo, TipoEtapa.RECOLECCION_CALIFICACIONES);
     exigirSinFormulario(docente, periodo, fuente);
@@ -188,7 +193,7 @@ public class CalificacionService {
 
   private Usuario buscarDocentePropio(UsuarioSesion sesion) {
     return usuarioRepository
-        .findByIdUsuarioAndRolAndEsActivoTrue(sesion.idUsuario(), Rol.DOCENTE)
+        .findByIdUsuarioAndRolInAndEsActivoTrue(sesion.idUsuario(), Rol.EVALUABLES)
         .orElseThrow(() -> new RecursoNoEncontradoException("Docente no encontrado"));
   }
 

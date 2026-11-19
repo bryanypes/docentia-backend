@@ -45,5 +45,5 @@ export const CATEGORIAS_FILTRO = {
   VIDA_PRIVADA: 'Vida privada',
 }
 
-/** Mínimo de encuestas que exige el backend (docentia.ia.minimo-encuestas). */
-export const MINIMO_ENCUESTAS = 10
+/** Mínimo de comentarios de estudiantes que exige el backend (docentia.ia.minimo-comentarios). */
+export const MINIMO_COMENTARIOS = 5

@@ -14,6 +14,14 @@ public interface ProveedorComentarios {
    */
   int contarEncuestasCerradas(Long idDocente, Long idPeriodo);
 
+  /** Comentarios escritos (no vacíos) del docente en el periodo: deciden si se puede analizar. */
+  default int contarComentarios(Long idDocente, Long idPeriodo) {
+    return (int)
+        comentarios(idDocente, idPeriodo).stream()
+            .filter(comentario -> comentario.texto() != null && !comentario.texto().isBlank())
+            .count();
+  }
+
   /** Comentarios del docente en el periodo, en el orden en que se cargaron. */
   List<ComentarioFuente> comentarios(Long idDocente, Long idPeriodo);
 }

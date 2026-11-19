@@ -171,7 +171,7 @@ class RevisionHallazgosTest extends PruebaIntegracion {
                 .with(como(julian)))
         .andExpect(status().isForbidden());
     mockMvc
-        .perform(get("/analisis-ia/resultados/propio").with(como(coordinador)))
+        .perform(get("/analisis-ia/resultados/propio").with(comoVicerrector()))
         .andExpect(status().isForbidden());
   }
 

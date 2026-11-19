@@ -13,7 +13,6 @@ import com.uniautonoma.docentia.dto.CalificacionRequest;
 import com.uniautonoma.docentia.dto.EstadoPromedio;
 import com.uniautonoma.docentia.dto.PonderacionRequest;
 import com.uniautonoma.docentia.entity.Calificacion;
-import com.uniautonoma.docentia.entity.CategoriaDesempeno;
 import com.uniautonoma.docentia.entity.Facultad;
 import com.uniautonoma.docentia.entity.FuenteEvaluacion;
 import com.uniautonoma.docentia.entity.NotasAspectos;
@@ -70,8 +69,9 @@ class PromedioGuardadoTest extends PruebaIntegracion {
 
     PromedioDocente guardado = promedioGuardado(docente);
     assertThat(guardado.getEstado()).isEqualTo(EstadoPromedio.PARCIAL);
-    assertThat(guardado.getValor()).isEqualByComparingTo("3.00");
-    assertThat(guardado.getCategoria()).isEqualTo(CategoriaDesempeno.ACEPTABLE);
+    // El promedio solo existe con las tres notas.
+    assertThat(guardado.getValor()).isNull();
+    assertThat(guardado.getCategoria()).isNull();
     assertThat(guardado.getFuentesPendientes())
         .containsExactly(FuenteEvaluacion.ESTUDIANTES, FuenteEvaluacion.AUTOEVALUACION);
     assertThat(guardado.getFechaCalculo()).isNotNull();

@@ -15,8 +15,8 @@ export function PanelHallazgosPropios() {
       <ErrorApi error={error} />
       {datos && hallazgos.length === 0 && (
         <p>
-          La coordinación revisa los comentarios de tus estudiantes. Verás las fortalezas y oportunidades de mejora
-          cuando las publique.
+          Los comentarios de tus estudiantes se revisan antes de mostrarlos. Verás las fortalezas y oportunidades de
+          mejora cuando se publiquen.
         </p>
       )}
       {TIPOS_HALLAZGO.map(({ tipo, nombre }) => {

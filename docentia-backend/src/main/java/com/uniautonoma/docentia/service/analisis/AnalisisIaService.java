@@ -64,6 +64,7 @@ public class AnalisisIaService {
   private final AuditoriaService auditoria;
   private final AhorroIaProperties ahorro;
   private final ModelosDisponibles modelos;
+  private final ProveedoresComentarios proveedores;
 
   public AnalisisIaService(
       SolicitudAnalisisRepository solicitudRepository,
@@ -78,7 +79,9 @@ public class AnalisisIaService {
       ResultadosAnalisisRepositorio resultados,
       AuditoriaService auditoria,
       AhorroIaProperties ahorro,
-      ModelosDisponibles modelos) {
+      ModelosDisponibles modelos,
+      ProveedoresComentarios proveedores) {
+    this.proveedores = proveedores;
     this.ahorro = ahorro;
     this.modelos = modelos;
     this.resultados = resultados;
@@ -129,7 +132,9 @@ public class AnalisisIaService {
           "El docente ya tiene un análisis en este periodo; indica el motivo para pedir otro",
           "motivo");
     }
-    exigirEnfriamiento(anterior.get());
+    if (comentariosNuevos(anterior.get()) == 0) {
+      exigirEnfriamiento(anterior.get());
+    }
     return crear(solicitud, motivo, sesion);
   }
 
@@ -142,7 +147,9 @@ public class AnalisisIaService {
   public SolicitudAnalisisResponse regenerar(
       Long idDocente, RegeneracionAnalisisRequest pedido, UsuarioSesion sesion) {
     docenteService.buscarDocenteVisible(idDocente, sesion);
-    ultimaSolicitud(idDocente, pedido.periodoId()).ifPresent(this::exigirEnfriamiento);
+    ultimaSolicitud(idDocente, pedido.periodoId())
+        .filter(anterior -> comentariosNuevos(anterior) == 0)
+        .ifPresent(this::exigirEnfriamiento);
     return crear(
         new SolicitudAnalisisRequest(
             idDocente, pedido.periodoId(), pedido.fuente(), pedido.modelo()),
@@ -155,6 +162,28 @@ public class AnalisisIaService {
         .findByDocenteIdUsuarioAndPeriodoIdPeriodoOrderByIdSolicitudDesc(idDocente, idPeriodo)
         .stream()
         .findFirst();
+  }
+
+  /**
+   * Comentarios escritos que llegaron después de un análisis completado; 0 si no hay o si la
+   * solicitud no terminó o es anterior a que se guardara el conteo.
+   */
+  private int comentariosNuevos(SolicitudAnalisis solicitud) {
+    if (solicitud.getEstado() != EstadoSolicitudAnalisis.COMPLETADO
+        || solicitud.getComentariosLeidos() == null) {
+      return 0;
+    }
+    int hoy =
+        proveedores
+            .para(solicitud.getFuente())
+            .contarComentarios(
+                solicitud.getDocente().getIdUsuario(), solicitud.getPeriodo().getIdPeriodo());
+    return Math.max(0, hoy - solicitud.getComentariosLeidos());
+  }
+
+  private SolicitudAnalisisResponse responder(SolicitudAnalisis solicitud) {
+    return SolicitudAnalisisResponse.desde(solicitud)
+        .conComentariosNuevos(comentariosNuevos(solicitud));
   }
 
   /** Entre dos solicitudes del mismo docente y periodo debe pasar el enfriamiento configurado. */
@@ -238,7 +267,8 @@ public class AnalisisIaService {
     if (solicitud.getEstado() != EstadoSolicitudAnalisis.COMPLETADO) {
       return SolicitudAnalisisResponse.desde(solicitud);
     }
-    return SolicitudAnalisisResponse.desde(solicitud, comentariosEnviados(solicitud));
+    return SolicitudAnalisisResponse.desde(solicitud, comentariosEnviados(solicitud))
+        .conComentariosNuevos(comentariosNuevos(solicitud));
   }
 
   /**
@@ -302,7 +332,7 @@ public class AnalisisIaService {
     return solicitudRepository
         .findByDocenteIdUsuarioAndPeriodoIdPeriodoOrderByIdSolicitudDesc(idDocente, idPeriodo)
         .stream()
-        .map(SolicitudAnalisisResponse::desde)
+        .map(this::responder)
         .toList();
   }
 }

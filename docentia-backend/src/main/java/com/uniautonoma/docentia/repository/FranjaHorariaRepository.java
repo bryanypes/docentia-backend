@@ -12,7 +12,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 
-/** Acceso a las franjas horarias de los coordinadores. */
+/**
+ * Acceso a las franjas horarias. El dueño ({@code coordinador}) es un coordinador, que atiende a
+ * los docentes de su facultad, o un vicerrector, que atiende a los coordinadores.
+ */
 public interface FranjaHorariaRepository extends JpaRepository<FranjaHoraria, Long> {
 
   Optional<FranjaHoraria> findByIdFranjaAndCoordinadorIdUsuario(Long idFranja, Long idCoordinador);
@@ -43,6 +46,24 @@ public interface FranjaHorariaRepository extends JpaRepository<FranjaHoraria, Lo
       order by f.fecha, f.horaInicio
       """)
   List<FranjaHoraria> buscarDisponibles(Long idPeriodo, Long idFacultad, LocalDate desde);
+
+  /**
+   * Franjas que un coordinador evaluado puede reservar: las de la vicerrectoría, con las mismas
+   * condiciones que {@link #buscarDisponibles}.
+   */
+  @Query(
+      """
+      select f from FranjaHoraria f join fetch f.coordinador c
+      where f.periodo.idPeriodo = :idPeriodo
+        and f.estado = com.uniautonoma.docentia.entity.EstadoFranja.ABIERTA
+        and f.fecha >= :desde
+        and c.rol = com.uniautonoma.docentia.entity.Rol.VICERRECTOR
+        and not exists (
+            select 1 from Cita ci
+            where ci.franja = f and ci.estado = com.uniautonoma.docentia.entity.EstadoCita.ACTIVA)
+      order by f.fecha, f.horaInicio
+      """)
+  List<FranjaHoraria> buscarDisponiblesDeVicerrectoria(Long idPeriodo, LocalDate desde);
 
   /**
    * Lista las franjas de un coordinador en un periodo, entre dos fechas y con ciertos estados. Los

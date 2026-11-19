@@ -4,7 +4,8 @@
   border-radius: var(--radio-pildora);
   font-size: 11.5px;
   font-weight: var(--peso-semi);
-  white-space: nowrap;
+  max-width: 100%;
+  overflow-wrap: anywhere;
 }
 
 /* Paleta institucional. Contraste AA en las cinco; el texto siempre nombra la categoría. */

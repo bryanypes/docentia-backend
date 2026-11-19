@@ -204,7 +204,7 @@ public class CargadorClasesCampus {
     for (CampusDocenteClase docenteCampus : docentes) {
       usuarioRepository
           .findByCorreoIgnoreCase(docenteCampus.correo())
-          .filter(usuario -> usuario.getRol() == Rol.DOCENTE)
+          .filter(usuario -> usuario.getRol().esEvaluable())
           .ifPresent(clase::agregarDocente);
     }
     claseRepository.save(clase);

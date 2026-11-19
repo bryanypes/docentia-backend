@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 /** Autoevaluación del docente autenticado en el periodo activo (20 % de la nota). */
 @RestController
 @RequestMapping("/autoevaluacion")
-@PreAuthorize("hasRole('DOCENTE')")
+@PreAuthorize("hasAnyRole('DOCENTE', 'COORDINADOR')")
 public class AutoevaluacionController {
 
   private final CalificacionService calificacionService;

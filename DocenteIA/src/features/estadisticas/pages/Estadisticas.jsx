@@ -34,6 +34,7 @@ import { ChipProceso } from '../../proceso/components/ChipProceso.jsx'
 import { ESTADOS_PROCESO } from '../../proceso/estados.js'
 import { listarProcesos } from '../../proceso/services/procesoService.js'
 import { descargarXlsx } from '../../../shared/utils/xlsx.js'
+import { ComentariosResumen } from '../components/ComentariosResumen.jsx'
 import { calcular, filtrar, lecturaEstadisticas, unirDatos } from '../estadisticas.js'
 import { hojasDelReporte, nombreDelReporte } from '../reporteExcel.js'
 import './Estadisticas.css'
@@ -129,6 +130,11 @@ export default function Estadisticas() {
     [filas, filtros.facultad],
   )
   const visibles = useMemo(() => filtrar(filas, filtros), [filas, filtros])
+  // El resumen de comentarios filtra por id de programa; los filtros de la página guardan el nombre.
+  const idProgramaElegido = useMemo(
+    () => filas.find((f) => f.docente.nombrePrograma === filtros.programa)?.docente.idPrograma ?? null,
+    [filas, filtros.programa],
+  )
   const paginacion = usePaginacion(visibles)
   const r = useMemo(() => calcular(visibles, { umbral, agruparPor }), [visibles, umbral, agruparPor])
   const paginacionGrupos = usePaginacion(r.porGrupo, {
@@ -524,6 +530,19 @@ export default function Estadisticas() {
           </div>
           </>
         )}
+
+        {/* Análisis de comentarios con IA: agregado del periodo, sin textos ni docentes identificables. */}
+        <ComentariosResumen
+          periodoId={seguimiento.datos.periodo.idPeriodo}
+          programaId={idProgramaElegido}
+          alcance={filtros.programa || (esVicerrector ? 'Toda la universidad' : 'Tu facultad')}
+          esCoordinador={!esVicerrector}
+          avisoFacultad={
+            esVicerrector && filtros.facultad && !filtros.programa
+              ? 'El resumen de comentarios es de toda la universidad o de un programa: elige un programa para verlo solo en esta facultad.'
+              : null
+          }
+        />
       </div>
     </>
   )

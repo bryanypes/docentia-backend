@@ -15,7 +15,8 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
  * @param modelo identificador del modelo en el proveedor
  * @param timeoutSegundos tiempo máximo de espera de la respuesta
  * @param clave clave del proveedor; solo por variable de entorno (DOCENTIA_IA_CLAVE)
- * @param minimoEncuestas encuestas cerradas necesarias para generar un borrador
+ * @param minimoComentarios comentarios escritos de estudiantes necesarios para pedir y generar un
+ *     análisis
  * @param enviarTemperatura si se envía temperature=0; algunos modelos recientes lo rechazan y hay
  *     que apagarlo (DOCENTIA_IA_ENVIAR_TEMPERATURA=false)
  */
@@ -27,7 +28,7 @@ public record IaProperties(
     String modelo,
     @DefaultValue("60") int timeoutSegundos,
     String clave,
-    @DefaultValue("10") int minimoEncuestas,
+    @DefaultValue("5") int minimoComentarios,
     @DefaultValue Worker worker,
     @DefaultValue("true") boolean enviarTemperatura) {
 
@@ -41,7 +42,7 @@ public record IaProperties(
       String modelo,
       int timeoutSegundos,
       String clave,
-      int minimoEncuestas,
+      int minimoComentarios,
       Worker worker) {
     this(
         habilitado,
@@ -50,7 +51,7 @@ public record IaProperties(
         modelo,
         timeoutSegundos,
         clave,
-        minimoEncuestas,
+        minimoComentarios,
         worker,
         true);
   }

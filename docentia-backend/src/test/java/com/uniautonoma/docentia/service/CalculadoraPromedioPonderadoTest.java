@@ -4,7 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.uniautonoma.docentia.dto.EstadoPromedio;
 import com.uniautonoma.docentia.dto.PromedioPonderadoResponse;
-import com.uniautonoma.docentia.entity.CategoriaDesempeno;
 import com.uniautonoma.docentia.entity.FuenteEvaluacion;
 import com.uniautonoma.docentia.entity.PesosFuentes;
 import java.math.BigDecimal;
@@ -31,10 +30,10 @@ class CalculadoraPromedioPonderadoTest {
     PromedioPonderadoResponse promedio =
         calculadora.calcularPromedio(notas(null, "3.0", "5.0"), PesosFuentes.predeterminados());
 
-    // Se renormaliza entre coordinación y autoevaluación: (3.0*30 + 5.0*20) / 50 = 3.80
+    // Sin las tres notas no se promedia: la que falta no se renormaliza.
     assertThat(promedio.estado()).isEqualTo(EstadoPromedio.PARCIAL);
-    assertThat(promedio.valor()).isEqualByComparingTo("3.80");
-    assertThat(promedio.categoria().codigo()).isEqualTo(CategoriaDesempeno.ALTO);
+    assertThat(promedio.valor()).isNull();
+    assertThat(promedio.categoria()).isNull();
     assertThat(promedio.fuentesPendientes()).containsExactly(FuenteEvaluacion.ESTUDIANTES);
   }
 

@@ -16,10 +16,10 @@ export function ChipCategoria({ categoria, sufijo = '' }) {
  * Píldora con el estado de un promedio: la categoría si existe (parcial si faltan fuentes) o
  * "Pendiente" con las fuentes que faltan. Nunca depende solo del color.
  */
-export function EtiquetaNivel({ promedio }) {
+export function EtiquetaNivel({ promedio, evaluadoEsCoordinador = false }) {
   if (!promedio) return <span className="etiqueta-nivel etiqueta-nivel--neutro">Sin periodo activo</span>
   if (!promedio.categoria) {
-    const faltan = listarFuentes(promedio.fuentesPendientes)
+    const faltan = listarFuentes(promedio.fuentesPendientes, evaluadoEsCoordinador)
     return (
       <span className="etiqueta-nivel etiqueta-nivel--pendiente">
         Pendiente{faltan ? `: ${faltan}` : ''}

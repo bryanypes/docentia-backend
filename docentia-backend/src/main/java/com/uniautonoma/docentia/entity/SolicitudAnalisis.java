@@ -69,6 +69,11 @@ public class SolicitudAnalisis {
 
   private Integer comentariosFiltrados;
 
+  /**
+   * Comentarios escritos que había al analizar; si hoy hay más, el análisis está desactualizado.
+   */
+  private Integer comentariosLeidos;
+
   @Column(nullable = false)
   private int intentos;
 
@@ -159,6 +164,14 @@ public class SolicitudAnalisis {
 
   public String getMotivo() {
     return motivo;
+  }
+
+  public void registrarComentariosLeidos(int leidos) {
+    this.comentariosLeidos = leidos;
+  }
+
+  public Integer getComentariosLeidos() {
+    return comentariosLeidos;
   }
 
   public void registrarFiltrados(int filtrados) {

@@ -15,7 +15,6 @@ import com.uniautonoma.docentia.entity.FuenteEvaluacion;
 import com.uniautonoma.docentia.entity.Usuario;
 import com.uniautonoma.docentia.repository.CalificacionRepository;
 import java.math.BigDecimal;
-import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -152,19 +151,25 @@ class CalificacionControllerTest extends PruebaIntegracion {
   }
 
   @Test
-  void soloElCoordinadorUsaElEndpointDeCoordinacion() throws Exception {
+  void laNotaDeCoordinacionDeUnDocenteSoloLaPoneSuCoordinacion() throws Exception {
     escenario.crearPeriodoActivo("2026-2");
     String cuerpo = aJson(notas("4.0", "4.0", "4.0", "4.0", "4.0", null));
 
-    for (var otroRol : List.of(comoVicerrector(), como(docenteIngenieria))) {
-      mockMvc
-          .perform(
-              put("/docentes/{id}/calificaciones/coordinacion", docenteIngenieria.getIdUsuario())
-                  .with(otroRol)
-                  .contentType(MediaType.APPLICATION_JSON)
-                  .content(cuerpo))
-          .andExpect(status().isForbidden());
-    }
+    mockMvc
+        .perform(
+            put("/docentes/{id}/calificaciones/coordinacion", docenteIngenieria.getIdUsuario())
+                .with(como(docenteIngenieria))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(cuerpo))
+        .andExpect(status().isForbidden());
+    // La vicerrectoría pone esta nota solo a los coordinadores; a un docente no lo alcanza.
+    mockMvc
+        .perform(
+            put("/docentes/{id}/calificaciones/coordinacion", docenteIngenieria.getIdUsuario())
+                .with(comoVicerrector())
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(cuerpo))
+        .andExpect(status().isNotFound());
   }
 
   private ResultActions calificarComoCoordinacion(Usuario docente, CalificacionRequest solicitud)

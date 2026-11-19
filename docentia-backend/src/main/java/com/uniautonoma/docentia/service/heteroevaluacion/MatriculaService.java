@@ -202,10 +202,11 @@ public class MatriculaService {
       errores.add(new ErrorFila(numero, "El programa no existe"));
     }
     Usuario docente = buscar(correoDocente, usuarios);
-    if (docente == null || docente.getRol() != Rol.DOCENTE || !docente.getEsActivo()) {
+    // Un coordinador también dicta clase: para el estudiante es un docente más.
+    if (docente == null || !docente.getRol().esEvaluable() || !docente.getEsActivo()) {
       errores.add(new ErrorFila(numero, "El docente no existe o no está activo"));
     } else if (sesion.esCoordinador()
-        && !docente.getPrograma().getFacultad().getIdFacultad().equals(sesion.idFacultad())) {
+        && !docente.getFacultadDeAdscripcion().getIdFacultad().equals(sesion.idFacultad())) {
       errores.add(new ErrorFila(numero, "El docente no es de tu facultad"));
     }
     Usuario estudiante = buscar(correo, usuarios);
@@ -246,7 +247,8 @@ public class MatriculaService {
                       Usuario.crearEstudiante(
                           linea.nombre(), linea.correo(), hashInicial(), linea.programa()));
                 });
-    Programa programaCurso = linea.docente().getPrograma();
+    Programa programaCurso =
+        linea.docente().getPrograma() != null ? linea.docente().getPrograma() : linea.programa();
     jdbcTemplate.update(
         "insert into cursos (codigo, nombre, id_programa) values (?, ?, ?)"
             + " on conflict (codigo) do nothing",

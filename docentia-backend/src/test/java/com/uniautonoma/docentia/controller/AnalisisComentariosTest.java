@@ -367,7 +367,7 @@ class AnalisisComentariosTest extends PruebaIntegracion {
 
     analisis(coordinador, pocas)
         .andExpect(jsonPath("$.estado").value("INSUFICIENTE"))
-        .andExpect(jsonPath("$.motivo").value("POCAS_ENCUESTAS"))
+        .andExpect(jsonPath("$.motivo").value("POCOS_COMENTARIOS"))
         .andExpect(jsonPath("$.resultado").doesNotExist());
     analisis(coordinador, mudas)
         .andExpect(jsonPath("$.estado").value("SIN_COMENTARIOS"))

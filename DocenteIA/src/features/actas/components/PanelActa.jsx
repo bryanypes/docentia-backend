@@ -204,12 +204,20 @@ function Compromisos({ acta, editable, ejecutar, ocupado }) {
   )
 }
 
-function Firma({ acta, usuario, ejecutar, ocupado, error }) {
+/** Rótulo de cada firma; la vicerrectoría firma en lugar de la coordinación las actas de coordinadores. */
+const ROTULO_FIRMA = {
+  DOCENTE: 'Firma docente',
+  COORDINADOR: 'Firma coordinación',
+  VICERRECTOR: 'Firma vicerrectoría',
+}
+
+function Firma({ acta, usuario, papel, rolEvaluador, ejecutar, ocupado, error }) {
   const [firmando, setFirmando] = useState(false)
   const puedeFirmar =
     acta.estado === 'BORRADOR' &&
-    (usuario.rol === ROLES.COORDINADOR || usuario.rol === ROLES.DOCENTE) &&
-    !acta.firmas.some((firma) => firma.rol === usuario.rol)
+    (papel === ROLES.DOCENTE || papel === rolEvaluador) &&
+    !acta.firmas.some((firma) => firma.rol === papel)
+  const evaluador = rolEvaluador === ROLES.VICERRECTOR ? 'la vicerrectoría' : 'la coordinación'
 
   async function firmar(trazo) {
     if (await ejecutar(() => firmarActa(acta.idActa, trazo))) setFirmando(false)
@@ -219,12 +227,12 @@ function Firma({ acta, usuario, ejecutar, ocupado, error }) {
     <section>
       <h3 className="acta__subtitulo">Firmas</h3>
       {acta.firmas.length === 0 ? (
-        <p className="campo__ayuda">Aún no firma nadie. Firman el docente y la coordinación.</p>
+        <p className="campo__ayuda">Aún no firma nadie. Firman el docente y {evaluador}.</p>
       ) : (
         <ul className="acta__firmas">
           {acta.firmas.map((firma) => (
             <li key={firma.rol}>
-              {ETIQUETA_ROL[firma.rol]}: {firma.nombre} · {formatearFechaHora(firma.fecha)}
+              {ROTULO_FIRMA[firma.rol] ?? ETIQUETA_ROL[firma.rol]}: {firma.nombre} · {formatearFechaHora(firma.fecha)}
               {firma.conTrazo && <span className="pildora pildora--rosa">Firma dibujada</span>}
             </li>
           ))}
@@ -308,9 +316,9 @@ function TipoActa({ acta, ejecutar, ocupado }) {
   )
 }
 
-function DetalleActa({ acta, usuario, rolCorrector, ejecutar, ocupado, error, onDescargar }) {
+function DetalleActa({ acta, usuario, papel, rolEvaluador, rolCorrector, ejecutar, ocupado, error, onDescargar }) {
   const estado = ESTADO_ACTA[acta.estado]
-  const editable = acta.estado === 'BORRADOR' && usuario.rol === ROLES.COORDINADOR && acta.firmas.length === 0
+  const editable = acta.estado === 'BORRADOR' && papel === rolEvaluador && acta.firmas.length === 0
   const umbral = formatearNota(acta.umbralCompromisos)
 
   return (
@@ -354,7 +362,15 @@ function DetalleActa({ acta, usuario, rolCorrector, ejecutar, ocupado, error, on
         </Aviso>
       )}
       <Compromisos acta={acta} editable={editable} ejecutar={ejecutar} ocupado={ocupado} />
-      <Firma acta={acta} usuario={usuario} ejecutar={ejecutar} ocupado={ocupado} error={error} />
+      <Firma
+        acta={acta}
+        usuario={usuario}
+        papel={papel}
+        rolEvaluador={rolEvaluador}
+        ejecutar={ejecutar}
+        ocupado={ocupado}
+        error={error}
+      />
       {acta.estado === 'FIRMADA' && (
         <>
           <p className="acta__sello">
@@ -377,8 +393,16 @@ function DetalleActa({ acta, usuario, rolCorrector, ejecutar, ocupado, error, on
  * dos partes y queda el PDF. El backend repite todas las reglas; aquí solo se ocultan acciones.
  * Sin `idDocente` muestra las del docente autenticado.
  */
-export function PanelActa({ idDocente }) {
+/**
+ * Acta del docente. Sin `idDocente` es el acta propia (docente o coordinador evaluado), que se firma
+ * como docente. `evaluadoEsCoordinador` indica que la evalúa la vicerrectoría y no la coordinación.
+ */
+export function PanelActa({ idDocente, evaluadoEsCoordinador = false }) {
   const { usuario } = useSesion()
+  const propia = idDocente === undefined
+  const papel = propia ? ROLES.DOCENTE : usuario.rol
+  const rolEvaluador =
+    (propia ? usuario.rol === ROLES.COORDINADOR : evaluadoEsCoordinador) ? ROLES.VICERRECTOR : ROLES.COORDINADOR
   const cargar = useCallback(() => listarActas(idDocente), [idDocente])
   const actas = useFetch(cargar, [cargar])
   const configuracion = useFetch(obtenerConfiguracionEvaluacion)
@@ -418,7 +442,7 @@ export function PanelActa({ idDocente }) {
   const lista = actas.datos ?? []
   const [vigente, ...anteriores] = lista
   const rolCorrector = configuracion.datos?.rolCorrectorActas
-  const propsDetalle = { usuario, rolCorrector, ejecutar, ocupado, error, onDescargar: descargar }
+  const propsDetalle = { usuario, papel, rolEvaluador, rolCorrector, ejecutar, ocupado, error, onDescargar: descargar }
 
   return (
     <Panel titulo="Acta de la reunión" descripcion="Acta de compromiso o de retroalimentación; se firma en la reunión." icono={FileSignature} tono="rosa">
@@ -432,11 +456,13 @@ export function PanelActa({ idDocente }) {
       {actas.datos && lista.length === 0 && (
         <>
           <p className="campo__ayuda">
-            {usuario.rol === ROLES.DOCENTE
-              ? 'Tu acta aparece en la reunión de retroalimentación, cuando la coordinación registra tu asistencia. Ahí mismo la firmas.'
+            {propia
+              ? `Tu acta aparece en la reunión de retroalimentación, cuando ${
+                  rolEvaluador === ROLES.VICERRECTOR ? 'la vicerrectoría' : 'la coordinación'
+                } registra tu asistencia. Ahí mismo la firmas.`
               : 'Todavía no hay un acta en este periodo.'}
           </p>
-          {usuario.rol === ROLES.COORDINADOR && (
+          {!propia && usuario.rol === rolEvaluador && (
             <div className="formulario-simple">
               <Campo id={`tipo-nueva-${idDocente}`} etiqueta="Tipo de acta">
                 <select

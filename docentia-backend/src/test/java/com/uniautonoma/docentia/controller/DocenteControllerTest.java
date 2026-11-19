@@ -105,11 +105,15 @@ class DocenteControllerTest extends PruebaIntegracion {
   }
 
   @Test
-  void unCoordinadorNoCuentaComoDocente() throws Exception {
+  void unCoordinadorEsDocenteEvaluadoSoloAnteLaVicerrectoria() throws Exception {
     Usuario coordinador = escenario.crearCoordinador("Marta Ruiz", ingenieria);
 
     mockMvc
         .perform(get("/docentes/{id}", coordinador.getIdUsuario()).with(comoVicerrector()))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.esCoordinador").value(true));
+    mockMvc
+        .perform(get("/docentes/{id}", coordinador.getIdUsuario()).with(como(coordinador)))
         .andExpect(status().isNotFound());
   }
 

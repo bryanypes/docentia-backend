@@ -209,23 +209,28 @@ public class ProcesadorSolicitudesAnalisis {
       avisar(solicitud, TipoNotificacion.ANALISIS_INSUFICIENTE);
       return Optional.empty();
     }
-    int encuestas =
-        proveedores.para(solicitud.getFuente()).contarEncuestasCerradas(idDocente, idPeriodo);
-    int minimo =
-        formulario
-            ? Math.max(propiedades.minimoEncuestas(), heteroevaluacion.minimoRespuestas())
-            : propiedades.minimoEncuestas();
-    if (encuestas < minimo) {
+    ProveedorComentarios proveedor = proveedores.para(solicitud.getFuente());
+    int encuestas = proveedor.contarEncuestasCerradas(idDocente, idPeriodo);
+    int comentarios = proveedor.contarComentarios(idDocente, idPeriodo);
+    int minimo = propiedades.minimoComentarios();
+    if (comentarios == 0) {
       solicitud.marcarInsuficiente(
-          encuestas,
-          "evidencia insuficiente (" + encuestas + " de " + minimo + " requeridas)",
-          "POCAS_ENCUESTAS");
+          encuestas, "no hay comentarios abiertos para analizar", "SIN_COMENTARIOS");
+      avisar(solicitud, TipoNotificacion.ANALISIS_INSUFICIENTE);
+      return Optional.empty();
+    }
+    if (comentarios < minimo) {
+      solicitud.marcarInsuficiente(
+          comentarios,
+          "evidencia insuficiente (" + comentarios + " de " + minimo + " comentarios requeridos)",
+          "POCOS_COMENTARIOS");
       avisar(solicitud, TipoNotificacion.ANALISIS_INSUFICIENTE);
       return Optional.empty();
     }
     PreparadorComentarios.Preparados preparados =
         preparador.preparar(solicitud, analisis.maximoComentarios());
     solicitud.registrarFiltrados(preparados.filtrados());
+    solicitud.registrarComentariosLeidos(comentarios);
     if (preparados.leidos() == 0) {
       solicitud.marcarInsuficiente(
           encuestas, "no hay comentarios abiertos para analizar", "SIN_COMENTARIOS");

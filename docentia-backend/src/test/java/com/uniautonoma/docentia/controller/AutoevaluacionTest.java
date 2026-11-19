@@ -68,9 +68,11 @@ class AutoevaluacionTest extends PruebaIntegracion {
   }
 
   @Test
-  void soloElDocenteSeAutoevalua() throws Exception {
+  void soloElEvaluadoSeAutoevalua() throws Exception {
     registrar(comoVicerrector(), "4.0").andExpect(status().isForbidden());
-    registrar(comoCoordinador(ingenieria.getIdFacultad()), "4.0").andExpect(status().isForbidden());
+    // El coordinador también es docente evaluado: registra su propia autoevaluación.
+    registrar(como(escenario.crearCoordinador("Marta Ruiz", ingenieria)), "4.0")
+        .andExpect(status().isOk());
     mockMvc
         .perform(
             put("/docentes/{id}/calificaciones/autoevaluacion", docente.getIdUsuario())

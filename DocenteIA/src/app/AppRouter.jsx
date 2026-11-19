@@ -40,8 +40,10 @@ const Ponderaciones = lazy(() => import('../features/ponderaciones/pages/Pondera
 const Programas = lazy(() => import('../features/programas/pages/Programas.jsx'))
 const FormularioUsuario = lazy(() => import('../features/usuarios/pages/FormularioUsuario.jsx'))
 const Usuarios = lazy(() => import('../features/usuarios/pages/Usuarios.jsx'))
+const SolicitudesCorreccion = lazy(() => import('../features/correcciones/SolicitudesCorreccion.jsx'))
 
 const GESTION = [ROLES.COORDINADOR, ROLES.VICERRECTOR]
+const EVALUADOS = [ROLES.DOCENTE, ROLES.COORDINADOR]
 
 const googleClientId = import.meta.env.VITE_GOOGLE_CLIENT_ID?.trim() ?? ''
 
@@ -82,7 +84,8 @@ function RutasDocentia() {
                 />
               </Route>
 
-              <Route element={<ProtectedRoute rolesPermitidos={[ROLES.DOCENTE]} />}>
+              {/* El coordinador también es docente evaluado: tiene su propia evaluación, cita y acta. */}
+              <Route element={<ProtectedRoute rolesPermitidos={EVALUADOS} />}>
                 <Route path="/mi-evaluacion" element={<MiEvaluacion />} />
                 <Route path="/mi-cita" element={<MiCita />} />
                 <Route path="/mi-autoevaluacion" element={<MiAutoevaluacion />} />
@@ -97,7 +100,8 @@ function RutasDocentia() {
                 <Route path="/acciones-sugeridas" element={<AccionesSugeridas />} />
               </Route>
 
-              <Route element={<ProtectedRoute rolesPermitidos={[ROLES.COORDINADOR]} />}>
+              {/* La vicerrectoría agenda y coevalúa a los coordinadores. */}
+              <Route element={<ProtectedRoute rolesPermitidos={GESTION} />}>
                 <Route path="/agenda" element={<Agenda />} />
                 <Route path="/coevaluaciones" element={<Coevaluaciones />} />
                 <Route path="/coevaluaciones/:idDocente" element={<CoevaluacionDocente />} />
@@ -122,6 +126,16 @@ function RutasDocentia() {
                 </Route>
               </Route>
 
+              {/* Corregir una evaluación enviada: la pide quien la envió, la verifica su superior y la atiende administración. */}
+              <Route
+                element={
+                  <ProtectedRoute
+                    rolesPermitidos={[ROLES.DOCENTE, ROLES.COORDINADOR, ROLES.VICERRECTOR, ROLES.ADMINISTRADOR]}
+                  />
+                }
+              >
+                <Route path="/solicitudes-correccion" element={<SolicitudesCorreccion />} />
+              </Route>
               <Route path="*" element={<PaginaNoEncontrada />} />
             </Route>
           </Route>

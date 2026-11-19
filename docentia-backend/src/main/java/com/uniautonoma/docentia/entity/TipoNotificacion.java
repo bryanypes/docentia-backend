@@ -63,7 +63,22 @@ public enum TipoNotificacion {
       "La coordinación registró que no asististe a tu cita. Reserva una nueva franja."),
   RESULTADO_HABILITADO(
       "Resultado habilitado",
-      "La coordinación registró tu asistencia. Ya puedes ver tu resultado y firmar el acta.");
+      "La coordinación registró tu asistencia. Ya puedes ver tu resultado y firmar el acta."),
+  REAPERTURA_SOLICITADA(
+      "Solicitud de corrección por verificar",
+      "Te piden corregir una evaluación ya enviada. Revisa el motivo y aprueba o rechaza la"
+          + " solicitud."),
+  REAPERTURA_POR_ATENDER(
+      "Solicitud de corrección por atender",
+      "Hay una solicitud de corrección aprobada. Reabre el formulario para que se pueda corregir."),
+  REAPERTURA_APROBADA(
+      "Solicitud de corrección aprobada",
+      "Tu solicitud de corrección fue aprobada. La administración reabrirá el formulario."),
+  REAPERTURA_RECHAZADA(
+      "Solicitud de corrección rechazada", "Tu solicitud de corrección fue rechazada."),
+  REAPERTURA_ATENDIDA(
+      "Formulario reabierto",
+      "Ya puedes corregir tu evaluación. Cuando la envíes de nuevo, reemplaza a la anterior.");
 
   private final String titulo;
   private final String mensaje;

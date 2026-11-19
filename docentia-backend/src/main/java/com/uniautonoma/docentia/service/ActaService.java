@@ -118,7 +118,7 @@ public class ActaService {
    *     bajo el umbral
    */
   public ActaResponse crear(Long idDocente, TipoActa tipo, UsuarioSesion sesion) {
-    Usuario docente = docenteService.buscarDocenteVisible(idDocente, sesion);
+    Usuario docente = docenteService.buscarEvaluadoDe(idDocente, sesion);
     PeriodoAcademico periodo = periodoService.exigirPeriodoActivo();
     if (actaRepository.existsByDocenteIdUsuarioAndPeriodoIdPeriodoAndEstadoNot(
         idDocente, periodo.getIdPeriodo(), EstadoActa.ANULADA)) {
@@ -143,25 +143,30 @@ public class ActaService {
    */
   @Transactional(readOnly = true)
   public List<ActaResponse> listar(Long idDocente, UsuarioSesion sesion) {
-    Long id = sesion.esDocente() ? sesion.idUsuario() : idDocente;
+    // El coordinador consulta las suyas sin indicar docente, igual que un docente.
+    boolean propias =
+        sesion.esDocente()
+            || (sesion.esCoordinador()
+                && (idDocente == null || idDocente.equals(sesion.idUsuario())));
+    Long id = propias ? sesion.idUsuario() : idDocente;
     if (id == null) {
       throw new DatosInvalidosException("Indica el docente");
     }
-    if (!sesion.esDocente()) {
+    if (!propias) {
       docenteService.buscarDocenteVisible(id, sesion);
     }
     return actaRepository
         .findByDocenteIdUsuarioOrderByPeriodoFechaInicioDescVersionDesc(id)
         .stream()
-        .filter(acta -> !sesion.esDocente() || visibleParaDocente(acta))
-        .map(acta -> sesion.esDocente() ? ActaResponse.paraDocente(acta) : ActaResponse.desde(acta))
+        .filter(acta -> !propias || visibleParaDocente(acta))
+        .map(acta -> propias ? ActaResponse.paraDocente(acta) : ActaResponse.desde(acta))
         .toList();
   }
 
   @Transactional(readOnly = true)
   public ActaResponse obtener(Long idActa, UsuarioSesion sesion) {
     Acta acta = buscarVisible(idActa, sesion);
-    return sesion.esDocente() ? ActaResponse.paraDocente(acta) : ActaResponse.desde(acta);
+    return esPropia(acta, sesion) ? ActaResponse.paraDocente(acta) : ActaResponse.desde(acta);
   }
 
   /**
@@ -170,7 +175,7 @@ public class ActaService {
    * @throws ReglaNegocioException si ya tiene firmas o la nota exige el acta de compromiso
    */
   public ActaResponse cambiarTipo(Long idActa, TipoActa tipo, UsuarioSesion sesion) {
-    Acta acta = buscarVisible(idActa, sesion);
+    Acta acta = buscarComoEvaluador(idActa, sesion);
     acta.cambiarTipo(tipo);
     Acta guardada = actaRepository.saveAndFlush(acta);
     avisarSiEstaLista(guardada);
@@ -185,7 +190,7 @@ public class ActaService {
    */
   public ActaResponse agregarCompromiso(
       Long idActa, CompromisoActaRequest solicitud, UsuarioSesion sesion) {
-    Acta acta = buscarVisible(idActa, sesion);
+    Acta acta = buscarComoEvaluador(idActa, sesion);
     acta.exigirBorrador();
     exigirSinFirmas(acta);
     if (solicitud.fechaLimite().isBefore(LocalDateTime.now(reloj).toLocalDate())) {
@@ -199,7 +204,7 @@ public class ActaService {
 
   /** Quita un compromiso del acta en borrador. */
   public ActaResponse quitarCompromiso(Long idActa, Long idCompromiso, UsuarioSesion sesion) {
-    Acta acta = buscarVisible(idActa, sesion);
+    Acta acta = buscarComoEvaluador(idActa, sesion);
     acta.exigirBorrador();
     exigirSinFirmas(acta);
     Compromiso compromiso =
@@ -235,6 +240,7 @@ public class ActaService {
   public ActaResponse firmar(
       Long idActa, boolean confirmacion, String trazo, String ip, UsuarioSesion sesion) {
     Acta acta = buscarVisible(idActa, sesion);
+    Rol papel = papelAlFirmar(acta, sesion);
     acta.exigirBorrador();
     if (!confirmacion) {
       throw new NoProcesableException("Confirma que leíste el acta; la firma es irreversible");
@@ -250,7 +256,7 @@ public class ActaService {
       throw new ReglaNegocioException(
           "El acta se firma en la reunión, después de que la coordinación registre la asistencia");
     }
-    if (acta.firmadaPor(sesion.rol())) {
+    if (acta.firmadaPor(papel)) {
       throw new ReglaNegocioException("Ya firmaste esta acta");
     }
     congelar(acta);
@@ -269,19 +275,13 @@ public class ActaService {
     LocalDateTime ahora = LocalDateTime.now(reloj);
     FirmaActa firma =
         new FirmaActa(
-            acta,
-            sesion.idUsuario(),
-            sesion.rol(),
-            sesion.nombreCompleto(),
-            sesion.correo(),
-            ip,
-            ahora);
+            acta, sesion.idUsuario(), papel, sesion.nombreCompleto(), sesion.correo(), ip, ahora);
     acta.registrarFirma(png == null ? firma : firma.conTrazo(png, generadorPdf.sha256(png)));
-    if (acta.firmadaPor(Rol.DOCENTE) && acta.firmadaPor(Rol.COORDINADOR)) {
+    if (acta.firmadaPorAmbos()) {
       cerrar(acta, ahora);
     }
     Acta guardada = actaRepository.saveAndFlush(acta);
-    avisarFirma(guardada, sesion);
+    avisarFirma(guardada, papel);
     return ActaResponse.desde(guardada);
   }
 
@@ -398,11 +398,14 @@ public class ActaService {
             .findById(idActa)
             .orElseThrow(() -> new RecursoNoEncontradoException("Acta no encontrada"));
     Long idDocente = acta.getDocente().getIdUsuario();
-    if (sesion.esDocente()) {
-      if (!idDocente.equals(sesion.idUsuario()) || !visibleParaDocente(acta)) {
+    if (esPropia(acta, sesion)) {
+      if (!visibleParaDocente(acta)) {
         throw new RecursoNoEncontradoException("Acta no encontrada");
       }
       return acta;
+    }
+    if (sesion.esDocente()) {
+      throw new RecursoNoEncontradoException("Acta no encontrada");
     }
     try {
       docenteService.buscarDocenteVisible(idDocente, sesion);
@@ -433,11 +436,42 @@ public class ActaService {
             "acta:" + acta.getIdActa()));
   }
 
-  private void avisarFirma(Acta acta, UsuarioSesion sesion) {
+  /** El acta es del propio usuario: un docente, o un coordinador evaluado como docente. */
+  private static boolean esPropia(Acta acta, UsuarioSesion sesion) {
+    return acta.getDocente().getIdUsuario().equals(sesion.idUsuario());
+  }
+
+  /** Acta que el usuario puede editar porque evaluó al docente. */
+  private Acta buscarComoEvaluador(Long idActa, UsuarioSesion sesion) {
+    Acta acta = buscarVisible(idActa, sesion);
+    if (esPropia(acta, sesion) || acta.rolEvaluador() != sesion.rol()) {
+      throw new RecursoNoEncontradoException("Acta no encontrada");
+    }
+    return acta;
+  }
+
+  /**
+   * Con qué papel firma: el evaluado como DOCENTE y su evaluador con su rol. La vicerrectoría solo
+   * firma las actas de los coordinadores; las de los docentes las firma la coordinación.
+   */
+  private static Rol papelAlFirmar(Acta acta, UsuarioSesion sesion) {
+    if (esPropia(acta, sesion)) {
+      return Rol.DOCENTE;
+    }
+    if (acta.rolEvaluador() != sesion.rol()) {
+      throw new AccessDeniedException(
+          acta.rolEvaluador() == Rol.VICERRECTOR
+              ? "Esta acta la firma la vicerrectoría"
+              : "Esta acta la firma la coordinación");
+    }
+    return sesion.rol();
+  }
+
+  private void avisarFirma(Acta acta, Rol papel) {
     String clave = "acta:" + acta.getIdActa();
-    if (sesion.esDocente()) {
+    if (papel == Rol.DOCENTE) {
       eventos.publishEvent(
-          EventoNotificacion.aCoordinadores(
+          EventoNotificacion.aEvaluadores(
               TipoNotificacion.ACTA_FIRMADA_DOCENTE,
               acta.getDocente(),
               "/docentes/" + acta.getDocente().getIdUsuario(),

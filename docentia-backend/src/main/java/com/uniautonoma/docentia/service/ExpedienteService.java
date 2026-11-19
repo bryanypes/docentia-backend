@@ -108,20 +108,22 @@ public class ExpedienteService {
   public ExpedientePropioResponse obtenerExpedientePropio(UsuarioSesion sesion) {
     Usuario docente =
         usuarioRepository
-            .findByIdUsuarioAndRolAndEsActivoTrue(sesion.idUsuario(), Rol.DOCENTE)
+            .findByIdUsuarioAndRolInAndEsActivoTrue(sesion.idUsuario(), Rol.EVALUABLES)
             .orElseThrow(() -> new RecursoNoEncontradoException("Docente no encontrado"));
     Optional<PeriodoAcademico> periodoActivo = periodoService.buscarPeriodoActivo();
     Optional<EvaluacionPeriodo> evaluacion =
         periodoActivo.map(
             periodo -> promedioService.cargarEvaluacion(docente.getIdUsuario(), periodo));
-    // Hasta la reunión el docente sabe qué falta, pero no su nota (ni por dimensión).
+    // Hasta la reunión el docente sabe qué falta, pero no su nota (ni por dimensión). El
+    // coordinador evaluado ve su promedio en cuanto lo tiene.
     boolean habilitado =
-        periodoActivo
-            .map(
-                periodo ->
-                    procesoService.resultadoHabilitado(
-                        docente.getIdUsuario(), periodo.getIdPeriodo()))
-            .orElse(true);
+        docente.getRol() == Rol.COORDINADOR
+            || periodoActivo
+                .map(
+                    periodo ->
+                        procesoService.resultadoHabilitado(
+                            docente.getIdUsuario(), periodo.getIdPeriodo()))
+                .orElse(true);
     return new ExpedientePropioResponse(
         DocenteResponse.desde(docente),
         periodoActivo.map(PeriodoResumenResponse::desde).orElse(null),
@@ -163,13 +165,14 @@ public class ExpedienteService {
   public ComparativoProgramaResponse obtenerComparativoPropio(UsuarioSesion sesion) {
     Usuario docente =
         usuarioRepository
-            .findByIdUsuarioAndRolAndEsActivoTrue(sesion.idUsuario(), Rol.DOCENTE)
+            .findByIdUsuarioAndRolInAndEsActivoTrue(sesion.idUsuario(), Rol.EVALUABLES)
             .orElseThrow(() -> new RecursoNoEncontradoException("Docente no encontrado"));
     PeriodoAcademico periodo =
         periodoService
             .buscarPeriodoActivo()
             .orElseThrow(() -> new ReglaNegocioException("No hay un periodo académico activo"));
-    if (!procesoService.resultadoHabilitado(docente.getIdUsuario(), periodo.getIdPeriodo())) {
+    if (docente.getRol() != Rol.COORDINADOR
+        && !procesoService.resultadoHabilitado(docente.getIdUsuario(), periodo.getIdPeriodo())) {
       throw new ReglaNegocioException(
           "El comparativo estará disponible cuando la coordinación habilite tu resultado");
     }
@@ -183,9 +186,14 @@ public class ExpedienteService {
     Map<FuenteEvaluacion, List<BigDecimal>> notasPrograma = new EnumMap<>(FuenteEvaluacion.class);
     Arrays.stream(FuenteEvaluacion.values())
         .forEach(fuente -> notasPrograma.put(fuente, new ArrayList<>()));
-    for (Calificacion calificacion :
-        calificacionRepository.listarPorProgramaYPeriodo(
-            docente.getPrograma().getIdPrograma(), periodo.getIdPeriodo())) {
+    // El coordinador evaluado se compara con los demás coordinadores, no con un programa.
+    boolean esCoordinador = docente.getPrograma() == null;
+    List<Calificacion> grupo =
+        esCoordinador
+            ? calificacionRepository.listarDeCoordinadoresPorPeriodo(periodo.getIdPeriodo())
+            : calificacionRepository.listarPorProgramaYPeriodo(
+                docente.getPrograma().getIdPrograma(), periodo.getIdPeriodo());
+    for (Calificacion calificacion : grupo) {
       BigDecimal nota = calificacion.getNotaFuente();
       if (nota == null && calificacion.getNotas() != null) {
         nota = calificacion.getNotas().promedio();
@@ -204,7 +212,9 @@ public class ExpedienteService {
                         promedioRedondeado(notasPrograma.get(fuente))))
             .toList();
     return new ComparativoProgramaResponse(
-        PeriodoResumenResponse.desde(periodo), docente.getPrograma().getNombre(), fuentes);
+        PeriodoResumenResponse.desde(periodo),
+        esCoordinador ? "Coordinaciones de facultad" : docente.getPrograma().getNombre(),
+        fuentes);
   }
 
   private BigDecimal promedioRedondeado(List<BigDecimal> notas) {

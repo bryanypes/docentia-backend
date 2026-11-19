@@ -64,7 +64,9 @@ public class AccionSugeridaService {
     return new AccionSugeridaResponse(
         promedio.getDocente().getIdUsuario(),
         promedio.getDocente().getNombreCompleto(),
-        promedio.getDocente().getPrograma().getNombre(),
+        promedio.getDocente().getPrograma() == null
+            ? "Coordinación de " + promedio.getDocente().getFacultad().getNombre()
+            : promedio.getDocente().getPrograma().getNombre(),
         promedio.getEstado(),
         CategoriaResponse.desde(categoria),
         categoria == CategoriaDesempeno.MUY_BAJO

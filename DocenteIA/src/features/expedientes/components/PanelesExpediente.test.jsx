@@ -15,15 +15,17 @@ describe('PanelFuentes', () => {
     expect(screen.getByText('50 % estudiantes · 30 % coordinación · 20 % autoevaluación')).toBeInTheDocument()
   })
 
-  it('avisa del promedio parcial con la fuente que falta', () => {
+  it('sin las tres notas no hay promedio y la que falta figura con 0,00', () => {
     render(
       <PanelFuentes
         notasPorFuente={NOTAS}
-        promedio={{ estado: 'PARCIAL', valor: 4.31, fuentesPendientes: ['AUTOEVALUACION'], categoria: null }}
+        promedio={{ estado: 'PARCIAL', valor: null, fuentesPendientes: ['AUTOEVALUACION'], categoria: null }}
       />,
     )
-    expect(screen.getByText('Promedio parcial')).toBeInTheDocument()
+    expect(screen.getByText('Promedio pendiente')).toBeInTheDocument()
     expect(screen.getByText(/Falta Autoevaluación/)).toBeInTheDocument()
+    expect(screen.getByText('0,00')).toBeInTheDocument()
+    expect(screen.getByText('Pendiente')).toBeInTheDocument()
   })
 
   it('arma el texto de la fórmula', () => {

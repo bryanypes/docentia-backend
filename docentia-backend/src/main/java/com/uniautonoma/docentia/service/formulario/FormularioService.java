@@ -118,7 +118,7 @@ public class FormularioService {
   @Transactional(readOnly = true)
   public FormularioResponse leerCoevaluacion(Long idPeriodo, Long idDocente, UsuarioSesion sesion) {
     PeriodoAcademico periodo = resolverPeriodo(idPeriodo);
-    Usuario docente = docenteService.buscarDocenteVisible(idDocente, sesion);
+    Usuario docente = docenteService.buscarEvaluadoDe(idDocente, sesion);
     return responder(
         periodo, docente, TipoFormulario.COEVAL, buscarCoevaluacion(periodo, docente, sesion));
   }
@@ -126,7 +126,7 @@ public class FormularioService {
   public FormularioResponse guardarCoevaluacion(
       Long idPeriodo, Long idDocente, FormularioRequest solicitud, UsuarioSesion sesion) {
     PeriodoAcademico periodo = resolverPeriodo(idPeriodo);
-    Usuario docente = docenteService.buscarDocenteVisible(idDocente, sesion);
+    Usuario docente = docenteService.buscarEvaluadoDe(idDocente, sesion);
     buscarCoevaluacion(periodo, docente, sesion);
     return guardar(periodo, docente, TipoFormulario.COEVAL, solicitud, sesion);
   }
@@ -134,14 +134,14 @@ public class FormularioService {
   public FormularioResponse enviarCoevaluacion(
       Long idPeriodo, Long idDocente, UsuarioSesion sesion) {
     PeriodoAcademico periodo = resolverPeriodo(idPeriodo);
-    Usuario docente = docenteService.buscarDocenteVisible(idDocente, sesion);
+    Usuario docente = docenteService.buscarEvaluadoDe(idDocente, sesion);
     buscarCoevaluacion(periodo, docente, sesion);
     return enviar(periodo, docente, TipoFormulario.COEVAL, sesion);
   }
 
   /**
-   * Avance sin puntajes. El coordinador ve a los docentes de su facultad; el vicerrector, solo
-   * conteos por programa.
+   * Avance sin puntajes. El coordinador ve a los docentes de su facultad; el vicerrector, conteos
+   * por programa y el detalle de los coordinadores, que son a quienes él coevalúa.
    */
   @Transactional(readOnly = true)
   public PendientesFormularioResponse pendientes(Long idPeriodo, UsuarioSesion sesion) {
@@ -153,13 +153,14 @@ public class FormularioService {
 
     List<DocenteAvance> filas =
         docentes.stream()
+            .filter(docente -> !sesion.esVicerrector() || docente.esCoordinador())
             .map(
                 docente -> {
                   AvanceFormulario fila = coevaluaciones.get(docente.idDocente());
                   return new DocenteAvance(
                       docente.idDocente(),
                       docente.nombreCompleto(),
-                      docente.nombrePrograma(),
+                      grupoDe(docente),
                       fila == null ? "SIN_INICIAR" : fila.estado().name(),
                       fila == null ? 0 : fila.respondidos());
                 })
@@ -168,7 +169,7 @@ public class FormularioService {
         docentes.stream()
             .collect(
                 Collectors.groupingBy(
-                    DocenteResponse::nombrePrograma, LinkedHashMap::new, Collectors.toList()));
+                    FormularioService::grupoDe, LinkedHashMap::new, Collectors.toList()));
     List<ProgramaAvance> programas =
         porPrograma.entrySet().stream()
             .map(
@@ -181,8 +182,15 @@ public class FormularioService {
         PeriodoResumenResponse.desde(periodo),
         total(catalogo.de(TipoFormulario.COEVAL)),
         pendientes,
-        sesion.esCoordinador() ? filas : List.of(),
+        sesion.esCoordinador() || sesion.esVicerrector() ? filas : List.of(),
         programas);
+  }
+
+  /** Programa del docente; los coordinadores evaluados se agrupan aparte por facultad. */
+  private static String grupoDe(DocenteResponse docente) {
+    return docente.esCoordinador()
+        ? "Coordinación de " + docente.nombreFacultad()
+        : docente.nombrePrograma();
   }
 
   private static Map<Long, AvanceFormulario> delTipo(
@@ -253,9 +261,16 @@ public class FormularioService {
     return encontrada;
   }
 
-  private void exigirEditable(PeriodoAcademico periodo) {
+  /**
+   * Un formulario reabierto por la administración se corrige aunque la recolección haya cerrado;
+   * los demás, solo con la ventana abierta.
+   */
+  private void exigirEditable(PeriodoAcademico periodo, Optional<EvaluacionFormulario> formulario) {
     if (!periodo.getEsActivo()) {
       throw new ReglaNegocioException("Los formularios solo se responden en el periodo activo");
+    }
+    if (formulario.map(EvaluacionFormulario::getReabierto).orElse(false)) {
+      return;
     }
     ventanaEtapaService.exigirEtapaAbierta(periodo, TipoEtapa.RECOLECCION_CALIFICACIONES);
   }
@@ -266,7 +281,7 @@ public class FormularioService {
       TipoFormulario tipo,
       FormularioRequest solicitud,
       UsuarioSesion sesion) {
-    exigirEditable(periodo);
+    exigirEditable(periodo, buscar(periodo, docente, tipo));
     List<CatalogoInstrumento.Criterio> criterios = catalogo.de(tipo);
     Map<Long, Short> respuestas = validarRespuestas(solicitud.respuestas(), criterios);
     Map<Long, String> comentarios = validarComentarios(solicitud.comentarios(), criterios);
@@ -288,7 +303,7 @@ public class FormularioService {
 
   private FormularioResponse enviar(
       PeriodoAcademico periodo, Usuario docente, TipoFormulario tipo, UsuarioSesion sesion) {
-    exigirEditable(periodo);
+    exigirEditable(periodo, buscar(periodo, docente, tipo));
     int total = total(catalogo.de(tipo));
     EvaluacionFormulario formulario =
         buscar(periodo, docente, tipo)
@@ -308,7 +323,7 @@ public class FormularioService {
         docente, periodo, tipo.getFuente(), media, formulario.getEvaluador());
     if (tipo == TipoFormulario.AUTO) {
       eventos.publishEvent(
-          EventoNotificacion.aCoordinadores(
+          EventoNotificacion.aEvaluadores(
               TipoNotificacion.AUTOEVALUACION_ENVIADA,
               docente,
               "/coevaluaciones",
@@ -430,7 +445,8 @@ public class FormularioService {
         formulario.map(EvaluacionFormulario::getEstado).orElse(null),
         CatalogoInstrumento.VERSION,
         formulario.map(EvaluacionFormulario::getEnviadaEn).orElse(null),
-        recoleccionAbierta(periodo),
+        recoleccionAbierta(periodo)
+            || formulario.map(EvaluacionFormulario::getReabierto).orElse(false),
         respuestas.size(),
         total(criterios),
         IntStream.range(0, etiquetasEscala.size())

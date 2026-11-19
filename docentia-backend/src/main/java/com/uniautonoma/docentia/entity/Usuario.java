@@ -58,6 +58,10 @@ public class Usuario {
   @Column(nullable = false)
   private boolean debeCambiarContrasena;
 
+  /** Ya recorrió el tutorial guiado del primer inicio de sesión (o lo saltó). */
+  @Column(nullable = false)
+  private boolean tutorialVisto;
+
   @CreationTimestamp
   @Column(nullable = false, updatable = false)
   private LocalDateTime fechaCreacion;
@@ -207,6 +211,14 @@ public class Usuario {
     return programa;
   }
 
+  /**
+   * Facultad a la que pertenece: la de su programa (docente o estudiante) o la que coordina. Es la
+   * que se usa para el alcance cuando el coordinador se evalúa como docente.
+   */
+  public Facultad getFacultadDeAdscripcion() {
+    return programa != null ? programa.getFacultad() : facultad;
+  }
+
   public boolean getEsActivo() {
     return esActivo;
   }
@@ -229,6 +241,20 @@ public class Usuario {
   public void cambiarContrasenaPropia(String contrasenaHash) {
     this.contrasenaHash = contrasenaHash;
     this.debeCambiarContrasena = false;
+  }
+
+  public boolean getTutorialVisto() {
+    return tutorialVisto;
+  }
+
+  /** Terminó o saltó el tutorial: no se le vuelve a mostrar al entrar. */
+  public void marcarTutorialVisto() {
+    this.tutorialVisto = true;
+  }
+
+  /** Pidió ver el tutorial otra vez desde su perfil. */
+  public void reiniciarTutorial() {
+    this.tutorialVisto = false;
   }
 
   public LocalDateTime getFechaCreacion() {

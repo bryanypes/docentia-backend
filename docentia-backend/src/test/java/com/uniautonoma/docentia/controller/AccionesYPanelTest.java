@@ -52,11 +52,8 @@ class AccionesYPanelTest extends PruebaIntegracion {
     guardar(docente, "1.90", "MUY_BAJO", EstadoPromedio.COMPLETO);
     guardar(
         escenario.crearDocente("Nora Munoz", software), "2.85", "BAJO", EstadoPromedio.COMPLETO);
-    guardar(
-        escenario.crearDocente("Camilo Vidal", software),
-        "4.75",
-        "MUY_ALTO",
-        EstadoPromedio.PARCIAL);
+    // Sin las tres notas no hay promedio ni categoría: no aparece en las acciones sugeridas.
+    guardar(escenario.crearDocente("Camilo Vidal", software), null, null, EstadoPromedio.PARCIAL);
     escenario.crearDocente("Sin Nota", software);
     guardar(
         escenario.crearDocente("Otra Facultad", leyes), "4.00", "ALTO", EstadoPromedio.COMPLETO);
@@ -66,7 +63,7 @@ class AccionesYPanelTest extends PruebaIntegracion {
     promedioRepository.guardar(
         usuario.getIdUsuario(),
         periodo.getIdPeriodo(),
-        new BigDecimal(valor),
+        valor == null ? null : new BigDecimal(valor),
         estado.name(),
         categoria,
         estado == EstadoPromedio.PARCIAL ? "AUTOEVALUACION" : null);
@@ -77,7 +74,7 @@ class AccionesYPanelTest extends PruebaIntegracion {
     mockMvc
         .perform(get("/acciones-sugeridas").with(como(coordinador)))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$", hasSize(3)))
+        .andExpect(jsonPath("$", hasSize(2)))
         .andExpect(jsonPath("$[0].nombreDocente").value("Ramiro Paz"))
         .andExpect(jsonPath("$[0].categoria.codigo").value("MUY_BAJO"))
         .andExpect(
@@ -85,7 +82,7 @@ class AccionesYPanelTest extends PruebaIntegracion {
                 .value(
                     "Alerta informativa para Vicerrectoría — la institución evalúa el proceso"
                         + " conforme a su normativa"))
-        .andExpect(jsonPath("$[2].estadoPromedio").value("PARCIAL"))
+        .andExpect(content().string(not(containsString("Camilo Vidal"))))
         .andExpect(content().string(not(containsString("esvincula"))));
   }
 
@@ -96,7 +93,7 @@ class AccionesYPanelTest extends PruebaIntegracion {
             get("/acciones-sugeridas")
                 .param("periodo", periodo.getIdPeriodo().toString())
                 .with(como(vicerrector)))
-        .andExpect(jsonPath("$", hasSize(4)));
+        .andExpect(jsonPath("$", hasSize(3)));
     mockMvc
         .perform(get("/acciones-sugeridas").with(como(docente)))
         .andExpect(status().isForbidden());

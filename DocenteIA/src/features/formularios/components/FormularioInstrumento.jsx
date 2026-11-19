@@ -30,8 +30,9 @@ function comentariosDe(formulario) {
  * enviado solo se muestra la confirmación con el resumen, sin los pasos.
  *
  * @param accionSecundaria enlace opcional junto a "Volver al inicio" en la confirmación
+ * @param pieEnviado contenido bajo la confirmación, como pedir una corrección
  */
-export function FormularioInstrumento({ formulario, onGuardar, onEnviar, accionSecundaria }) {
+export function FormularioInstrumento({ formulario, onGuardar, onEnviar, accionSecundaria, pieEnviado }) {
   const [respuestas, setRespuestas] = useState(() => respuestasDe(formulario))
   const [comentarios, setComentarios] = useState(() => comentariosDe(formulario))
   const [confirmado, setConfirmado] = useState(false)
@@ -193,6 +194,7 @@ export function FormularioInstrumento({ formulario, onGuardar, onEnviar, accionS
         detalle={`Se envió el ${formatearFechaHora(formulario.enviadaEn)}. Ya no se puede cambiar.`}
         resumen={pasos}
         accionSecundaria={accionSecundaria}
+        pie={pieEnviado}
       />
     )
   }

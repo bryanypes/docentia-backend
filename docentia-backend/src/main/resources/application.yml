@@ -131,7 +131,8 @@ docentia:
     periodos-referencia: 1
     precio-millon-tokens-entrada: ${DOCENTIA_IA_PRECIO_MILLON_ENTRADA:}
     precio-millon-tokens-salida: ${DOCENTIA_IA_PRECIO_MILLON_SALIDA:}
-    minimo-encuestas: 10
+    # Comentarios escritos de estudiantes que hacen falta para analizar a un docente.
+    minimo-comentarios: ${DOCENTIA_IA_MINIMO_COMENTARIOS:5}
     worker:
       habilitado: ${DOCENTIA_IA_WORKER:true}
       intervalo-ms: 5000

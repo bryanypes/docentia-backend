@@ -29,6 +29,8 @@ describe('PanelComparativoPrograma', () => {
     expect(screen.getByRole('heading', { name: 'Coordinación' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Autoevaluación' })).toBeInTheDocument()
     expect(screen.getByRole('table', { name: /Comparativo de notas por evaluador/ })).toBeInTheDocument()
-    expect(screen.getAllByText('—')).toHaveLength(4)
+    // La nota del docente sin registrar es 0,00; el promedio del programa sin datos sigue en —.
+    expect(screen.getAllByText('0,00')).toHaveLength(2)
+    expect(screen.getAllByText('—')).toHaveLength(2)
   })
 })

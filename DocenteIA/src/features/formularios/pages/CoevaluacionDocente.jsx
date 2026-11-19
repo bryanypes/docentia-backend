@@ -6,6 +6,7 @@ import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabez
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
+import { SolicitarCorreccion } from '../../correcciones/SolicitarCorreccion.jsx'
 import { FormularioInstrumento } from '../components/FormularioInstrumento.jsx'
 import {
   enviarCoevaluacion,
@@ -79,6 +80,7 @@ export default function CoevaluacionDocente() {
                 Ver el expediente del docente
               </Link>
             }
+            pieEnviado={<SolicitarCorreccion tipo="COEVAL" idDocente={datos.idDocente} />}
           />
         )}
       </div>

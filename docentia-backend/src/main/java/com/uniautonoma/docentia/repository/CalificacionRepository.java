@@ -43,6 +43,16 @@ public interface CalificacionRepository extends JpaRepository<Calificacion, Long
   List<Calificacion> listarPorProgramaYPeriodo(
       @Param("idPrograma") Long idPrograma, @Param("idPeriodo") Long idPeriodo);
 
+  /** Calificaciones de los coordinadores activos en un periodo: el grupo con el que se comparan. */
+  @Query(
+      """
+      select c from Calificacion c
+      where c.periodo.idPeriodo = :idPeriodo
+        and c.docente.rol = com.uniautonoma.docentia.entity.Rol.COORDINADOR
+        and c.docente.esActivo = true
+      """)
+  List<Calificacion> listarDeCoordinadoresPorPeriodo(@Param("idPeriodo") Long idPeriodo);
+
   /**
    * Lista los periodos en los que un docente tiene al menos una calificación.
    *
