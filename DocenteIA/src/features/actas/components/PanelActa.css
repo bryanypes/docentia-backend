@@ -101,6 +101,16 @@
   overflow-x: auto;
 }
 
+.acciones__filtros {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+.acciones__filtros > * {
+  flex: 1 1 220px;
+}
+
 /* Compromisos: tarjetas numeradas y un botón claro para agregar. */
 .acta-compromisos {
   display: grid;

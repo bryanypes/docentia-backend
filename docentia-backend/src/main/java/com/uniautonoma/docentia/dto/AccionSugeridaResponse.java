@@ -1,5 +1,7 @@
 package com.uniautonoma.docentia.dto;
 
+import java.math.BigDecimal;
+
 /**
  * Acción sugerida para un docente. Es informativa: no notifica, no bloquea y no cambia nada.
  *
@@ -10,5 +12,6 @@ public record AccionSugeridaResponse(
     String nombreDocente,
     String programa,
     EstadoPromedio estadoPromedio,
+    BigDecimal promedio,
     CategoriaResponse categoria,
     String accion) {}

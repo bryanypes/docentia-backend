@@ -254,7 +254,11 @@ class AnalisisIaTest extends PruebaIntegracion {
         .perform(get("/analisis-ia/solicitudes/{id}", id).with(como(otroCoordinador)))
         .andExpect(status().isNotFound())
         .andExpect(jsonPath("$.mensaje").value("Solicitud no encontrada"));
-    solicitar(julian, comoVicerrector()).andExpect(status().isForbidden());
+    // La vicerrectoría también pide análisis: pasa la autorización y choca con la que está en
+    // curso.
+    solicitar(julian, como(escenario.crearVicerrector("Elena Munoz")))
+        .andExpect(status().isConflict())
+        .andExpect(jsonPath("$.mensaje").value(containsString("en curso")));
     solicitar(julian, como(julian)).andExpect(status().isForbidden());
     // El borrador no es visible para el docente en ningún estado.
     mockMvc
@@ -263,6 +267,61 @@ class AnalisisIaTest extends PruebaIntegracion {
     mockMvc
         .perform(get("/analisis-ia/solicitudes/{id}", id).with(comoVicerrector()))
         .andExpect(status().isOk());
+  }
+
+  @Test
+  void laVicerrectoriaPideAnalisisYRevisaSoloLosDeCoordinadores() throws Exception {
+    Usuario vicerrector = escenario.crearVicerrector("Elena Munoz");
+    escenario.cargarComentarios(
+        coordinador,
+        periodo,
+        vicerrector,
+        List.of(
+            "Explica con ejemplos reales del sector y se entiende muy bien",
+            "Las notas de los parciales se demoran más de dos semanas",
+            "Responde las dudas en clase con mucha paciencia",
+            "El ritmo de la clase a veces es muy rápido para seguirlo",
+            "Los talleres prácticos ayudan a entender los patrones de diseño",
+            "Explica con ejemplos reales y claros cada tema",
+            "Las notas se demoran mucho en publicarse"));
+    long deDocente =
+        idDe(solicitar(julian, como(vicerrector)).andReturn().getResponse().getContentAsString());
+    long deCoordinador =
+        idDe(
+            solicitar(coordinador, como(vicerrector))
+                .andExpect(status().isAccepted())
+                .andReturn()
+                .getResponse()
+                .getContentAsString());
+    procesarCola();
+
+    long hallazgoDocente = primerHallazgo(deDocente, vicerrector);
+    mockMvc
+        .perform(
+            post("/analisis-ia/hallazgos/{id}/validacion", hallazgoDocente).with(como(vicerrector)))
+        .andExpect(status().isNotFound());
+    mockMvc
+        .perform(
+            post("/analisis-ia/solicitudes/{id}/publicacion", deDocente).with(como(vicerrector)))
+        .andExpect(status().isNotFound());
+
+    long hallazgoCoordinador = primerHallazgo(deCoordinador, vicerrector);
+    mockMvc
+        .perform(
+            post("/analisis-ia/hallazgos/{id}/validacion", hallazgoCoordinador)
+                .with(como(vicerrector)))
+        .andExpect(status().isOk());
+  }
+
+  private long primerHallazgo(long idSolicitud, Usuario quien) throws Exception {
+    String cuerpo =
+        mockMvc
+            .perform(get("/analisis-ia/solicitudes/{id}", idSolicitud).with(como(quien)))
+            .andExpect(jsonPath("$.estado").value("COMPLETADO"))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    return objectMapper.readTree(cuerpo).at("/borrador/hallazgos/0/idHallazgo").asLong();
   }
 
   @Test

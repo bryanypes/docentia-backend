@@ -231,9 +231,13 @@ public class ValidacionHallazgoService {
     return hallazgo;
   }
 
+  /**
+   * Revisa y publica quien evalúa al docente: la coordinación a los docentes de su facultad y la
+   * vicerrectoría a los coordinadores.
+   */
   private void exigirAlcance(SolicitudAnalisis solicitud, UsuarioSesion sesion, String mensaje) {
     try {
-      docenteService.buscarDocenteVisible(solicitud.getDocente().getIdUsuario(), sesion);
+      docenteService.buscarEvaluadoDe(solicitud.getDocente().getIdUsuario(), sesion);
     } catch (RecursoNoEncontradoException fueraDeAlcance) {
       throw new RecursoNoEncontradoException(mensaje);
     }

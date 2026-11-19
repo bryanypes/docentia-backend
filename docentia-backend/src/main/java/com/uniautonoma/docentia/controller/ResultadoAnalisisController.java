@@ -34,7 +34,7 @@ public class ResultadoAnalisisController {
    * @param idSolicitud identificador de la solicitud
    */
   @PostMapping("/solicitudes/{idSolicitud}/publicacion")
-  @PreAuthorize("hasRole('COORDINADOR')")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
   public SolicitudAnalisisResponse publicar(
       @PathVariable Long idSolicitud, @AuthenticationPrincipal UsuarioSesion sesion) {
     SolicitudAnalisisResponse publicada = validacionService.publicar(idSolicitud, sesion);

@@ -39,7 +39,7 @@ public class AnalisisIaController {
    * @return la solicitud en EN_COLA, con 202
    */
   @PostMapping
-  @PreAuthorize("hasRole('COORDINADOR')")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
   @ResponseStatus(HttpStatus.ACCEPTED)
   public SolicitudAnalisisResponse solicitar(
       @Valid @RequestBody SolicitudAnalisisRequest solicitud,

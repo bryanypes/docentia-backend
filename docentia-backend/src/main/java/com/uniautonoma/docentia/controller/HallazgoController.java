@@ -22,7 +22,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 /** Revisión de los hallazgos de un borrador por coordinación. */
 @RestController
-@PreAuthorize("hasRole('COORDINADOR')")
+// La coordinación revisa los de sus docentes; la vicerrectoría, los de los coordinadores.
+@PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
 @RequestMapping("/analisis-ia/hallazgos")
 public class HallazgoController {
 

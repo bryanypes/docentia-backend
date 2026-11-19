@@ -338,6 +338,11 @@ export default function Analisis() {
   const [parametros, setParametros] = useSearchParams()
   const docenteId = parametros.get('docente') ?? ''
   const docentes = useFetch(() => listarDocentes(null))
+  // Pedir el análisis: coordinación y vicerrectoría. Revisarlo y publicarlo: quien evalúa al
+  // docente (la coordinación a sus docentes, la vicerrectoría a los coordinadores).
+  const puedeSolicitar = esCoordinador || usuario.rol === ROLES.VICERRECTOR
+  const docenteElegido = (docentes.datos ?? []).find((d) => String(d.idDocente) === docenteId)
+  const puedeValidar = esCoordinador || (usuario.rol === ROLES.VICERRECTOR && Boolean(docenteElegido?.esCoordinador))
   const periodos = useFetch(listarPeriodos)
   const modelos = useFetch(obtenerModelosAnalisis)
   const periodoActivo = periodos.datos?.find((periodo) => periodo.esActivo)
@@ -430,7 +435,7 @@ export default function Analisis() {
               <option value="">Todos · panorama</option>
               {(docentes.datos ?? []).map((docente) => (
                 <option key={docente.idDocente} value={docente.idDocente}>
-                  {docente.nombreCompleto} · {docente.nombrePrograma}
+                  {docente.nombreCompleto} · {docente.nombrePrograma ?? `Coordinación · ${docente.nombreFacultad}`}
                 </option>
               ))}
             </select>
@@ -483,7 +488,7 @@ export default function Analisis() {
           <Cargando texto="Consultando el último análisis" bloques={2} />
         ) : (
           <>
-            {esCoordinador && (
+            {puedeSolicitar && (
               <Panel
                 className="analisis__modelo-panel"
                 titulo="Motor de análisis"
@@ -511,13 +516,13 @@ export default function Analisis() {
                 )}
               </Panel>
             )}
-            {esCoordinador && (
+            {puedeSolicitar && (
               <p className="campo__ayuda analisis__fuente">
                 Se analizan los comentarios del formulario anónimo de los estudiantes, cuando la recolección ya
                 terminó y la revisión de hallazgos está abierta. Hacen falta al menos {MINIMO_COMENTARIOS} comentarios.
               </p>
             )}
-            {esCoordinador && (
+            {puedeSolicitar && (
               <div className="analisis__acciones">
                 {pideMotivo && (
                   <Campo
@@ -558,7 +563,7 @@ export default function Analisis() {
                     : `Llegaron ${comentariosNuevos} comentarios nuevos`}{' '}
                   después del último análisis. Por favor, actualiza el análisis de IA para incluirlos.
                 </p>
-                {esCoordinador && (
+                {puedeSolicitar && (
                   <div>
                     <Boton
                       icono={RefreshCw}
@@ -575,14 +580,14 @@ export default function Analisis() {
               <DetalleSolicitud
                 key={idSolicitud}
                 idSolicitud={idSolicitud}
-                puedeValidar={esCoordinador}
+                puedeValidar={puedeValidar}
                 clave={clave}
                 onTerminar={liberarSolicitud}
               />
             ) : (
               <MensajeIA robot="esperando" tono="violeta" titulo="Todavía no he analizado a este docente en este periodo">
                 <p>
-                  {esCoordinador
+                  {puedeSolicitar
                     ? `Pídemelo con «Solicitar análisis». Necesito al menos ${MINIMO_COMENTARIOS} comentarios de estudiantes.`
                     : 'La coordinación aún no lo ha solicitado.'}
                 </p>

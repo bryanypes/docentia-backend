@@ -1,6 +1,5 @@
 import { ChevronLeft, PenLine, Printer, RefreshCw } from 'lucide-react'
 import { useCallback, useState } from 'react'
-import { createPortal } from 'react-dom'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
 import { useVentanaEtapa } from '../../../shared/components/layout/AppLayout/periodoContext.js'
@@ -10,22 +9,14 @@ import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
 import { ETAPAS, FUENTE_DEL_ROL, ROLES } from '../../../shared/constants/dominio.js'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
-import {
-  etiquetaFuente,
-  formatearFecha,
-  formatearNota,
-  formatearNotaFuente,
-  formatearPeso,
-  iniciales,
-} from '../../../shared/utils/formatters.js'
-import { EtiquetaNivel } from '../../../shared/components/ui/EtiquetaNivel/EtiquetaNivel.jsx'
+import { iniciales } from '../../../shared/utils/formatters.js'
 import { PanelActa } from '../../actas/components/PanelActa.jsx'
 import { PanelSeguimientoPlan } from '../../actas/components/PanelSeguimientoPlan.jsx'
 import { useSesion } from '../../auth/sesionContext.js'
 import { PanelCorrecciones } from '../../calificaciones/components/PanelCorrecciones.jsx'
 import { AvisoEtapaCerrada } from '../../periodos/components/AvisoEtapaCerrada.jsx'
 import { PanelComparativoPrograma } from '../components/PanelComparativoPrograma.jsx'
-import { ESTADOS_PROCESO } from '../../proceso/estados.js'
+import { ResumenImprimible } from '../components/ResumenImprimible.jsx'
 import { PanelProceso } from '../../proceso/components/PanelProceso.jsx'
 import {
   DatosDocente,
@@ -175,50 +166,15 @@ export default function ExpedienteDocente() {
         <PanelSeguimientoPlan idDocente={docente.idDocente} puedeMarcar={usuario.rol === ROLES.COORDINADOR} />
         <PanelCorrecciones idDocente={docente.idDocente} />
 
-        {/* Va directo en <body>: dentro del contenedor con scroll de la app el navegador lo recorta. */}
-        {puedeImprimir &&
-          createPortal(
-          <article className="expediente-impresion" aria-label="Resumen imprimible del docente">
-            <header>
-              <p>DOCENTIA</p>
-              <h1>Resumen de evaluación docente</h1>
-            </header>
-            <dl>
-              <div><dt>Docente</dt><dd>{docente.nombreCompleto}</dd></div>
-              <div><dt>Programa</dt><dd>{docente.nombrePrograma ?? `Coordinación · ${docente.nombreFacultad}`}</dd></div>
-              <div><dt>Periodo</dt><dd>{periodo?.nombre ?? 'Sin periodo activo'}</dd></div>
-              <div><dt>Nota final</dt><dd>{promedio?.estado === 'COMPLETO' ? formatearNota(promedio.valor) : 'Pendiente: faltan notas'}</dd></div>
-              <div><dt>Clasificación</dt><dd><EtiquetaNivel promedio={promedio} evaluadoEsCoordinador={docente.esCoordinador} /></dd></div>
-              <div>
-                <dt>Estado del proceso</dt>
-                <dd>{ESTADOS_PROCESO[datosProceso?.estado]?.etiqueta ?? 'No disponible'}</dd>
-              </div>
-            </dl>
-            <h2>Evaluadores</h2>
-            <table>
-              <thead><tr><th>Evaluador</th><th>Nota</th><th>Peso</th></tr></thead>
-              <tbody>
-                {notasPorFuente.map((fuente) => (
-                  <tr key={fuente.fuente}>
-                    <th scope="row">{etiquetaFuente(fuente.fuente, docente.esCoordinador)}</th>
-                    <td>{fuente.nota === null ? `${formatearNotaFuente(null)} (sin registrar)` : formatearNota(fuente.nota)}</td>
-                    <td>{formatearPeso(fuente.peso)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            <h2>Compromisos vigentes</h2>
-            {compromisosVigentes.length ? (
-              <ul>
-                {compromisosVigentes.map((compromiso) => (
-                  <li key={compromiso.idCompromiso}>
-                    {compromiso.descripcion} · Vence {formatearFecha(compromiso.fechaLimite)}
-                  </li>
-                ))}
-              </ul>
-            ) : <p>No hay compromisos de mejora vigentes.</p>}
-          </article>,
-          document.body,
+        {puedeImprimir && (
+          <ResumenImprimible
+            docente={docente}
+            periodo={periodo}
+            promedio={promedio}
+            notasPorFuente={notasPorFuente}
+            compromisos={compromisosVigentes}
+            proceso={datosProceso}
+          />
         )}
       </div>
     </>

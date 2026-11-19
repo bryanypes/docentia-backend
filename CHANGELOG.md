@@ -1,5 +1,19 @@
 # Cambios
 
+## Sin versión (19 de noviembre de 2026)
+
+Backend y frontend juntos. Sin migraciones: la base sigue en V48.
+
+- **Análisis de IA desde la vicerrectoría**: la vicerrectoría pide el análisis de comentarios de
+  cualquier docente o coordinador. Valida, descarta, edita y publica los hallazgos de los
+  coordinadores; los de los docentes los sigue revisando la coordinación de su facultad.
+- **Panel por programa interactivo**: búsqueda, orden (mejor o menor promedio, cobertura, nombre),
+  las categorías del total filtran los programas y cada programa enlaza a sus estadísticas.
+- **Acciones sugeridas**: muestra el promedio de cada docente y ordena del mejor al peor (o al revés).
+- **Imprimir resumen** del expediente rediseñado: logo de la Uniautónoma, DOCENTIA y el robot de la
+  IA, la nota final con su nivel, las notas por evaluador con barras y los compromisos. Ya se imprime
+  completo (antes el navegador lo recortaba).
+
 ## 0.4.3 (18 de noviembre de 2026)
 
 Backend y frontend se despliegan juntos desde la etiqueta `v0.4.3`. Migraciones nuevas: la base pasa de V43 a **V48**.

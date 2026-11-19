@@ -210,13 +210,35 @@ describe('Analisis', () => {
     expect(await screen.findByText(/60 minutos después/)).toBeInTheDocument()
   })
 
-  it('la vicerrectoría consulta pero no solicita ni valida', async () => {
+  it('la vicerrectoría pide el análisis de un docente pero no lo valida', async () => {
+    const enCola = { ...COMPLETADO, estado: 'EN_COLA', borrador: null }
+    analisisService.listarSolicitudes.mockResolvedValue([])
+    analisisService.solicitarAnalisis.mockResolvedValue(enCola)
+    analisisService.obtenerSolicitud.mockResolvedValue(enCola)
+    renderizar('VICERRECTOR')
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Solicitar análisis' }))
+    expect(analisisService.solicitarAnalisis).toHaveBeenCalledWith('4', '2', null, 'LOCAL')
+  })
+
+  it('la vicerrectoría no valida los hallazgos de un docente, pero sí los de un coordinador', async () => {
     analisisService.listarSolicitudes.mockResolvedValue([COMPLETADO])
     analisisService.obtenerSolicitud.mockResolvedValue(COMPLETADO)
     renderizar('VICERRECTOR')
 
     expect(await screen.findByText('Explica con ejemplos reales.')).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /Solicitar/ })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Marcar como válido' })).not.toBeInTheDocument()
+  })
+
+  it('la vicerrectoría revisa el análisis de un coordinador', async () => {
+    docentesService.listarDocentes.mockResolvedValue([
+      { idDocente: 4, nombreCompleto: 'Andrés Ordóñez', nombrePrograma: null, nombreFacultad: 'Ingeniería', esCoordinador: true },
+    ])
+    analisisService.listarSolicitudes.mockResolvedValue([COMPLETADO])
+    analisisService.obtenerSolicitud.mockResolvedValue(COMPLETADO)
+    renderizar('VICERRECTOR')
+
+    expect(await screen.findByRole('option', { name: /Andrés Ordóñez · Coordinación · Ingeniería/ })).toBeInTheDocument()
+    expect(await screen.findAllByRole('button', { name: 'Marcar como válido' })).not.toHaveLength(0)
   })
 })

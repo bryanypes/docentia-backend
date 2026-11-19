@@ -1,5 +1,5 @@
 import { Lightbulb, RefreshCw } from 'lucide-react'
-import { useCallback } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Link } from 'react-router-dom'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
@@ -11,6 +11,7 @@ import { Paginacion } from '../../../shared/components/ui/Paginacion/Paginacion.
 import { ETIQUETA_ROL } from '../../../shared/constants/dominio.js'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { useFiltrosUrl, usePaginacion } from '../../../shared/hooks/usePaginacion.js'
+import { formatearNota } from '../../../shared/utils/formatters.js'
 import { useSesion } from '../../auth/sesionContext.js'
 import { listarPeriodos } from '../../periodos/services/periodosService.js'
 import { listarAccionesSugeridas } from '../services/actasService.js'
@@ -19,12 +20,19 @@ import '../components/PanelActa.css'
 /** Solo informa lo que indica la Resolución 074: no notifica, no bloquea y no cambia nada. */
 export default function AccionesSugeridas() {
   const { usuario } = useSesion()
-  const [filtros, actualizarFiltros] = useFiltrosUrl({ periodo: '' })
-  const periodo = filtros.periodo
+  const [filtros, actualizarFiltros] = useFiltrosUrl({ periodo: '', orden: 'mejor' })
+  const { periodo, orden } = filtros
   const periodos = useFetch(listarPeriodos)
   const cargar = useCallback(() => listarAccionesSugeridas(periodo), [periodo])
   const acciones = useFetch(cargar, [cargar])
-  const paginacion = usePaginacion(acciones.datos ?? [])
+  // Del mejor al peor promedio por defecto; se puede invertir.
+  const ordenadas = useMemo(() => {
+    const signo = orden === 'peor' ? 1 : -1
+    return [...(acciones.datos ?? [])].sort(
+      (a, b) => signo * (Number(a.promedio ?? 0) - Number(b.promedio ?? 0)) || a.nombreDocente.localeCompare(b.nombreDocente, 'es'),
+    )
+  }, [acciones.datos, orden])
+  const paginacion = usePaginacion(ordenadas)
 
   return (
     <>
@@ -34,6 +42,7 @@ export default function AccionesSugeridas() {
         subtitulo="Lo que indica la Resolución 074 para cada categoría. Es informativo: la decisión es de la institución."
       />
       <div className="pagina">
+        <div className="acciones__filtros">
         <Campo id="periodoAcciones" etiqueta="Periodo">
           <select
             id="periodoAcciones"
@@ -49,6 +58,18 @@ export default function AccionesSugeridas() {
             ))}
           </select>
         </Campo>
+        <Campo id="ordenAcciones" etiqueta="Ordenar por promedio">
+          <select
+            id="ordenAcciones"
+            className="campo__control"
+            value={orden}
+            onChange={(e) => actualizarFiltros({ orden: e.target.value })}
+          >
+            <option value="mejor">Del mejor al peor</option>
+            <option value="peor">Del peor al mejor</option>
+          </select>
+        </Campo>
+        </div>
         {acciones.cargando && !acciones.datos && <Cargando texto="Cargando acciones" bloques={1} />}
         {acciones.error && (
           <EstadoVista
@@ -70,6 +91,9 @@ export default function AccionesSugeridas() {
                   <tr>
                     <th scope="col">Docente</th>
                     <th scope="col">Programa</th>
+                    <th scope="col" className="tabla__numero" aria-sort={orden === 'peor' ? 'ascending' : 'descending'}>
+                      Promedio
+                    </th>
                     <th scope="col">Categoría</th>
                     <th scope="col">Acción</th>
                   </tr>
@@ -81,6 +105,7 @@ export default function AccionesSugeridas() {
                         <Link to={`/docentes/${a.idDocente}`}>{a.nombreDocente}</Link>
                       </td>
                       <td>{a.programa}</td>
+                      <td className="tabla__numero tabla__fuerte">{formatearNota(a.promedio)}</td>
                       <td>
                         <ChipCategoria
                           categoria={a.categoria}

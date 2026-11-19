@@ -68,6 +68,7 @@ public class AccionSugeridaService {
             ? "Coordinación de " + promedio.getDocente().getFacultad().getNombre()
             : promedio.getDocente().getPrograma().getNombre(),
         promedio.getEstado(),
+        promedio.getValor(),
         CategoriaResponse.desde(categoria),
         categoria == CategoriaDesempeno.MUY_BAJO
             ? ALERTA_MUY_BAJO
