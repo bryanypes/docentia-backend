@@ -168,8 +168,8 @@ class CitasVerificablesTest extends PruebaIntegracion {
     mockMvc
         .perform(post("/analisis-ia/hallazgos/{id}/validacion", hallazgo(0)).with(como(julian)))
         .andExpect(status().isForbidden());
-    // La vicerrectoría revisa los hallazgos de los coordinadores; los de un docente quedan fuera de
-    // su alcance, igual que para la coordinación de otra facultad.
+    // La vicerrectoría revisa a los coordinadores, no a los docentes: este hallazgo queda fuera de
+    // su alcance y responde 404, igual que para un coordinador de otra facultad.
     mockMvc
         .perform(
             post("/analisis-ia/hallazgos/{id}/validacion", hallazgo(0)).with(comoVicerrector()))
