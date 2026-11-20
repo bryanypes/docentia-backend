@@ -5,6 +5,7 @@ import com.uniautonoma.docentia.entity.EstadoSolicitudAnalisis;
 import com.uniautonoma.docentia.entity.FuenteComentarios;
 import com.uniautonoma.docentia.entity.Hallazgo;
 import com.uniautonoma.docentia.entity.SolicitudAnalisis;
+import com.uniautonoma.docentia.service.analisis.CriteriosEvaluacion;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
@@ -34,10 +35,12 @@ public record SolicitudAnalisisResponse(
     Borrador borrador,
     FuenteComentarios fuente,
     String motivo,
-    Integer comentariosNuevos) {
+    Integer comentariosNuevos,
+    Integer comentariosRecibidos,
+    LocalDateTime nuevoAnalisisDesde) {
 
   public static SolicitudAnalisisResponse desde(SolicitudAnalisis solicitud) {
-    return desde(solicitud, Map.of());
+    return desde(solicitud, Map.of(), Map.of());
   }
 
   /**
@@ -62,15 +65,46 @@ public record SolicitudAnalisisResponse(
         borrador,
         fuente,
         motivo,
-        nuevos);
+        nuevos,
+        comentariosRecibidos,
+        nuevoAnalisisDesde);
+  }
+
+  /** Desde cuándo se puede volver a analizar sin que hayan llegado comentarios nuevos. */
+  public SolicitudAnalisisResponse conNuevoAnalisisDesde(LocalDateTime desde) {
+    return new SolicitudAnalisisResponse(
+        idSolicitud,
+        idDocente,
+        nombreDocente,
+        idPeriodo,
+        nombrePeriodo,
+        estado,
+        mensaje,
+        encuestasCerradas,
+        comentariosEnviados,
+        comentariosFiltrados,
+        fechaSolicitud,
+        fechaInicio,
+        fechaFin,
+        borrador,
+        fuente,
+        motivo,
+        comentariosNuevos,
+        comentariosRecibidos,
+        desde);
   }
 
   /**
    * @param comentariosEnviados texto anonimizado de cada comentario que se envió al modelo, por id;
    *     con él cada cita muestra el comentario de origen
    */
+  /**
+   * @param cambios por hallazgo, cuántas veces lo cambió una persona; sin cambios no hay historial
+   */
   public static SolicitudAnalisisResponse desde(
-      SolicitudAnalisis solicitud, Map<Long, String> comentariosEnviados) {
+      SolicitudAnalisis solicitud,
+      Map<Long, String> comentariosEnviados,
+      Map<Long, Integer> cambios) {
     Borrador borrador =
         solicitud.getEstado() == EstadoSolicitudAnalisis.COMPLETADO
             ? new Borrador(
@@ -79,7 +113,12 @@ public record SolicitudAnalisisResponse(
                 solicitud.getFechaBorrador(),
                 solicitud.getEstadoBorrador(),
                 solicitud.getHallazgos().stream()
-                    .map(hallazgo -> HallazgoBorrador.desde(hallazgo, comentariosEnviados))
+                    .map(
+                        hallazgo ->
+                            HallazgoBorrador.desde(
+                                hallazgo,
+                                comentariosEnviados,
+                                cambios.getOrDefault(hallazgo.getIdHallazgo(), 0)))
                     .toList())
             : null;
     return new SolicitudAnalisisResponse(
@@ -99,6 +138,8 @@ public record SolicitudAnalisisResponse(
         borrador,
         solicitud.getFuente(),
         solicitud.getMotivo(),
+        null,
+        solicitud.getComentariosLeidos(),
         null);
   }
 
@@ -115,14 +156,27 @@ public record SolicitudAnalisisResponse(
       String estado,
       List<HallazgoBorrador> hallazgos) {}
 
+  /**
+   * @param criterio criterio de la evaluación (C1 a C6) que agrupa sus comentarios; nulo en
+   *     análisis anteriores
+   * @param cambios cuántas veces lo incluyó, descartó o editó una persona
+   */
   public record HallazgoBorrador(
-      Long idHallazgo, String tipo, String texto, String estado, List<CitaBorrador> citas) {
+      Long idHallazgo,
+      String tipo,
+      String texto,
+      String estado,
+      List<CitaBorrador> citas,
+      String criterio,
+      String nombreCriterio,
+      int cambios) {
 
     public static HallazgoBorrador desde(Hallazgo hallazgo) {
-      return desde(hallazgo, Map.of());
+      return desde(hallazgo, Map.of(), 0);
     }
 
-    static HallazgoBorrador desde(Hallazgo hallazgo, Map<Long, String> comentariosEnviados) {
+    static HallazgoBorrador desde(
+        Hallazgo hallazgo, Map<Long, String> comentariosEnviados, int cambios) {
       return new HallazgoBorrador(
           hallazgo.getIdHallazgo(),
           hallazgo.getTipo().name(),
@@ -130,7 +184,10 @@ public record SolicitudAnalisisResponse(
           hallazgo.getEstado().name(),
           hallazgo.getCitas().stream()
               .map(cita -> CitaBorrador.desde(cita, comentariosEnviados))
-              .toList());
+              .toList(),
+          hallazgo.getCriterio(),
+          CriteriosEvaluacion.nombre(hallazgo.getCriterio()),
+          cambios);
     }
   }
 

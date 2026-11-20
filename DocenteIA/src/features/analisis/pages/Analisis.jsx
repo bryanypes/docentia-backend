@@ -40,7 +40,80 @@ import {
 } from '../services/analisisService.js'
 import './Analisis.css'
 
-const MOTIVO_MINIMO = 10
+/**
+ * Minutos que faltan para poder volver a analizar sin comentarios nuevos; se actualiza solo y
+ * llega a 0 cuando ya se puede.
+ */
+function useMinutosParaVolver(desde) {
+  const [ahora, setAhora] = useState(() => Date.now())
+  const limite = desde ? new Date(desde).getTime() : 0
+  useEffect(() => {
+    if (!limite || limite <= Date.now()) return undefined
+    const reloj = setInterval(() => setAhora(Date.now()), 15000)
+    const fin = setTimeout(() => setAhora(Date.now()), limite - Date.now() + 500)
+    return () => {
+      clearInterval(reloj)
+      clearTimeout(fin)
+    }
+  }, [limite])
+  return limite > ahora ? Math.ceil((limite - ahora) / 60000) : 0
+}
+
+const CLAVE_AVISO_EXTERNO = 'docentia.aviso-proveedor-externo-visto'
+
+function avisoExternoVisto() {
+  try {
+    return localStorage.getItem(CLAVE_AVISO_EXTERNO) === '1'
+  } catch {
+    return false
+  }
+}
+
+/**
+ * DocenteIA explica qué implica el proveedor externo la primera vez; después queda una sola línea
+ * con los límites y el enlace para volver a leerlo.
+ */
+function AvisoProveedorExterno({ modelos, tokensMaximos }) {
+  const [abierto, setAbierto] = useState(() => !avisoExternoVisto())
+  const limites = `Hasta ${formatearEntero(modelos.maxComentariosLlm)} comentarios${
+    tokensMaximos != null ? ` y ${formatearEntero(tokensMaximos)} tokens` : ''
+  } por análisis${
+    modelos.tokensRestantesHoy != null
+      ? ` · quedan ${formatearEntero(modelos.tokensRestantesHoy)} tokens hoy`
+      : ''
+  }.`
+
+  function entendido() {
+    try {
+      localStorage.setItem(CLAVE_AVISO_EXTERNO, '1')
+    } catch {
+      // Sin almacenamiento el aviso volverá a salir; no pasa nada más.
+    }
+    setAbierto(false)
+  }
+
+  if (!abierto) {
+    return (
+      <p className="campo__ayuda analisis__limites">
+        {limites}{' '}
+        <button type="button" className="analisis__enlace" onClick={() => setAbierto(true)}>
+          ¿Qué implica usar el proveedor externo?
+        </button>
+      </p>
+    )
+  }
+  return (
+    <MensajeIA robot="senala" tono="alerta" tamano="compacto" titulo="Antes de usar el proveedor externo">
+      <p>{modelos.advertencia || 'El análisis se procesará con el modelo externo configurado.'}</p>
+      <p>{limites}</p>
+      <div>
+        <Boton variante="contorno" onClick={entendido}>
+          Entendido
+        </Boton>
+      </div>
+    </MensajeIA>
+  )
+}
 
 function SelectorModelo({ modelos, valor, onCambiar, confirmaExterno, onConfirmarExterno }) {
   const opciones = modelos.opciones ?? []
@@ -95,15 +168,7 @@ function SelectorModelo({ modelos, valor, onCambiar, confirmaExterno, onConfirma
       )}
       {valor === 'LLM' && opcionElegida?.disponible && puedeUsarLlm && (
         <>
-          <Aviso tipo="alerta" titulo="Uso de un proveedor externo">
-            <p>{modelos.advertencia || 'El análisis se procesará con el modelo externo configurado.'}</p>
-            <p>
-              Límite por análisis: {formatearEntero(modelos.maxComentariosLlm)} comentarios
-              {tokensMaximos != null ? ` y ${formatearEntero(tokensMaximos)} tokens` : ''}.
-              {modelos.tokensRestantesHoy != null &&
-                ` Presupuesto diario restante: ${formatearEntero(modelos.tokensRestantesHoy)} tokens.`}
-            </p>
-          </Aviso>
+          <AvisoProveedorExterno modelos={modelos} tokensMaximos={tokensMaximos} />
           <label className="analisis__consentimiento">
             <input type="checkbox" checked={confirmaExterno} onChange={(e) => onConfirmarExterno(e.target.checked)} />
             <span>Confirmo que autorizo enviar comentarios anonimizados al proveedor externo para este análisis.</span>
@@ -240,14 +305,18 @@ function Borrador({ solicitud, puedeValidar, onValidado }) {
     <>
       <Panel
         titulo="Borrador del análisis"
-        descripcion={`Generado el ${formatearFechaHora(borrador.fechaGeneracion)} con ${borrador.modelo} (${borrador.versionInstruccion}). ${solicitud.comentariosEnviados} comentarios analizados.`}
+        descripcion={`Generado el ${formatearFechaHora(borrador.fechaGeneracion)} con ${borrador.modelo}.`}
         icono={MessagesSquare}
       >
         <MensajeIA
           robot={publicada ? 'aprobada' : 'senala'}
           tono={publicada ? 'turquesa' : 'azul'}
-          titulo={`Leí ${solicitud.comentariosEnviados} comentarios y encontré ${fortalezas} ${fortalezas === 1 ? 'fortaleza' : 'fortalezas'} y ${oportunidades} ${oportunidades === 1 ? 'oportunidad' : 'oportunidades'} de mejora.`}
+          titulo={`Leí ${solicitud.comentariosRecibidos ?? solicitud.comentariosEnviados} comentarios y los agrupé en ${fortalezas} ${fortalezas === 1 ? 'fortaleza' : 'fortalezas'} y ${oportunidades} ${oportunidades === 1 ? 'oportunidad' : 'oportunidades'} de mejora.`}
         >
+          <p>
+            Los comentarios que dicen lo mismo quedan juntos en un solo hallazgo, ordenados por los criterios de la
+            evaluación docente; cada comentario aparece una sola vez.
+          </p>
           <p>
             <strong>
               {validados} de {borrador.hallazgos.length} hallazgos validados.
@@ -350,7 +419,6 @@ export default function Analisis() {
   const [solicitudNueva, setSolicitudNueva] = useState(null)
   const [errorSolicitar, setErrorSolicitar] = useState(null)
   const [enviando, setEnviando] = useState(false)
-  const [motivo, setMotivo] = useState('')
   const [modeloElegido, setModeloElegido] = useState(null)
   const [confirmaExterno, setConfirmaExterno] = useState(false)
   const [solicitudPendienteClave, setSolicitudPendienteClave] = useState(null)
@@ -378,19 +446,18 @@ export default function Analisis() {
 
   function cambiarFiltro(nombre, valor) {
     setErrorSolicitar(null)
-    setMotivo('')
     const nuevos = new URLSearchParams(parametros)
     if (valor) nuevos.set(nombre, valor)
     else nuevos.delete(nombre)
     setParametros(nuevos, { replace: true, state: { conservarFoco: true } })
   }
 
-  // Si ya hay un análisis, pedir otro es regenerarlo: lleva motivo (10 a 300 caracteres).
-  const pideMotivo = Boolean(idSolicitud)
-  const motivoListo = motivo.trim().length >= MOTIVO_MINIMO
-
   // La última solicitud dice cuántos comentarios llegaron después de analizarla.
   const comentariosNuevos = solicitudNueva?.clave === clave ? 0 : (ultima.datos?.comentariosNuevos ?? 0)
+  // Sin comentarios nuevos, volver a analizar espera unos minutos desde la última solicitud.
+  const minutosParaVolver = useMinutosParaVolver(
+    idSolicitud && comentariosNuevos === 0 && solicitudNueva?.clave !== clave ? ultima.datos?.nuevoAnalisisDesde : null,
+  )
 
   function actualizarPorNuevos() {
     solicitar(`Llegaron ${comentariosNuevos} comentarios nuevos de estudiantes`)
@@ -398,14 +465,13 @@ export default function Analisis() {
 
   async function solicitar(motivoAutomatico) {
     if (!modeloDisponible || !modeloConfirmado) return
-    const motivoFinal = typeof motivoAutomatico === 'string' ? motivoAutomatico : pideMotivo ? motivo.trim() : null
+    const motivoFinal = typeof motivoAutomatico === 'string' ? motivoAutomatico : null
     setEnviando(true)
     setErrorSolicitar(null)
     try {
       const nueva = await solicitarAnalisis(docenteId, periodoId, motivoFinal, modelo)
       setSolicitudNueva({ clave, id: nueva.idSolicitud })
       setSolicitudPendienteClave(clave)
-      setMotivo('')
       setConfirmaExterno(false)
     } catch (error) {
       setErrorSolicitar(error)
@@ -518,27 +584,12 @@ export default function Analisis() {
             )}
             {puedeSolicitar && (
               <p className="campo__ayuda analisis__fuente">
-                Se analizan los comentarios del formulario anónimo de los estudiantes, cuando la recolección ya
-                terminó y la revisión de hallazgos está abierta. Hacen falta al menos {MINIMO_COMENTARIOS} comentarios.
+                Se analizan los comentarios que los estudiantes hayan escrito hasta ahora; puedes pedirlo cuando lo
+                necesites. Hacen falta al menos {MINIMO_COMENTARIOS} comentarios.
               </p>
             )}
             {puedeSolicitar && (
               <div className="analisis__acciones">
-                {pideMotivo && (
-                  <Campo
-                    id="motivoAnalisis"
-                    etiqueta="Motivo para pedir otro análisis"
-                    ayuda="Entre 10 y 300 caracteres. Debe pasar una hora desde la última solicitud, salvo que hayan llegado comentarios nuevos."
-                  >
-                    <input
-                      id="motivoAnalisis"
-                      className="campo__control"
-                      value={motivo}
-                      maxLength={300}
-                      onChange={(e) => setMotivo(e.target.value)}
-                    />
-                  </Campo>
-                )}
                 <Boton
                   onClick={solicitar}
                   disabled={
@@ -547,11 +598,17 @@ export default function Analisis() {
                     !modeloConfirmado ||
                     solicitudPendienteClave === clave ||
                     estaEnCurso(ultima.datos) ||
-                    (pideMotivo && !motivoListo)
+                    minutosParaVolver > 0
                   }
                 >
-                  {enviando ? 'Solicitando…' : idSolicitud ? 'Regenerar análisis' : 'Solicitar análisis'}
+                  {enviando ? 'Solicitando…' : idSolicitud ? 'Volver a analizar' : 'Solicitar análisis'}
                 </Boton>
+                {minutosParaVolver > 0 && (
+                  <span className="campo__ayuda" role="status">
+                    Podrás volver a analizar en {minutosParaVolver} {minutosParaVolver === 1 ? 'minuto' : 'minutos'}, o
+                    antes si llegan comentarios nuevos.
+                  </span>
+                )}
               </div>
             )}
             <ErrorApi error={errorSolicitar} />

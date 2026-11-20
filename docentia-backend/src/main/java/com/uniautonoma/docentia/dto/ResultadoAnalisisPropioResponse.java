@@ -11,5 +11,9 @@ import java.util.List;
 public record ResultadoAnalisisPropioResponse(
     PeriodoResumenResponse periodo, List<HallazgoPublicado> hallazgos) {
 
-  public record HallazgoPublicado(String tipo, String texto) {}
+  /**
+   * @param criterio nombre del criterio de la evaluación al que se refiere; nulo en análisis
+   *     anteriores
+   */
+  public record HallazgoPublicado(String tipo, String texto, String criterio) {}
 }

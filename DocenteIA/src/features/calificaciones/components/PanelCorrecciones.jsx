@@ -1,4 +1,5 @@
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, ChevronDown, ChevronUp } from 'lucide-react'
+import { useState } from 'react'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { Cargando } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
@@ -14,17 +15,38 @@ function textoPromedio(promedio) {
 }
 
 /**
- * Historial de correcciones de notas del docente (todas las fuentes y periodos).
- * Solo para coordinación y vicerrectoría: el docente nunca ve notas por fuente.
+ * Historial de correcciones de notas del docente (todas las fuentes y periodos). Llega plegado y
+ * solo se consulta al abrirlo. Solo para coordinación y vicerrectoría: el docente nunca ve notas
+ * por fuente.
  */
 export function PanelCorrecciones({ idDocente }) {
-  const correcciones = useFetch(() => listarCorrecciones(idDocente), [idDocente])
+  const [abierto, setAbierto] = useState(false)
 
   return (
     <Panel
       titulo="Historial de correcciones"
-      descripcion="Cada cambio de una nota ya registrada, con el promedio de antes y de después."
+      descripcion="Cada cambio que una persona hizo a una nota ya registrada, con el promedio de antes y de después."
+      acciones={
+        <Boton
+          variante="contorno"
+          icono={abierto ? ChevronUp : ChevronDown}
+          aria-expanded={abierto}
+          onClick={() => setAbierto(!abierto)}
+        >
+          {abierto ? 'Ocultar' : 'Ver historial'}
+        </Boton>
+      }
     >
+      {abierto && <ListaCorrecciones idDocente={idDocente} />}
+    </Panel>
+  )
+}
+
+function ListaCorrecciones({ idDocente }) {
+  const correcciones = useFetch(() => listarCorrecciones(idDocente), [idDocente])
+
+  return (
+    <>
       {correcciones.cargando && <Cargando texto="Cargando historial de correcciones" bloques={1} />}
 
       {correcciones.error && (
@@ -77,6 +99,6 @@ export function PanelCorrecciones({ idDocente }) {
           ))}
         </ol>
       )}
-    </Panel>
+    </>
   )
 }

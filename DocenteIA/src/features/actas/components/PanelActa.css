@@ -111,6 +111,72 @@
   flex: 1 1 220px;
 }
 
+.acciones__filtros {
+  align-items: flex-end;
+}
+
+.acciones__buscador {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-basis: 100% !important;
+}
+
+.acciones__buscador > svg {
+  position: absolute;
+  left: 12px;
+  color: var(--color-texto-tenue);
+  pointer-events: none;
+}
+
+.acciones__buscador .campo__control {
+  width: 100%;
+  padding-left: 36px;
+}
+
+.acciones__panel-filtros .boton--enlace {
+  margin-top: 8px;
+}
+
+/* Aviso de docentes con promedio bajo: también filtra la tabla. */
+.acciones__alerta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 14px 16px;
+  font: inherit;
+  text-align: left;
+  color: var(--color-alerta-texto);
+  background: var(--color-alerta-fondo);
+  border: 1px solid var(--color-amarillo);
+  border-radius: var(--radio-xl);
+  cursor: pointer;
+}
+
+.acciones__alerta--activa {
+  box-shadow: 0 0 0 2px var(--color-amarillo);
+}
+
+.acciones__alerta > svg {
+  flex: none;
+}
+
+.acciones__fila--baja td:first-child {
+  box-shadow: inset 3px 0 0 var(--color-amarillo-oscuro);
+}
+
+.acciones__revisar {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 8px;
+  font-size: 11px;
+  font-weight: var(--peso-semi);
+  color: var(--color-alerta-texto);
+  background: var(--color-alerta-fondo);
+  border-radius: 999px;
+}
+
 /* Compromisos: tarjetas numeradas y un botón claro para agregar. */
 .acta-compromisos {
   display: grid;

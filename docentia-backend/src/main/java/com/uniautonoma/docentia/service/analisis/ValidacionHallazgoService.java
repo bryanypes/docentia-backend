@@ -11,7 +11,6 @@ import com.uniautonoma.docentia.entity.EstadoSolicitudAnalisis;
 import com.uniautonoma.docentia.entity.Hallazgo;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.SolicitudAnalisis;
-import com.uniautonoma.docentia.entity.TipoEtapa;
 import com.uniautonoma.docentia.entity.TipoNotificacion;
 import com.uniautonoma.docentia.entity.Usuario;
 import com.uniautonoma.docentia.entity.VersionHallazgo;
@@ -128,7 +127,18 @@ public class ValidacionHallazgoService {
   /** Historial de un hallazgo. */
   @Transactional(readOnly = true)
   public List<VersionHallazgoResponse> versiones(Long idHallazgo, UsuarioSesion sesion) {
-    buscarVisible(idHallazgo, sesion);
+    // Lo ve quien ve el análisis (también la vicerrectoría con los de un docente), no solo quien
+    // lo revisa.
+    Hallazgo hallazgo =
+        hallazgoRepository
+            .findById(idHallazgo)
+            .orElseThrow(() -> new RecursoNoEncontradoException("Hallazgo no encontrado"));
+    try {
+      docenteService.buscarDocenteVisible(
+          hallazgo.getSolicitud().getDocente().getIdUsuario(), sesion);
+    } catch (RecursoNoEncontradoException fueraDeAlcance) {
+      throw new RecursoNoEncontradoException("Hallazgo no encontrado");
+    }
     return versionRepository.findByHallazgoIdHallazgoOrderByVersionAsc(idHallazgo).stream()
         .map(VersionHallazgoResponse::desde)
         .toList();
@@ -145,7 +155,6 @@ public class ValidacionHallazgoService {
             .bloquear(idSolicitud)
             .orElseThrow(() -> new RecursoNoEncontradoException("Solicitud no encontrada"));
     exigirAlcance(solicitud, sesion, "Solicitud no encontrada");
-    ventanaEtapaService.exigirEtapaAbierta(solicitud.getPeriodo(), TipoEtapa.REVISION_HALLAZGOS);
     if ("VALIDADO".equals(solicitud.getEstadoBorrador())) {
       throw new ReglaNegocioException("La revisión ya se publicó");
     }
@@ -207,15 +216,15 @@ public class ValidacionHallazgoService {
                         .map(
                             hallazgo ->
                                 new HallazgoPublicado(
-                                    hallazgo.getTipo().name(), hallazgo.getTexto()))
+                                    hallazgo.getTipo().name(),
+                                    hallazgo.getTexto(),
+                                    CriteriosEvaluacion.nombre(hallazgo.getCriterio())))
                         .toList()))
         .orElseGet(() -> new ResultadoAnalisisPropioResponse(null, List.of()));
   }
 
   private Hallazgo buscarEditable(Long idHallazgo, UsuarioSesion sesion) {
     Hallazgo hallazgo = buscarVisible(idHallazgo, sesion);
-    ventanaEtapaService.exigirEtapaAbierta(
-        hallazgo.getSolicitud().getPeriodo(), TipoEtapa.REVISION_HALLAZGOS);
     if ("VALIDADO".equals(hallazgo.getSolicitud().getEstadoBorrador())) {
       throw new ReglaNegocioException("La revisión ya se publicó y no cambia");
     }

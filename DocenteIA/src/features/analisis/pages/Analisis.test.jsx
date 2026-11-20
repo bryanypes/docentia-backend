@@ -168,7 +168,7 @@ describe('Analisis', () => {
 
     expect(analisisService.solicitarAnalisis).toHaveBeenCalledWith('4', '2', null, 'LOCAL')
     expect(await screen.findByText('En cola…')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Regenerar análisis' })).toBeDisabled()
+    expect(screen.getByRole('button', { name: 'Volver a analizar' })).toBeDisabled()
   })
 
   it('exige confirmar el uso externo y envía el modelo elegido', async () => {
@@ -191,23 +191,27 @@ describe('Analisis', () => {
     expect(await screen.findByText('En cola…')).toBeInTheDocument()
   })
 
-  it('pedir otro análisis exige motivo y muestra la espera del backend', async () => {
-    analisisService.listarSolicitudes.mockResolvedValue([COMPLETADO])
-    analisisService.obtenerSolicitud.mockResolvedValue(COMPLETADO)
-    analisisService.solicitarAnalisis.mockRejectedValue(
-      new ApiError(429, 'Este análisis se generó hace poco. Puedes regenerarlo 60 minutos después de la última solicitud'),
-    )
+  it('volver a analizar no pide motivo: espera los minutos de la última solicitud', async () => {
+    const reciente = { ...COMPLETADO, nuevoAnalisisDesde: new Date(Date.now() + 3 * 60000).toISOString() }
+    analisisService.listarSolicitudes.mockResolvedValue([reciente])
+    analisisService.obtenerSolicitud.mockResolvedValue(reciente)
     renderizar()
 
-    const boton = await screen.findByRole('button', { name: 'Regenerar análisis' })
+    const boton = await screen.findByRole('button', { name: 'Volver a analizar' })
     expect(boton).toBeDisabled()
-    await userEvent.type(screen.getByLabelText('Motivo para pedir otro análisis'), 'Corto')
-    expect(boton).toBeDisabled()
-    await userEvent.type(screen.getByLabelText('Motivo para pedir otro análisis'), ' pero suficiente')
-    await userEvent.click(boton)
+    expect(screen.getByText(/Podrás volver a analizar en 3 minutos/)).toBeInTheDocument()
+    expect(screen.queryByLabelText(/Motivo/)).not.toBeInTheDocument()
+  })
 
-    expect(analisisService.solicitarAnalisis).toHaveBeenCalledWith('4', '2', 'Corto pero suficiente', 'LOCAL')
-    expect(await screen.findByText(/60 minutos después/)).toBeInTheDocument()
+  it('pasada la espera vuelve a analizar sin escribir nada', async () => {
+    const vencido = { ...COMPLETADO, nuevoAnalisisDesde: new Date(Date.now() - 60000).toISOString() }
+    analisisService.listarSolicitudes.mockResolvedValue([vencido])
+    analisisService.obtenerSolicitud.mockResolvedValue(vencido)
+    analisisService.solicitarAnalisis.mockResolvedValue({ ...COMPLETADO, estado: 'EN_COLA', borrador: null })
+    renderizar()
+
+    await userEvent.click(await screen.findByRole('button', { name: 'Volver a analizar' }))
+    expect(analisisService.solicitarAnalisis).toHaveBeenCalledWith('4', '2', null, 'LOCAL')
   })
 
   it('la vicerrectoría pide el análisis de un docente pero no lo valida', async () => {

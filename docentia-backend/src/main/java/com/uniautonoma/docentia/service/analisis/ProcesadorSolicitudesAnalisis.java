@@ -6,10 +6,8 @@ import com.uniautonoma.docentia.config.HeteroevaluacionProperties;
 import com.uniautonoma.docentia.config.IaProperties;
 import com.uniautonoma.docentia.entity.CitaHallazgo;
 import com.uniautonoma.docentia.entity.EstadoSolicitudAnalisis;
-import com.uniautonoma.docentia.entity.FuenteComentarios;
 import com.uniautonoma.docentia.entity.Hallazgo;
 import com.uniautonoma.docentia.entity.SolicitudAnalisis;
-import com.uniautonoma.docentia.entity.TipoEtapa;
 import com.uniautonoma.docentia.entity.TipoNotificacion;
 import com.uniautonoma.docentia.repository.SolicitudAnalisisRepository;
 import com.uniautonoma.docentia.service.VentanaEtapaService;
@@ -200,15 +198,7 @@ public class ProcesadorSolicitudesAnalisis {
     SolicitudAnalisis solicitud = solicitudRepository.findById(idSolicitud).orElseThrow();
     Long idDocente = solicitud.getDocente().getIdUsuario();
     Long idPeriodo = solicitud.getPeriodo().getIdPeriodo();
-    boolean formulario = solicitud.getFuente() == FuenteComentarios.FORMULARIO;
-    if (formulario
-        && !ventanas.haTerminado(solicitud.getPeriodo(), TipoEtapa.RECOLECCION_CALIFICACIONES)) {
-      // El servicio ya lo impide al solicitar; esto cubre una ventana reprogramada después.
-      solicitud.marcarInsuficiente(
-          0, "la recolección del formulario sigue abierta", "VENTANA_ABIERTA");
-      avisar(solicitud, TipoNotificacion.ANALISIS_INSUFICIENTE);
-      return Optional.empty();
-    }
+    // El análisis se puede pedir en cualquier momento del periodo, con los comentarios que haya.
     ProveedorComentarios proveedor = proveedores.para(solicitud.getFuente());
     int encuestas = proveedor.contarEncuestasCerradas(idDocente, idPeriodo);
     int comentarios = proveedor.contarComentarios(idDocente, idPeriodo);
@@ -496,8 +486,10 @@ public class ProcesadorSolicitudesAnalisis {
     peticion.comentarios().forEach(c -> enviados.put(c.id(), c.texto()));
     List<Hallazgo> hallazgos = new ArrayList<>();
     int orden = 1;
-    for (HallazgoPropuesto propuesto : generado.hallazgos()) {
+    // Los comentarios que dicen lo mismo quedan en un solo hallazgo por criterio.
+    for (HallazgoPropuesto propuesto : AgrupadorHallazgos.agrupar(generado.hallazgos())) {
       Hallazgo hallazgo = new Hallazgo(orden++, propuesto.tipo(), propuesto.texto());
+      hallazgo.asignarCriterio(propuesto.criterio());
       propuesto
           .citas()
           .forEach(

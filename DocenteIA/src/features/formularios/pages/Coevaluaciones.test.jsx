@@ -3,10 +3,12 @@ import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { renderizarConSesion } from '../../../pruebas/renderizarConSesion.jsx'
 import { ApiError } from '../../../services/api.js'
+import { obtenerPanorama } from '../../analisis/services/analisisService.js'
 import { obtenerPendientesCoevaluacion } from '../services/formulariosService.js'
 import Coevaluaciones from './Coevaluaciones.jsx'
 
 vi.mock('../services/formulariosService.js')
+vi.mock('../../analisis/services/analisisService.js')
 
 beforeEach(() => vi.clearAllMocks())
 
@@ -56,6 +58,20 @@ describe('Coevaluaciones', () => {
     await userEvent.click(screen.getByRole('button', { name: 'Limpiar filtros' }))
     expect(screen.getByRole('link', { name: 'Continuar · Nora' })).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Ver coevaluación · Tomás' })).toBeInTheDocument()
+  })
+
+  it('marca la coevaluación enviada sin análisis de IA y pide rectificarla', async () => {
+    obtenerPendientesCoevaluacion.mockResolvedValue({ ...PENDIENTES, periodo: { idPeriodo: 7, nombre: '2026-2' } })
+    obtenerPanorama.mockResolvedValue({
+      docentes: [
+        { docente: { idDocente: 1 }, estado: 'COMPLETADO' },
+        { docente: { idDocente: 2 }, estado: null },
+      ],
+    })
+    renderizarConSesion(<Coevaluaciones />)
+    expect(await screen.findByText('Sin análisis de IA')).toBeInTheDocument()
+    expect(screen.getByText('Coevaluaciones hechas sin el análisis de comentarios')).toBeInTheDocument()
+    expect(obtenerPanorama).toHaveBeenCalledWith(7)
   })
 
   it('muestra el error', async () => {

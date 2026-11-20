@@ -13,7 +13,7 @@ import org.springframework.core.io.ClassPathResource;
  */
 public final class InstruccionAnalisis {
 
-  public static final String VERSION = "analisis-v3";
+  public static final String VERSION = "analisis-v4";
 
   private final String texto;
 

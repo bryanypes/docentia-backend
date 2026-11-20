@@ -10,13 +10,13 @@ import com.uniautonoma.docentia.dto.ComentariosEstudiantesResponse.EtiquetaComen
 import com.uniautonoma.docentia.dto.ModelosAnalisisResponse;
 import com.uniautonoma.docentia.dto.ResumenComentariosResponse;
 import com.uniautonoma.docentia.dto.ResumenComentariosResponse.CriterioAgregado;
+import com.uniautonoma.docentia.dto.ResumenComentariosResponse.DocenteTema;
 import com.uniautonoma.docentia.dto.ResumenComentariosResponse.TemaAgregado;
 import com.uniautonoma.docentia.dto.UsoIaResponse;
 import com.uniautonoma.docentia.entity.Facultad;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.Programa;
 import com.uniautonoma.docentia.entity.SolicitudAnalisis;
-import com.uniautonoma.docentia.entity.TipoEtapa;
 import com.uniautonoma.docentia.entity.Usuario;
 import com.uniautonoma.docentia.exception.DatosInvalidosException;
 import com.uniautonoma.docentia.exception.RecursoNoEncontradoException;
@@ -228,7 +228,7 @@ public class AnalisisComentariosService {
       programa = new Referencia(encontrado.getIdPrograma(), encontrado.getNombre());
     }
     Long idFacultad = sesion.esCoordinador() ? sesion.idFacultad() : null;
-    List<ResultadoAnalisis> vigentes =
+    List<ResultadosAnalisisRepositorio.Vigente> vigentes =
         resultados.vigentesDelPeriodo(idPeriodo, idPrograma, idFacultad);
     int minimo = propiedades.minimoDocentesResumen();
     if (vigentes.size() < minimo) {
@@ -250,7 +250,10 @@ public class AnalisisComentariosService {
   }
 
   private ResumenComentariosResponse agregar(
-      Long idPeriodo, Referencia programa, List<ResultadoAnalisis> vigentes, int minimo) {
+      Long idPeriodo,
+      Referencia programa,
+      List<ResultadosAnalisisRepositorio.Vigente> vigentes,
+      int minimo) {
     int comentarios = 0;
     int positivos = 0;
     int negativos = 0;
@@ -260,8 +263,10 @@ public class AnalisisComentariosService {
     Map<String, Integer> advertencias = new TreeMap<>();
     Map<String, int[]> temas = new LinkedHashMap<>();
     Map<String, Tema> ejemplo = new LinkedHashMap<>();
+    Map<String, List<DocenteTema>> docentesPorTema = new LinkedHashMap<>();
     Map<String, int[]> criterios = new TreeMap<>();
-    for (ResultadoAnalisis r : vigentes) {
+    for (ResultadosAnalisisRepositorio.Vigente vigente : vigentes) {
+      ResultadoAnalisis r = vigente.resultado();
       comentarios += r.nComentarios();
       positivos += r.sentimientoGlobal().positivos();
       negativos += r.sentimientoGlobal().negativos();
@@ -277,6 +282,9 @@ public class AnalisisComentariosService {
         suma[0] += t.frecuencia();
         suma[1]++;
         ejemplo.putIfAbsent(clave, t);
+        docentesPorTema
+            .computeIfAbsent(clave, k -> new ArrayList<>())
+            .add(new DocenteTema(vigente.idDocente(), vigente.nombreDocente(), t.frecuencia()));
       }
       for (ResultadoAnalisis.Criterio c : r.criterios()) {
         int[] suma = criterios.computeIfAbsent(c.codigo(), k -> new int[3]);
@@ -298,7 +306,13 @@ public class AnalisisComentariosService {
                   t.polaridad(),
                   suma[0],
                   total == 0 ? 0 : Math.round(suma[0] * 1000.0 / total) / 10.0,
-                  suma[1]));
+                  suma[1],
+                  docentesPorTema.get(clave).stream()
+                      .sorted(
+                          Comparator.comparingInt(DocenteTema::menciones)
+                              .reversed()
+                              .thenComparing(DocenteTema::nombre))
+                      .toList()));
         });
     agregados.sort(
         Comparator.comparingInt(TemaAgregado::frecuencia)
@@ -420,13 +434,8 @@ public class AnalisisComentariosService {
 
   private Estado estado(Optional<SolicitudAnalisis> ultima, PeriodoAcademico periodo) {
     if (ultima.isEmpty()) {
-      return ventanas.haTerminado(periodo, TipoEtapa.RECOLECCION_CALIFICACIONES)
-          ? new Estado(
-              "NO_DISPONIBLE_AUN", "SIN_SOLICITAR", "Todavía no se ha solicitado el análisis.")
-          : new Estado(
-              "NO_DISPONIBLE_AUN",
-              "VENTANA_ABIERTA",
-              "El análisis estará disponible cuando cierre la recolección de evaluaciones.");
+      return new Estado(
+          "NO_DISPONIBLE_AUN", "SIN_SOLICITAR", "Todavía no se ha solicitado el análisis.");
     }
     SolicitudAnalisis solicitud = ultima.get();
     String motivo = solicitud.getMotivo();

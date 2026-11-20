@@ -159,7 +159,7 @@ class CitasVerificablesTest extends PruebaIntegracion {
   }
 
   @Test
-  void validarRespetaRolAlcanceYLaVentanaDeRevision() throws Exception {
+  void validarRespetaRolYAlcanceSinEsperarLaVentanaDeRevision() throws Exception {
     Usuario otro = escenario.crearCoordinador("Paola Sarria", escenario.crearFacultad("Derecho"));
 
     mockMvc
@@ -180,10 +180,11 @@ class CitasVerificablesTest extends PruebaIntegracion {
         TipoEtapa.REVISION_HALLAZGOS,
         BaseDatosPruebaConfig.HOY.plusDays(2),
         BaseDatosPruebaConfig.HOY.plusDays(4));
+    // La revisión no espera su etapa: se valida cuando se necesite.
     mockMvc
         .perform(
             post("/analisis-ia/hallazgos/{id}/validacion", hallazgo(0)).with(como(coordinador)))
-        .andExpect(status().isConflict());
+        .andExpect(status().isOk());
   }
 
   @Test

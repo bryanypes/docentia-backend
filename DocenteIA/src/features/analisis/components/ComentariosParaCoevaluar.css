@@ -1,0 +1,26 @@
+.coevaluar-ia__grupo {
+  display: grid;
+  gap: 4px;
+}
+
+.coevaluar-ia__grupo ul {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding-left: 18px;
+}
+
+.coevaluar-ia__grupo small {
+  color: var(--color-texto-tenue);
+}
+
+.coevaluar-ia__criterio {
+  display: block;
+  font-size: 11.5px;
+  font-weight: var(--peso-semi);
+  color: var(--color-azul);
+}
+
+.coevaluar-ia__nota {
+  font-size: 13px;
+}

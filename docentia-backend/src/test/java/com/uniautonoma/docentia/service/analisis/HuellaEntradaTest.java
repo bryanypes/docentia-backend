@@ -23,23 +23,23 @@ class HuellaEntradaTest {
 
   @Test
   void cambiaConElPromptElModeloLosTopesYLaEntrada() {
-    String base = huella("chat:m", "analisis-v3", "150|300", PETICION);
+    String base = huella("chat:m", "analisis-v4", "150|300", PETICION);
 
-    assertThat(huella("chat:m", "analisis-v3", "150|300", PETICION)).isEqualTo(base);
-    assertThat(huella("chat:m", "analisis-v4", "150|300", PETICION)).isNotEqualTo(base);
-    assertThat(huella("chat:otro", "analisis-v3", "150|300", PETICION)).isNotEqualTo(base);
-    assertThat(huella("chat:m", "analisis-v3", "100|300", PETICION)).isNotEqualTo(base);
+    assertThat(huella("chat:m", "analisis-v4", "150|300", PETICION)).isEqualTo(base);
+    assertThat(huella("chat:m", "analisis-v3", "150|300", PETICION)).isNotEqualTo(base);
+    assertThat(huella("chat:otro", "analisis-v4", "150|300", PETICION)).isNotEqualTo(base);
+    assertThat(huella("chat:m", "analisis-v4", "100|300", PETICION)).isNotEqualTo(base);
     PeticionAnalisis otra =
         new PeticionAnalisis(
             "instrucción",
             List.of(new ComentarioAnonimo(1L, "Explica muy bien los temas")),
             List.of("D05+4"));
-    assertThat(huella("chat:m", "analisis-v3", "150|300", otra)).isNotEqualTo(base);
+    assertThat(huella("chat:m", "analisis-v4", "150|300", otra)).isNotEqualTo(base);
   }
 
   @Test
   void esUnaHuellaQueNoContieneLosComentarios() {
-    String huella = huella("chat:m", "analisis-v3", "150|300", PETICION);
+    String huella = huella("chat:m", "analisis-v4", "150|300", PETICION);
 
     assertThat(huella).matches("[0-9a-f]{64}").doesNotContain("Explica").doesNotContain("notas");
   }

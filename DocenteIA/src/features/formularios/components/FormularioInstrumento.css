@@ -255,3 +255,7 @@
   justify-content: center;
   gap: 10px;
 }
+
+.coevaluaciones__sin-analisis {
+  margin-left: 6px;
+}

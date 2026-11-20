@@ -26,7 +26,7 @@ public record AhorroIaProperties(
     @DefaultValue("4000") int maxTokensSalida,
     @DefaultValue("500000") long presupuestoTokensDia,
     @DefaultValue("3000000") long presupuestoTokensPeriodo,
-    @DefaultValue("60") int enfriamientoRegeneracionMinutos,
+    @DefaultValue("5") int enfriamientoRegeneracionMinutos,
     @DefaultValue("1") int periodosReferencia,
     Double precioMillonTokensEntrada,
     Double precioMillonTokensSalida) {

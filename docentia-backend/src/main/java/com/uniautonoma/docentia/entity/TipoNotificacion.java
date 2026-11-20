@@ -49,6 +49,10 @@ public enum TipoNotificacion {
       "Una etapa del periodo cierra en 3 días. Revisa los pendientes de tus programas."),
   ALERTA_INFORMATIVA(
       "Alerta informativa", "Hay una nueva alerta informativa en acciones sugeridas."),
+  PROMEDIO_PARA_REVISAR(
+      "Promedio para revisar",
+      "Un docente terminó el periodo con un promedio por debajo del umbral de revisión."
+          + " Revísalo en acciones sugeridas."),
   VENTANA_CERRADA("Etapa cerrada", "Una etapa del periodo se cerró. Revisa el panel por programa."),
   VENTANA_ABIERTA("Etapa abierta", "Se abrió una etapa del periodo en la que participas."),
   ASISTENCIA_CONFIRMADA(

@@ -1,5 +1,5 @@
 import { ClipboardList, RefreshCw, Search, SlidersHorizontal, X } from 'lucide-react'
-import { useMemo } from 'react'
+import { useCallback, useMemo } from 'react'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { BotonAccion } from '../../../shared/components/ui/BotonAccion/BotonAccion.jsx'
@@ -10,6 +10,8 @@ import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { useFiltrosUrl, usePaginacion } from '../../../shared/hooks/usePaginacion.js'
 import { normalizarTexto } from '../../../shared/utils/formatters.js'
 import { obtenerPendientesCoevaluacion } from '../services/formulariosService.js'
+import { MensajeIA } from '../../analisis/components/DocenteIA.jsx'
+import { obtenerPanorama } from '../../analisis/services/analisisService.js'
 import { ROLES } from '../../../shared/constants/dominio.js'
 import { useSesion } from '../../auth/sesionContext.js'
 import '../components/FormularioInstrumento.css'
@@ -31,6 +33,24 @@ export default function Coevaluaciones() {
   const { busqueda, programa, estado } = filtros
 
   const docentes = useMemo(() => datos?.docentes ?? [], [datos])
+  // Qué docentes ya tienen análisis de comentarios: una coevaluación enviada sin él se rectifica.
+  const idPeriodo = datos?.periodo?.idPeriodo
+  const cargarPanorama = useCallback(
+    () => (idPeriodo ? obtenerPanorama(idPeriodo) : Promise.resolve(null)),
+    [idPeriodo],
+  )
+  const panorama = useFetch(cargarPanorama, [cargarPanorama])
+  const analizados = useMemo(
+    () =>
+      new Set(
+        (panorama.datos?.docentes ?? [])
+          .filter((f) => f.estado === 'COMPLETADO')
+          .map((f) => String(f.docente.idDocente)),
+      ),
+    [panorama.datos],
+  )
+  const sinAnalisis = (d) => panorama.datos && d.estado === 'ENVIADA' && !analizados.has(String(d.idDocente))
+  const porRectificar = docentes.filter(sinAnalisis).length
   const programas = useMemo(() => [...new Set(docentes.map((d) => d.programa))].sort(), [docentes])
   const filas = useMemo(() => {
     const termino = normalizarTexto(busqueda.trim())
@@ -63,6 +83,15 @@ export default function Coevaluaciones() {
       />
       <div className="pagina">
         {cargando && !datos && <Cargando texto="Cargando coevaluaciones" bloques={1} />}
+        {porRectificar > 0 && (
+          <MensajeIA robot="senala" tono="alerta" tamano="compacto" titulo="Coevaluaciones hechas sin el análisis de comentarios">
+            <p>
+              {porRectificar === 1 ? 'Una coevaluación se envió' : `${porRectificar} coevaluaciones se enviaron`} antes de
+              analizar los comentarios de los estudiantes. Analízalos y, si cambian tu valoración, rectifica esa
+              calificación con «Solicitar corrección». Las marqué como «Sin análisis de IA».
+            </p>
+          </MensajeIA>
+        )}
         {error && (
           <EstadoVista tipo="error" titulo="No fue posible cargar las coevaluaciones" mensaje={error.message}>
             <Boton icono={RefreshCw} onClick={recargar}>Intentar de nuevo</Boton>
@@ -147,6 +176,14 @@ export default function Coevaluaciones() {
                       <td data-etiqueta="Programa">{d.programa}</td>
                       <td data-etiqueta="Estado">
                         <span className={`pildora pildora--${ESTADO[d.estado].clase}`}>{ESTADO[d.estado].etiqueta}</span>
+                        {sinAnalisis(d) && (
+                          <span
+                            className="pildora pildora--alerta coevaluaciones__sin-analisis"
+                            title="Se hizo sin el análisis de comentarios de los estudiantes"
+                          >
+                            Sin análisis de IA
+                          </span>
+                        )}
                       </td>
                       <td data-etiqueta="Avance">
                         <span className="coevaluaciones__avance">

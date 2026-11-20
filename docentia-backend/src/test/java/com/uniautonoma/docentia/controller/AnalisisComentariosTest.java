@@ -227,22 +227,22 @@ class AnalisisComentariosTest extends PruebaIntegracion {
   }
 
   @Test
-  void elFormularioSeAnalizaSoloConLaRecoleccionCerrada() throws Exception {
+  void elFormularioSeAnalizaAunqueLaRecoleccionSigaAbierta() throws Exception {
     escenario.abrirEtapa(
         periodo,
         TipoEtapa.RECOLECCION_CALIFICACIONES,
         BaseDatosPruebaConfig.HOY.minusDays(3),
         BaseDatosPruebaConfig.HOY.plusDays(3));
     responder(docente, periodo, COMENTARIOS);
-
-    solicitar(docente, periodo, "FORMULARIO").andExpect(status().isConflict());
     analisis(coordinador, docente)
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.estado").value("NO_DISPONIBLE_AUN"))
-        .andExpect(jsonPath("$.motivo").value("VENTANA_ABIERTA"))
-        .andExpect(jsonPath("$.resultado").doesNotExist());
-    assertThat(jdbcTemplate.queryForObject("select count(*) from solicitudes_analisis", Long.class))
-        .isZero();
+        .andExpect(jsonPath("$.motivo").value("SIN_SOLICITAR"));
+
+    // Se analiza cuando se necesite, con los comentarios que ya hay.
+    solicitar(docente, periodo, "FORMULARIO").andExpect(status().isAccepted());
+    procesarCola();
+    analisis(coordinador, docente).andExpect(jsonPath("$.estado").value("COMPLETADO"));
   }
 
   @Test
@@ -548,7 +548,12 @@ class AnalisisComentariosTest extends PruebaIntegracion {
     }
     assertThat(resumen.get("docentesConAnalisis").asInt()).isEqualTo(3);
     assertThat(resumen.get("nComentarios").asInt()).isEqualTo(suma);
-    assertThat(resumen.toString()).doesNotContain("Ana María").doesNotContain("docenteId");
+    // Cada tema dice a qué docentes se refiere, pero nunca trae comentarios.
+    assertThat(resumen.at("/temas/0/listaDocentes").isArray()).isTrue();
+    assertThat(resumen.toString())
+        .doesNotContain("Explica muy bien")
+        .doesNotContain("se demoran mucho")
+        .doesNotContain("fragmento");
   }
 
   @Test

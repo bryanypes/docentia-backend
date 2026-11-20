@@ -80,7 +80,7 @@ public class LectorRespuestaAnalisis {
       for (JsonNode cita : citas) {
         propuestas.add(new CitaPropuesta(leerIdentificador(cita).orElse(null), null));
       }
-      propuestos.add(new HallazgoPropuesto(tipo, texto, propuestas));
+      propuestos.add(new HallazgoPropuesto(tipo, texto, propuestas, criterio(nodo.path("k"))));
     }
     return propuestos;
   }
@@ -101,7 +101,13 @@ public class LectorRespuestaAnalisis {
               leerIdentificador(cita.path("comentarioId")).orElse(null),
               textoObligatorio(cita.path("fragmento"), "fragmento")));
     }
-    return new HallazgoPropuesto(tipo, texto, propuestas);
+    return new HallazgoPropuesto(tipo, texto, propuestas, criterio(nodo.path("criterio")));
+  }
+
+  /** C1 a C6, o nulo: un criterio desconocido no invalida la respuesta. */
+  private static String criterio(JsonNode nodo) {
+    String codigo = nodo.isTextual() ? nodo.asText().strip().toUpperCase() : "";
+    return CriteriosEvaluacion.existe(codigo) ? codigo : null;
   }
 
   private Optional<Long> leerIdentificador(JsonNode nodo) {
@@ -146,7 +152,16 @@ public class LectorRespuestaAnalisis {
     return texto;
   }
 
-  public record HallazgoPropuesto(TipoHallazgo tipo, String texto, List<CitaPropuesta> citas) {}
+  /**
+   * @param criterio criterio de la evaluación (C1 a C6) al que se refiere; nulo si no vino
+   */
+  public record HallazgoPropuesto(
+      TipoHallazgo tipo, String texto, List<CitaPropuesta> citas, String criterio) {
+
+    public HallazgoPropuesto(TipoHallazgo tipo, String texto, List<CitaPropuesta> citas) {
+      this(tipo, texto, citas, null);
+    }
+  }
 
   /**
    * @param comentarioId nulo si el modelo no dio un identificador numérico

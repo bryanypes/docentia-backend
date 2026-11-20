@@ -6,7 +6,8 @@ import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabez
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { BotonAccion } from '../../../shared/components/ui/BotonAccion/BotonAccion.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
-import { EtiquetaNivel } from '../../../shared/components/ui/EtiquetaNivel/EtiquetaNivel.jsx'
+import { EtiquetaNivel, MarcaRevision } from '../../../shared/components/ui/EtiquetaNivel/EtiquetaNivel.jsx'
+import { paraRevisar, textoUmbral, useUmbralRevision } from '../../kpis/hooks/useUmbralRevision.js'
 import { Paginacion } from '../../../shared/components/ui/Paginacion/Paginacion.jsx'
 import { ETIQUETA_FUENTE, FUENTE_DEL_ROL, NIVELES, ROLES } from '../../../shared/constants/dominio.js'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
@@ -35,11 +36,13 @@ const ESTADOS = {
   FALTA_MI_NOTA: 'FALTA_MI_NOTA',
   INCOMPLETOS: 'INCOMPLETOS',
   COMPLETOS: 'COMPLETOS',
+  PARA_REVISAR: 'PARA_REVISAR',
 }
 
-function cumpleEstado(promedio, estado, miFuente) {
+function cumpleEstado(promedio, estado, miFuente, umbral) {
   if (!estado) return true
   if (!promedio) return false
+  if (estado === ESTADOS.PARA_REVISAR) return paraRevisar(promedio, umbral)
   if (estado === ESTADOS.COMPLETOS) return promedio.estado === 'COMPLETO'
   if (estado === ESTADOS.INCOMPLETOS) return promedio.estado !== 'COMPLETO'
   return Boolean(miFuente) && promedio.fuentesPendientes.includes(miFuente)
@@ -61,8 +64,15 @@ function compararPorPuntaje(a, b, ascendente = false) {
  * Una sola etiqueta por fila: el nivel si está completa; si no, cuántas faltan (o que falta la tuya,
  * que es lo accionable). Qué fuentes faltan se ve al pasar el mouse y lo leen los lectores de pantalla.
  */
-function EstadoEvaluacion({ promedio, faltaMia, evaluadoEsCoordinador }) {
-  if (!promedio || promedio.estado === 'COMPLETO') return <EtiquetaNivel promedio={promedio} />
+function EstadoEvaluacion({ promedio, faltaMia, evaluadoEsCoordinador, umbral }) {
+  if (!promedio || promedio.estado === 'COMPLETO') {
+    return (
+      <>
+        <EtiquetaNivel promedio={promedio} />
+        {paraRevisar(promedio, umbral) && <MarcaRevision umbral={umbral} />}
+      </>
+    )
+  }
   const faltan = promedio.fuentesPendientes.length
   const detalle = `Falta: ${listarFuentes(promedio.fuentesPendientes, evaluadoEsCoordinador)}`
   return (
@@ -74,6 +84,7 @@ function EstadoEvaluacion({ promedio, faltaMia, evaluadoEsCoordinador }) {
 }
 
 export default function Docentes() {
+  const umbral = useUmbralRevision()
   const { usuario } = useSesion()
   const navegar = useNavigate()
   const esVicerrector = usuario.rol === ROLES.VICERRECTOR
@@ -112,14 +123,14 @@ export default function Docentes() {
       .filter(
         ({ docente, promedio }) =>
           (!programa || docente.nombrePrograma === programa) &&
-          cumpleEstado(promedio, estado, miFuente) &&
+          cumpleEstado(promedio, estado, miFuente, umbral) &&
           (!nivel || (promedio?.estado === 'COMPLETO' && promedio.categoria?.codigo === nivel)) &&
           (!estadoProceso || procesoPorDocente.get(docente.idDocente)?.estado === estadoProceso) &&
           (!termino ||
             normalizarTexto(`${docente.nombreCompleto} ${docente.correo} ${docente.nombrePrograma}`).includes(termino)),
       )
       .sort((a, b) => compararPorPuntaje(a, b, ascendente))
-  }, [lista, programa, estado, nivel, ascendente, estadoProceso, procesoPorDocente, miFuente, busqueda])
+  }, [lista, programa, estado, nivel, ascendente, estadoProceso, procesoPorDocente, miFuente, busqueda, umbral])
 
   const paginacion = usePaginacion(filas)
 
@@ -229,6 +240,7 @@ export default function Docentes() {
               <option value={ESTADOS.FALTA_MI_NOTA}>Falta mi calificación</option>
               <option value={ESTADOS.INCOMPLETOS}>Incompletas</option>
               <option value={ESTADOS.COMPLETOS}>Completas</option>
+              <option value={ESTADOS.PARA_REVISAR}>Para revisar (menos de {textoUmbral(umbral)})</option>
             </select>
           </label>
 
@@ -338,7 +350,7 @@ export default function Docentes() {
                             {d.nombrePrograma ?? `Coordinación · ${d.nombreFacultad}`}
                           </td>
                           <td data-etiqueta="Evaluación">
-                            <EstadoEvaluacion promedio={promedio} faltaMia={faltaMia} evaluadoEsCoordinador={d.esCoordinador} />
+                            <EstadoEvaluacion promedio={promedio} faltaMia={faltaMia} evaluadoEsCoordinador={d.esCoordinador} umbral={umbral} />
                           </td>
                           <td data-etiqueta="Proceso">
                             {procesoPorDocente.get(d.idDocente) ? (

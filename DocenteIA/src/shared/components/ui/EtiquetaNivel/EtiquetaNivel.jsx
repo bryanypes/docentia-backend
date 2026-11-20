@@ -28,3 +28,16 @@ export function EtiquetaNivel({ promedio, evaluadoEsCoordinador = false }) {
   }
   return <ChipCategoria categoria={promedio.categoria} sufijo={promedio.estado === 'PARCIAL' ? ' · parcial' : ''} />
 }
+
+/**
+ * Marca para la vicerrectoría y la coordinación: la nota final quedó por debajo del umbral de
+ * revisión. No es una categoría de la Resolución 074; el docente no la ve.
+ */
+export function MarcaRevision({ umbral }) {
+  const texto = Number(umbral).toFixed(1).replace('.', ',')
+  return (
+    <span className="pildora pildora--alerta marca-revision" title={`Nota final por debajo de ${texto}`}>
+      Para revisar
+    </span>
+  )
+}

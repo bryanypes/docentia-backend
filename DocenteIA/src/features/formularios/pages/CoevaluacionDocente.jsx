@@ -6,6 +6,7 @@ import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabez
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
+import { ComentariosParaCoevaluar } from '../../analisis/components/ComentariosParaCoevaluar.jsx'
 import { SolicitarCorreccion } from '../../correcciones/SolicitarCorreccion.jsx'
 import { FormularioInstrumento } from '../components/FormularioInstrumento.jsx'
 import {
@@ -27,6 +28,8 @@ export default function CoevaluacionDocente() {
     recargar()
   }, [idDocente, recargar])
   const noEncontrado = error?.status === 404
+  // El análisis de comentarios acompaña la coevaluación del periodo activo.
+  const periodoActivo = periodos.datos?.find((p) => p.esActivo)
 
   return (
     <>
@@ -68,6 +71,13 @@ export default function CoevaluacionDocente() {
           >
             {!noEncontrado && <Boton icono={RefreshCw} onClick={recargar}>Intentar de nuevo</Boton>}
           </EstadoVista>
+        )}
+        {datos && !periodo && periodoActivo && (
+          <ComentariosParaCoevaluar
+            idDocente={datos.idDocente}
+            periodoId={periodoActivo.idPeriodo}
+            enviada={datos.estado === 'ENVIADA'}
+          />
         )}
         {datos && (
           <FormularioInstrumento

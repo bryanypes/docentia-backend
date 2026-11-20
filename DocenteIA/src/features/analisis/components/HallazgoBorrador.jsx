@@ -1,4 +1,4 @@
-import { CircleCheck, CircleX } from 'lucide-react'
+import { CircleX, History, MessageSquareQuote } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { Campo } from '../../../shared/components/ui/Campo/Campo.jsx'
@@ -8,20 +8,22 @@ import { formatearFechaHora } from '../../../shared/utils/formatters.js'
 import { ESTADOS_HALLAZGO, ETIQUETA_VERSION } from '../estados.js'
 import { listarVersionesHallazgo } from '../services/analisisService.js'
 
+// Comentarios que se leen de entrada; los demás quedan plegados.
+const CITAS_VISIBLES = 2
+
 function Cita({ cita }) {
-  const Icono = cita.verificada ? CircleCheck : CircleX
   return (
     <li className={`analisis__cita${cita.verificada ? '' : ' analisis__cita--no-verificada'}`}>
       <blockquote>«{cita.fragmento}»</blockquote>
-      <p className="analisis__cita-estado">
-        <Icono size={14} aria-hidden="true" />
-        {cita.verificada
-          ? 'Aparece en el comentario de un estudiante.'
-          : 'No aparece tal cual en ningún comentario enviado: no cuenta como evidencia.'}
-      </p>
-      {cita.comentario && (
+      {!cita.verificada && (
+        <p className="analisis__cita-estado">
+          <CircleX size={14} aria-hidden="true" />
+          No aparece tal cual en ningún comentario enviado: no cuenta como evidencia.
+        </p>
+      )}
+      {cita.comentario && cita.comentario !== cita.fragmento && (
         <details>
-          <summary>Ver el comentario de origen</summary>
+          <summary>Ver el comentario completo</summary>
           <p className="analisis__comentario">{cita.comentario}</p>
         </details>
       )}
@@ -29,22 +31,20 @@ function Cita({ cita }) {
   )
 }
 
-/** Historial del hallazgo: cada versión con quién la hizo, el modelo y la instrucción. */
-function Versiones({ idHallazgo }) {
+/** Quién lo incluyó, descartó o editó, y cuándo. Solo existe si alguien lo cambió. */
+function Historial({ idHallazgo }) {
   const cargar = useCallback(() => listarVersionesHallazgo(idHallazgo), [idHallazgo])
   const { datos, error, cargando } = useFetch(cargar, [cargar])
-  if (cargando) return <p className="campo__ayuda">Cargando versiones…</p>
+  if (cargando) return <p className="campo__ayuda">Cargando el historial…</p>
   if (error) return <ErrorApi error={error} />
-  if (datos.length === 0) return <p className="campo__ayuda">Todavía no tiene cambios.</p>
   return (
     <ol className="analisis__versiones">
       {datos.map((version) => (
         <li key={version.version}>
-          <strong>
-            v{version.version} · {ETIQUETA_VERSION[version.accion] ?? version.accion}
-          </strong>{' '}
-          {version.nombreUsuario ?? version.modelo} · {formatearFechaHora(version.fecha)} · {version.modelo} (
-          {version.versionInstruccion})<p>{version.texto}</p>
+          <strong>{ETIQUETA_VERSION[version.accion] ?? version.accion}</strong>
+          {' · '}
+          {version.nombreUsuario ?? 'DocenteIA'} · {formatearFechaHora(version.fecha)}
+          <p>{version.texto}</p>
           {version.motivo && <p>Motivo: {version.motivo}</p>}
         </li>
       ))}
@@ -52,14 +52,21 @@ function Versiones({ idHallazgo }) {
   )
 }
 
-/** Un hallazgo del borrador con sus citas y, para la coordinación, incluir, descartar o editar. */
+/**
+ * Un hallazgo del borrador: agrupa los comentarios que dicen lo mismo dentro de un criterio de la
+ * evaluación. Para quien revisa: incluir, descartar o editar.
+ */
 export function HallazgoBorrador({ hallazgo, puedeValidar, validando, error, onValidar, onDescartar, onEditar }) {
   const estado = ESTADOS_HALLAZGO[hallazgo.estado] ?? { etiqueta: hallazgo.estado, clase: 'neutro' }
   const sinCita = hallazgo.estado === 'SIN_CITA_VERIFICADA'
   const idAyuda = `ayuda-hallazgo-${hallazgo.idHallazgo}`
   const [modo, setModo] = useState(null)
   const [valor, setValor] = useState('')
-  const [verVersiones, setVerVersiones] = useState(false)
+  const [verHistorial, setVerHistorial] = useState(false)
+  const citas = hallazgo.citas ?? []
+  const visibles = citas.slice(0, CITAS_VISIBLES)
+  const resto = citas.slice(CITAS_VISIBLES)
+  const cambios = hallazgo.cambios ?? 0
 
   function abrir(nuevoModo) {
     setModo(modo === nuevoModo ? null : nuevoModo)
@@ -75,17 +82,44 @@ export function HallazgoBorrador({ hallazgo, puedeValidar, validando, error, onV
   return (
     <article className="analisis__hallazgo">
       <header className="analisis__hallazgo-cabecera">
-        <p className="analisis__hallazgo-texto">{hallazgo.texto}</p>
+        <div className="analisis__hallazgo-titulo">
+          {hallazgo.nombreCriterio && (
+            <p className="analisis__criterio" title="Criterio de la evaluación docente">
+              {hallazgo.criterio} · {hallazgo.nombreCriterio}
+            </p>
+          )}
+          <p className="analisis__hallazgo-texto">{hallazgo.texto}</p>
+        </div>
         <span className={`pildora pildora--${estado.clase}`}>{estado.etiqueta}</span>
       </header>
-      {hallazgo.citas.length === 0 ? (
-        <p className="campo__ayuda">El análisis no aportó ninguna cita para este hallazgo.</p>
+      {citas.length === 0 ? (
+        <p className="campo__ayuda">El análisis no aportó ningún comentario que lo respalde.</p>
       ) : (
-        <ul className="analisis__citas">
-          {hallazgo.citas.map((cita) => (
-            <Cita key={cita.idCita} cita={cita} />
-          ))}
-        </ul>
+        <>
+          <p className="analisis__respaldo">
+            <MessageSquareQuote size={15} aria-hidden="true" />
+            {citas.length === 1
+              ? 'Lo respalda 1 comentario de un estudiante'
+              : `Lo respaldan ${citas.length} comentarios de estudiantes`}
+          </p>
+          <ul className="analisis__citas">
+            {visibles.map((cita) => (
+              <Cita key={cita.idCita} cita={cita} />
+            ))}
+          </ul>
+          {resto.length > 0 && (
+            <details className="analisis__mas-citas">
+              <summary>
+                Ver {resto.length === 1 ? 'el otro comentario' : `los otros ${resto.length} comentarios`}
+              </summary>
+              <ul className="analisis__citas">
+                {resto.map((cita) => (
+                  <Cita key={cita.idCita} cita={cita} />
+                ))}
+              </ul>
+            </details>
+          )}
+        </>
       )}
       <ErrorApi error={error} />
       {puedeValidar && (
@@ -136,10 +170,14 @@ export function HallazgoBorrador({ hallazgo, puedeValidar, validando, error, onV
           </Boton>
         </form>
       )}
-      <details onToggle={(e) => setVerVersiones(e.currentTarget.open)}>
-        <summary>Ver versiones</summary>
-        {verVersiones && <Versiones key={hallazgo.estado + hallazgo.texto} idHallazgo={hallazgo.idHallazgo} />}
-      </details>
+      {cambios > 0 && (
+        <details className="analisis__historial" onToggle={(e) => setVerHistorial(e.currentTarget.open)}>
+          <summary>
+            <History size={14} aria-hidden="true" /> Historial de cambios ({cambios})
+          </summary>
+          {verHistorial && <Historial key={hallazgo.estado + hallazgo.texto} idHallazgo={hallazgo.idHallazgo} />}
+        </details>
+      )}
     </article>
   )
 }
