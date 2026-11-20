@@ -32,6 +32,7 @@ public record ActaResponse(
     String hashPdf,
     LocalDateTime fechaFirma,
     Long idActaAnterior,
+    String observaciones,
     String motivoCorreccion) {
 
   public static ActaResponse desde(Acta acta) {
@@ -64,6 +65,7 @@ public record ActaResponse(
         acta.getHashPdf(),
         acta.getFechaFirma(),
         acta.getIdActaAnterior(),
+        acta.getObservaciones(),
         acta.getMotivoCorreccion());
   }
 

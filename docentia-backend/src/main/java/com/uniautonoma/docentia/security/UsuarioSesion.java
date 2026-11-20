@@ -89,6 +89,10 @@ public record UsuarioSesion(
     return rol == Rol.VICERRECTOR;
   }
 
+  public boolean esAdministrador() {
+    return rol == Rol.ADMINISTRADOR;
+  }
+
   public boolean esDocente() {
     return rol == Rol.DOCENTE;
   }
