@@ -1,0 +1,384 @@
+.verificacion {
+  min-height: 100vh;
+  padding: 32px 16px;
+  background: var(--color-fondo);
+}
+
+.verificacion__hoja {
+  display: grid;
+  gap: 16px;
+  max-width: 680px;
+  margin: 0 auto;
+  padding: 28px 32px;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-top: 4px solid var(--color-azul);
+  border-radius: 12px;
+  box-shadow: 0 6px 24px rgb(5 54 134 / 8%);
+}
+
+.verificacion__membrete {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-bottom: 14px;
+  border-bottom: 2px solid var(--color-azul);
+  box-shadow: 0 3px 0 -2px var(--color-amarillo-oscuro);
+}
+
+.verificacion__membrete img {
+  width: 120px;
+  height: auto;
+  flex: none;
+}
+
+.verificacion__membrete > div {
+  padding-left: 14px;
+  border-left: 1px solid var(--color-borde);
+}
+
+.verificacion__institucion {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--color-azul);
+  text-transform: uppercase;
+}
+
+.verificacion__dependencia {
+  margin: 2px 0 0;
+  font-size: 13px;
+  color: var(--color-texto-tenue);
+}
+
+.verificacion__titulo {
+  margin: 6px 0 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 24px;
+  text-align: center;
+  color: var(--color-azul);
+}
+
+.verificacion__ayuda {
+  margin: 0;
+  text-align: center;
+  color: var(--color-texto-secundario);
+}
+
+.verificacion__pie {
+  margin: 4px 0 0;
+  font-size: 13px;
+  text-align: center;
+}
+
+/* Campo del código: compartido con la búsqueda de la administración. */
+.codigo-acta {
+  display: grid;
+  gap: 6px;
+}
+
+.codigo-acta__fila {
+  display: flex;
+  gap: 8px;
+}
+
+.codigo-acta__control {
+  flex: 1;
+  min-width: 0;
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.verificacion__resultado {
+  display: flex;
+  align-items: flex-start;
+  gap: 14px;
+  padding: 18px;
+  border: 1px solid;
+  border-radius: 10px;
+}
+
+.verificacion__resultado > svg {
+  flex: none;
+}
+
+.verificacion__resultado h2 {
+  margin: 0 0 4px;
+  font-size: 18px;
+}
+
+.verificacion__resultado p {
+  margin: 0;
+}
+
+.verificacion__resultado--valida {
+  color: var(--color-exito-texto);
+  background: var(--color-exito-fondo);
+  border-color: var(--color-exito-borde);
+}
+
+.verificacion__resultado--anulada {
+  color: var(--color-alerta-texto);
+  background: var(--color-alerta-fondo);
+  border-color: var(--color-amarillo);
+}
+
+.verificacion__resultado--error {
+  color: var(--color-error);
+  background: var(--color-error-fondo);
+  border-color: var(--color-error-borde);
+}
+
+.verificacion__datos {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 6px 16px;
+  margin: 14px 0 0;
+  color: var(--color-texto);
+  font-size: 14px;
+}
+
+.verificacion__datos dt {
+  font-weight: 600;
+  color: var(--color-texto-tenue);
+}
+
+.verificacion__datos dd {
+  margin: 0;
+  min-width: 0;
+}
+
+.verificacion__huella {
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 560px) {
+  .verificacion {
+    padding: 16px;
+  }
+
+  .verificacion__hoja {
+    padding: 20px 16px;
+  }
+
+  .verificacion__membrete {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .verificacion__membrete > div {
+    padding-left: 0;
+    border-left: 0;
+  }
+
+  .codigo-acta__fila {
+    flex-direction: column;
+  }
+
+  .verificacion__datos {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .verificacion__datos dd {
+    margin-bottom: 8px;
+  }
+}
+
+/* Registro de actas (administración y vicerrectoría) */
+.registro-actas__buscador {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.registro-actas__busqueda {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.registro-actas__busqueda > svg {
+  position: absolute;
+  left: 13px;
+  color: var(--color-texto-tenue);
+  pointer-events: none;
+}
+
+.registro-actas__busqueda .campo__control {
+  width: 100%;
+  min-height: 46px;
+  padding-left: 40px;
+  font-size: 15px;
+}
+
+.registro-actas__filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px 18px;
+  margin-bottom: 14px;
+}
+
+.registro-actas__tipos {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.registro-actas__tipo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 6px 14px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--color-texto-secundario);
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde);
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.registro-actas__tipo:hover {
+  border-color: var(--color-azul-claro);
+}
+
+.registro-actas__tipo--activo {
+  color: #fff;
+  background: var(--color-azul);
+  border-color: var(--color-azul);
+}
+
+.registro-actas__cuenta {
+  min-width: 22px;
+  padding: 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  text-align: center;
+  color: var(--color-azul);
+  background: var(--color-azul-suave);
+  border-radius: 999px;
+}
+
+.registro-actas__casilla {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.registro-actas__tabla td {
+  vertical-align: middle;
+}
+
+.registro-actas__secundario {
+  display: block;
+  font-size: 12.5px;
+  color: var(--color-texto-tenue);
+}
+
+.registro-actas__codigo {
+  display: block;
+  margin-top: 2px;
+  font-family: ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  font-size: 11.5px;
+  color: var(--color-texto-apagado);
+}
+
+.registro-actas__acciones {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+.registro-actas__detalle {
+  display: grid;
+  gap: 14px;
+}
+
+.registro-actas__detalle .verificacion__datos {
+  margin: 0;
+}
+
+.registro-actas__pie {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--color-borde-suave);
+}
+
+.registro-actas__pie .boton--enlace {
+  margin-left: auto;
+}
+
+.registro-actas__huella {
+  font-size: 12.5px;
+  color: var(--color-texto-tenue);
+}
+
+.registro-actas__huella summary {
+  cursor: pointer;
+}
+
+.registro-actas__huella code {
+  display: block;
+  margin-top: 6px;
+  font-size: 11.5px;
+  overflow-wrap: anywhere;
+}
+
+/* En pantallas pequeñas cada acta es una tarjeta: nombre arriba, etiquetas y botones debajo. */
+@media (max-width: 760px) {
+  .registro-actas__tabla thead,
+  .registro-actas__opcional {
+    display: none;
+  }
+
+  .registro-actas__tabla,
+  .registro-actas__tabla tbody {
+    display: block;
+  }
+
+  .registro-actas__tabla tr {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px;
+    padding: 14px;
+    border-bottom: 1px solid var(--color-borde-suave);
+  }
+
+  .registro-actas__tabla tbody tr:last-child {
+    border-bottom: 0;
+  }
+
+  .registro-actas__tabla td {
+    display: block;
+    padding: 0;
+    border: 0;
+  }
+
+  .registro-actas__tabla td:first-child,
+  .registro-actas__tabla td:last-child {
+    flex-basis: 100%;
+  }
+
+  .registro-actas__acciones {
+    justify-content: flex-start;
+  }
+
+  .registro-actas__acciones .boton {
+    flex: 1;
+  }
+}

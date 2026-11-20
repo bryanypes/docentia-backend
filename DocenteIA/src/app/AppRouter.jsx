@@ -20,6 +20,7 @@ const CambiarContrasena = lazy(() => import('../features/auth/pages/CambiarContr
 const MiPerfil = lazy(() => import('../features/perfil/pages/MiPerfil.jsx'))
 const AccionesSugeridas = lazy(() => import('../features/actas/pages/AccionesSugeridas.jsx'))
 const VerificarActa = lazy(() => import('../features/actas/pages/VerificarActa.jsx'))
+const BuscarActa = lazy(() => import('../features/actas/pages/BuscarActa.jsx'))
 const MiActa = lazy(() => import('../features/actas/pages/MiActa.jsx'))
 const CoevaluacionDocente = lazy(() => import('../features/formularios/pages/CoevaluacionDocente.jsx'))
 const Coevaluaciones = lazy(() => import('../features/formularios/pages/Coevaluaciones.jsx'))
@@ -66,6 +67,7 @@ function RutasDocentia() {
           <Route path="/tutoriales" element={<Tutoriales />} />
           <Route path="/recuperar-contrasena" element={<RecuperarContrasena />} />
           <Route path="/restablecer-contrasena" element={<RecuperarContrasena />} />
+          <Route path="/verificar-acta" element={<VerificarActa />} />
           <Route path="/verificar-acta/:codigo" element={<VerificarActa />} />
 
           <Route element={<ProtectedRoute />}>
@@ -117,6 +119,7 @@ function RutasDocentia() {
               {/* Vicerrectoría decide fechas y lee la configuración; administración la gestiona. */}
               <Route element={<ProtectedRoute rolesPermitidos={[ROLES.VICERRECTOR, ROLES.ADMINISTRADOR]} />}>
                 <Route path="/periodos" element={<Periodos />} />
+                <Route path="/buscar-acta" element={<BuscarActa />} />
                 <Route path="/ponderaciones" element={<Ponderaciones />} />
                 <Route path="/programas" element={<Programas />} />
                 {/* Crear y editar se abren como modal sobre la lista */}

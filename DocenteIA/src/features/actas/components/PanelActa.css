@@ -323,3 +323,10 @@
     font-weight: var(--peso-semi);
   }
 }
+
+.acta__observaciones {
+  margin: 0;
+  white-space: pre-line;
+  line-height: 1.55;
+  color: var(--color-texto-secundario);
+}

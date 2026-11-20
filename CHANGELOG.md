@@ -2,7 +2,27 @@
 
 ## Sin versión (19 de noviembre de 2026)
 
-Backend y frontend juntos. Sin migraciones: la base sigue en V48.
+Backend y frontend juntos. Migración nueva: la base pasa de V48 a **V49**.
+
+- **PDF del acta como documento institucional**: membrete con el logo y el nombre de la Corporación
+  Universitaria Autónoma del Cauca (sin el título DOCENTIA), código y «Página N de M» arriba a la
+  derecha, título centrado, secciones numeradas, texto en serif justificado y bloque de firmas con
+  nombre, cargo, correo y fecha. Se redacta como carta, sin tablas: lugar, fecha y hora de la
+  reunión, escuela y programa del docente, cargo de quien evaluó, resultado, fortalezas y aspectos
+  por mejorar del análisis de IA validado (sin conteos de comentarios), lo tratado en la reunión y
+  los compromisos con su plazo. Ya no muestra la versión del acta. Dice «Escuela» donde decía
+  «Facultad». Las actas firmadas antes conservan su PDF.
+- **Lo tratado en la reunión** (V49): quien evalúa escribe, antes de la primera firma, lo que se
+  habló en la reunión; va en el PDF y entra en la huella del contenido. Una vez firmada, el
+  disparador de la base impide cambiarlo.
+- **Verificación con la dirección del despliegue**: el enlace impreso apunta a
+  `https://nova.uniautonoma.edu.co/Evadocente-app/verificar-acta/<código>` (configurable con
+  `DOCENTIA_ACTAS_URL_VERIFICACION`). La página pública de verificación tiene membrete, deja escribir
+  el código (también en `/verificar-acta` sin código) y ya no muestra la versión.
+- **Actas firmadas** (administración y vicerrectoría): registro de todas las actas firmadas con
+  buscador por docente, programa o código, filtro por tipo, vigentes y reemplazadas, detalle de quién
+  firmó y descarga del PDF. La administración puede descargar cualquier acta; cada descarga queda en
+  la auditoría. Nuevos `GET /actas/registro` y `GET /actas/codigo/{codigo}` (sin nota ni categoría).
 
 - **Análisis de IA desde la vicerrectoría**: la vicerrectoría pide el análisis de comentarios de
   cualquier docente o coordinador. Valida, descarta, edita y publica los hallazgos de los

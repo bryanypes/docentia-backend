@@ -6,6 +6,7 @@ import {
   ChartColumnBig,
   ClipboardCheck,
   ClipboardList,
+  FileSearch,
   FileSignature,
   GraduationCap,
   LayoutDashboard,
@@ -82,6 +83,7 @@ const NAVEGACION = {
         { ruta: '/panel-programas', etiqueta: 'Panel por programa', Icono: ChartColumn },
         { ruta: '/periodos', etiqueta: 'Periodos', Icono: CalendarRange },
         { ruta: '/solicitudes-correccion', etiqueta: 'Solicitudes de corrección', Icono: LifeBuoy },
+        { ruta: '/buscar-acta', etiqueta: 'Actas firmadas', Icono: FileSearch },
       ],
     },
     // La vicerrectoría evalúa a los coordinadores en el lugar de la coordinación.
@@ -102,6 +104,7 @@ const NAVEGACION = {
         { ruta: '/ponderaciones', etiqueta: 'Ponderaciones', Icono: Scale },
         { ruta: '/periodos', etiqueta: 'Periodos', Icono: CalendarRange },
         { ruta: '/solicitudes-correccion', etiqueta: 'Solicitudes de corrección', Icono: LifeBuoy },
+        { ruta: '/buscar-acta', etiqueta: 'Actas firmadas', Icono: FileSearch },
       ],
     },
   ],
