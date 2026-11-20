@@ -295,3 +295,31 @@
     justify-self: end;
   }
 }
+
+@media (max-width: 720px) {
+  .acciones__tabla {
+    overflow: visible;
+  }
+
+  .acciones__lista.tabla--apilable tr {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 12px;
+  }
+
+  .acciones__lista.tabla--apilable td {
+    padding: 0;
+    border: 0;
+    text-align: left;
+  }
+
+  .acciones__lista .acciones__docente,
+  .acciones__lista .acciones__accion {
+    grid-column: 1 / -1;
+  }
+
+  .acciones__lista .acciones__docente {
+    font-size: 15px;
+    font-weight: var(--peso-semi);
+  }
+}

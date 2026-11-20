@@ -474,3 +474,74 @@
     padding: 10px 12px;
   }
 }
+
+/* Filtros: en escritorio todos a la vista; en el celular se despliegan con "Filtrar". */
+.docentes__selectores {
+  display: contents;
+}
+
+button.docentes__filtros-rotulo {
+  border: 0;
+  font: inherit;
+  font-size: 13px;
+  font-weight: var(--peso-semi);
+  cursor: default;
+}
+
+.docentes__filtros-cantidad {
+  display: inline-grid;
+  place-items: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--color-amarillo);
+  color: var(--color-azul);
+  font-size: 11px;
+}
+
+@media (max-width: 720px) {
+  button.docentes__filtros-rotulo {
+    cursor: pointer;
+  }
+
+  .docentes__filtros-rotulo:focus-visible {
+    outline: 2px solid var(--color-foco);
+    outline-offset: 2px;
+  }
+
+  .docentes__selectores {
+    display: none;
+  }
+
+  .docentes__filtros--abiertos .docentes__selectores {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+    flex-basis: 100%;
+  }
+
+  /* Tarjeta compacta: programa a lo ancho; evaluación, proceso y promedio en dos columnas. */
+  .docentes__tabla.tabla--apilable tr {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px 12px;
+  }
+
+  .docentes__tabla.tabla--apilable td {
+    padding: 0;
+    border: 0;
+  }
+
+  .docentes__tabla.tabla--apilable td:first-child,
+  .docentes__tabla.tabla--apilable td[data-etiqueta='Programa'],
+  .docentes__tabla.tabla--apilable td.docentes__accion {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 380px) {
+  .docentes__filtros--abiertos .docentes__selectores {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

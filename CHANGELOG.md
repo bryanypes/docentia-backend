@@ -13,6 +13,10 @@ Backend y frontend juntos. Sin migraciones: la base sigue en V48.
 - **Imprimir resumen** del expediente rediseñado: logo de la Uniautónoma, DOCENTIA y el robot de la
   IA, la nota final con su nivel, las notas por evaluador con barras y los compromisos. Ya se imprime
   completo (antes el navegador lo recortaba).
+- **Responsividad**: en el celular, Usuarios ya no se sale de la pantalla (filtros a lo ancho, tabla
+  sin ancho mínimo, títulos de facultad que parten línea); los filtros de Docentes se pliegan bajo
+  **Filtrar** y sus tarjetas son compactas; Acciones sugeridas muestra una tarjeta por docente con
+  promedio, categoría y acción.
 
 ## 0.4.3 (18 de noviembre de 2026)
 

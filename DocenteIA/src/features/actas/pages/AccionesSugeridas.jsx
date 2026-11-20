@@ -86,7 +86,7 @@ export default function AccionesSugeridas() {
         {acciones.datos?.length > 0 && (
           <Panel titulo="Por docente" icono={Lightbulb}>
             <div className="acciones__tabla">
-              <table className="tabla">
+              <table className="tabla tabla--apilable acciones__lista">
                 <thead>
                   <tr>
                     <th scope="col">Docente</th>
@@ -101,18 +101,20 @@ export default function AccionesSugeridas() {
                 <tbody>
                   {paginacion.visibles.map((a) => (
                     <tr key={a.idDocente}>
-                      <td>
+                      <td className="acciones__docente">
                         <Link to={`/docentes/${a.idDocente}`}>{a.nombreDocente}</Link>
                       </td>
-                      <td>{a.programa}</td>
-                      <td className="tabla__numero tabla__fuerte">{formatearNota(a.promedio)}</td>
-                      <td>
+                      <td data-etiqueta="Programa">{a.programa}</td>
+                      <td data-etiqueta="Promedio" className="tabla__numero tabla__fuerte">
+                        {formatearNota(a.promedio)}
+                      </td>
+                      <td data-etiqueta="Categoría">
                         <ChipCategoria
                           categoria={a.categoria}
                           sufijo={a.estadoPromedio === 'PARCIAL' ? ' · parcial' : ''}
                         />
                       </td>
-                      <td>{a.accion}</td>
+                      <td data-etiqueta="Acción" className="acciones__accion">{a.accion}</td>
                     </tr>
                   ))}
                 </tbody>

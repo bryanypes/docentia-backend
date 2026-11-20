@@ -344,3 +344,53 @@
   font-size: 11.5px;
   color: var(--color-texto-tenue);
 }
+
+/* Celular: filtros a lo ancho, tabla sin ancho mínimo y acciones que bajan de línea. */
+@media (max-width: 720px) {
+  .usuarios__filtros {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .usuarios__filtro {
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 4px;
+    width: 100%;
+  }
+
+  .usuarios__filtro .usuarios__selector,
+  .usuarios__buscador {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .usuarios__conteo {
+    margin-left: 0;
+  }
+
+  .usuarios__tabla {
+    min-width: 0;
+  }
+
+  .usuarios__acciones {
+    flex-wrap: wrap;
+  }
+
+  .usuarios__acciones > * {
+    flex: 1 1 auto;
+  }
+
+  .tabla.tabla--apilable.usuarios__tabla .usuarios__grupo-titulo {
+    display: block;
+    width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+    letter-spacing: 0.04em;
+  }
+
+  .usuarios__facultades {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

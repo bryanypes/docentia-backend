@@ -1,5 +1,5 @@
 import { RefreshCw, Search, SlidersHorizontal, X } from 'lucide-react'
-import { useCallback, useMemo } from 'react'
+import { useCallback, useMemo, useState } from 'react'
 import robotSenala from '../../../assets/ilustraciones/robot-senala.svg'
 import { Link, useNavigate } from 'react-router-dom'
 import { Encabezado } from '../../../shared/components/layout/Encabezado/Encabezado.jsx'
@@ -137,6 +137,9 @@ export default function Docentes() {
 
   const alcance = esVicerrector ? 'toda la universidad' : 'tus programas'
   const hayFiltros = Boolean(busqueda || programa || estado || nivel || estadoProceso || idFacultad)
+  // En el celular los selectores van plegados; el botón dice cuántos hay activos.
+  const [filtrosAbiertos, setFiltrosAbiertos] = useState(false)
+  const cantidadFiltros = [programa, estado, nivel, estadoProceso].filter(Boolean).length
 
   return (
     <>
@@ -179,11 +182,22 @@ export default function Docentes() {
             </span>
           </div>
 
-        <div className="docentes__filtros" role="search" aria-label="Filtrar docentes">
-          <span className="docentes__filtros-rotulo">
+        <div
+          className={`docentes__filtros${filtrosAbiertos ? ' docentes__filtros--abiertos' : ''}`}
+          role="search"
+          aria-label="Filtrar docentes"
+        >
+          <button
+            type="button"
+            className="docentes__filtros-rotulo"
+            aria-expanded={filtrosAbiertos}
+            aria-controls="docentes-selectores"
+            onClick={() => setFiltrosAbiertos((abiertos) => !abiertos)}
+          >
             <SlidersHorizontal size={16} aria-hidden="true" />
             Filtrar
-          </span>
+            {cantidadFiltros > 0 && <span className="docentes__filtros-cantidad">{cantidadFiltros}</span>}
+          </button>
           <label className="docentes__buscador">
             <Search size={16} aria-hidden="true" />
             <span className="solo-lectores">Buscar docente</span>
@@ -195,6 +209,7 @@ export default function Docentes() {
             />
           </label>
 
+          <div id="docentes-selectores" className="docentes__selectores">
           <label className="docentes__selector">
             <span className="docentes__etiqueta">Programa</span>
             <select value={programa} onChange={(e) => actualizarFiltros({ programa: e.target.value })}>
@@ -252,6 +267,8 @@ export default function Docentes() {
               ))}
             </select>
           </label>
+
+          </div>
 
           {hayFiltros && (
             <Boton variante="enlace" icono={X} className="docentes__limpiar" onClick={limpiarFiltros}>
