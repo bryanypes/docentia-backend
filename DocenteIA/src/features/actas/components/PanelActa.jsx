@@ -144,7 +144,7 @@ function ModalCompromiso({ acta, ejecutar, ocupado, onCerrar }) {
   )
 }
 
-function Compromisos({ acta, editable, ejecutar, ocupado }) {
+function Compromisos({ acta, editable, ejecutar, ocupado, rolEvaluador }) {
   const [agregando, setAgregando] = useState(false)
   const faltan = editable && acta.requiereCompromisos && acta.compromisos.length === 0
   const titulo = acta.categoria?.codigo === 'BAJO' ? 'Plan de Mejoramiento Profesoral' : 'Compromisos'
@@ -170,7 +170,7 @@ function Compromisos({ acta, editable, ejecutar, ocupado }) {
             <span>
               {editable
                 ? 'Pulsa «Agregar compromiso» para escribir la acción y su plazo.'
-                : 'La coordinación los agrega en la reunión.'}
+                : `${rolEvaluador === ROLES.VICERRECTOR ? 'La vicerrectoría' : 'La coordinación'} los agrega en la reunión.`}
             </span>
           </div>
         </div>
@@ -361,7 +361,7 @@ function DetalleActa({ acta, usuario, papel, rolEvaluador, rolCorrector, ejecuta
             : 'Es la constancia de que el docente recibió la retroalimentación: basta con la confirmación de lectura.'}
         </Aviso>
       )}
-      <Compromisos acta={acta} editable={editable} ejecutar={ejecutar} ocupado={ocupado} />
+      <Compromisos acta={acta} editable={editable} ejecutar={ejecutar} ocupado={ocupado} rolEvaluador={rolEvaluador} />
       <Firma
         acta={acta}
         usuario={usuario}

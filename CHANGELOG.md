@@ -17,6 +17,9 @@ Backend y frontend juntos. Sin migraciones: la base sigue en V48.
   sin ancho mínimo, títulos de facultad que parten línea); los filtros de Docentes se pliegan bajo
   **Filtrar** y sus tarjetas son compactas; Acciones sugeridas muestra una tarjeta por docente con
   promedio, categoría y acción.
+- **Actas de coordinadores**: el PDF y la pantalla dicen «la vicerrectoría» donde antes decían «la
+  coordinación» (reunión, constancia de firmas y quién agrega los compromisos). Se revisó el proceso
+  completo de cita, asistencia, acta, firmas y PDF para docente, coordinador y vicerrectoría.
 
 ## 0.4.3 (18 de noviembre de 2026)
 

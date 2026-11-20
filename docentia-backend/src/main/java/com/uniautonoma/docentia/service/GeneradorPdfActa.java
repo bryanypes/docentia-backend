@@ -149,8 +149,9 @@ public class GeneradorPdfActa {
       if (acta.getTipo() == TipoActa.RETROALIMENTACION) {
         documento.add(
             new Paragraph(
-                "El docente recibió la retroalimentación de su evaluación en reunión con la"
-                    + " coordinación.",
+                "El docente recibió la retroalimentación de su evaluación en reunión con "
+                    + evaluadorDe(acta)
+                    + ".",
                 texto));
       }
 
@@ -239,6 +240,11 @@ public class GeneradorPdfActa {
     return cabecera;
   }
 
+  /** Quién evaluó al docente: la coordinación o, si es un coordinador, la vicerrectoría. */
+  private static String evaluadorDe(Acta acta) {
+    return acta.rolEvaluador() == Rol.VICERRECTOR ? "la vicerrectoría" : "la coordinación";
+  }
+
   /**
    * Rótulo de la firma; la vicerrectoría firma en lugar de la coordinación al evaluar
    * coordinadores.
@@ -318,7 +324,9 @@ public class GeneradorPdfActa {
                 + acta.getDocente().getNombreCompleto()
                 + " ("
                 + acta.getDocente().getCorreo()
-                + ") y la coordinación firmaron esta acta en la plataforma, después de la reunión de"
+                + ") y "
+                + evaluadorDe(acta)
+                + " firmaron esta acta en la plataforma, después de la reunión de"
                 + " retroalimentación del periodo "
                 + acta.getPeriodo().getNombre()
                 + ". DOCENTIA conserva el trazo, la identidad de la cuenta, la fecha y el hash de"
