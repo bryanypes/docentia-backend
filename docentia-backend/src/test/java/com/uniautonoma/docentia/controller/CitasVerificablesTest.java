@@ -168,10 +168,12 @@ class CitasVerificablesTest extends PruebaIntegracion {
     mockMvc
         .perform(post("/analisis-ia/hallazgos/{id}/validacion", hallazgo(0)).with(como(julian)))
         .andExpect(status().isForbidden());
+    // La vicerrectoría revisa los hallazgos de los coordinadores; los de un docente quedan fuera de
+    // su alcance, igual que para la coordinación de otra facultad.
     mockMvc
         .perform(
             post("/analisis-ia/hallazgos/{id}/validacion", hallazgo(0)).with(comoVicerrector()))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isNotFound());
 
     escenario.abrirEtapa(
         entityManager.find(PeriodoAcademico.class, periodo.getIdPeriodo()),
