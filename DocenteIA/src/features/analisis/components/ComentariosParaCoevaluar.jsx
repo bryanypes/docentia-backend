@@ -25,8 +25,9 @@ export function ComentariosParaCoevaluar({ idDocente, periodoId, enviada }) {
   const fila = panorama.datos.docentes.find((f) => String(f.docente.idDocente) === String(idDocente))
   if (!fila) return null
 
-  const comentarios = fila.comentarios
   const analizado = ultima.datos?.estado === 'COMPLETADO'
+  // Con análisis, cuenta lo que ese análisis leyó; sin él, lo que hay hoy.
+  const comentarios = analizado ? (ultima.datos.comentariosRecibidos ?? fila.comentarios) : fila.comentarios
   const hallazgos = (ultima.datos?.borrador?.hallazgos ?? []).filter((h) => h.estado !== 'DESCARTADO')
   const enlace = `/analisis?docente=${encodeURIComponent(idDocente)}&periodo=${encodeURIComponent(periodoId)}`
   const textoComentarios =

@@ -20,7 +20,7 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
  */
 @ConfigurationProperties(prefix = "docentia.ia.analisis")
 public record AnalisisComentariosProperties(
-    @DefaultValue("ia/lexico-v1.txt") String lexico,
+    @DefaultValue("ia/lexico-v2.txt") String lexico,
     @DefaultValue("3") int minimoRecurrencia,
     @DefaultValue("0.2") double porcentajeRecurrencia,
     @DefaultValue("5") int maximoPorLista,

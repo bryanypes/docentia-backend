@@ -25,6 +25,7 @@ public final class Lexico {
 
   private final String version;
   private final Map<String, String> correcciones = new HashMap<>();
+  private final Map<String, String> emojis = new LinkedHashMap<>();
   private final List<Termino> negaciones = new ArrayList<>();
   private final List<Termino> intensificadores = new ArrayList<>();
   private final List<Termino> ironias = new ArrayList<>();
@@ -74,10 +75,13 @@ public final class Lexico {
     boolean exacto = bruto.endsWith("$");
     String texto = exacto ? bruto.substring(0, bruto.length() - 1) : bruto;
     double valor =
-        partes.length > 2 && !seccion.equals("CORRECCION") ? Double.parseDouble(partes[2]) : 1;
+        partes.length > 2 && !seccion.equals("CORRECCION") && !seccion.equals("EMOJI")
+            ? Double.parseDouble(partes[2])
+            : 1;
     Termino termino = new Termino(texto, exacto, valor);
     switch (seccion) {
       case "CORRECCION" -> correcciones.put(texto, partes[2]);
+      case "EMOJI" -> emojis.put(bruto, partes[2]);
       case "NEGACION" -> negaciones.add(termino);
       case "INTENSIFICADOR" -> intensificadores.add(termino);
       case "IRONIA" -> ironias.add(termino);
@@ -99,6 +103,11 @@ public final class Lexico {
 
   public Map<String, String> correcciones() {
     return correcciones;
+  }
+
+  /** Emoji y la palabra por la que se cambia antes de normalizar. */
+  public Map<String, String> emojis() {
+    return emojis;
   }
 
   public List<Termino> negaciones() {

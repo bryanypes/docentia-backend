@@ -36,6 +36,10 @@ public class AnalizadorLocal implements AnalizadorComentarios {
   private final Lexico lexico;
   private final ParametrosAnalisis parametros;
 
+  // Selector de variación, tonos de piel y unión de emojis compuestos.
+  private static final Pattern MODIFICADORES_EMOJI =
+      Pattern.compile("[\\x{FE0E}\\x{FE0F}\\x{200D}\\x{1F3FB}-\\x{1F3FF}]");
+
   public AnalizadorLocal(Lexico lexico, ParametrosAnalisis parametros) {
     this.lexico = lexico;
     this.parametros = parametros;
@@ -305,7 +309,7 @@ public class AnalizadorLocal implements AnalizadorComentarios {
 
   private List<String> tokens(String texto) {
     List<String> tokens = new ArrayList<>();
-    for (String palabra : NormalizadorTexto.comparable(texto).split(" ")) {
+    for (String palabra : NormalizadorTexto.comparable(conEmojis(texto)).split(" ")) {
       if (palabra.isEmpty()) {
         continue;
       }
@@ -313,6 +317,21 @@ public class AnalizadorLocal implements AnalizadorComentarios {
       tokens.addAll(List.of(corregida.split(" ")));
     }
     return tokens;
+  }
+
+  /**
+   * Cambia cada emoji por la palabra del léxico; sin esto se perdería al normalizar. Antes quita
+   * los modificadores (tono de piel, variación, unión) para que "👏🏽" y "❤️" se reconozcan.
+   */
+  private String conEmojis(String texto) {
+    if (lexico.emojis().isEmpty()) {
+      return texto;
+    }
+    String limpio = MODIFICADORES_EMOJI.matcher(texto).replaceAll("");
+    for (Map.Entry<String, String> emoji : lexico.emojis().entrySet()) {
+      limpio = limpio.replace(emoji.getKey(), " " + emoji.getValue() + " ");
+    }
+    return limpio;
   }
 
   private double puntaje(List<String> tokens) {
