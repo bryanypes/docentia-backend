@@ -7,6 +7,8 @@ import { SolicitarCorreccion } from './SolicitarCorreccion.jsx'
 import SolicitudesCorreccion from './SolicitudesCorreccion.jsx'
 
 vi.mock('./correccionesService.js')
+// El panel para reabrir directo pide la lista de usuarios.
+vi.mock('../usuarios/services/usuariosService.js', () => ({ listarUsuarios: () => Promise.resolve([]) }))
 
 const BASE = {
   idSolicitud: 7,
