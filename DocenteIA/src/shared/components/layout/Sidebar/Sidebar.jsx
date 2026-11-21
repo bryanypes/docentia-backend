@@ -1,6 +1,7 @@
 import {
   BookOpen,
   CalendarDays,
+  CalendarCheck,
   CalendarRange,
   ChartColumn,
   ChartColumnBig,
@@ -105,6 +106,7 @@ const NAVEGACION = {
         { ruta: '/periodos', etiqueta: 'Periodos', Icono: CalendarRange },
         { ruta: '/solicitudes-correccion', etiqueta: 'Solicitudes de corrección', Icono: LifeBuoy },
         { ruta: '/buscar-acta', etiqueta: 'Actas firmadas', Icono: FileSearch },
+        { ruta: '/citas-programadas', etiqueta: 'Citas programadas', Icono: CalendarCheck },
       ],
     },
   ],

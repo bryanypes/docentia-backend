@@ -1,5 +1,27 @@
 # Cambios
 
+## Sin versión (20 de noviembre de 2026)
+
+Backend y frontend juntos. Sin migraciones: la base sigue en V50.
+
+- **Léxico v2 del análisis local** (`lexico-2026.11-v2`, por defecto): entiende jerga colombiana y
+  juvenil («melo», «brutal», «crack», «se rifa», «una nota», «qué chimba», «maluco», «jarto», «qué
+  pereza», «se la monta»…), abreviaturas de chat («xk», «bn», «tmbn», «pa», «nd»), risas («jajaja»,
+  «xd», sin peso en el sentido) y emojis (😍 🔥 👏 ❤️ positivos; 😴 🙄 👎 😡 negativos), con tono de
+  piel o no. Las métricas del conjunto de validación no bajan frente al v1. El v1 se conserva.
+- **Instrucción `analisis-v5`** para el modelo externo: interpreta la jerga, las abreviaturas y los
+  emojis por su sentido y redacta los hallazgos en español formal.
+- La coevaluación cuenta los comentarios que leyó el análisis.
+- **La administración reabre directo**: en «Solicitudes de corrección» elige un docente, ve su
+  autoevaluación y su coevaluación del periodo (quién la respondió y cuándo, sin puntajes) y reabre
+  la que haga falta con un motivo, sin solicitud ni verificación del superior. Quien la respondió
+  recibe el aviso «Formulario reabierto» y la vuelve a hacer; queda como solicitud atendida y en la
+  auditoría. No se reabre si el acta del periodo ya está firmada. Nuevos
+  `GET /solicitudes-reapertura/formularios` y `POST /solicitudes-reapertura/formularios/{id}/reapertura`.
+- **Citas programadas** (administración): todas las citas agendadas del periodo, coordinación con sus
+  docentes y vicerrectoría con los coordinadores, agrupadas por día, con buscador y filtros por tipo y
+  estado (por confirmar, confirmada, asistió). Solo lectura y sin notas. Nuevo `GET /citas/programadas`.
+
 ## 0.4.4 (20 de noviembre de 2026)
 
 Backend y frontend se despliegan juntos desde la etiqueta `v0.4.4`. Migraciones nuevas: la base pasa de V48 a **V50**.

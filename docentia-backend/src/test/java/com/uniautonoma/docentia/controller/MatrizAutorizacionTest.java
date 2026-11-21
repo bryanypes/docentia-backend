@@ -171,6 +171,9 @@ class MatrizAutorizacionTest extends PruebaIntegracion {
       {"POST /solicitudes-reapertura/{}/verificacion", "CV"},
       {"GET /solicitudes-reapertura", "A"},
       {"POST /solicitudes-reapertura/{}/atencion", "A"},
+      {"GET /solicitudes-reapertura/formularios", "A"},
+      {"GET /citas/programadas", "A"},
+      {"POST /solicitudes-reapertura/formularios/{}/reapertura", "A"},
     };
     for (String[] fila : filas) {
       MATRIZ.put(fila[0], fila[1]);
