@@ -1,5 +1,22 @@
 # Cambios
 
+## Sin publicar: análisis robusto
+
+Solo backend y frontend. Sin migraciones: la base sigue en V48.
+
+- **El análisis no deja al docente sin resultado**: si el modelo externo falla de forma definitiva, el
+  borrador lo hace el modelo local por reglas, que no usa red, y la pantalla lo dice («Usé el modelo
+  local por reglas») con el motivo: `PROVEEDOR_CONFIGURACION`, `PROVEEDOR_NO_DISPONIBLE`,
+  `RESPUESTA_INVALIDA`, `RESPUESTA_CORTADA` o `LLM_NO_DISPONIBLE`. Cambia la regla P8.
+- **Cada fallo del proveedor con su tratamiento**: un 429, un 5xx o un tiempo agotado se reintentan
+  dos veces con espera creciente (respetando `Retry-After`); un 400, 401, 403 o 404 no se reintenta,
+  queda en el registro como ERROR y avisa a la administración y a la vicerrectoría; una respuesta
+  cortada por el tope de tokens se repite con la mitad de los comentarios.
+- **El JSON del modelo se acepta con texto antes o después** del bloque de código.
+- **`DOCENTIA_IA_ENVIAR_TEMPERATURA` pasa a `false` por defecto**: Claude 4.7 y posteriores rechazan
+  `temperature` menor que 1 en el endpoint compatible.
+- **Pruebas de robustez del modelo local** con 0 a 5.000 comentarios y entradas raras.
+
 ## Sin versión (19 de noviembre de 2026)
 
 Backend y frontend juntos. Sin migraciones: la base sigue en V48.

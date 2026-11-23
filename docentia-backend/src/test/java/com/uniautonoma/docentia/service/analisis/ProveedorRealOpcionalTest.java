@@ -48,7 +48,7 @@ class ProveedorRealOpcionalTest {
                 clave,
                 10,
                 new IaProperties.Worker(false, 5000),
-                !"false".equalsIgnoreCase(System.getenv("DOCENTIA_IA_ENVIAR_TEMPERATURA"))));
+                "true".equalsIgnoreCase(System.getenv("DOCENTIA_IA_ENVIAR_TEMPERATURA"))));
     List<ComentarioAnonimo> comentarios =
         List.of(
             new ComentarioAnonimo(1L, "Explica muy bien los temas y usa ejemplos claros."),

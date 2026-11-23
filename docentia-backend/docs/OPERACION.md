@@ -132,6 +132,9 @@ location /Evadocente-app/ {
 | `DOCENTIA_NOTIFICACIONES_RETENCION_DIAS` | No, 90 | Días que se guardan las notificaciones leídas |
 | `DOCENTIA_IA_*` | No | Análisis de comentarios: `local` por defecto, sin red. El externo solo con URL, modelo y clave |
 | `DOCENTIA_IA_PRESUPUESTO_TOKENS_DIA`, `_PERIODO` | No, 500 000 y 3 000 000 | Topes del modelo externo |
+| `DOCENTIA_IA_ENVIAR_TEMPERATURA` | No, `false` | Solo `true` para un proveedor que acepte `temperature: 0`. Claude 4.7 y posteriores la rechazan con 400 |
+| `DOCENTIA_IA_MAX_TOKENS_SALIDA` | No, 4000; con Claude 5 se recomienda 8000 | Tope de salida del externo. Incluye el razonamiento del modelo; si se agota, la respuesta llega cortada y responde el modelo local |
+| `DOCENTIA_IA_TIMEOUT_SEGUNDOS` | No, 60; se recomienda 120 | Espera máxima de cada llamada al externo. Un tiempo agotado se reintenta dos veces |
 | `DOCENTIA_API_URL` | Solo en desarrollo | Proxy de Vite hacia el backend |
 
 **Zona horaria:** no requiere variable. Las fechas de las ventanas y los cierres se calculan siempre con

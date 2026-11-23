@@ -26,6 +26,7 @@ import {
   ETIQUETA_SOLICITUD,
   MINIMO_COMENTARIOS,
   TIPOS_HALLAZGO,
+  usoRespaldoLocal,
 } from '../estados.js'
 import { useSeguimientoSolicitud } from '../hooks/useSeguimientoSolicitud.js'
 import {
@@ -148,6 +149,17 @@ function EstadoSolicitud({ solicitud, agotado, onReanudar }) {
     return (
       <MensajeIA robot="error" tono="coral" titulo="No pude generar el análisis" role="alert">
         <p>{solicitud.mensaje ?? 'Puedes volver a solicitarlo.'}</p>
+      </MensajeIA>
+    )
+  }
+  if (usoRespaldoLocal(solicitud)) {
+    return (
+      <MensajeIA robot="senala" tono="alerta" titulo="Usé el modelo local por reglas" role="status">
+        <p>{solicitud.mensaje}</p>
+        <p>
+          Ningún comentario salió del servidor. Revisa el borrador como cualquier otro; si quieres el análisis del
+          proveedor externo, puedes volver a solicitarlo más tarde.
+        </p>
       </MensajeIA>
     )
   }

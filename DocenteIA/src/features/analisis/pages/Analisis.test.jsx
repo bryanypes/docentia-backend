@@ -136,6 +136,31 @@ describe('Analisis', () => {
     expect(screen.getByText(/4 de 5 comentarios requeridos/)).toBeInTheDocument()
   })
 
+  it('si el externo falló, dice que usó el modelo local, por qué, y muestra el borrador', async () => {
+    const respaldo = {
+      ...COMPLETADO,
+      motivo: 'PROVEEDOR_NO_DISPONIBLE',
+      mensaje:
+        'El proveedor externo no respondió después de varios intentos, así que este análisis lo hizo el modelo local por reglas.',
+    }
+    analisisService.listarSolicitudes.mockResolvedValue([respaldo])
+    analisisService.obtenerSolicitud.mockResolvedValue(respaldo)
+    renderizar()
+
+    expect(await screen.findByText('Usé el modelo local por reglas')).toBeInTheDocument()
+    expect(screen.getByText(/no respondió después de varios intentos/)).toBeInTheDocument()
+    expect(screen.getByText(/Ningún comentario salió del servidor/)).toBeInTheDocument()
+  })
+
+  it('un borrador normal no muestra el aviso del modelo local', async () => {
+    analisisService.listarSolicitudes.mockResolvedValue([COMPLETADO])
+    analisisService.obtenerSolicitud.mockResolvedValue(COMPLETADO)
+    renderizar()
+
+    await screen.findAllByText(/Solicitud #/)
+    expect(screen.queryByText('Usé el modelo local por reglas')).not.toBeInTheDocument()
+  })
+
   it('con comentarios nuevos pide actualizar el análisis y lo actualiza sin escribir motivo', async () => {
     const conNuevos = { ...COMPLETADO, comentariosNuevos: 3 }
     const enCola = { ...COMPLETADO, idSolicitud: 2, estado: 'EN_COLA', borrador: null }

@@ -12,10 +12,12 @@ import java.util.Map;
 /**
  * Estado de una solicitud de análisis. El borrador solo viene cuando el estado es COMPLETADO.
  *
- * @param mensaje explicación para el usuario en ERROR o INSUFICIENTE
+ * @param mensaje explicación para el usuario en ERROR o INSUFICIENTE, o en COMPLETADO cuando el
+ *     análisis lo hizo el modelo local de respaldo
  * @param fuente CSV o FORMULARIO
  * @param motivo detalle de INSUFICIENTE: POCAS_ENCUESTAS, SIN_COMENTARIOS, TODOS_EXCLUIDOS o
- *     VENTANA_ABIERTA
+ *     VENTANA_ABIERTA; en COMPLETADO con el modelo local de respaldo: PROVEEDOR_CONFIGURACION,
+ *     PROVEEDOR_NO_DISPONIBLE, RESPUESTA_INVALIDA, RESPUESTA_CORTADA o LLM_NO_DISPONIBLE
  */
 public record SolicitudAnalisisResponse(
     Long idSolicitud,

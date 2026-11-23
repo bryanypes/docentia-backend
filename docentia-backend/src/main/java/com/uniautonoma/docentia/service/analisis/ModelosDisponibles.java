@@ -4,8 +4,9 @@ import java.util.Optional;
 
 /**
  * Modelos que se pueden elegir en una solicitud. El local siempre está; el de lenguaje externo solo
- * si el proveedor por defecto ya es uno, o si el ambiente trae URL, modelo y clave. Nunca se cambia
- * de uno a otro sin que lo pidan.
+ * si el proveedor por defecto ya es uno, o si el ambiente trae URL, modelo y clave. El externo
+ * nunca se usa sin que lo pidan; si falla de forma definitiva, responde el local y el resultado
+ * queda rotulado con el motivo (regla P8).
  */
 public class ModelosDisponibles {
 
