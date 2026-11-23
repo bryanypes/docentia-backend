@@ -22,6 +22,12 @@ function sumarDias(fecha, dias) {
 
 async function entrar(usuario) {
   const contexto = await navegador.newContext({ acceptDownloads: true })
+  // El tutorial del primer inicio es un modal que tapa la pantalla y no es lo que se prueba aquí:
+  // para estas pruebas el usuario ya lo vio. Solo se responde la consulta; marcarlo o reiniciarlo
+  // sigue yendo al backend.
+  await contexto.route('**/sesiones/actual/tutorial', (ruta) =>
+    ruta.request().method() === 'GET' ? ruta.fulfill({ json: { visto: true } }) : ruta.continue(),
+  )
   const pagina = await contexto.newPage()
   pagina.setDefaultTimeout(20000)
   await pagina.goto(`${BASE}/login`)
@@ -168,7 +174,7 @@ test('la coordinación registra la asistencia y firma el acta', async () => {
   await pagina.getByRole('button', { name: 'Asistió · habilitar resultado' }).click()
   await pagina.getByText('Habilitado', { exact: true }).waitFor()
   await firmarEnModal(pagina, 'Coordinación Ingeniería')
-  await pagina.getByText(/Coordinación: /).first().waitFor()
+  await pagina.getByText(/Firma coordinación: /).first().waitFor()
   await pagina.context().close()
 })
 
@@ -283,8 +289,10 @@ test('los formularios cambian la nota y el docente no ve la coevaluación', asyn
   await otraVez.context().close()
 })
 
-test('el estudiante evalúa de forma anónima y la nota cambia al llegar al mínimo', async () => {
-  // Laura tiene 6 estudiantes matriculados y 4 respuestas: con la quinta se alcanza el mínimo.
+test('el estudiante evalúa de forma anónima y una sola respuesta no mueve la nota', async () => {
+  // Laura tiene 6 estudiantes matriculados y 4 respuestas: con la quinta se alcanza el mínimo, pero
+  // con la recolección abierta la nota solo se actualiza por bloques de 4 respuestas
+  // (DOCENTIA_HETEROEVALUACION_BLOQUE), así que comparar dos notas seguidas no revela a nadie.
   const coordinacion = await entrar(COORDINACION)
   await abrirExpediente(coordinacion, 'Laura Demo')
   await coordinacion.getByText('3,50').first().waitFor()
@@ -316,9 +324,10 @@ test('el estudiante evalúa de forma anónima y la nota cambia al llegar al mín
 
   const otraVez = await entrar(COORDINACION)
   await abrirExpediente(otraVez, 'Laura Demo')
-  // Con el quinto envío los estudiantes pasan de 3,00 (nota inicial de la semilla) a 5,00 por formulario: 4,50.
-  await otraVez.getByText('4,50').first().waitFor()
-  await otraVez.getByText('Alto desempeño').first().waitFor()
+  // La quinta respuesta no cierra un bloque: la nota sigue en 3,50 y no delata ese envío. Se
+  // consolida con todas las respuestas cuando cierra la recolección.
+  await otraVez.getByText('3,50').first().waitFor()
+  assert.equal(await otraVez.getByText('4,50').count(), 0)
   await otraVez.context().close()
 
   const docente = await entrar('laura.demo')
@@ -329,18 +338,14 @@ test('el estudiante evalúa de forma anónima y la nota cambia al llegar al mín
   await docente.context().close()
 })
 
-test('el análisis lee los comentarios del formulario al cerrar la recolección, se conserva y se publica revisado', async () => {
+test('el análisis lee los comentarios del formulario, se conserva y se publica revisado', async () => {
   const coordinacion = await entrar(COORDINACION)
   const docentes = await llamar(coordinacion, 'GET', '/docentes?size=500')
   const mariana = (docentes.datos.content ?? docentes.datos).find((d) => d.nombreCompleto === 'Mariana Ruiz Ortega')
   const activo = await llamar(coordinacion, 'GET', '/periodos-academicos/activo')
   const idPeriodo = activo.datos.idPeriodo
-  const pedido = { docenteId: mariana.idDocente, periodoId: idPeriodo, fuente: 'FORMULARIO' }
-
-  // Con la recolección abierta no se analiza, y el mensaje lo dice.
-  const antes = await llamar(coordinacion, 'POST', '/analisis-ia/solicitudes', pedido)
-  assert.equal(antes.estado, 409)
-  assert.match(antes.datos.mensaje, /La recolección aún no termina/)
+  // Desde 0.4.4 el análisis se puede pedir sin esperar a que cierre la recolección; aquí se cierra
+  // igual, para analizar con todas las respuestas del periodo.
 
   // La vicerrectoría cierra la recolección ayer.
   const vicerrectoria = await entrar('vicerrectoria')
@@ -360,7 +365,7 @@ test('el análisis lee los comentarios del formulario al cerrar la recolección,
 
   // Desde la pantalla, con el modelo local por defecto.
   await coordinacion.goto(`${BASE}/analisis?docente=${mariana.idDocente}&periodo=${idPeriodo}`)
-  await coordinacion.getByText('Se analizan los comentarios del formulario anónimo').waitFor()
+  await coordinacion.getByText(/Se analizan los comentarios que los estudiantes hayan escrito/).waitFor()
   await coordinacion.getByRole('button', { name: 'Solicitar análisis' }).click()
   await coordinacion.getByText('Borrador del análisis').waitFor({ timeout: 60000 })
 
@@ -368,7 +373,7 @@ test('el análisis lee los comentarios del formulario al cerrar la recolección,
   await coordinacion.goto(`${BASE}/inicio`)
   await coordinacion.goto(`${BASE}/analisis?docente=${mariana.idDocente}&periodo=${idPeriodo}`)
   await coordinacion.getByText('Borrador del análisis').waitFor()
-  await coordinacion.getByRole('button', { name: 'Regenerar análisis' }).waitFor()
+  await coordinacion.getByRole('button', { name: 'Volver a analizar' }).waitFor()
 
   // La coordinación revisa los hallazgos y publica la revisión.
   const hallazgos = coordinacion.locator('.analisis__hallazgo')
