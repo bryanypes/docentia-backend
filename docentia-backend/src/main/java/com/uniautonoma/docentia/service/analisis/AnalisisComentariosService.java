@@ -442,7 +442,8 @@ public class AnalisisComentariosService {
     return switch (solicitud.getEstado()) {
       case EN_COLA -> new Estado("EN_COLA", null, "El análisis está en cola.");
       case EN_PROCESO -> new Estado("EN_PROCESO", null, "El análisis se está generando.");
-      case COMPLETADO -> new Estado("COMPLETADO", null, null);
+      // Con el modelo local de respaldo, el motivo y su explicación siguen visibles.
+      case COMPLETADO -> new Estado("COMPLETADO", motivo, solicitud.getMensaje());
       case ERROR ->
           "PRESUPUESTO_AGOTADO".equals(motivo)
               ? new Estado("RECHAZADO_PRESUPUESTO", motivo, solicitud.getMensaje())

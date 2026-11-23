@@ -6,6 +6,7 @@ import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import com.uniautonoma.docentia.entity.TipoHallazgo;
 import com.uniautonoma.docentia.service.analisis.LectorRespuestaAnalisis.CitaPropuesta;
 import com.uniautonoma.docentia.service.analisis.LectorRespuestaAnalisis.HallazgoPropuesto;
+import com.uniautonoma.docentia.service.analisis.LectorRespuestaAnalisis.RespuestaCortadaException;
 import com.uniautonoma.docentia.service.analisis.LectorRespuestaAnalisis.RespuestaInvalidaException;
 import java.util.List;
 import org.junit.jupiter.api.Test;
@@ -40,6 +41,31 @@ class LectorRespuestaAnalisisTest {
   @Test
   void aceptaElJsonEnvueltoEnUnBloqueDeCodigoYUnaListaVacia() {
     assertThat(lector.leer("```json\n{\"hallazgos\": []}\n```")).isEmpty();
+  }
+
+  @Test
+  void aceptaTextoAntesYDespuesDelJson() {
+    String valido =
+        "{\"h\":[{\"t\":\"f\",\"x\":\"Explica con {ejemplos}\",\"c\":[3]}],\"r\":\"ok\"}";
+
+    assertThat(lector.leer("Aquí está:\n```json\n" + valido + "\n```\nQuedo atento.")).hasSize(1);
+    assertThat(lector.leer("Resultado: " + valido + " Fin.")).hasSize(1);
+    assertThat(lector.resumen("```\n" + valido + "\n``` gracias")).isEqualTo("ok");
+  }
+
+  @Test
+  void unJsonQueEmpiezaYNoTerminaEsUnaRespuestaCortada() {
+    assertThatThrownBy(() -> lector.leer("{\"h\":[{\"t\":\"f\",\"x\":\"Explica bien"))
+        .isInstanceOf(RespuestaCortadaException.class);
+    assertThatThrownBy(() -> lector.leer("```json\n{\"hallazgos\":[{\"tipo\":\"fortaleza\""))
+        .isInstanceOf(RespuestaCortadaException.class);
+  }
+
+  @Test
+  void unJsonMalFormadoNoSeConfundeConUnoCortado() {
+    assertThatThrownBy(() -> lector.leer("{\"hallazgos\": [1,,]}"))
+        .isInstanceOf(RespuestaInvalidaException.class)
+        .isNotInstanceOf(RespuestaCortadaException.class);
   }
 
   @Test

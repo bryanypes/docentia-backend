@@ -17,8 +17,9 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
  * @param clave clave del proveedor; solo por variable de entorno (DOCENTIA_IA_CLAVE)
  * @param minimoComentarios comentarios escritos de estudiantes necesarios para pedir y generar un
  *     análisis
- * @param enviarTemperatura si se envía temperature=0; algunos modelos recientes lo rechazan y hay
- *     que apagarlo (DOCENTIA_IA_ENVIAR_TEMPERATURA=false)
+ * @param enviarTemperatura si se envía temperature=0. Apagado por defecto: en el endpoint
+ *     compatible de Anthropic, Claude 4.7 y posteriores responden 400 a cualquier temperatura menor
+ *     que 1. Solo se enciende para un proveedor que la acepte (DOCENTIA_IA_ENVIAR_TEMPERATURA=true)
  */
 @ConfigurationProperties(prefix = "docentia.ia")
 public record IaProperties(
@@ -30,7 +31,7 @@ public record IaProperties(
     String clave,
     @DefaultValue("5") int minimoComentarios,
     @DefaultValue Worker worker,
-    @DefaultValue("true") boolean enviarTemperatura) {
+    @DefaultValue("false") boolean enviarTemperatura) {
 
   @ConstructorBinding
   public IaProperties {}
@@ -53,7 +54,7 @@ public record IaProperties(
         clave,
         minimoComentarios,
         worker,
-        true);
+        false);
   }
 
   /**

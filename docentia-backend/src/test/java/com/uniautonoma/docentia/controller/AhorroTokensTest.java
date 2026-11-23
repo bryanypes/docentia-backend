@@ -360,7 +360,11 @@ class AhorroTokensTest extends PruebaIntegracion {
     solicitar(docente, periodo, null).andExpect(status().isAccepted());
     procesarCola();
 
-    analisis(docente).andExpect(jsonPath("$.estado").value("ERROR"));
+    // El externo falló sin explicación: responde el modelo local, rotulado, y el registro sigue sin
+    // volcar el texto de los comentarios.
+    analisis(docente)
+        .andExpect(jsonPath("$.estado").value("COMPLETADO"))
+        .andExpect(jsonPath("$.motivo").value("PROVEEDOR_NO_DISPONIBLE"));
     assertThat(salida.getAll()).contains("IllegalStateException").doesNotContain(trozo);
   }
 

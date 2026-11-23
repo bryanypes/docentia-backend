@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.uniautonoma.docentia.config.IaProperties;
+import java.time.Duration;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.util.StringUtils;
 import org.springframework.web.client.RestClient;
@@ -70,20 +72,60 @@ public class ModeloIAChatCompletions implements ModeloIA {
               .retrieve()
               .body(JsonNode.class);
       JsonNode contenido = respuesta == null ? null : respuesta.at("/choices/0/message/content");
+      if (respuesta != null
+          && "length".equals(respuesta.at("/choices/0/finish_reason").asText(null))) {
+        // El tope de salida (que incluye el razonamiento del modelo) se agotó: el JSON quedó a
+        // medias. Los tokens sí se gastaron.
+        throw new ModeloIAException(
+            "El proveedor cortó la respuesta por el tope de tokens",
+            null,
+            ClaseFallo.CORTADA,
+            null,
+            uso(respuesta.path("usage"), cuerpo, contenido));
+      }
       if (contenido == null || !contenido.isTextual()) {
-        throw new ModeloIAException("El proveedor respondió sin contenido", null);
+        throw new ModeloIAException(
+            "El proveedor respondió sin contenido", null, ClaseFallo.INVALIDA);
       }
       String modeloUsado = respuesta.path("model").asText(modelo);
       return new RespuestaModelo(
           contenido.asText(), modeloUsado, uso(respuesta.path("usage"), cuerpo, contenido));
     } catch (RestClientResponseException excepcion) {
       // Solo el código: el cuerpo del error podría repetir parte de la petición.
+      int codigo = excepcion.getStatusCode().value();
       throw new ModeloIAException(
-          "El proveedor respondió HTTP " + excepcion.getStatusCode().value(), null);
+          "El proveedor respondió HTTP " + codigo,
+          null,
+          clasificar(codigo),
+          esperaSugerida(excepcion.getResponseHeaders()),
+          null);
     } catch (RestClientException excepcion) {
+      // Tiempo agotado, conexión rechazada, DNS: se puede reintentar.
       throw new ModeloIAException(
-          "Falló la llamada al proveedor: " + excepcion.getClass().getSimpleName(), null);
+          "Falló la llamada al proveedor: " + excepcion.getClass().getSimpleName(),
+          null,
+          ClaseFallo.TRANSITORIO);
     }
+  }
+
+  /**
+   * 408 (tiempo), 409 (conflicto), 429 (límite de uso) y 5xx, incluido el 529 de sobrecarga, se
+   * pueden reintentar. Cualquier otro 4xx dice que la petición o la configuración están mal.
+   */
+  static ClaseFallo clasificar(int codigo) {
+    if (codigo == 408 || codigo == 409 || codigo == 429 || codigo >= 500) {
+      return ClaseFallo.TRANSITORIO;
+    }
+    return ClaseFallo.CONFIGURACION;
+  }
+
+  /** {@code Retry-After} en segundos; la forma con fecha se ignora. */
+  static Duration esperaSugerida(HttpHeaders cabeceras) {
+    String valor = cabeceras == null ? null : cabeceras.getFirst(HttpHeaders.RETRY_AFTER);
+    if (valor == null || !valor.trim().matches("[0-9]{1,6}")) {
+      return null;
+    }
+    return Duration.ofSeconds(Long.parseLong(valor.trim()));
   }
 
   /** Lee el uso que informa el proveedor; si no viene, lo estima por caracteres. */
@@ -95,8 +137,8 @@ public class ModeloIAChatCompletions implements ModeloIA {
           uso.at("/prompt_tokens_details/cached_tokens").asInt(0),
           false);
     }
-    return new Uso(
-        EstimadorTokens.estimar(cuerpo), EstimadorTokens.estimar(contenido.asText()), 0, true);
+    String texto = contenido == null || !contenido.isTextual() ? "" : contenido.asText();
+    return new Uso(EstimadorTokens.estimar(cuerpo), EstimadorTokens.estimar(texto), 0, true);
   }
 
   String cuerpo(PeticionAnalisis peticion) {
@@ -113,7 +155,8 @@ public class ModeloIAChatCompletions implements ModeloIA {
     try {
       return objectMapper.writeValueAsString(cuerpo);
     } catch (JsonProcessingException excepcion) {
-      throw new ModeloIAException("No se pudo armar la petición", excepcion);
+      throw new ModeloIAException(
+          "No se pudo armar la petición", excepcion, ClaseFallo.CONFIGURACION);
     }
   }
 

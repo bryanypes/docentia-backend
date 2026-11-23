@@ -18,6 +18,20 @@ export function estaEnCurso(solicitud) {
   return solicitud?.estado === ESTADOS_SOLICITUD.EN_COLA || solicitud?.estado === ESTADOS_SOLICITUD.EN_PROCESO
 }
 
+/** Motivos con los que el backend marca un análisis que hizo el modelo local en lugar del externo. */
+export const MOTIVOS_RESPALDO_LOCAL = [
+  'PROVEEDOR_CONFIGURACION',
+  'PROVEEDOR_NO_DISPONIBLE',
+  'RESPUESTA_INVALIDA',
+  'RESPUESTA_CORTADA',
+  'LLM_NO_DISPONIBLE',
+]
+
+/** Pidieron el modelo externo, falló, y el borrador lo hizo el modelo local por reglas. */
+export function usoRespaldoLocal(solicitud) {
+  return solicitud?.estado === ESTADOS_SOLICITUD.COMPLETADO && MOTIVOS_RESPALDO_LOCAL.includes(solicitud?.motivo)
+}
+
 export const ESTADOS_HALLAZGO = {
   PENDIENTE_VALIDACION: { etiqueta: 'Pendiente de validar', clase: 'info' },
   SIN_CITA_VERIFICADA: { etiqueta: 'Sin cita verificada', clase: 'error' },

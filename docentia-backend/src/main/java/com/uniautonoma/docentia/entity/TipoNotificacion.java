@@ -24,6 +24,10 @@ public enum TipoNotificacion {
   ANALISIS_INSUFICIENTE(
       "Evidencia insuficiente", "El análisis de comentarios no tuvo evidencia suficiente."),
   ANALISIS_ERROR("Análisis con error", "El análisis de comentarios no se pudo completar."),
+  PROVEEDOR_IA_RECHAZO(
+      "Revisar el proveedor de IA",
+      "El proveedor externo de IA rechazó la configuración; los análisis salen con el modelo"
+          + " local hasta que se corrija."),
   CITA_RESERVADA("Cita reservada", "Un docente de tus programas reservó una cita."),
   CITA_REEMPLAZADA("Cita liberada", "Un docente de tus programas liberó su cita para tomar otra."),
   ACTA_FIRMADA_DOCENTE("Acta firmada por el docente", "Un docente de tus programas firmó su acta."),
