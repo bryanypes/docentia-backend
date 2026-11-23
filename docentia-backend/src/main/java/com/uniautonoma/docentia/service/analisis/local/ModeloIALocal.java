@@ -38,14 +38,11 @@ public class ModeloIALocal implements ModeloIA {
     ResultadoAnalisis resultado = analizador.analizar(comentarios, null).resultado();
     ObjectNode raiz = objectMapper.createObjectNode();
     ArrayNode hallazgos = raiz.putArray("hallazgos");
-    resultado
-        .aspectos()
-        .fortalezas()
-        .forEach(t -> agregar(hallazgos, "fortaleza", t, resultado.nComentarios()));
+    resultado.aspectos().fortalezas().forEach(t -> agregar(hallazgos, "fortaleza", t));
     resultado
         .aspectos()
         .oportunidades()
-        .forEach(t -> agregar(hallazgos, "oportunidad_de_mejora", t, resultado.nComentarios()));
+        .forEach(t -> agregar(hallazgos, "oportunidad_de_mejora", t));
     try {
       return new RespuestaModelo(objectMapper.writeValueAsString(raiz), resultado.versionModelo());
     } catch (JsonProcessingException fallo) {
@@ -53,7 +50,7 @@ public class ModeloIALocal implements ModeloIA {
     }
   }
 
-  private static void agregar(ArrayNode hallazgos, String tipo, Tema tema, int total) {
+  private static void agregar(ArrayNode hallazgos, String tipo, Tema tema) {
     ObjectNode hallazgo = hallazgos.addObject();
     hallazgo.put("tipo", tipo);
     hallazgo.put(
@@ -62,11 +59,8 @@ public class ModeloIALocal implements ModeloIA {
                 ? "Fortaleza mencionada con frecuencia: "
                 : "Oportunidad de mejora mencionada con frecuencia: ")
             + tema.nombre()
-            + " ("
-            + tema.frecuencia()
-            + " de "
-            + total
-            + " comentarios).");
+            + ".");
+    hallazgo.put("criterio", tema.criterio());
     ArrayNode citas = hallazgo.putArray("citas");
     for (Cita cita : tema.citas().stream().limit(CITAS_POR_HALLAZGO).toList()) {
       citas.addObject().put("comentarioId", cita.comentarioId()).put("fragmento", cita.fragmento());

@@ -182,6 +182,68 @@ class ReaperturaFormularioTest extends PruebaIntegracion {
         .andExpect(status().isForbidden());
   }
 
+  @Test
+  void laAdministracionReabreDirectoSinVerificacionDelSuperior() throws Exception {
+    enviarAutoevaluacion(docente, 4);
+    enviarCoevaluacion(coordinador, docente);
+
+    String lista =
+        mockMvc
+            .perform(
+                get("/solicitudes-reapertura/formularios")
+                    .param("idDocente", String.valueOf(docente.getIdUsuario()))
+                    .with(como(administrador)))
+            .andExpect(status().isOk())
+            .andExpect(jsonPath("$", hasSize(2)))
+            .andExpect(jsonPath("$[0].tipo").value("AUTO"))
+            .andExpect(jsonPath("$[0].reabrible").value(true))
+            .andExpect(jsonPath("$[1].tipo").value("COEVAL"))
+            .andExpect(jsonPath("$[1].nombreEvaluador").value("Coordinador Uno"))
+            .andExpect(jsonPath("$[0].respuestas").doesNotExist())
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    long coevaluacion = ((Number) JsonPath.read(lista, "$[1].idFormulario")).longValue();
+
+    // Nadie más puede reabrir así.
+    mockMvc
+        .perform(
+            post("/solicitudes-reapertura/formularios/{id}/reapertura", coevaluacion)
+                .with(como(coordinador))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"motivo\":\"Se calificó al docente equivocado\"}"))
+        .andExpect(status().isForbidden());
+    mockMvc
+        .perform(
+            post("/solicitudes-reapertura/formularios/{id}/reapertura", coevaluacion)
+                .with(como(administrador))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"motivo\":\"corto\"}"))
+        .andExpect(status().isBadRequest());
+
+    mockMvc
+        .perform(
+            post("/solicitudes-reapertura/formularios/{id}/reapertura", coevaluacion)
+                .with(como(administrador))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"motivo\":\"Se calificó al docente equivocado\"}"))
+        .andExpect(status().isCreated())
+        .andExpect(jsonPath("$.estado").value("ATENDIDA"));
+    // Quien la respondió recibe el aviso y puede volver a hacerla.
+    assertThat(avisosDe(coordinador)).contains("REAPERTURA_ATENDIDA");
+    mockMvc
+        .perform(get(CO, docente.getIdUsuario()).with(como(coordinador)))
+        .andExpect(jsonPath("$.estado").value("BORRADOR"));
+    // Ya reabierta no se reabre otra vez.
+    mockMvc
+        .perform(
+            post("/solicitudes-reapertura/formularios/{id}/reapertura", coevaluacion)
+                .with(como(administrador))
+                .contentType(MediaType.APPLICATION_JSON)
+                .content("{\"motivo\":\"Se calificó al docente equivocado\"}"))
+        .andExpect(status().isConflict());
+  }
+
   private void enviarAutoevaluacion(Usuario quien, int valor) throws Exception {
     guardar(AUTO, quien, todos(valor)).andExpect(status().isOk());
     mockMvc.perform(post(AUTO + "/enviar").with(como(quien))).andExpect(status().isOk());

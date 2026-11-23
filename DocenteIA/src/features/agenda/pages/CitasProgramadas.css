@@ -1,0 +1,136 @@
+.citas-programadas__resumen {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
+  gap: 12px;
+}
+
+.citas-programadas__cifra {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 4px 8px;
+  padding: 14px 16px;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  background: var(--color-superficie);
+  border: 1px solid var(--color-borde-suave);
+  border-top: 3px solid var(--color-azul);
+  border-radius: var(--radio-xl);
+  box-shadow: var(--sombra-tarjeta);
+}
+
+.citas-programadas__cifra > svg {
+  color: var(--color-azul);
+}
+
+.citas-programadas__cifra > span {
+  font-size: 13px;
+  font-weight: var(--peso-semi);
+  color: var(--color-texto-secundario);
+}
+
+.citas-programadas__cifra > strong {
+  grid-column: 1 / -1;
+  font-size: 26px;
+  font-variant-numeric: tabular-nums;
+}
+
+.citas-programadas__cifra--boton {
+  cursor: pointer;
+}
+
+.citas-programadas__cifra--boton:hover,
+.citas-programadas__cifra--activa {
+  border-color: var(--color-azul);
+}
+
+.citas-programadas__cifra--activa {
+  box-shadow: 0 0 0 2px var(--color-azul-suave), var(--sombra-tarjeta);
+}
+
+.citas-programadas__filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.citas-programadas__filtros > * {
+  flex: 1 1 220px;
+}
+
+.citas-programadas__buscador {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-basis: 100% !important;
+}
+
+.citas-programadas__buscador > svg {
+  position: absolute;
+  left: 12px;
+  color: var(--color-texto-tenue);
+  pointer-events: none;
+}
+
+.citas-programadas__buscador .campo__control {
+  width: 100%;
+  padding-left: 36px;
+}
+
+.citas-programadas__filtros-panel .boton--enlace {
+  margin-top: 8px;
+}
+
+.citas-programadas__lista {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.citas-programadas__cita {
+  display: grid;
+  grid-template-columns: 110px minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px 16px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--color-borde-suave);
+}
+
+.citas-programadas__cita:last-child {
+  border-bottom: 0;
+}
+
+.citas-programadas__hora {
+  font-weight: var(--peso-semi);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-azul);
+}
+
+.citas-programadas__personas {
+  display: grid;
+  gap: 2px;
+  font-size: 14px;
+}
+
+.citas-programadas__personas span {
+  font-size: 13px;
+  color: var(--color-texto-secundario);
+}
+
+.citas-programadas__con {
+  color: var(--color-texto-tenue) !important;
+}
+
+@media (max-width: 640px) {
+  .citas-programadas__cita {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
+
+  .citas-programadas__hora {
+    grid-column: 1 / -1;
+  }
+}

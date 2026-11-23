@@ -4,6 +4,7 @@ import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { TIPOS_HALLAZGO } from '../estados.js'
 import { obtenerResultadoPropio } from '../services/analisisService.js'
+import './ComentariosParaCoevaluar.css'
 
 /** Lo que el docente ve del análisis: solo lo que la coordinación incluyó y publicó. */
 export function PanelHallazgosPropios() {
@@ -27,7 +28,10 @@ export function PanelHallazgosPropios() {
             <h3 className="acta__subtitulo">{nombre}</h3>
             <ul>
               {delTipo.map((hallazgo) => (
-                <li key={hallazgo.texto}>{hallazgo.texto}</li>
+                <li key={hallazgo.texto}>
+                  {hallazgo.criterio && <span className="coevaluar-ia__criterio">{hallazgo.criterio}</span>}
+                  {hallazgo.texto}
+                </li>
               ))}
             </ul>
           </div>

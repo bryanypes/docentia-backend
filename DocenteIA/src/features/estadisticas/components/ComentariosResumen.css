@@ -406,3 +406,38 @@
     grid-template-columns: minmax(0, 1fr) auto;
   }
 }
+
+/* Quiénes tienen cada tema: se despliega bajo la fila. */
+.comentarios-resumen__ver-docentes {
+  padding: 0;
+  font: inherit;
+  font-size: 12px;
+  font-weight: var(--peso-semi);
+  color: var(--color-azul);
+  background: none;
+  border: 0;
+  cursor: pointer;
+}
+
+.comentarios-resumen__docentes {
+  grid-column: 1 / -1;
+  display: grid;
+  gap: 4px;
+  margin: 4px 0 0;
+  padding: 8px 12px;
+  list-style: none;
+  font-size: 13px;
+  background: var(--color-superficie-suave);
+  border-radius: var(--radio-md);
+}
+
+.comentarios-resumen__docentes li {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.comentarios-resumen__docentes span {
+  color: var(--color-texto-tenue);
+  white-space: nowrap;
+}

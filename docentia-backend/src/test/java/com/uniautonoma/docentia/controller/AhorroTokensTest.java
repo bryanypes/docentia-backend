@@ -301,22 +301,22 @@ class AhorroTokensTest extends PruebaIntegracion {
   }
 
   @Test
-  void pedirOtroAnalisisPorSolicitudesExigeMotivoYRespetaElEnfriamiento() throws Exception {
+  void pedirOtroAnalisisPorSolicitudesNoExigeMotivoPeroRespetaElEnfriamiento() throws Exception {
     responder(docente, periodo, AnalisisComentariosTest.COMENTARIOS);
     pedir(null).andExpect(status().isAccepted());
     procesarCola();
 
-    pedir(null).andExpect(status().isBadRequest()).andExpect(jsonPath("$.errores.motivo").exists());
+    pedir(null).andExpect(status().isTooManyRequests());
     pedir("Se corrigió la carga de respuestas").andExpect(status().isTooManyRequests());
 
+    // Pasada la espera se vuelve a analizar sin escribir nada; queda un motivo por defecto.
     pasarEnfriamiento();
-    pedir("corto").andExpect(status().isBadRequest());
-    pedir("Se corrigió la carga de respuestas").andExpect(status().isAccepted());
+    pedir(null).andExpect(status().isAccepted());
     assertThat(
             jdbcTemplate.queryForList(
                 "select motivo_regeneracion from solicitudes_analisis order by id_solicitud",
                 String.class))
-        .containsExactly(null, "Se corrigió la carga de respuestas");
+        .containsExactly(null, "Nuevo análisis solicitado");
   }
 
   @Test
@@ -369,7 +369,7 @@ class AhorroTokensTest extends PruebaIntegracion {
   }
 
   @Test
-  void regenerarExigeMotivoYRespetaElEnfriamiento() throws Exception {
+  void regenerarNoExigeMotivoPeroRespetaElEnfriamiento() throws Exception {
     responder(docente, periodo, AnalisisComentariosTest.COMENTARIOS);
     String ruta = "/analisis-comentarios/docentes/{id}/regeneracion";
     mockMvc
@@ -379,21 +379,6 @@ class AhorroTokensTest extends PruebaIntegracion {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(
                     aJson(Map.of("periodoId", periodo.getIdPeriodo(), "fuente", "FORMULARIO"))))
-        .andExpect(status().isBadRequest());
-    mockMvc
-        .perform(
-            post(ruta, docente.getIdUsuario())
-                .with(como(vicerrector))
-                .contentType(MediaType.APPLICATION_JSON)
-                .content(
-                    aJson(
-                        Map.of(
-                            "periodoId",
-                            periodo.getIdPeriodo(),
-                            "fuente",
-                            "FORMULARIO",
-                            "motivo",
-                            "Se corrigió la carga de respuestas"))))
         .andExpect(status().isAccepted());
     procesarCola();
     mockMvc
@@ -427,7 +412,7 @@ class AhorroTokensTest extends PruebaIntegracion {
     assertThat(
             jdbcTemplate.queryForObject(
                 "select motivo_regeneracion from solicitudes_analisis", String.class))
-        .isEqualTo("Se corrigió la carga de respuestas");
+        .isEqualTo("Nuevo análisis solicitado");
   }
 
   @Test

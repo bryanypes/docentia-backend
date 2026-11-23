@@ -64,7 +64,7 @@ class RobustezModeloLocalTest {
 
   @BeforeAll
   static void cargar() {
-    lexico = Lexico.cargar("ia/lexico-v1.txt");
+    lexico = Lexico.cargar("ia/lexico-v2.txt");
     pipeline =
         new PipelineAnalisis(
             new FiltroCalidad(lexico, 3),

@@ -1,6 +1,7 @@
 package com.uniautonoma.docentia.service.formulario;
 
 import com.uniautonoma.docentia.dto.DecisionReaperturaRequest;
+import com.uniautonoma.docentia.dto.FormularioEnviadoResponse;
 import com.uniautonoma.docentia.dto.SolicitudReaperturaRequest;
 import com.uniautonoma.docentia.dto.SolicitudReaperturaResponse;
 import com.uniautonoma.docentia.entity.AccionAuditoria;
@@ -249,6 +250,113 @@ public class ReaperturaFormularioService {
           solicitud, TipoNotificacion.REAPERTURA_RECHAZADA, ENLACE, clave + ":rechazada");
     }
     return SolicitudReaperturaResponse.desde(solicitud);
+  }
+
+  /**
+   * Autoevaluación y coevaluación de un docente en el periodo activo, para que la administración
+   * elija cuál reabrir. Sin puntajes.
+   */
+  @Transactional(readOnly = true)
+  public List<FormularioEnviadoResponse> formulariosDe(Long idDocente) {
+    PeriodoAcademico periodo = periodoService.exigirPeriodoActivo();
+    Usuario docente =
+        usuarioRepository
+            .findById(idDocente)
+            .filter(u -> u.getRol().esEvaluable())
+            .orElseThrow(() -> new RecursoNoEncontradoException("Docente no encontrado"));
+    boolean actaFirmada =
+        procesoRepository.existeActaEnEstado(
+            docente.getIdUsuario(), periodo.getIdPeriodo(), EstadoActa.FIRMADA);
+    return List.of(TipoFormulario.AUTO, TipoFormulario.COEVAL).stream()
+        .flatMap(
+            tipo ->
+                formularioRepository
+                    .findByPeriodoIdPeriodoAndDocenteIdUsuarioAndTipo(
+                        periodo.getIdPeriodo(), docente.getIdUsuario(), tipo)
+                    .stream())
+        .map(formulario -> describir(formulario, actaFirmada))
+        .toList();
+  }
+
+  /**
+   * La administración reabre un formulario enviado sin que nadie lo haya pedido, para que quien lo
+   * respondió lo vuelva a hacer. Queda como una solicitud ya atendida y en la auditoría.
+   *
+   * @throws ReglaNegocioException si no está enviado, el acta ya está firmada o hay una solicitud
+   *     abierta para el mismo formulario
+   */
+  public SolicitudReaperturaResponse reabrirDirecto(
+      Long idFormulario, String motivo, UsuarioSesion sesion) {
+    EvaluacionFormulario formulario =
+        formularioRepository
+            .findById(idFormulario)
+            .orElseThrow(() -> new RecursoNoEncontradoException("Formulario no encontrado"));
+    String noReabrible = motivoNoReabrible(formulario);
+    if (noReabrible != null) {
+      throw new ReglaNegocioException(noReabrible);
+    }
+    Usuario administrador = usuarioRepository.getReferenceById(sesion.idUsuario());
+    SolicitudReapertura solicitud;
+    try {
+      // Sin aprobador: nace aprobada y la administración la atiende de inmediato.
+      solicitud =
+          solicitudRepository.saveAndFlush(
+              new SolicitudReapertura(formulario, administrador, motivo.strip(), null, ahora()));
+    } catch (DataIntegrityViolationException choque) {
+      throw new ReglaNegocioException(
+          "Ya hay una solicitud de corrección abierta para este formulario: atiéndela");
+    }
+    solicitud.atender(true, administrador, null, ahora());
+    formulario.reabrir();
+    formularioRepository.save(formulario);
+    auditoria.registrar(
+        AccionAuditoria.REAPERTURA_FORMULARIO, "FORMULARIO", formulario.getId(), sesion);
+    Usuario quienResponde =
+        formulario.getEvaluador() != null ? formulario.getEvaluador() : formulario.getDocente();
+    eventos.publishEvent(
+        EventoNotificacion.aUsuario(
+            TipoNotificacion.REAPERTURA_ATENDIDA,
+            quienResponde.getIdUsuario(),
+            enlaceDelFormulario(formulario),
+            ENTIDAD,
+            solicitud.getId(),
+            "reapertura:" + solicitud.getId()));
+    return SolicitudReaperturaResponse.desde(solicitud);
+  }
+
+  private FormularioEnviadoResponse describir(
+      EvaluacionFormulario formulario, boolean actaFirmada) {
+    String motivo =
+        actaFirmada ? "El acta de este periodo ya está firmada" : motivoNoReabrible(formulario);
+    Usuario evaluador =
+        formulario.getEvaluador() != null ? formulario.getEvaluador() : formulario.getDocente();
+    return new FormularioEnviadoResponse(
+        formulario.getId(),
+        formulario.getTipo(),
+        evaluador.getNombreCompleto(),
+        formulario.getEstado().name(),
+        formulario.getEnviadaEn(),
+        motivo == null,
+        motivo);
+  }
+
+  /** Por qué no se puede reabrir, o nulo si se puede. */
+  private String motivoNoReabrible(EvaluacionFormulario formulario) {
+    if (!formulario.estaEnviada()) {
+      return formulario.getReabierto()
+          ? "Ya está reabierto: falta que lo envíen de nuevo"
+          : "Todavía no se ha enviado";
+    }
+    if (procesoRepository.existeActaEnEstado(
+        formulario.getDocente().getIdUsuario(),
+        formulario.getPeriodo().getIdPeriodo(),
+        EstadoActa.FIRMADA)) {
+      return "El acta de este periodo ya está firmada";
+    }
+    if (solicitudRepository.existsByFormularioIdAndEstadoIn(formulario.getId(), ABIERTAS)) {
+      return "Tiene una solicitud de corrección abierta: atiéndela en la lista";
+    }
+    return null;
   }
 
   private EvaluacionFormulario enviado(

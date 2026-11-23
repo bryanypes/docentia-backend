@@ -172,8 +172,8 @@ class ProcesoEvaluacionTest extends PruebaIntegracion {
       texto.append(new PdfTextExtractor(lector).getTextFromPage(pagina));
     }
     org.assertj.core.api.Assertions.assertThat(texto.toString())
-        .contains("Acta de compromiso docente")
-        .contains("Firma registrada en DOCENTIA");
+        .contains("ACTA DE COMPROMISO DOCENTE")
+        .contains("Firmado el");
 
     proceso()
         .andExpect(jsonPath("$.estado").value("FINALIZADO"))

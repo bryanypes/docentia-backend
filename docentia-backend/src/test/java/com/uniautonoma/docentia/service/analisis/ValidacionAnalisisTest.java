@@ -48,7 +48,8 @@ class ValidacionAnalisisTest {
         new ClassPathResource("ia/validacion-comentarios.json").getInputStream()) {
       datos = new ObjectMapper().readTree(entrada);
     }
-    lexico = Lexico.cargar("ia/lexico-v1.txt");
+    // El léxico en uso: una regresión del v2 frente al v1 hace fallar la prueba.
+    lexico = Lexico.cargar("ia/lexico-v2.txt");
     pipeline =
         new PipelineAnalisis(
             new FiltroCalidad(lexico, 3),

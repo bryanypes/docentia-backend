@@ -48,6 +48,19 @@ public interface CitaRepository extends JpaRepository<Cita, Long> {
       """)
   List<Cita> buscarPorFranjas(Collection<Long> idsFranjas, EstadoCita estado);
 
+  /** Citas activas del periodo con quién recibe y quién asiste, por fecha y hora. */
+  @Query(
+      """
+      select c from Cita c
+      join fetch c.franja f
+      join fetch f.coordinador
+      join fetch c.docente
+      where c.periodo.idPeriodo = :idPeriodo
+        and c.estado = com.uniautonoma.docentia.entity.EstadoCita.ACTIVA
+      order by f.fecha, f.horaInicio
+      """)
+  List<Cita> buscarActivasDelPeriodo(Long idPeriodo);
+
   /** Citas en un estado cuya franja cae entre dos fechas. */
   @Query(
       """

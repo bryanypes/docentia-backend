@@ -89,7 +89,7 @@ class AnalisisIaTest extends PruebaIntegracion {
         .andExpect(jsonPath("$.encuestasCerradas").value(12))
         .andExpect(jsonPath("$.comentariosEnviados").value(12))
         .andExpect(jsonPath("$.borrador.modelo").value("simulado-determinista"))
-        .andExpect(jsonPath("$.borrador.versionInstruccion").value("analisis-v3"))
+        .andExpect(jsonPath("$.borrador.versionInstruccion").value("analisis-v5"))
         .andExpect(jsonPath("$.borrador.fechaGeneracion").exists())
         .andExpect(jsonPath("$.borrador.estado").value("PENDIENTE_VALIDACION"))
         .andExpect(jsonPath("$.borrador.hallazgos", hasSize(6)))
@@ -228,17 +228,15 @@ class AnalisisIaTest extends PruebaIntegracion {
   }
 
   @Test
-  void fueraDeLaRevisionDeHallazgosNoSePuedeSolicitar() throws Exception {
+  void sePuedeSolicitarAunqueLaRevisionDeHallazgosNoHayaAbierto() throws Exception {
     escenario.abrirEtapa(
         periodo,
         TipoEtapa.REVISION_HALLAZGOS,
         BaseDatosPruebaConfig.HOY.plusDays(3),
         BaseDatosPruebaConfig.HOY.plusDays(9));
 
-    solicitar(julian)
-        .andExpect(status().isConflict())
-        .andExpect(jsonPath("$.etapa").value("REVISION_HALLAZGOS"));
-    assertThat(solicitudRepository.count()).isZero();
+    solicitar(julian).andExpect(status().isAccepted());
+    assertThat(solicitudRepository.count()).isEqualTo(1);
   }
 
   @Test

@@ -1,6 +1,7 @@
 import { Aviso } from '../../../shared/components/ui/Aviso/Aviso.jsx'
 import { BarraNota } from '../../../shared/components/ui/BarraNota/BarraNota.jsx'
-import { EtiquetaNivel } from '../../../shared/components/ui/EtiquetaNivel/EtiquetaNivel.jsx'
+import { EtiquetaNivel, MarcaRevision } from '../../../shared/components/ui/EtiquetaNivel/EtiquetaNivel.jsx'
+import { paraRevisar } from '../../kpis/hooks/useUmbralRevision.js'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
 import { ORIGEN_FUENTE } from '../../../shared/constants/dominio.js'
 import {
@@ -188,11 +189,19 @@ export function PanelCompromisos({ titulo = 'Compromisos vigentes', compromisos,
 }
 
 /** Fila de datos clave del docente (programa, periodo, estado). */
-export function DatosDocente({ docente, periodo, promedio }) {
+export function DatosDocente({ docente, periodo, promedio, umbralRevision }) {
   const datos = [
     { clave: 'Programa', valor: docente.nombrePrograma ?? `Coordinación · ${docente.nombreFacultad}` },
     { clave: 'Periodo', valor: periodo?.nombre ?? 'Sin periodo activo' },
-    { clave: 'Estado', valor: <EtiquetaNivel promedio={promedio} evaluadoEsCoordinador={docente.esCoordinador} /> },
+    {
+      clave: 'Estado',
+      valor: (
+        <>
+          <EtiquetaNivel promedio={promedio} evaluadoEsCoordinador={docente.esCoordinador} />
+          {umbralRevision != null && paraRevisar(promedio, umbralRevision) && <MarcaRevision umbral={umbralRevision} />}
+        </>
+      ),
+    },
   ]
   return (
     <dl className="datos-docente">

@@ -347,7 +347,11 @@ public class CalificacionService {
     PromedioPonderadoResponse promedioNuevo =
         promedioService.recalcular(docente.getIdUsuario(), periodo.getIdPeriodo());
 
-    if (esCorreccion) {
+    // El recálculo automático de la nota de estudiantes no es una corrección: si quedara en el
+    // historial, comparar dos notas seguidas dejaría ver lo que respondieron.
+    boolean automaticaDeEstudiantes =
+        fuente == FuenteEvaluacion.ESTUDIANTES && notaFormulario != null && responsable == null;
+    if (esCorreccion && !automaticaDeEstudiantes) {
       correccionRepository.save(
           new CorreccionCalificacion(
               guardada, notaAnterior, promedioAnterior, promedioNuevo, responsable, motivo));

@@ -88,7 +88,7 @@ literal del comentario citado:
 | Nulo, vacío, «nada», «ok», emojis, mayúsculas, tildes combinadas, caracteres invisibles, de control y sustitutos sueltos, JSON y markdown dentro del texto, órdenes al modelo, letras repetidas, datos personales, comentarios de 120.000 caracteres | `entradasRarasNoRompenElAnalisis` |
 | 30 rondas de texto aleatorio con semilla fija | `textoAleatorioNoRompeElAnalisisYLasCitasSonLiterales` |
 
-Con el léxico `lexico-2026.11-v1` las seis pasan sin cambiar el modelo local. Los fallos del
+Con el léxico de producción (`lexico-v2.txt`) las seis pasan sin cambiar el modelo local. Los fallos del
 proveedor y la caída al local los cubren `AnalisisIaFallosModeloTest` y
 `ModeloIAChatCompletionsTest`.
 

@@ -240,7 +240,8 @@ class ConcurrenciaFlujosTest extends PruebaIntegracion {
                   escenario.crearCurso(
                       "CF-101", "Curso " + MARCA, escenario.recargar(docente).getPrograma());
               var clase = escenario.crearClase(periodo, curso, "A", escenario.recargar(docente));
-              for (int i = 0; i < 6; i++) {
+              // Ocho alumnos: la nota de estudiantes se actualiza por bloques de 4 respuestas.
+              for (int i = 0; i < 8; i++) {
                 Usuario alumno =
                     escenario.crearEstudiante("Alumno " + MARCA + " " + i, curso.getPrograma());
                 escenario.matricular(clase, alumno);
@@ -268,7 +269,7 @@ class ConcurrenciaFlujosTest extends PruebaIntegracion {
 
     ExecutorService hilos = Executors.newFixedThreadPool(5);
     List<Future<?>> envios = new ArrayList<>();
-    for (UsuarioSesion alumno : alumnos.subList(1, 6)) {
+    for (UsuarioSesion alumno : alumnos.subList(1, 8)) {
       envios.add(
           hilos.submit(
               () -> {
@@ -286,7 +287,7 @@ class ConcurrenciaFlujosTest extends PruebaIntegracion {
                 "select count(*) from respuestas_heteroevaluacion where asignacion_id = ?",
                 Long.class,
                 asignacion))
-        .isEqualTo(6);
+        .isEqualTo(8);
     assertThat(
             jdbcTemplate.queryForObject(
                 "select origen from calificaciones where id_docente = ? and fuente = 'ESTUDIANTES'",

@@ -13,6 +13,7 @@ import { iniciales } from '../../../shared/utils/formatters.js'
 import { PanelActa } from '../../actas/components/PanelActa.jsx'
 import { PanelSeguimientoPlan } from '../../actas/components/PanelSeguimientoPlan.jsx'
 import { useSesion } from '../../auth/sesionContext.js'
+import { useUmbralRevision } from '../../kpis/hooks/useUmbralRevision.js'
 import { PanelCorrecciones } from '../../calificaciones/components/PanelCorrecciones.jsx'
 import { AvisoEtapaCerrada } from '../../periodos/components/AvisoEtapaCerrada.jsx'
 import { PanelComparativoPrograma } from '../components/PanelComparativoPrograma.jsx'
@@ -29,6 +30,7 @@ import { obtenerExpedienteDocente } from '../services/expedientesService.js'
 import './Expediente.css'
 
 export default function ExpedienteDocente() {
+  const umbralRevision = useUmbralRevision()
   const { idDocente } = useParams()
   const { usuario } = useSesion()
   const navegar = useNavigate()
@@ -112,8 +114,9 @@ export default function ExpedienteDocente() {
           </Aviso>
         )}
 
-        <div className="rejilla">
-          <Panel>
+        {/* Tablero: el perfil y las dimensiones se apilan junto a las dos tarjetas altas. */}
+        <div className={`expediente__tablero${periodo && puedeImprimir ? '' : ' expediente__tablero--sin-comparativo'}`}>
+          <Panel className="expediente__area-perfil">
             <div className="expediente__perfil">
               <span className="expediente__avatar" aria-hidden="true">
                 {iniciales(docente.nombreCompleto)}
@@ -123,12 +126,15 @@ export default function ExpedienteDocente() {
                 <p className="expediente__correo">{docente.correo}</p>
               </div>
             </div>
-            <DatosDocente docente={docente} periodo={periodo} promedio={promedio} />
+            <DatosDocente docente={docente} periodo={periodo} promedio={promedio} umbralRevision={umbralRevision} />
           </Panel>
 
           {periodo && puedeImprimir && (
-            <PanelComparativoPrograma idDocente={docente.idDocente} evaluadoEsCoordinador={docente.esCoordinador} />
+            <div className="expediente__area-comparativo">
+              <PanelComparativoPrograma idDocente={docente.idDocente} evaluadoEsCoordinador={docente.esCoordinador} />
+            </div>
           )}
+          <div className="expediente__area-fuentes">
           <PanelFuentes
             notasPorFuente={notasPorFuente}
             promedio={promedio}
@@ -152,8 +158,11 @@ export default function ExpedienteDocente() {
               </>
             )}
           </PanelFuentes>
+          </div>
 
-          <PanelDimensiones dimensiones={dimensiones} />
+          <div className="expediente__area-dimensiones">
+            <PanelDimensiones dimensiones={dimensiones} />
+          </div>
         </div>
 
         <div className="rejilla">
@@ -163,7 +172,7 @@ export default function ExpedienteDocente() {
 
         {periodo && <PanelProceso idDocente={docente.idDocente} onDatos={guardarProceso} />}
         <PanelActa idDocente={docente.idDocente} evaluadoEsCoordinador={docente.esCoordinador} />
-        <PanelSeguimientoPlan idDocente={docente.idDocente} puedeMarcar={usuario.rol === ROLES.COORDINADOR} />
+        <PanelSeguimientoPlan idDocente={docente.idDocente} puedeMarcar={usuario.rol === ROLES.COORDINADOR} plegable />
         <PanelCorrecciones idDocente={docente.idDocente} />
 
         {puedeImprimir && (

@@ -33,3 +33,13 @@ export function atenderSolicitud(idSolicitud, aprobada, respuesta) {
     respuesta: respuesta || null,
   })
 }
+
+/** Autoevaluación y coevaluación de un docente en el periodo activo (administración). */
+export function listarFormulariosDocente(idDocente) {
+  return api.get(`/solicitudes-reapertura/formularios?idDocente=${encodeURIComponent(idDocente)}`)
+}
+
+/** La administración reabre un formulario enviado sin solicitud previa. */
+export function reabrirDirecto(idFormulario, motivo) {
+  return api.post(`/solicitudes-reapertura/formularios/${encodeURIComponent(idFormulario)}/reapertura`, { motivo })
+}

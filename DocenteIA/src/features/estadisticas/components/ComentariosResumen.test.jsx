@@ -1,4 +1,5 @@
 import { render, screen } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import userEvent from '@testing-library/user-event'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import * as analisisService from '../../analisis/services/analisisService.js'
@@ -48,6 +49,30 @@ describe('ComentariosResumen', () => {
     analisisService.obtenerResumenComentarios.mockResolvedValue(RESUMEN)
     render(<ComentariosResumen periodoId={1} alcance="Tu facultad" esCoordinador />)
     expect(await screen.findByText(/Advertencias para revisar/)).toBeInTheDocument()
+  })
+
+  it('cada tema deja ver a qué docentes se refiere', async () => {
+    analisisService.obtenerResumenComentarios.mockResolvedValue({
+      ...RESUMEN,
+      temas: [
+        {
+          ...RESUMEN.temas[0],
+          docentes: 2,
+          listaDocentes: [
+            { idDocente: 4, nombre: 'Nora Muñoz', menciones: 6 },
+            { idDocente: 9, nombre: 'Luis Paz', menciones: 4 },
+          ],
+        },
+      ],
+    })
+    render(
+      <MemoryRouter>
+        <ComentariosResumen periodoId={1} alcance="Software" />
+      </MemoryRouter>,
+    )
+    await userEvent.click(await screen.findByRole('button', { name: /2 docentes/ }))
+    expect(screen.getByRole('link', { name: 'Nora Muñoz' })).toHaveAttribute('href', '/docentes/4')
+    expect(screen.getByText('6 menciones')).toBeInTheDocument()
   })
 
   it('con pocos docentes analizados explica por qué no se muestra', async () => {

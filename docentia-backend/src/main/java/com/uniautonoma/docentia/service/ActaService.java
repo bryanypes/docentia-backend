@@ -1,6 +1,7 @@
 package com.uniautonoma.docentia.service;
 
 import com.uniautonoma.docentia.config.ActasProperties;
+import com.uniautonoma.docentia.dto.ActaPorCodigoResponse;
 import com.uniautonoma.docentia.dto.ActaResponse;
 import com.uniautonoma.docentia.dto.CompromisoActaRequest;
 import com.uniautonoma.docentia.dto.EstadoPromedio;
@@ -182,6 +183,13 @@ public class ActaService {
     return ActaResponse.desde(guardada);
   }
 
+  /** Guarda lo que se habló en la reunión; solo quien evaluó y antes de la primera firma. */
+  public ActaResponse guardarObservaciones(Long idActa, String texto, UsuarioSesion sesion) {
+    Acta acta = buscarComoEvaluador(idActa, sesion);
+    acta.registrarObservaciones(texto);
+    return ActaResponse.desde(actaRepository.saveAndFlush(acta));
+  }
+
   /**
    * Agrega un compromiso al acta en borrador.
    *
@@ -321,7 +329,14 @@ public class ActaService {
   /** PDF guardado del acta; nunca se regenera. */
   @Transactional(readOnly = true)
   public PdfActa descargarPdf(Long idActa, UsuarioSesion sesion) {
-    Acta acta = buscarVisible(idActa, sesion);
+    // La administración custodia el archivo de actas: descarga cualquiera, sin pasar por el alcance
+    // de docentes (no tiene facultad ni docentes a cargo).
+    Acta acta =
+        sesion.esAdministrador()
+            ? actaRepository
+                .findById(idActa)
+                .orElseThrow(() -> new RecursoNoEncontradoException("Acta no encontrada"))
+            : buscarVisible(idActa, sesion);
     if (acta.getPdf() == null) {
       throw new ReglaNegocioException("El acta todavía no está firmada por las dos partes");
     }
@@ -336,6 +351,50 @@ public class ActaService {
         .findByCodigoVerificacion(codigo.trim().toUpperCase(Locale.ROOT))
         .map(VerificacionActaResponse::desde)
         .orElseThrow(() -> new RecursoNoEncontradoException("Acta no encontrada"));
+  }
+
+  /** Búsqueda por código para la administración y la vicerrectoría: sin notas. */
+  @Transactional(readOnly = true)
+  public ActaPorCodigoResponse buscarPorCodigo(String codigo) {
+    return actaRepository
+        .findByCodigoVerificacion(codigo.trim().toUpperCase(Locale.ROOT))
+        .map(ActaService::resumenAdministrativo)
+        .orElseThrow(() -> new RecursoNoEncontradoException("Ningún acta tiene ese código"));
+  }
+
+  /** Registro de todas las actas firmadas, para la administración y la vicerrectoría. */
+  @Transactional(readOnly = true)
+  public List<ActaPorCodigoResponse> registro() {
+    return actaRepository.findByCodigoVerificacionIsNotNullOrderByFechaFirmaDesc().stream()
+        .map(ActaService::resumenAdministrativo)
+        .toList();
+  }
+
+  private static ActaPorCodigoResponse resumenAdministrativo(Acta acta) {
+    Usuario docente = acta.getDocente();
+    return new ActaPorCodigoResponse(
+        acta.getIdActa(),
+        acta.getCodigoVerificacion(),
+        acta.getTipo() == TipoActa.COMPROMISO
+            ? "Acta de compromiso docente"
+            : "Acta de retroalimentación docente",
+        acta.getEstado(),
+        acta.getPeriodo().getNombre(),
+        docente.getNombreCompleto(),
+        docente.getCorreo(),
+        docente.getPrograma() == null ? null : docente.getPrograma().getNombre(),
+        GeneradorPdfActa.nombreEscuela(docente.getFacultadDeAdscripcion()),
+        acta.getFechaFirma(),
+        acta.getFirmas().stream()
+            .map(
+                f ->
+                    new ActaPorCodigoResponse.Firmante(
+                        f.getNombre(),
+                        GeneradorPdfActa.cargoDelFirmante(acta, f.getRol()),
+                        f.getCorreo(),
+                        f.getFecha()))
+            .toList(),
+        acta.getHashContenido());
   }
 
   public record PdfActa(byte[] contenido, String nombre) {}

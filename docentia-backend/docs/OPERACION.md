@@ -128,6 +128,8 @@ location /Evadocente-app/ {
 | `DOCENTIA_PROCESO_EXIGIR_ASISTENCIA` | No, `true` | El docente ve su resultado y firma solo tras registrar la asistencia |
 | `DOCENTIA_ACTAS_EXIGIR_FIRMA_DIBUJADA` | No, `true` | La firma lleva imagen (dibujada, escrita o PNG) |
 | `DOCENTIA_ACTAS_LOGO` | No | Logo del PDF; por defecto el de la universidad incluido |
+| `DOCENTIA_UMBRAL_REVISION` | No | Nota final por debajo de la cual el docente queda «Para revisar» y la vicerrectoría recibe un aviso. Vacía: `4.0`. No cambia las categorías de la Resolución 074 |
+| `DOCENTIA_ACTAS_URL_VERIFICACION` | No | Dirección pública impresa en el PDF para verificar el acta. Vacía: `https://nova.uniautonoma.edu.co/Evadocente-app` |
 | `DOCENTIA_PERIODOS_MES_FIN_PRIMER_SEMESTRE` | No, 6 | Mes de corte del nombre automático del periodo (por confirmar) |
 | `DOCENTIA_NOTIFICACIONES_RETENCION_DIAS` | No, 90 | Días que se guardan las notificaciones leídas |
 | `DOCENTIA_IA_*` | No | Análisis de comentarios: `local` por defecto, sin red. El externo solo con URL, modelo y clave |

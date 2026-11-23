@@ -1,10 +1,12 @@
 package com.uniautonoma.docentia.controller;
 
+import com.uniautonoma.docentia.dto.ActaPorCodigoResponse;
 import com.uniautonoma.docentia.dto.ActaResponse;
 import com.uniautonoma.docentia.dto.CompromisoActaRequest;
 import com.uniautonoma.docentia.dto.CorreccionActaRequest;
 import com.uniautonoma.docentia.dto.FirmaActaRequest;
 import com.uniautonoma.docentia.dto.NuevaActaRequest;
+import com.uniautonoma.docentia.dto.ObservacionesActaRequest;
 import com.uniautonoma.docentia.dto.TipoActaRequest;
 import com.uniautonoma.docentia.entity.AccionAuditoria;
 import com.uniautonoma.docentia.entity.EstadoActa;
@@ -28,6 +30,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -45,6 +48,20 @@ public class ActaController {
   public ActaController(ActaService actaService, AuditoriaService auditoria) {
     this.actaService = actaService;
     this.auditoria = auditoria;
+  }
+
+  /** Todas las actas firmadas, vigentes y reemplazadas; sin notas. */
+  @GetMapping("/registro")
+  @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'VICERRECTOR')")
+  public List<ActaPorCodigoResponse> registro() {
+    return actaService.registro();
+  }
+
+  /** Busca un acta firmada por el código impreso en su PDF; sin notas. */
+  @GetMapping("/codigo/{codigo}")
+  @PreAuthorize("hasAnyRole('ADMINISTRADOR', 'VICERRECTOR')")
+  public ActaPorCodigoResponse buscarPorCodigo(@PathVariable String codigo) {
+    return actaService.buscarPorCodigo(codigo);
   }
 
   @PostMapping
@@ -81,6 +98,16 @@ public class ActaController {
     ActaResponse acta = actaService.obtener(idActa, sesion);
     auditarLectura(acta, sesion);
     return acta;
+  }
+
+  /** Lo que se habló en la reunión; antes de la primera firma. */
+  @PutMapping("/{idActa}/observaciones")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
+  public ActaResponse guardarObservaciones(
+      @PathVariable Long idActa,
+      @Valid @RequestBody ObservacionesActaRequest solicitud,
+      @AuthenticationPrincipal UsuarioSesion sesion) {
+    return actaService.guardarObservaciones(idActa, solicitud.texto(), sesion);
   }
 
   @PostMapping("/{idActa}/compromisos")
@@ -134,7 +161,7 @@ public class ActaController {
   }
 
   @GetMapping("/{idActa}/pdf")
-  @PreAuthorize("hasAnyRole('COORDINADOR', 'DOCENTE', 'VICERRECTOR')")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'DOCENTE', 'VICERRECTOR', 'ADMINISTRADOR')")
   public ResponseEntity<byte[]> descargarPdf(
       @PathVariable Long idActa, @AuthenticationPrincipal UsuarioSesion sesion) {
     PdfActa pdf = actaService.descargarPdf(idActa, sesion);

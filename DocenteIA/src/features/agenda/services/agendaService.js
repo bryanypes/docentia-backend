@@ -52,3 +52,8 @@ export function cancelarCita(idCita) {
 export function reprogramarCita(idCita, idFranja) {
   return api.post(`/citas/${encodeURIComponent(idCita)}/reprogramacion`, { idFranja })
 }
+
+/** Todas las citas agendadas del periodo (administración); sin periodo, el activo. */
+export function listarCitasProgramadas(periodo) {
+  return api.get(periodo ? `/citas/programadas?periodo=${encodeURIComponent(periodo)}` : '/citas/programadas')
+}

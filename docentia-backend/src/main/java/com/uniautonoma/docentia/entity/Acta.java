@@ -89,6 +89,10 @@ public class Acta {
   @Column(length = 500)
   private String motivoCorreccion;
 
+  /** Lo que se habló en la reunión, en palabras de quien evaluó. Va en el PDF. */
+  @Column(length = 2000)
+  private String observaciones;
+
   private Long idUsuarioCorrige;
 
   @Column(length = 20)
@@ -177,6 +181,19 @@ public class Acta {
           "Con una nota menor a " + umbralCompromisos + " el acta es de compromiso");
     }
     this.tipo = nuevo;
+  }
+
+  /** Lo tratado en la reunión; solo antes de la primera firma. */
+  public void registrarObservaciones(String texto) {
+    exigirBorrador();
+    if (!firmas.isEmpty()) {
+      throw new ReglaNegocioException("El acta ya tiene una firma: las observaciones no cambian");
+    }
+    this.observaciones = texto == null || texto.isBlank() ? null : texto.strip();
+  }
+
+  public String getObservaciones() {
+    return observaciones;
   }
 
   public void exigirBorrador() {

@@ -159,7 +159,7 @@ class CitasVerificablesTest extends PruebaIntegracion {
   }
 
   @Test
-  void validarRespetaRolAlcanceYLaVentanaDeRevision() throws Exception {
+  void validarRespetaRolYAlcanceSinEsperarLaVentanaDeRevision() throws Exception {
     Usuario otro = escenario.crearCoordinador("Paola Sarria", escenario.crearFacultad("Derecho"));
 
     mockMvc
@@ -168,20 +168,23 @@ class CitasVerificablesTest extends PruebaIntegracion {
     mockMvc
         .perform(post("/analisis-ia/hallazgos/{id}/validacion", hallazgo(0)).with(como(julian)))
         .andExpect(status().isForbidden());
+    // La vicerrectoría revisa a los coordinadores, no a los docentes: este hallazgo queda fuera de
+    // su alcance y responde 404, igual que para un coordinador de otra facultad.
     mockMvc
         .perform(
             post("/analisis-ia/hallazgos/{id}/validacion", hallazgo(0)).with(comoVicerrector()))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isNotFound());
 
     escenario.abrirEtapa(
         entityManager.find(PeriodoAcademico.class, periodo.getIdPeriodo()),
         TipoEtapa.REVISION_HALLAZGOS,
         BaseDatosPruebaConfig.HOY.plusDays(2),
         BaseDatosPruebaConfig.HOY.plusDays(4));
+    // La revisión no espera su etapa: se valida cuando se necesite.
     mockMvc
         .perform(
             post("/analisis-ia/hallazgos/{id}/validacion", hallazgo(0)).with(como(coordinador)))
-        .andExpect(status().isConflict());
+        .andExpect(status().isOk());
   }
 
   @Test

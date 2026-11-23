@@ -21,6 +21,7 @@ import java.math.BigDecimal;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.stream.Collectors;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,13 +44,18 @@ public class PromedioService {
   private final PromedioDocenteRepository promedioRepository;
   private final CalculadoraPromedioPonderado calculadora;
 
+  /** Por debajo de esta nota final la vicerrectoría recibe un aviso para revisar al docente. */
+  private final BigDecimal umbralRevision;
+
   public PromedioService(
       CalificacionRepository calificacionRepository,
       PonderacionRepository ponderacionRepository,
       PromedioDocenteRepository promedioRepository,
       CalculadoraPromedioPonderado calculadora,
-      ApplicationEventPublisher eventos) {
+      ApplicationEventPublisher eventos,
+      @Value("${docentia.revision.umbral-promedio:4.0}") BigDecimal umbralRevision) {
     this.eventos = eventos;
+    this.umbralRevision = umbralRevision;
     this.calificacionRepository = calificacionRepository;
     this.ponderacionRepository = ponderacionRepository;
     this.promedioRepository = promedioRepository;
@@ -136,16 +142,22 @@ public class PromedioService {
         resultado.estado().name(),
         resultado.categoria() == null ? null : resultado.categoria().codigo().name(),
         CONVERTIDOR_FUENTES.convertToDatabaseColumn(resultado.fuentesPendientes()));
-    if (resultado.estado() == EstadoPromedio.COMPLETO
-        && resultado.categoria().codigo() == CategoriaDesempeno.MUY_BAJO) {
-      // Solo a Vicerrectoría, solo con el resultado definitivo y sin decirle nada al docente.
-      eventos.publishEvent(
-          EventoNotificacion.aVicerrectores(
-              TipoNotificacion.ALERTA_INFORMATIVA,
-              "/acciones-sugeridas",
-              "PERIODO",
-              idPeriodo,
-              "docente:" + idDocente + ":periodo:" + idPeriodo));
+    if (resultado.estado() == EstadoPromedio.COMPLETO) {
+      // Solo a Vicerrectoría, solo con el resultado definitivo y sin decirle nada al docente: muy
+      // bajo es la alerta de la resolución; por debajo del umbral de revisión, un aviso para
+      // revisarlo. Las categorías de la Resolución 074 no cambian.
+      boolean muyBajo = resultado.categoria().codigo() == CategoriaDesempeno.MUY_BAJO;
+      if (muyBajo || resultado.valor().compareTo(umbralRevision) < 0) {
+        eventos.publishEvent(
+            EventoNotificacion.aVicerrectores(
+                muyBajo
+                    ? TipoNotificacion.ALERTA_INFORMATIVA
+                    : TipoNotificacion.PROMEDIO_PARA_REVISAR,
+                "/acciones-sugeridas?desempeno=bajo&orden=peor",
+                "PERIODO",
+                idPeriodo,
+                "docente:" + idDocente + ":periodo:" + idPeriodo));
+      }
     }
     return resultado;
   }

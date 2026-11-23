@@ -11,7 +11,6 @@ import com.uniautonoma.docentia.entity.EstadoSolicitudAnalisis;
 import com.uniautonoma.docentia.entity.FuenteComentarios;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.SolicitudAnalisis;
-import com.uniautonoma.docentia.entity.TipoEtapa;
 import com.uniautonoma.docentia.entity.Usuario;
 import com.uniautonoma.docentia.exception.DatosInvalidosException;
 import com.uniautonoma.docentia.exception.DemasiadosIntentosException;
@@ -126,16 +125,11 @@ public class AnalisisIaService {
     }
     // Con un resultado ya generado, pedir otro es regenerar: mismas reglas que /regeneracion,
     // para que este endpoint no sirva de atajo al enfriamiento.
-    String motivo = solicitud.motivo() == null ? "" : solicitud.motivo().strip();
-    if (motivo.isEmpty()) {
-      throw new DatosInvalidosException(
-          "El docente ya tiene un análisis en este periodo; indica el motivo para pedir otro",
-          "motivo");
-    }
-    if (comentariosNuevos(anterior.get()) == 0) {
+    int nuevos = comentariosNuevos(anterior.get());
+    if (nuevos == 0) {
       exigirEnfriamiento(anterior.get());
     }
-    return crear(solicitud, motivo, sesion);
+    return crear(solicitud, motivoRegeneracion(solicitud.motivo(), nuevos), sesion);
   }
 
   /**
@@ -153,8 +147,18 @@ public class AnalisisIaService {
     return crear(
         new SolicitudAnalisisRequest(
             idDocente, pedido.periodoId(), pedido.fuente(), pedido.modelo()),
-        pedido.motivo().strip(),
+        motivoRegeneracion(pedido.motivo(), 0),
         sesion);
+  }
+
+  /** El motivo es opcional: sin él queda uno que explica por qué se volvió a analizar. */
+  private static String motivoRegeneracion(String escrito, int nuevos) {
+    if (escrito != null && !escrito.isBlank()) {
+      return escrito.strip();
+    }
+    return nuevos > 0
+        ? "Llegaron " + nuevos + " comentarios nuevos de estudiantes"
+        : "Nuevo análisis solicitado";
   }
 
   private Optional<SolicitudAnalisis> ultimaSolicitud(Long idDocente, Long idPeriodo) {
@@ -183,7 +187,19 @@ public class AnalisisIaService {
 
   private SolicitudAnalisisResponse responder(SolicitudAnalisis solicitud) {
     return SolicitudAnalisisResponse.desde(solicitud)
-        .conComentariosNuevos(comentariosNuevos(solicitud));
+        .conComentariosNuevos(comentariosNuevos(solicitud))
+        .conNuevoAnalisisDesde(nuevoAnalisisDesde(solicitud));
+  }
+
+  private Map<Long, Integer> cambiosPorHallazgo(SolicitudAnalisis solicitud) {
+    return resultados.cambiosPorHallazgo(solicitud.getIdSolicitud());
+  }
+
+  /** Desde cuándo se puede volver a analizar sin comentarios nuevos (el enfriamiento). */
+  private LocalDateTime nuevoAnalisisDesde(SolicitudAnalisis solicitud) {
+    return solicitud.getFechaSolicitud() == null
+        ? null
+        : solicitud.getFechaSolicitud().plusMinutes(ahorro.enfriamientoRegeneracionMinutos());
   }
 
   /** Entre dos solicitudes del mismo docente y periodo debe pasar el enfriamiento configurado. */
@@ -192,9 +208,9 @@ public class AnalisisIaService {
     int minutos = ahorro.enfriamientoRegeneracionMinutos();
     if (fecha != null && fecha.isAfter(LocalDateTime.now().minusMinutes(minutos))) {
       throw new DemasiadosIntentosException(
-          "Este análisis se generó hace poco. Puedes regenerarlo "
+          "Este análisis se generó hace poco. Puedes volver a analizar "
               + minutos
-              + " minutos después de la última solicitud");
+              + " minutos después de la última solicitud, o antes si llegan comentarios nuevos");
     }
   }
 
@@ -214,21 +230,14 @@ public class AnalisisIaService {
         periodoRepository
             .findById(solicitud.periodoId())
             .orElseThrow(() -> new RecursoNoEncontradoException("Periodo académico no encontrado"));
-    ventanaEtapaService.exigirEtapaAbierta(periodo, TipoEtapa.REVISION_HALLAZGOS);
     FuenteComentarios fuente = solicitud.fuenteOPorDefecto();
     if (solicitud.pideLlm() && !modelos.hayExterno()) {
       throw new ReglaNegocioException(
           "No hay un modelo de lenguaje configurado en este ambiente (falta URL, modelo o clave)."
               + " Usa el modelo local por reglas.");
     }
-    // Los comentarios del formulario solo se leen cuando ya nadie puede responder: así el momento
-    // del análisis no permite asociar un comentario con quien acaba de enviar.
-    if (fuente == FuenteComentarios.FORMULARIO
-        && !ventanaEtapaService.haTerminado(periodo, TipoEtapa.RECOLECCION_CALIFICACIONES)) {
-      throw new ReglaNegocioException(
-          "La recolección aún no termina: los comentarios de los estudiantes se analizan cuando cierre,"
-              + " para que el momento del análisis no permita saber quién acaba de responder");
-    }
+    // Se analiza cuando se necesite, sin esperar a que cierre la recolección: el mínimo de
+    // comentarios y la anonimización siguen protegiendo a los estudiantes.
     solicitudRepository
         .findFirstByDocenteIdUsuarioAndPeriodoIdPeriodoAndEstadoIn(
             docente.getIdUsuario(), periodo.getIdPeriodo(), EN_CURSO)
@@ -267,8 +276,10 @@ public class AnalisisIaService {
     if (solicitud.getEstado() != EstadoSolicitudAnalisis.COMPLETADO) {
       return SolicitudAnalisisResponse.desde(solicitud);
     }
-    return SolicitudAnalisisResponse.desde(solicitud, comentariosEnviados(solicitud))
-        .conComentariosNuevos(comentariosNuevos(solicitud));
+    return SolicitudAnalisisResponse.desde(
+            solicitud, comentariosEnviados(solicitud), cambiosPorHallazgo(solicitud))
+        .conComentariosNuevos(comentariosNuevos(solicitud))
+        .conNuevoAnalisisDesde(nuevoAnalisisDesde(solicitud));
   }
 
   /**

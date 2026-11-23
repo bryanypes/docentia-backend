@@ -147,10 +147,10 @@ class CoordinadorEvaluadoTest extends PruebaIntegracion {
             .getContentAsByteArray();
     String texto = new PdfTextExtractor(new PdfReader(pdf)).getTextFromPage(1);
     assertThat(texto.replaceAll("\\s+", " "))
-        .contains("Firma vicerrectoría")
-        .contains("y la vicerrectoría firmaron esta acta")
-        .doesNotContain("Firma coordinación")
-        .doesNotContain("la coordinación firmaron");
+        .contains("FIRMA VICERRECTORÍA")
+        .contains("Vicerrectoría Académica")
+        .doesNotContain("FIRMA COORDINACIÓN")
+        .doesNotContain("Coordinación de la");
   }
 
   @Test

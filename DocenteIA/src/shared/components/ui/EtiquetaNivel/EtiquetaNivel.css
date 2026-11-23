@@ -45,3 +45,7 @@
   background: var(--color-borde-suave);
   color: var(--color-texto-apagado);
 }
+
+.marca-revision {
+  margin-left: 6px;
+}

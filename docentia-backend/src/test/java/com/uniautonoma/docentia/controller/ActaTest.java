@@ -104,9 +104,13 @@ class ActaTest extends PruebaIntegracion {
             .getResponse()
             .getContentAsByteArray();
     PdfReader lector = new PdfReader(pdf);
-    String texto = new PdfTextExtractor(lector).getTextFromPage(1);
+    StringBuilder paginas = new StringBuilder();
+    for (int pagina = 1; pagina <= lector.getNumberOfPages(); pagina++) {
+      paginas.append(new PdfTextExtractor(lector).getTextFromPage(pagina));
+    }
+    String texto = paginas.toString();
     assertThat(texto)
-        .contains("Plan de Mejoramiento Profesoral")
+        .contains("PLAN DE MEJORAMIENTO PROFESORAL")
         .contains("Actualizar el plan de asignatura")
         .contains("Marta Ruiz")
         .contains("Nora Munoz")
@@ -120,6 +124,44 @@ class ActaTest extends PruebaIntegracion {
             .getResponse()
             .getContentAsByteArray();
     assertThat(otraVez).isEqualTo(pdf);
+
+    // La administración encuentra el acta por el código impreso, sin ver la nota.
+    String detalle =
+        mockMvc
+            .perform(get("/actas/{id}", acta).with(como(coordinador)))
+            .andReturn()
+            .getResponse()
+            .getContentAsString();
+    String codigo = JsonPath.read(detalle, "$.codigoVerificacion");
+    Usuario administrador =
+        escenario.crearConRol("Ana Gomez", com.uniautonoma.docentia.entity.Rol.ADMINISTRADOR);
+    mockMvc
+        .perform(get("/actas/codigo/{codigo}", codigo.toLowerCase()).with(como(administrador)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.nombreDocente").value("Nora Munoz"))
+        .andExpect(jsonPath("$.nombreActa").value("Acta de compromiso docente"))
+        .andExpect(jsonPath("$.firmas", hasSize(2)))
+        .andExpect(jsonPath("$.promedio").doesNotExist())
+        .andExpect(jsonPath("$.categoria").doesNotExist());
+    mockMvc
+        .perform(get("/actas/codigo/{codigo}", codigo).with(como(docente)))
+        .andExpect(status().isForbidden());
+    mockMvc
+        .perform(get("/actas/registro").with(como(administrador)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].codigo").value(codigo))
+        .andExpect(jsonPath("$[0].promedio").doesNotExist());
+    byte[] delArchivo =
+        mockMvc
+            .perform(get("/actas/{id}/pdf", acta).with(como(administrador)))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsByteArray();
+    assertThat(delArchivo).isEqualTo(pdf);
+    mockMvc
+        .perform(get("/actas/codigo/{codigo}", "DOC-000000000000").with(como(administrador)))
+        .andExpect(status().isNotFound());
   }
 
   @Test

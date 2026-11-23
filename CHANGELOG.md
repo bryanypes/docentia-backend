@@ -2,7 +2,7 @@
 
 ## Sin publicar: análisis robusto
 
-Solo backend y frontend. Sin migraciones: la base sigue en V48.
+Solo backend y frontend. Sin migraciones: la base sigue en V50.
 
 - **El análisis no deja al docente sin resultado**: si el modelo externo falla de forma definitiva, el
   borrador lo hace el modelo local por reglas, que no usa red, y la pantalla lo dice («Usé el modelo
@@ -17,9 +17,94 @@ Solo backend y frontend. Sin migraciones: la base sigue en V48.
   `temperature` menor que 1 en el endpoint compatible.
 - **Pruebas de robustez del modelo local** con 0 a 5.000 comentarios y entradas raras.
 
-## Sin versión (19 de noviembre de 2026)
+## Sin versión (20 de noviembre de 2026)
 
-Backend y frontend juntos. Sin migraciones: la base sigue en V48.
+Backend y frontend juntos. Sin migraciones: la base sigue en V50.
+
+- **Léxico v2 del análisis local** (`lexico-2026.11-v2`, por defecto): entiende jerga colombiana y
+  juvenil («melo», «brutal», «crack», «se rifa», «una nota», «qué chimba», «maluco», «jarto», «qué
+  pereza», «se la monta»…), abreviaturas de chat («xk», «bn», «tmbn», «pa», «nd»), risas («jajaja»,
+  «xd», sin peso en el sentido) y emojis (😍 🔥 👏 ❤️ positivos; 😴 🙄 👎 😡 negativos), con tono de
+  piel o no. Las métricas del conjunto de validación no bajan frente al v1. El v1 se conserva.
+- **Instrucción `analisis-v5`** para el modelo externo: interpreta la jerga, las abreviaturas y los
+  emojis por su sentido y redacta los hallazgos en español formal.
+- La coevaluación cuenta los comentarios que leyó el análisis.
+- **La administración reabre directo**: en «Solicitudes de corrección» elige un docente, ve su
+  autoevaluación y su coevaluación del periodo (quién la respondió y cuándo, sin puntajes) y reabre
+  la que haga falta con un motivo, sin solicitud ni verificación del superior. Quien la respondió
+  recibe el aviso «Formulario reabierto» y la vuelve a hacer; queda como solicitud atendida y en la
+  auditoría. No se reabre si el acta del periodo ya está firmada. Nuevos
+  `GET /solicitudes-reapertura/formularios` y `POST /solicitudes-reapertura/formularios/{id}/reapertura`.
+- **Citas programadas** (administración): todas las citas agendadas del periodo, coordinación con sus
+  docentes y vicerrectoría con los coordinadores, agrupadas por día, con buscador y filtros por tipo y
+  estado (por confirmar, confirmada, asistió). Solo lectura y sin notas. Nuevo `GET /citas/programadas`.
+
+## 0.4.4 (20 de noviembre de 2026)
+
+Backend y frontend se despliegan juntos desde la etiqueta `v0.4.4`. Migraciones nuevas: la base pasa de V48 a **V50**.
+
+- **El análisis de IA agrupa los comentarios** (V50, instrucción `analisis-v4`): los comentarios que
+  dicen lo mismo forman un solo hallazgo, ordenado por los criterios de la evaluación docente (C1 a
+  C6), y cada comentario aparece una sola vez. Aunque el modelo no lo haga, el servidor funde los
+  hallazgos del mismo tipo y criterio y deja cada comentario en el hallazgo más respaldado. El modelo
+  local también marca el criterio y ya no pone cifras en el texto.
+- **Cada hallazgo** muestra su criterio, cuántos comentarios lo respaldan (dos a la vista y el resto
+  plegado) y solo avisa de las citas que no se verificaron. «Ver versiones» pasa a ser «Historial de
+  cambios» y solo aparece si alguien lo incluyó, descartó o editó; la vicerrectoría ya no recibe
+  «Hallazgo no encontrado» al abrirlo en el análisis de un docente.
+- **El análisis se pide cuando se necesite**: ya no espera a que cierre la recolección de comentarios
+  ni a la etapa de revisión de hallazgos. Siguen haciendo falta al menos 5 comentarios.
+- **Volver a analizar** no pide motivo y se habilita 5 minutos después de la última solicitud
+  (`DOCENTIA_IA_ENFRIAMIENTO_MINUTOS`), o de inmediato si llegaron comentarios nuevos; la pantalla
+  muestra los minutos que faltan.
+- **Panel de análisis de comentarios**: el resumen dice cuántos comentarios hay y cuántos docentes
+  están listos para analizar, con evidencia insuficiente (menos de 5 comentarios), sin comentarios o
+  con error; cada cifra filtra la lista. La lista tiene buscador y filtros con su cantidad y una
+  explicación, y cada docente dice cuántos comentarios le faltan para poder analizarlo.
+- **Anonimato de la nota de estudiantes**: con la recolección abierta la nota solo se actualiza cada
+  4 respuestas (`DOCENTIA_HETEROEVALUACION_BLOQUE`) y se consolida con todas al cerrar la recolección
+  (tarea programada). El recálculo automático ya no aparece en el historial de correcciones: antes
+  cada envío dejaba la nota de antes y de después y eso permitía deducir lo que calificó un
+  estudiante.
+- **Coevaluación con el análisis de comentarios**: antes de calificar, DocenteIA le pide a quien
+  coevalúa revisar el análisis y le dice cuántos comentarios hay; si ya existe, muestra lo que dicen
+  los estudiantes por criterio, sin comentarios textuales. Si la coevaluación se envió sin análisis,
+  pide rectificarla con «Solicitar corrección»; la lista de coevaluaciones las marca «Sin análisis de
+  IA». El docente también ve el criterio en «Lo que dicen tus estudiantes».
+- **Estadísticas de comentarios**: cada fortaleza y oportunidad deja ver a qué docentes se refiere,
+  con cuántas menciones y enlace a su expediente.
+- **Acciones sugeridas**: buscador y filtros por programa, categoría y desempeño; un aviso cuenta los
+  docentes con promedio por debajo de 4,0 y los filtra con un clic para que la vicerrectoría los
+  revise.
+- **«Para revisar» por debajo de 4,0** (`DOCENTIA_UMBRAL_REVISION`): una nota final completa por
+  debajo del umbral queda marcada «Para revisar» en el expediente, la lista de docentes (con su
+  filtro) y acciones sugeridas, y la vicerrectoría recibe el aviso «Promedio para revisar». Las
+  categorías de la Resolución 074 no cambian; «Muy bajo» sigue siendo la alerta informativa y el
+  docente no ve la marca.
+- **Expediente**: las tarjetas se acomodan sin huecos; el historial de correcciones y el seguimiento
+  del plan llegan plegados y solo se consultan al abrirlos.
+- **Proveedor externo de IA**: el aviso lo da DocenteIA en la conversación la primera vez; después
+  queda una línea con los límites y un enlace para volver a leerlo.
+
+- **PDF del acta como documento institucional**: membrete con el logo y el nombre de la Corporación
+  Universitaria Autónoma del Cauca (sin el título DOCENTIA), código y «Página N de M» arriba a la
+  derecha, título centrado, secciones numeradas, texto en serif justificado y bloque de firmas con
+  nombre, cargo, correo y fecha. Se redacta como carta, sin tablas: lugar, fecha y hora de la
+  reunión, escuela y programa del docente, cargo de quien evaluó, resultado, fortalezas y aspectos
+  por mejorar del análisis de IA validado (sin conteos de comentarios), lo tratado en la reunión y
+  los compromisos con su plazo. Ya no muestra la versión del acta. Dice «Escuela» donde decía
+  «Facultad». Las actas firmadas antes conservan su PDF.
+- **Lo tratado en la reunión** (V49): quien evalúa escribe, antes de la primera firma, lo que se
+  habló en la reunión; va en el PDF y entra en la huella del contenido. Una vez firmada, el
+  disparador de la base impide cambiarlo.
+- **Verificación con la dirección del despliegue**: el enlace impreso apunta a
+  `https://nova.uniautonoma.edu.co/Evadocente-app/verificar-acta/<código>` (configurable con
+  `DOCENTIA_ACTAS_URL_VERIFICACION`). La página pública de verificación tiene membrete, deja escribir
+  el código (también en `/verificar-acta` sin código) y ya no muestra la versión.
+- **Actas firmadas** (administración y vicerrectoría): registro de todas las actas firmadas con
+  buscador por docente, programa o código, filtro por tipo, vigentes y reemplazadas, detalle de quién
+  firmó y descarga del PDF. La administración puede descargar cualquier acta; cada descarga queda en
+  la auditoría. Nuevos `GET /actas/registro` y `GET /actas/codigo/{codigo}` (sin nota ni categoría).
 
 - **Análisis de IA desde la vicerrectoría**: la vicerrectoría pide el análisis de comentarios de
   cualquier docente o coordinador. Valida, descarta, edita y publica los hallazgos de los

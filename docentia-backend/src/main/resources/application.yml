@@ -75,12 +75,18 @@ docentia:
 
   kpi:
     destacado-umbral: 4.5
+  # Nota final por debajo de la cual el docente queda «Para revisar» y la vicerrectoría recibe un
+  # aviso. No cambia las categorías de la Resolución 074.
+  revision:
+    umbral-promedio: ${DOCENTIA_UMBRAL_REVISION:4.0}
   # Con una nota menor al umbral el acta exige al menos un compromiso con plazo.
   compromisos:
     umbral: ${DOCENTIA_COMPROMISOS_UMBRAL:3.8}
   # Heteroevaluación: por debajo del mínimo no se usa ni se muestra ningún agregado.
   heteroevaluacion:
     minimo-respuestas: ${DOCENTIA_HETEROEVALUACION_MINIMO:5}
+    # Con la recolección abierta la nota de estudiantes se actualiza cada tantas respuestas (y al cerrar).
+    bloque-respuestas: ${DOCENTIA_HETEROEVALUACION_BLOQUE:4}
   # Escala de los formularios, de 1 a 5. La resolución no la define: pendiente de confirmar.
   formularios:
     etiquetas-escala: Muy en desacuerdo,En desacuerdo,Ni de acuerdo ni en desacuerdo,De acuerdo,Muy de acuerdo
@@ -94,6 +100,8 @@ docentia:
     exigir-firma-dibujada: ${DOCENTIA_ACTAS_EXIGIR_FIRMA_DIBUJADA:true}
     # Logo institucional del PDF (ver resources/marca/LEEME.md). Sin archivo, el acta sale sin logo.
     logo: ${DOCENTIA_ACTAS_LOGO:classpath:marca/logo-uniautonoma.png}
+    # Dirección pública impresa en el PDF para verificar el acta: la del despliegue, no la local.
+    url-verificacion: ${DOCENTIA_ACTAS_URL_VERIFICACION:https://nova.uniautonoma.edu.co/Evadocente-app}
   # El docente ve su nota, compromisos y acta solo cuando la coordinación registra su asistencia a la
   # cita, y el acta se firma en esa reunión.
   proceso:
@@ -129,7 +137,7 @@ docentia:
     max-tokens-salida: ${DOCENTIA_IA_MAX_TOKENS_SALIDA:4000}
     presupuesto-tokens-dia: ${DOCENTIA_IA_PRESUPUESTO_TOKENS_DIA:500000}
     presupuesto-tokens-periodo: ${DOCENTIA_IA_PRESUPUESTO_TOKENS_PERIODO:3000000}
-    enfriamiento-regeneracion-minutos: 60
+    enfriamiento-regeneracion-minutos: ${DOCENTIA_IA_ENFRIAMIENTO_MINUTOS:5}
     periodos-referencia: 1
     precio-millon-tokens-entrada: ${DOCENTIA_IA_PRECIO_MILLON_ENTRADA:}
     precio-millon-tokens-salida: ${DOCENTIA_IA_PRECIO_MILLON_SALIDA:}

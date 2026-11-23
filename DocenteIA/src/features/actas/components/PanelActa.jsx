@@ -17,6 +17,7 @@ import { useSesion } from '../../auth/sesionContext.js'
 import { obtenerConfiguracionEvaluacion } from '../../kpis/services/configuracionService.js'
 import { ETIQUETA_TIPO_ACTA } from '../../proceso/estados.js'
 import {
+  guardarObservacionesActa,
   agregarCompromiso,
   cambiarTipoActa,
   corregirActa,
@@ -316,6 +317,50 @@ function TipoActa({ acta, ejecutar, ocupado }) {
   )
 }
 
+/**
+ * Lo que se habló en la reunión. Quien evalúa lo escribe antes de firmar; va en el PDF como
+ * "Lo tratado en la reunión".
+ */
+function Observaciones({ acta, editable, ejecutar, ocupado }) {
+  const [texto, setTexto] = useState(acta.observaciones ?? '')
+  const id = `observaciones-${acta.idActa}`
+  const cambio = texto.trim() !== (acta.observaciones ?? '').trim()
+  if (!editable) {
+    if (!acta.observaciones) return null
+    return (
+      <section>
+        <h3 className="acta__subtitulo">Lo tratado en la reunión</h3>
+        <p className="acta__observaciones">{acta.observaciones}</p>
+      </section>
+    )
+  }
+  return (
+    <section>
+      <Campo
+        id={id}
+        etiqueta="Lo tratado en la reunión"
+        ayuda="Qué se conversó, qué se destacó y por qué se acuerdan los compromisos. Va en el acta; se escribe antes de firmar."
+      >
+        <textarea
+          id={id}
+          className="campo__control"
+          rows={4}
+          maxLength={2000}
+          value={texto}
+          onChange={(e) => setTexto(e.target.value)}
+        />
+      </Campo>
+      <Boton
+        variante="contorno"
+        disabled={ocupado || !cambio}
+        onClick={() => ejecutar(() => guardarObservacionesActa(acta.idActa, texto.trim()))}
+      >
+        Guardar lo tratado
+      </Boton>
+    </section>
+  )
+}
+
 function DetalleActa({ acta, usuario, papel, rolEvaluador, rolCorrector, ejecutar, ocupado, error, onDescargar }) {
   const estado = ESTADO_ACTA[acta.estado]
   const editable = acta.estado === 'BORRADOR' && papel === rolEvaluador && acta.firmas.length === 0
@@ -361,6 +406,7 @@ function DetalleActa({ acta, usuario, papel, rolEvaluador, rolCorrector, ejecuta
             : 'Es la constancia de que el docente recibió la retroalimentación: basta con la confirmación de lectura.'}
         </Aviso>
       )}
+      <Observaciones acta={acta} editable={editable} ejecutar={ejecutar} ocupado={ocupado} />
       <Compromisos acta={acta} editable={editable} ejecutar={ejecutar} ocupado={ocupado} rolEvaluador={rolEvaluador} />
       <Firma
         acta={acta}

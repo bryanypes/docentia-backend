@@ -22,4 +22,8 @@ public interface ActaRepository extends JpaRepository<Acta, Long> {
 
   @EntityGraph(attributePaths = {"docente", "periodo"})
   Optional<Acta> findByCodigoVerificacion(String codigoVerificacion);
+
+  /** Actas firmadas (vigentes o reemplazadas), de la firma más reciente a la más antigua. */
+  @EntityGraph(attributePaths = {"docente", "periodo"})
+  List<Acta> findByCodigoVerificacionIsNotNullOrderByFechaFirmaDesc();
 }

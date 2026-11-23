@@ -1,4 +1,4 @@
-import { ListChecks, RefreshCw } from 'lucide-react'
+import { ChevronDown, ChevronUp, ListChecks, RefreshCw } from 'lucide-react'
 import { useCallback, useState } from 'react'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { Campo } from '../../../shared/components/ui/Campo/Campo.jsx'
@@ -80,8 +80,35 @@ function Compromiso({ compromiso, puedeMarcar, onMarcado }) {
   )
 }
 
-/** Compromisos del periodo anterior con su estado. Sin `idDocente` muestra los propios. */
-export function PanelSeguimientoPlan({ idDocente, puedeMarcar = false }) {
+/**
+ * Compromisos del periodo anterior con su estado. Sin `idDocente` muestra los propios. Con
+ * `plegable` llega cerrado y solo se consulta al abrirlo.
+ */
+export function PanelSeguimientoPlan({ idDocente, puedeMarcar = false, plegable = false }) {
+  const [abierto, setAbierto] = useState(!plegable)
+  if (abierto && !plegable) return <SeguimientoPlan idDocente={idDocente} puedeMarcar={puedeMarcar} />
+  return (
+    <Panel
+      titulo="Seguimiento del plan"
+      descripcion="Compromisos del periodo anterior y si se cumplieron."
+      icono={ListChecks}
+      acciones={
+        <Boton
+          variante="contorno"
+          icono={abierto ? ChevronUp : ChevronDown}
+          aria-expanded={abierto}
+          onClick={() => setAbierto(!abierto)}
+        >
+          {abierto ? 'Ocultar' : 'Ver compromisos'}
+        </Boton>
+      }
+    >
+      {abierto && <SeguimientoPlan idDocente={idDocente} puedeMarcar={puedeMarcar} sinMarco />}
+    </Panel>
+  )
+}
+
+function SeguimientoPlan({ idDocente, puedeMarcar, sinMarco = false }) {
   const cargar = useCallback(
     () => (idDocente ? obtenerPlanDocente(idDocente) : obtenerPlanPropio()),
     [idDocente],
@@ -90,12 +117,9 @@ export function PanelSeguimientoPlan({ idDocente, puedeMarcar = false }) {
   const compromisos = plan.datos?.compromisos ?? []
   const anterior = plan.datos?.periodoEvaluado?.nombre
 
-  return (
-    <Panel
-      titulo="Seguimiento del plan"
-      descripcion={anterior ? `Compromisos del periodo ${anterior}.` : 'Compromisos del periodo anterior.'}
-      icono={ListChecks}
-    >
+  const contenido = (
+    <>
+      {anterior && sinMarco && <p className="campo__ayuda">Compromisos del periodo {anterior}.</p>}
       {plan.cargando && !plan.datos && <Cargando texto="Cargando el seguimiento" bloques={1} />}
       {plan.error && (
         <EstadoVista tipo="error" titulo="No fue posible cargar el seguimiento" mensaje={plan.error.message}>
@@ -115,6 +139,16 @@ export function PanelSeguimientoPlan({ idDocente, puedeMarcar = false }) {
           ))}
         </ul>
       )}
+    </>
+  )
+  if (sinMarco) return contenido
+  return (
+    <Panel
+      titulo="Seguimiento del plan"
+      descripcion={anterior ? `Compromisos del periodo ${anterior}.` : 'Compromisos del periodo anterior.'}
+      icono={ListChecks}
+    >
+      {contenido}
     </Panel>
   )
 }

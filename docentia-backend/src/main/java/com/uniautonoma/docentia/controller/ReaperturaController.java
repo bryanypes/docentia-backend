@@ -1,6 +1,8 @@
 package com.uniautonoma.docentia.controller;
 
 import com.uniautonoma.docentia.dto.DecisionReaperturaRequest;
+import com.uniautonoma.docentia.dto.FormularioEnviadoResponse;
+import com.uniautonoma.docentia.dto.ReaperturaDirectaRequest;
 import com.uniautonoma.docentia.dto.SolicitudReaperturaRequest;
 import com.uniautonoma.docentia.dto.SolicitudReaperturaResponse;
 import com.uniautonoma.docentia.security.UsuarioSesion;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -67,6 +70,24 @@ public class ReaperturaController {
   @PreAuthorize("hasRole('ADMINISTRADOR')")
   public List<SolicitudReaperturaResponse> listarTodas() {
     return servicio.listarTodas();
+  }
+
+  /** Autoevaluación y coevaluación de un docente en el periodo activo, para reabrirlas. */
+  @GetMapping("/formularios")
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
+  public List<FormularioEnviadoResponse> formularios(@RequestParam Long idDocente) {
+    return servicio.formulariosDe(idDocente);
+  }
+
+  /** La administración reabre un formulario enviado sin que nadie lo pida. */
+  @PostMapping("/formularios/{idFormulario}/reapertura")
+  @ResponseStatus(HttpStatus.CREATED)
+  @PreAuthorize("hasRole('ADMINISTRADOR')")
+  public SolicitudReaperturaResponse reabrirDirecto(
+      @PathVariable Long idFormulario,
+      @Valid @RequestBody ReaperturaDirectaRequest pedido,
+      @AuthenticationPrincipal UsuarioSesion sesion) {
+    return servicio.reabrirDirecto(idFormulario, pedido.motivo(), sesion);
   }
 
   /** La administración reabre el formulario o rechaza la solicitud. */

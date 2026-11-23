@@ -15,6 +15,11 @@ export function cambiarTipoActa(idActa, tipo) {
   return api.patch(`/actas/${encodeURIComponent(idActa)}/tipo`, { tipo })
 }
 
+/** Lo que se habló en la reunión; vacío lo quita. Solo antes de la primera firma. */
+export function guardarObservacionesActa(idActa, texto) {
+  return api.put(`/actas/${encodeURIComponent(idActa)}/observaciones`, { texto: texto || null })
+}
+
 export function agregarCompromiso(idActa, compromiso) {
   return api.post(`/actas/${encodeURIComponent(idActa)}/compromisos`, compromiso)
 }
@@ -37,6 +42,16 @@ export function corregirActa(idActa, motivo) {
 
 export function descargarPdfActa(idActa) {
   return api.get(`/actas/${encodeURIComponent(idActa)}/pdf`, { binario: true })
+}
+
+/** Todas las actas firmadas, para la administración y la vicerrectoría; sin notas. */
+export function listarRegistroActas() {
+  return api.get('/actas/registro')
+}
+
+/** Búsqueda por código para la administración y la vicerrectoría; sin notas. */
+export function buscarActaPorCodigo(codigo) {
+  return api.get(`/actas/codigo/${encodeURIComponent(codigo)}`)
 }
 
 /** Consulta pública por código; no necesita sesión. */

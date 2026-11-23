@@ -47,6 +47,12 @@ public class Hallazgo {
   @Column(nullable = false, length = 1000)
   private String texto;
 
+  /**
+   * Criterio de la evaluación (C1 a C6) que agrupa los comentarios; nulo en análisis anteriores.
+   */
+  @Column(length = 4)
+  private String criterio;
+
   @Enumerated(EnumType.STRING)
   @Column(nullable = false, length = 30)
   private EstadoHallazgo estado = EstadoHallazgo.SIN_CITA_VERIFICADA;
@@ -67,6 +73,14 @@ public class Hallazgo {
     this.orden = orden;
     this.tipo = tipo;
     this.texto = texto;
+  }
+
+  public void asignarCriterio(String criterio) {
+    this.criterio = criterio;
+  }
+
+  public String getCriterio() {
+    return criterio;
   }
 
   void asignarSolicitud(SolicitudAnalisis solicitud) {

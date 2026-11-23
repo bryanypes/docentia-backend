@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight, MessagesSquare, RefreshCw, ShieldAlert, Sparkles, Tags } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { Boton } from '../../../shared/components/ui/Boton/Boton.jsx'
 import { Cargando, EstadoVista } from '../../../shared/components/ui/EstadoVista/EstadoVista.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
@@ -46,6 +47,7 @@ function TemasPorPestana({ temas }) {
   )
   const [elegida, setElegida] = useState(pestanas.find((p) => p.temas.length > 0)?.polaridad ?? 'POSITIVO')
   const [pagina, setPagina] = useState(0)
+  const [abierto, setAbierto] = useState(null)
   const actual = pestanas.find((p) => p.polaridad === elegida) ?? pestanas[0]
   const paginas = Math.max(1, Math.ceil(actual.temas.length / TEMAS_POR_PAGINA))
   const visibles = actual.temas.slice(pagina * TEMAS_POR_PAGINA, (pagina + 1) * TEMAS_POR_PAGINA)
@@ -75,18 +77,44 @@ function TemasPorPestana({ temas }) {
         <p className="comentarios-resumen__vacio">No hay temas de este tipo.</p>
       ) : (
         <ol className="comentarios-resumen__temas" role="tabpanel" aria-label={actual.etiqueta}>
-          {visibles.map((t) => (
-            <li key={`${t.criterio}-${t.descriptor}-${t.polaridad}`} className="comentarios-resumen__tema-fila">
-              <span className="comentarios-resumen__tema">{t.nombre}</span>
-              <span className="comentarios-resumen__riel" aria-hidden="true">
-                <span style={{ width: `${Math.min(100, t.porcentaje)}%` }} />
-              </span>
-              <span className="comentarios-resumen__cifra">
-                <strong>{String(t.porcentaje).replace('.', ',')} %</strong>
-                {plural(t.docentes, 'docente', 'docentes')}
-              </span>
-            </li>
-          ))}
+          {visibles.map((t) => {
+            const clave = `${t.criterio}-${t.descriptor}-${t.polaridad}`
+            const lista = t.listaDocentes ?? []
+            const desplegado = abierto === clave
+            return (
+              <li key={clave} className="comentarios-resumen__tema-fila">
+                <span className="comentarios-resumen__tema">{t.nombre}</span>
+                <span className="comentarios-resumen__riel" aria-hidden="true">
+                  <span style={{ width: `${Math.min(100, t.porcentaje)}%` }} />
+                </span>
+                <span className="comentarios-resumen__cifra">
+                  <strong>{String(t.porcentaje).replace('.', ',')} %</strong>
+                  {lista.length > 0 ? (
+                    <button
+                      type="button"
+                      className="comentarios-resumen__ver-docentes"
+                      aria-expanded={desplegado}
+                      onClick={() => setAbierto(desplegado ? null : clave)}
+                    >
+                      {plural(t.docentes, 'docente', 'docentes')} {desplegado ? '▲' : '▼'}
+                    </button>
+                  ) : (
+                    plural(t.docentes, 'docente', 'docentes')
+                  )}
+                </span>
+                {desplegado && (
+                  <ul className="comentarios-resumen__docentes" aria-label={`Docentes con «${t.nombre}»`}>
+                    {lista.map((d) => (
+                      <li key={d.idDocente}>
+                        <Link to={`/docentes/${d.idDocente}`}>{d.nombre}</Link>
+                        <span>{plural(d.menciones, 'mención', 'menciones')}</span>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </li>
+            )
+          })}
         </ol>
       )}
       {paginas > 1 && (

@@ -134,6 +134,21 @@ public class ResultadosAnalisisRepositorio {
         .findFirst();
   }
 
+  /** Por hallazgo de la solicitud, cuántos cambios hizo una persona (sin contar el generado). */
+  public Map<Long, Integer> cambiosPorHallazgo(Long idSolicitud) {
+    Map<Long, Integer> cambios = new HashMap<>();
+    jdbcTemplate.query(
+        "select v.id_hallazgo, count(*) as cambios from versiones_hallazgo v"
+            + " join hallazgos_analisis h on h.id_hallazgo = v.id_hallazgo"
+            + " where h.id_solicitud = ? and v.accion <> 'GENERADO'"
+            + " group by v.id_hallazgo",
+        fila -> {
+          cambios.put(fila.getLong("id_hallazgo"), fila.getInt("cambios"));
+        },
+        idSolicitud);
+    return cambios;
+  }
+
   public Optional<Guardado> porSolicitud(Long idSolicitud) {
     return jdbcTemplate
         .query(
@@ -240,11 +255,13 @@ public class ResultadosAnalisisRepositorio {
   /**
    * Resultados vigentes del periodo, de los docentes de un programa o una facultad (nulos: todos).
    */
-  public List<ResultadoAnalisis> vigentesDelPeriodo(
-      Long idPeriodo, Long idPrograma, Long idFacultad) {
+  /** Resultado vigente de un docente, con quién es: el resumen dice a qué docentes se refiere. */
+  public record Vigente(Long idDocente, String nombreDocente, ResultadoAnalisis resultado) {}
+
+  public List<Vigente> vigentesDelPeriodo(Long idPeriodo, Long idPrograma, Long idFacultad) {
     return jdbcTemplate.query(
         """
-        select r.resultado from resultados_analisis_comentarios r
+        select r.id_docente, u.nombre_completo, r.resultado from resultados_analisis_comentarios r
         join usuarios u on u.id_usuario = r.id_docente
         join programas pr on pr.id_programa = u.id_programa
         where r.id_periodo = ? and not r.reemplazado
@@ -252,7 +269,7 @@ public class ResultadosAnalisisRepositorio {
           and (cast(? as bigint) is null or pr.id_facultad = ?)
         order by r.id
         """,
-        (fila, n) -> leer(fila.getString(1)),
+        (fila, n) -> new Vigente(fila.getLong(1), fila.getString(2), leer(fila.getString(3))),
         idPeriodo,
         idPrograma,
         idPrograma,

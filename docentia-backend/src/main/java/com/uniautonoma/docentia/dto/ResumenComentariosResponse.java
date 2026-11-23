@@ -5,8 +5,9 @@ import java.util.Map;
 
 /**
  * Agregado de los análisis vigentes de un periodo, por programa o por el alcance de quien consulta.
- * No trae docentes: cada número es la suma de los análisis individuales. Con menos docentes que el
- * mínimo configurado no se muestra nada (disponible falso, motivo GRUPO_PEQUENO).
+ * Cada número es la suma de los análisis individuales; cada tema dice a qué docentes se refiere
+ * (solo del alcance de quien consulta), nunca los comentarios. Con menos docentes que el mínimo
+ * configurado no se muestra nada (disponible falso, motivo GRUPO_PEQUENO).
  *
  * @param docentesConAnalisis docentes del alcance con un análisis vigente en el periodo
  * @param nComentarios suma de comentarios útiles analizados
@@ -33,6 +34,7 @@ public record ResumenComentariosResponse(
   /**
    * @param porcentaje frecuencia sobre nComentarios, de 0 a 100
    * @param docentes docentes en cuyo análisis aparece el tema
+   * @param listaDocentes quiénes son, de los que más lo mencionan a los que menos
    */
   public record TemaAgregado(
       String criterio,
@@ -41,7 +43,13 @@ public record ResumenComentariosResponse(
       String polaridad,
       int frecuencia,
       double porcentaje,
-      int docentes) {}
+      int docentes,
+      List<DocenteTema> listaDocentes) {}
+
+  /**
+   * @param menciones comentarios de sus estudiantes que tocan el tema
+   */
+  public record DocenteTema(Long idDocente, String nombre, int menciones) {}
 
   public record CriterioAgregado(
       String codigo, String nombre, int positivos, int negativos, int neutros) {}

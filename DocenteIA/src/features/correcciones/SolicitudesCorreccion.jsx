@@ -17,6 +17,7 @@ import {
   listarTodasLasSolicitudes,
   verificarSolicitud,
 } from './correccionesService.js'
+import { ReabrirDirecto } from './ReabrirDirecto.jsx'
 import { ESTADO_SOLICITUD, ETIQUETA_APROBADOR, ETIQUETA_TIPO, RESPUESTA_MINIMA, quienLaTiene } from './estados.js'
 import './Correcciones.css'
 
@@ -34,16 +35,23 @@ export default function SolicitudesCorreccion() {
   const { usuario } = useSesion()
   const esAdministrador = usuario.rol === ROLES.ADMINISTRADOR
   const verifica = usuario.rol === ROLES.COORDINADOR || usuario.rol === ROLES.VICERRECTOR
+  // Al reabrir directo, la lista de solicitudes se vuelve a cargar con la nueva ya atendida.
+  const [recarga, setRecarga] = useState(0)
 
   return (
     <>
       <Encabezado
         miga={`${ETIQUETA_ROL[usuario.rol]} · Solicitudes de corrección`}
         titulo="Solicitudes de corrección"
-        subtitulo="Para corregir una autoevaluación o coevaluación ya enviada: quien la envió la pide, su superior la verifica y la administración reabre el formulario."
+        subtitulo={
+          esAdministrador
+            ? 'Reabre una autoevaluación o coevaluación ya enviada cuando haga falta, o atiende las solicitudes que ya verificó el superior.'
+            : 'Para corregir una autoevaluación o coevaluación ya enviada: quien la envió la pide, su superior la verifica y la administración reabre el formulario.'
+        }
       />
       <div className="pagina correcciones">
-        {esAdministrador && <ListaAdministracion />}
+        {esAdministrador && <ReabrirDirecto onReabierto={() => setRecarga((n) => n + 1)} />}
+        {esAdministrador && <ListaAdministracion key={recarga} />}
         {verifica && <ListaPorVerificar rol={usuario.rol} />}
         {!esAdministrador && <ListaPropias />}
       </div>
