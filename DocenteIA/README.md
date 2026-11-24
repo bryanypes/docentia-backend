@@ -36,7 +36,7 @@ $env:DOCENTIA_API_URL="http://localhost:8081"; npm run dev    # Windows PowerShe
 | Vicerrectoría | Inicio, Docentes, Expediente, Calificar, Cargas de estudiantes, Análisis (consulta), Periodos, Ponderaciones, Facultades, Programas, Usuarios |
 | Docente       | Mi evaluación, Mi cita |
 
-El recorrido de demo está en [docs/checklist-demo-sprint3.md](docs/checklist-demo-sprint3.md).
+El guion de demo está en [docentia-backend/docs/sustentacion/GUION_PRUEBA_Y_DEMO.md](../docentia-backend/docs/sustentacion/GUION_PRUEBA_Y_DEMO.md).
 
 Los usuarios de prueba son los del perfil `dev` del backend.
 

@@ -499,7 +499,9 @@ dos veces o si no cubre los campos obligatorios.
 
 `204`. `404` si no existe o es de otro coordinador.
 
-### Archivos de ejemplo (`docs/ejemplos/`)
+### Archivos de ejemplo (retirados)
+
+Se quitaron del repositorio junto con la carga por CSV; quedan en el historial de git.
 
 | Archivo | Para qué |
 | ------- | -------- |

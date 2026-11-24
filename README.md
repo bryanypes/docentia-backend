@@ -65,8 +65,8 @@ Los correos de desarrollo se ven en <http://localhost:8025>. La operación compl
 `docentia-backend/docs/OPERACION.md`; la arquitectura en `ARQUITECTURA.md`, la API en `API.md`, la
 seguridad en `SEGURIDAD.md`, las notificaciones en `NOTIFICACIONES.md` y los límites en `LIMITACIONES.md`.
 
-El recorrido de demo está en `DocenteIA/docs/checklist-demo-sprint3.md` y el contrato de la API en
-`docentia-backend/docs/`. Las decisiones y la trazabilidad con la Resolución 074 están en
+El guion de demo está en `docentia-backend/docs/sustentacion/GUION_PRUEBA_Y_DEMO.md` y el contrato de la
+API en `docentia-backend/docs/` (índice en `docentia-backend/docs/README.md`). Las decisiones y la trazabilidad con la Resolución 074 están en
 `docentia-backend/docs/DECISIONES.md` y `docentia-backend/docs/RES074-TRAZABILIDAD.md`.
 
 ## Ramas
