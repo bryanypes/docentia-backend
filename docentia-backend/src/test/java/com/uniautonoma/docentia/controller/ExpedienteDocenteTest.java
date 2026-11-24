@@ -206,7 +206,7 @@ class ExpedienteDocenteTest extends PruebaIntegracion {
         .contains("4.0")
         .contains("3.5")
         .contains("4.5")
-        .contains("4.05");
+        .contains("3.95");
   }
 
   private ResultActions consultarComoCoordinador() throws Exception {

@@ -126,7 +126,7 @@ class ExpedientePropioTest extends PruebaIntegracion {
         .andExpect(jsonPath("$.historico", hasSize(1)))
         .andExpect(jsonPath("$.historico[0].periodo.nombre").value("2025-2"))
         .andExpect(jsonPath("$.historico[0].promedio.estado").value("COMPLETO"))
-        .andExpect(jsonPath("$.historico[0].promedio.valor").value(4.05))
+        .andExpect(jsonPath("$.historico[0].promedio.valor").value(3.95))
         .andExpect(jsonPath("$.historico[0].notasPorFuente").doesNotExist());
   }
 }

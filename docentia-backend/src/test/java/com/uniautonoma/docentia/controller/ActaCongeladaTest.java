@@ -42,6 +42,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.ResultActions;
+import org.springframework.transaction.PlatformTransactionManager;
+import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * F2 de la 0.5.0: el acta guarda una copia de lo que imprime y, firmada, no cambia aunque cambien
@@ -57,6 +59,7 @@ class ActaCongeladaTest extends PruebaIntegracion {
   @Autowired private GeneradorPdfActa generadorPdf;
   @Autowired private JdbcTemplate jdbcTemplate;
   @Autowired private EntityManager entityManager;
+  @Autowired private PlatformTransactionManager transactionManager;
 
   private Facultad ingenieria;
   private Usuario coordinador;
@@ -187,14 +190,14 @@ class ActaCongeladaTest extends PruebaIntegracion {
     firmar(acta, coordinador).andExpect(status().isOk());
     entityManager.flush();
 
-    assertThatThrownBy(
-            () ->
-                jdbcTemplate.update(
-                    "update actas set programa_nombre = 'Otro' where id_acta = ?", acta))
-        .hasMessageContaining("ya tiene una firma");
-    assertThatThrownBy(
-            () -> jdbcTemplate.update("update actas set promedio = 5 where id_acta = ?", acta))
-        .hasMessageContaining("ya tiene una firma");
+    rechazarEnNuevaTransaccion(
+        () ->
+            jdbcTemplate.update(
+                "update actas set programa_nombre = 'Otro' where id_acta = ?", acta),
+        "ya tiene una firma");
+    rechazarEnNuevaTransaccion(
+        () -> jdbcTemplate.update("update actas set promedio = 5 where id_acta = ?", acta),
+        "ya tiene una firma");
   }
 
   @Test
@@ -219,10 +222,9 @@ class ActaCongeladaTest extends PruebaIntegracion {
             "observaciones = 'Otra'",
             "formato_codigo = 'X'",
             "estado = 'ANULADA', promedio = 1")) {
-      assertThatThrownBy(
-              () -> jdbcTemplate.update("update actas set " + cambio + " where id_acta = ?", acta))
-          .as(cambio)
-          .hasMessageContaining("inmutable");
+      rechazarEnNuevaTransaccion(
+          () -> jdbcTemplate.update("update actas set " + cambio + " where id_acta = ?", acta),
+          "inmutable");
     }
     // Lo único permitido es anularla al corregirla.
     assertThatCode(
@@ -236,35 +238,33 @@ class ActaCongeladaTest extends PruebaIntegracion {
     Long acta = actaFirmada();
     entityManager.flush();
 
-    assertThatThrownBy(
-            () ->
-                jdbcTemplate.update(
-                    "update firmas_acta set nombre = 'Otro' where id_acta = ?", acta))
-        .hasMessageContaining("firmas");
-    assertThatThrownBy(() -> jdbcTemplate.update("delete from firmas_acta where id_acta = ?", acta))
-        .hasMessageContaining("firmas");
-    assertThatThrownBy(
-            () ->
-                jdbcTemplate.update(
-                    "update compromisos set descripcion = 'Otro' where id_acta = ?", acta))
-        .hasMessageContaining("seguimiento");
-    assertThatThrownBy(
-            () ->
-                jdbcTemplate.update(
-                    "update compromisos set fecha_limite = fecha_limite + 1 where id_acta = ?",
-                    acta))
-        .hasMessageContaining("seguimiento");
-    assertThatThrownBy(() -> jdbcTemplate.update("delete from compromisos where id_acta = ?", acta))
-        .hasMessageContaining("no se elimina");
-    assertThatThrownBy(
-            () ->
-                jdbcTemplate.update(
-                    "insert into compromisos (id_docente, id_periodo, id_acta, descripcion,"
-                        + " fecha_limite) values (?, ?, ?, 'Nuevo', current_date)",
-                    docente.getIdUsuario(),
-                    periodo.getIdPeriodo(),
-                    acta))
-        .hasMessageContaining("compromisos nuevos");
+    rechazarEnNuevaTransaccion(
+        () -> jdbcTemplate.update("update firmas_acta set nombre = 'Otro' where id_acta = ?", acta),
+        "firmas");
+    rechazarEnNuevaTransaccion(
+        () -> jdbcTemplate.update("delete from firmas_acta where id_acta = ?", acta), "firmas");
+    rechazarEnNuevaTransaccion(
+        () ->
+            jdbcTemplate.update(
+                "update compromisos set descripcion = 'Otro' where id_acta = ?", acta),
+        "seguimiento");
+    rechazarEnNuevaTransaccion(
+        () ->
+            jdbcTemplate.update(
+                "update compromisos set fecha_limite = fecha_limite + 1 where id_acta = ?", acta),
+        "seguimiento");
+    rechazarEnNuevaTransaccion(
+        () -> jdbcTemplate.update("delete from compromisos where id_acta = ?", acta),
+        "no se elimina");
+    rechazarEnNuevaTransaccion(
+        () ->
+            jdbcTemplate.update(
+                "insert into compromisos (id_docente, id_periodo, id_acta, descripcion,"
+                    + " fecha_limite) values (?, ?, ?, 'Nuevo', current_date)",
+                docente.getIdUsuario(),
+                periodo.getIdPeriodo(),
+                acta),
+        "compromisos nuevos");
     // El seguimiento del compromiso sí se registra después de firmar.
     assertThatCode(
             () ->
@@ -378,6 +378,14 @@ class ActaCongeladaTest extends PruebaIntegracion {
       paginas.append(new PdfTextExtractor(lector).getTextFromPage(pagina));
     }
     return paginas.toString();
+  }
+
+  private void rechazarEnNuevaTransaccion(Runnable accion, String mensaje) {
+    TransactionTemplate transaccion = new TransactionTemplate(transactionManager);
+    transaccion.setPropagationBehavior(
+        org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRES_NEW);
+    assertThatThrownBy(() -> transaccion.executeWithoutResult(status -> accion.run()))
+        .hasMessageContaining(mensaje);
   }
 
   @SuppressWarnings("unused")
