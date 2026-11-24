@@ -241,23 +241,15 @@ public class HeteroevaluacionService {
         valores.entrySet().stream()
             .map(valor -> new Object[] {respuesta, valor.getKey(), valor.getValue()})
             .toList());
-    recalcular(usuarioRepository.getReferenceById(fila.idDocente()), periodo, false);
-  }
-
-  /** Recálculo completo, sin esperar el bloque: al cerrar la recolección y en las semillas. */
-  public void recalcular(Usuario docente, PeriodoAcademico periodo) {
-    recalcular(docente, periodo, true);
+    recalcular(usuarioRepository.getReferenceById(fila.idDocente()), periodo);
   }
 
   /**
    * Con el mínimo de respuestas, la media de las medias por respuesta se vuelve la nota de
    * estudiantes y prevalece sobre el CSV. Por debajo del mínimo no se usa ni se muestra nada.
-   * Mientras la recolección sigue abierta solo se actualiza cada {@code bloqueRespuestas}
-   * respuestas: comparar dos notas seguidas nunca revela lo que respondió un estudiante.
-   *
-   * @param completo recalcula aunque el número de respuestas no cierre un bloque
+   * Desde que se alcanza el mínimo, cada envío actualiza el agregado consolidado.
    */
-  public void recalcular(Usuario docente, PeriodoAcademico periodo, boolean completo) {
+  public void recalcular(Usuario docente, PeriodoAcademico periodo) {
     Map<String, Object> agregado =
         jdbcTemplate.queryForMap(
             """
@@ -272,10 +264,6 @@ public class HeteroevaluacionService {
             periodo.getIdPeriodo());
     long respuestas = ((Number) agregado.get("respuestas")).longValue();
     if (respuestas < propiedades.minimoRespuestas()) {
-      return;
-    }
-    int bloque = Math.max(1, propiedades.bloqueRespuestas());
-    if (!completo && respuestas % bloque != 0) {
       return;
     }
     BigDecimal media =

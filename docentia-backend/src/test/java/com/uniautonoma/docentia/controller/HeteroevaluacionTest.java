@@ -337,11 +337,7 @@ class HeteroevaluacionTest extends PruebaIntegracion {
     assertThat(estudiantesDe(docente).getNotas().promedio()).isEqualByComparingTo("3.0");
 
     enviar(estudiantes.get(4), 5).andExpect(status().isOk());
-    // Con la recolección abierta la nota solo cambia por bloques de 4 respuestas: con 5 no.
-    assertThat(estudiantesDe(docente).getOrigen()).isNotEqualTo(OrigenCalificacion.FORMULARIO);
-
-    // Al cerrar la recolección se consolida con todas las respuestas.
-    heteroevaluacionService.recalcular(docente, periodo);
+    // Al alcanzar el mínimo, la nota se consolida aunque la recolección siga abierta.
     assertThat(estudiantesDe(docente).getOrigen()).isEqualTo(OrigenCalificacion.FORMULARIO);
     assertThat(estudiantesDe(docente).getNotaFuente()).isEqualByComparingTo("5");
     // El recálculo automático no es una corrección: no deja notas de antes y después.

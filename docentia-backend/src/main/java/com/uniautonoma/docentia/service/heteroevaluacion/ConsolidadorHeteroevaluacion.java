@@ -1,9 +1,7 @@
 package com.uniautonoma.docentia.service.heteroevaluacion;
 
-import com.uniautonoma.docentia.entity.TipoEtapa;
 import com.uniautonoma.docentia.repository.UsuarioRepository;
 import com.uniautonoma.docentia.service.PeriodoAcademicoService;
-import com.uniautonoma.docentia.service.VentanaEtapaService;
 import java.util.List;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -11,27 +9,23 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Al cerrar la recolección deja la nota de estudiantes con todas las respuestas: mientras estuvo
- * abierta solo se actualizó por bloques. Recalcular de nuevo no cambia nada si la nota ya está al
- * día.
+ * Consolida la nota de estudiantes con todas las respuestas disponibles. También repara respuestas
+ * anteriores si el servicio se reinició o la consolidación previa no llegó a ejecutarse.
  */
 @Component
 public class ConsolidadorHeteroevaluacion {
 
   private final PeriodoAcademicoService periodoService;
-  private final VentanaEtapaService ventanas;
   private final HeteroevaluacionService heteroevaluacion;
   private final UsuarioRepository usuarioRepository;
   private final JdbcTemplate jdbcTemplate;
 
   public ConsolidadorHeteroevaluacion(
       PeriodoAcademicoService periodoService,
-      VentanaEtapaService ventanas,
       HeteroevaluacionService heteroevaluacion,
       UsuarioRepository usuarioRepository,
       JdbcTemplate jdbcTemplate) {
     this.periodoService = periodoService;
-    this.ventanas = ventanas;
     this.heteroevaluacion = heteroevaluacion;
     this.usuarioRepository = usuarioRepository;
     this.jdbcTemplate = jdbcTemplate;
@@ -44,7 +38,6 @@ public class ConsolidadorHeteroevaluacion {
   public void consolidar() {
     periodoService
         .buscarPeriodoActivo()
-        .filter(periodo -> ventanas.haTerminado(periodo, TipoEtapa.RECOLECCION_CALIFICACIONES))
         .ifPresent(
             periodo -> {
               List<Long> docentes =
