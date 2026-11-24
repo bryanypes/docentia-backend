@@ -22,11 +22,14 @@ import com.uniautonoma.docentia.entity.Matricula;
 import com.uniautonoma.docentia.entity.OrigenCalificacion;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.Programa;
+import com.uniautonoma.docentia.entity.TipoEtapa;
 import com.uniautonoma.docentia.entity.TipoFormulario;
 import com.uniautonoma.docentia.entity.Usuario;
 import com.uniautonoma.docentia.repository.CalificacionRepository;
 import com.uniautonoma.docentia.repository.MatriculaRepository;
 import com.uniautonoma.docentia.service.formulario.CatalogoInstrumento;
+import com.uniautonoma.docentia.service.heteroevaluacion.ConsolidadorHeteroevaluacion;
+import com.uniautonoma.docentia.service.heteroevaluacion.HeteroevaluacionService;
 import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.LocalDate;
@@ -60,9 +63,8 @@ class HeteroevaluacionTest extends PruebaIntegracion {
   @Autowired private MatriculaRepository matriculaRepository;
   @Autowired private jakarta.persistence.EntityManager entityManager;
 
-  @Autowired
-  private com.uniautonoma.docentia.service.heteroevaluacion.HeteroevaluacionService
-      heteroevaluacionService;
+  @Autowired private HeteroevaluacionService heteroevaluacionService;
+  @Autowired private ConsolidadorHeteroevaluacion consolidador;
 
   private Facultad ingenieria;
   private Programa software;
@@ -337,7 +339,7 @@ class HeteroevaluacionTest extends PruebaIntegracion {
     assertThat(estudiantesDe(docente).getNotas().promedio()).isEqualByComparingTo("3.0");
 
     enviar(estudiantes.get(4), 5).andExpect(status().isOk());
-    // Al alcanzar el mínimo, la nota se consolida aunque la recolección siga abierta.
+    // Con el mínimo (5) la nota se publica, aunque la recolección siga abierta.
     assertThat(estudiantesDe(docente).getOrigen()).isEqualTo(OrigenCalificacion.FORMULARIO);
     assertThat(estudiantesDe(docente).getNotaFuente()).isEqualByComparingTo("5");
     // El recálculo automático no es una corrección: no deja notas de antes y después.
@@ -345,6 +347,102 @@ class HeteroevaluacionTest extends PruebaIntegracion {
             jdbcTemplate.queryForObject(
                 "select count(*) from correcciones_calificacion", Long.class))
         .isZero();
+  }
+
+  @Test
+  void conLaRecoleccionAbiertaLaNotaSoloCambiaEnBloquesAncladosEnElMinimo() throws Exception {
+    List<Usuario> grupo = new ArrayList<>(estudiantes);
+    for (int i = 8; i <= 9; i++) {
+      Usuario extra = escenario.crearEstudiante("Estudiante " + i, software);
+      escenario.matricular(clase, extra);
+      grupo.add(extra);
+    }
+    for (int i = 0; i < 5; i++) {
+      enviar(grupo.get(i), 5).andExpect(status().isOk());
+    }
+    assertThat(estudiantesDe(docente).getNotaFuente()).isEqualByComparingTo("5");
+
+    // De la sexta a la octava, ninguna respuesta suelta mueve la nota: no se puede despejar.
+    for (int i = 5; i < 8; i++) {
+      enviar(grupo.get(i), 1).andExpect(status().isOk());
+      assertThat(estudiantesDe(docente).getNotaFuente())
+          .as("respuesta %d", i + 1)
+          .isEqualByComparingTo("5");
+    }
+
+    // La novena cierra el bloque (5 + 4): entran las cuatro juntas. (5·5 + 4·1) / 9 = 3,2222.
+    enviar(grupo.get(8), 1).andExpect(status().isOk());
+    assertThat(estudiantesDe(docente).getNotaFuente()).isEqualByComparingTo("3.2222");
+  }
+
+  @Test
+  void alCerrarLaRecoleccionSeConsolidaConTodasYRepetirNoEscribeNada() throws Exception {
+    for (int i = 0; i < 6; i++) {
+      enviar(estudiantes.get(i), i < 5 ? 5 : 1).andExpect(status().isOk());
+    }
+    assertThat(estudiantesDe(docente).getNotaFuente()).isEqualByComparingTo("5");
+
+    escenario.abrirEtapa(
+        periodo,
+        TipoEtapa.RECOLECCION_CALIFICACIONES,
+        BaseDatosPruebaConfig.HOY.minusDays(10),
+        BaseDatosPruebaConfig.HOY.minusDays(1));
+    consolidador.consolidar();
+    // Con la recolección cerrada entran todas: (5·5 + 1) / 6 = 4,3333.
+    assertThat(estudiantesDe(docente).getNotaFuente()).isEqualByComparingTo("4.3333");
+
+    Map<String, Object> antes = huellaDeEscritura();
+    consolidador.consolidar();
+    heteroevaluacionService.recalcular(docente, periodo);
+    assertThat(huellaDeEscritura()).isEqualTo(antes);
+    assertThat(
+            jdbcTemplate.queryForObject(
+                "select count(*) from correcciones_calificacion", Long.class))
+        .isZero();
+  }
+
+  @Test
+  void laTareaPeriodicaReparaUnaNotaQueNoSeAlcanzoARecalcular() throws Exception {
+    for (int i = 0; i < 5; i++) {
+      enviar(estudiantes.get(i), 4).andExpect(status().isOk());
+    }
+    // Como si el recálculo de ese envío no hubiera llegado a ejecutarse.
+    jdbcTemplate.update(
+        "delete from calificaciones where id_docente = ? and fuente = 'ESTUDIANTES'",
+        docente.getIdUsuario());
+    assertThat(estudiantesDe(docente)).isNull();
+
+    consolidador.consolidar();
+
+    assertThat(estudiantesDe(docente).getNotaFuente()).isEqualByComparingTo("4");
+  }
+
+  @Test
+  void losPuntosDePublicacionEstanAncladosEnElMinimo() {
+    // Mínimo 5 y bloque 4, con la recolección abierta.
+    assertThat(
+            java.util.stream.LongStream.rangeClosed(1, 17)
+                .filter(n -> HeteroevaluacionService.debePublicar(n, 5, 4, false))
+                .boxed()
+                .toList())
+        .containsExactly(5L, 9L, 13L, 17L);
+    // Cerrada: desde el mínimo, siempre. Bajo el mínimo, nunca.
+    assertThat(HeteroevaluacionService.debePublicar(6, 5, 4, true)).isTrue();
+    assertThat(HeteroevaluacionService.debePublicar(4, 5, 4, true)).isFalse();
+    // Un bloque inválido se trata como 1.
+    assertThat(HeteroevaluacionService.debePublicar(6, 5, 0, false)).isTrue();
+  }
+
+  /** Lo que cambia si se escribe: la fila de la nota y la del promedio. */
+  private Map<String, Object> huellaDeEscritura() {
+    entityManager.flush();
+    return jdbcTemplate.queryForMap(
+        "select c.fecha_actualizacion, c.nota_fuente, p.fecha_calculo, p.version_bloqueo"
+            + " from calificaciones c join promedios_docente p"
+            + " on p.id_docente = c.id_docente and p.id_periodo = c.id_periodo"
+            + " where c.id_docente = ? and c.id_periodo = ? and c.fuente = 'ESTUDIANTES'",
+        docente.getIdUsuario(),
+        periodo.getIdPeriodo());
   }
 
   @Test
@@ -367,7 +465,8 @@ class HeteroevaluacionTest extends PruebaIntegracion {
     for (int i = 0; i < 6; i++) {
       enviar(estudiantes.get(i), i < 3 ? 5 : 4).andExpect(status().isOk());
     }
-    heteroevaluacionService.recalcular(docente, periodo);
+    // Con la recolección abierta la sexta no entra; la consolidación del cierre sí la cuenta.
+    heteroevaluacionService.recalcular(docente, periodo, true);
 
     assertThat(estudiantesDe(docente).getNotaFuente()).isEqualByComparingTo("4.5");
     mockMvc

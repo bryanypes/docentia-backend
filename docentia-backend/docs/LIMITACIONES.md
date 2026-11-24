@@ -29,3 +29,4 @@ Lo que el sistema no hace hoy y por qué.
 | Nota de estudiantes con menos de 5 respuestas | Por k-anonimato no se usa: el promedio queda PARCIAL y el acta no se firma. Política pendiente (DECISIONES P1 y P4) |
 | Análisis de comentarios del formulario con 5 a 9 respuestas | El análisis exige 10 respuestas; con 5 a 9 el docente tiene nota de estudiantes pero no análisis |
 | Cerrar etapas a mano | No hay botón ni tarea: cada etapa abre y cierra por las fechas que fija vicerrectoría |
+| Anonimato de la nota de estudiantes al cerrar la recolección | Abierta, la nota solo cambia por bloques (mínimo 5, luego cada 4 respuestas). Al cerrar entran juntas las que quedaron fuera del último bloque, de 1 a 3: comparar la nota antes y después del cierre revela el promedio de esas respuestas (con una sola, el de esa respuesta), aunque no quién la dio, porque las respuestas no guardan autor ni orden de llegada. La resolución exige contarlas todas |

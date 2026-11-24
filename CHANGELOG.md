@@ -1,5 +1,21 @@
 # Cambios
 
+## Sin publicar: anonimato de la nota de estudiantes
+
+Corrige el hueco de anonimato que abrió `b6fbadf` y el caso que ese commit resolvía.
+
+- **La nota de estudiantes se publica al llegar al mínimo** (5 respuestas) y, con la recolección
+  abierta, luego cada 4 respuestas más (9, 13…; `DOCENTIA_HETEROEVALUACION_BLOQUE`). Así ya no hay
+  que esperar 8 respuestas, y un grupo pequeño tiene nota desde la quinta; ningún cambio de nota
+  corresponde a una sola respuesta. Al cerrar la recolección se consolida con todas.
+- **La tarea periódica revisa siempre** (abierta o cerrada la recolección) con la misma regla: repara
+  una nota que no se alcanzó a recalcular. Recalcular sin cambios no escribe nada ni deja rastro en el
+  historial de correcciones.
+- **El envío y la tarea ya no se pisan**: un bloqueo por docente y periodo evita que dos recálculos
+  simultáneos creen la nota dos veces.
+- `DOCENTIA_HETEROEVALUACION_MINIMO` y `DOCENTIA_HETEROEVALUACION_BLOQUE` llegan al contenedor por el
+  `docker-compose.yml`.
+
 ## Sin publicar: análisis robusto
 
 Solo backend y frontend. Sin migraciones: la base sigue en V50.
