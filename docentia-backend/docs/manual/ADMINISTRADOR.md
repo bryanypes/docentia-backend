@@ -14,6 +14,9 @@ El primer administrador lo crea el despliegue con las variables `DOCENTIA_BOOTST
 | Programas | Programas académicos y su facultad |
 | Ponderaciones | Peso de cada evaluador en el promedio del periodo activo |
 | Periodos | Crear periodos, sus etapas y, si hace falta, ajustar el nombre calculado |
+| Solicitudes de corrección | Reabrir una autoevaluación o coevaluación enviada, con o sin solicitud |
+| Actas firmadas | Registro de las actas firmadas: de quién son, quién firmó y cuándo, y su código de verificación. Sin la nota: el PDF la lleva y no se descarga desde aquí |
+| Citas programadas | Todas las citas de retroalimentación del periodo |
 
 ## Dar de alta a una persona
 

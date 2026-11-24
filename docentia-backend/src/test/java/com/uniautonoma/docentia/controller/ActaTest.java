@@ -151,14 +151,10 @@ class ActaTest extends PruebaIntegracion {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[0].codigo").value(codigo))
         .andExpect(jsonPath("$[0].promedio").doesNotExist());
-    byte[] delArchivo =
-        mockMvc
-            .perform(get("/actas/{id}/pdf", acta).with(como(administrador)))
-            .andExpect(status().isOk())
-            .andReturn()
-            .getResponse()
-            .getContentAsByteArray();
-    assertThat(delArchivo).isEqualTo(pdf);
+    // La administración no ve notas: el registro sí, el PDF (que lleva la nota) no.
+    mockMvc
+        .perform(get("/actas/{id}/pdf", acta).with(como(administrador)))
+        .andExpect(status().isForbidden());
     mockMvc
         .perform(get("/actas/codigo/{codigo}", "DOC-000000000000").with(como(administrador)))
         .andExpect(status().isNotFound());

@@ -326,17 +326,14 @@ public class ActaService {
     return ActaResponse.desde(guardada);
   }
 
-  /** PDF guardado del acta; nunca se regenera. */
+  /**
+   * PDF guardado del acta; nunca se regenera. Lleva la nota, así que solo lo descargan quienes ven
+   * el acta: el docente, quien lo evalúa y la vicerrectoría. La administración, que no ve notas, se
+   * queda con el registro de actas firmadas.
+   */
   @Transactional(readOnly = true)
   public PdfActa descargarPdf(Long idActa, UsuarioSesion sesion) {
-    // La administración custodia el archivo de actas: descarga cualquiera, sin pasar por el alcance
-    // de docentes (no tiene facultad ni docentes a cargo).
-    Acta acta =
-        sesion.esAdministrador()
-            ? actaRepository
-                .findById(idActa)
-                .orElseThrow(() -> new RecursoNoEncontradoException("Acta no encontrada"))
-            : buscarVisible(idActa, sesion);
+    Acta acta = buscarVisible(idActa, sesion);
     if (acta.getPdf() == null) {
       throw new ReglaNegocioException("El acta todavía no está firmada por las dos partes");
     }

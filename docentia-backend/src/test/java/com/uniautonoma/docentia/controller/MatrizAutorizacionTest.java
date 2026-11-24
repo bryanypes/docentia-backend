@@ -55,7 +55,7 @@ class MatrizAutorizacionTest extends PruebaIntegracion {
       {"PUT /actas/{}/observaciones", "CV"},
       {"POST /actas/{}/firmas", "DCV"},
       {"POST /actas/{}/correcciones", "V"},
-      {"GET /actas/{}/pdf", "DCVA"},
+      {"GET /actas/{}/pdf", "DCV"},
       {"POST /analisis-ia/solicitudes", "CV"},
       {"GET /analisis-ia/solicitudes", "CV"},
       {"GET /analisis-ia/solicitudes/{}", "CV"},
