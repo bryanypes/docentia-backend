@@ -6,9 +6,7 @@ Lo que el sistema no hace hoy y por qué.
 |-------------|---------|
 | Sync en vivo con Campus/NOVA | El JSON de personas y clases es el contrato; el seed lo simula. No hay cliente HTTP a Campus |
 | Escala de 1 a 5 confirmada | La resolución no la define; se aplica 1 a 5 y queda pendiente de Vicerrectoría |
-| Reabrir un formulario enviado | Queda fijo al enviarse |
 | HU-09, evidencias complementarias y grupos focales | Fuera de alcance por el orden de corte |
-| Etiquetas de los seis criterios en los hallazgos | Quedó fuera por el orden de corte |
 | SSO institucional real | El estudiante entra con Google institucional o, en desarrollo, con la contraseña de demo; sin SSO real, su acceso en producción depende de Google |
 | Matrícula real de Campus/NOVA | Sin integración directa: la inscripción usa el servicio de matrícula del backend (sin pantalla) o la semilla; la integración está por confirmar |
 | Métricas del análisis con comentarios reales | La validación usa 90 comentarios sintéticos escritos por el mismo autor del léxico; las cifras sobreestiman. Hace falta una muestra real etiquetada |

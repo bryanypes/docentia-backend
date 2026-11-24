@@ -1,5 +1,20 @@
 # Cambios
 
+## Sin publicar: puesta al día (F1 de la 0.5.0)
+
+- **Todas las variables de entorno llegan a la API.** El `docker-compose.yml` solo pasaba una parte: 21
+  variables del `.env` no surtían efecto, entre ellas `DOCENTIA_IA_MAX_TOKENS_SALIDA`,
+  `DOCENTIA_IA_TIMEOUT_SEGUNDOS`, `DOCENTIA_CORS_ORIGENES`, `DOCENTIA_PROCESO_EXIGIR_ASISTENCIA` y
+  `DOCENTIA_ACTAS_EXIGIR_FIRMA_DIBUJADA`. Ahora van todas, con el mismo valor por defecto, y el CI lo
+  revisa (`scripts/revisar-variables.py`).
+- **La administración ya no descarga el PDF de las actas**: lleva la nota y ella no ve notas. Sigue
+  viendo el registro de actas firmadas (quién, quién firmó, cuándo y el código).
+- **`ROLES.md` se genera desde el código** (`scripts/generar-roles.py`) y el CI revisa que esté al día.
+  Estaba atrasado: tenía 115 de 130 rutas y permisos de antes de la 0.4.3.
+- Documentación al día: migraciones y roles en `ARQUITECTURA.md`, `docentia-docker` y V43 en
+  `OPERACION.md`, limitaciones que ya no aplican, manual de la administración.
+- Pruebas: `@MockBean`, obsoleto, pasa a `@MockitoBean`.
+
 ## Sin publicar: anonimato de la nota de estudiantes
 
 Corrige el hueco de anonimato que abrió `b6fbadf` y el caso que ese commit resolvía.

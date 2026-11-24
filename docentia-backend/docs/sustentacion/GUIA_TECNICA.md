@@ -115,7 +115,7 @@ publicó, después de su reunión. Detalle en [DECISIONES-ANALISIS-IA.md](../DEC
 | Tema | Cómo |
 |------|------|
 | Sesión | JWT HS256 de 8 horas; en `prod` la app no arranca con un secreto de desarrollo o de menos de 32 caracteres |
-| Roles | Seis: estudiante, docente, coordinación, vicerrectoría, administración y visualización. `@PreAuthorize` en cada ruta; `MatrizAutorizacionTest` comprueba las 115 rutas con cada rol y sin sesión (`ROLES.md`) |
+| Roles | Seis: estudiante, docente, coordinación, vicerrectoría, administración y visualización. `@PreAuthorize` en cada ruta; `MatrizAutorizacionTest` comprueba las 130 rutas con cada rol y sin sesión (`ROLES.md`) |
 | Alcance | Coordinación solo ve su facultad y el docente lo propio; fuera de alcance responde 404 |
 | Rutas públicas | Solo inicio de sesión (correo o Google), verificación de actas y salud |
 | Contraseña temporal | Toda cuenta creada por vicerrectoría debe cambiarla antes de usar el sistema |

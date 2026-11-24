@@ -30,8 +30,8 @@ DOCENTIA_API_URL=http://localhost:8080 npm run dev
 
 La fuente del frontend es la carpeta `DocenteIA/` de este monorepo: ahí se desarrolla, la prueba el CI y
 la construye Docker. El repositorio `DocenteIA` es un espejo que se actualiza al publicar una versión.
-`docentia-docker` reúne backend y frontend de una versión publicada; hoy está en 0.3.2 y no tiene la
-heteroevaluación ni el modelo local, así que no sirve para desplegar.
+`docentia-docker` reúne backend y frontend de cada versión publicada (`backend/` y `frontend/`), con la
+misma etiqueta que este repositorio; el commit de cada uno está en la guía de despliegue de esa versión.
 
 ## Usuarios de demo
 
@@ -106,6 +106,12 @@ location /Evadocente-app/ {
 
 ## Variables de entorno
 
+El `docker-compose.yml` no carga el `.env` entero en la API: le pasa solo las variables que nombra en el
+`environment` de `api`. Desde la 0.5.0 nombra todas las que lee la API, con el mismo valor por defecto, y
+el CI lo revisa (`scripts/revisar-variables.py`). **Antes de la 0.5.0, varias del `.env` no surtían
+efecto**, entre ellas `DOCENTIA_IA_MAX_TOKENS_SALIDA`, `DOCENTIA_IA_TIMEOUT_SEGUNDOS`,
+`DOCENTIA_CORS_ORIGENES`, `DOCENTIA_PROCESO_EXIGIR_ASISTENCIA` y `DOCENTIA_ACTAS_EXIGIR_FIRMA_DIBUJADA`.
+
 | Variable | Obligatoria en producción | Uso |
 |----------|---------------------------|-----|
 | `SPRING_PROFILES_ACTIVE` | Sí, `prod` | `dev` carga usuarios y datos de demostración; `prod` no carga ninguno |
@@ -169,7 +175,7 @@ donde se corren; para otro proyecto de Compose, exporta antes `COMPOSE_PROJECT_N
 
 ## Despliegue de 0.4.0 (sábado 14 de noviembre de 2026)
 
-Pasa el servidor de 0.3.3 (migración V28) a 0.4.0 (V41). Las migraciones nuevas son V34 a V41: agregan
+Pasa el servidor de 0.3.3 (migración V28) a 0.4.0 (V43). Las migraciones nuevas son V34 a V43: agregan
 tablas y columnas, normalizan mayúsculas y tildes de nombres (V38 y V39) y no borran filas. No tienen
 vuelta atrás: el retorno es restaurar el respaldo.
 
