@@ -107,8 +107,10 @@ inexistente, para no confirmar que existe.
 se le devuelven, no en la pantalla.
 
 **Análisis asíncrono.** La solicitud se guarda en EN_COLA y responde 202. Un procesador la toma con
-`FOR UPDATE SKIP LOCKED`, llama al modelo fuera de transacción y guarda el borrador. Al arrancar, lo
-huérfano vuelve a la cola o queda en ERROR tras tres intentos.
+`FOR UPDATE SKIP LOCKED`, llama al modelo fuera de transacción y guarda el borrador. Si el modelo
+externo falla, el fallo se clasifica (configuración, transitorio, respuesta cortada o inválida), se
+reintenta según la clase y, si no se logra, el borrador lo hace el modelo local, rotulado con el
+motivo. Al arrancar, lo huérfano vuelve a la cola o queda en ERROR tras tres intentos.
 
 **Outbox de notificaciones.** El negocio publica un evento y el aviso se crea después del commit. El
 correo se escribe en una tabla y otro proceso lo envía. Un SMTP caído no afecta una firma. Ver

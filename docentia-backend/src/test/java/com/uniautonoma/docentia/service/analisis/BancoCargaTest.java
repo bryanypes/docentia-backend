@@ -196,7 +196,7 @@ class BancoCargaTest {
   private String cuerpoLegado(String instruccion, Preparacion preparacion) throws Exception {
     ObjectNode cuerpo = mapper.createObjectNode();
     cuerpo.put("model", System.getenv().getOrDefault("DOCENTIA_IA_MODELO", "modelo"));
-    if (!"false".equalsIgnoreCase(System.getenv("DOCENTIA_IA_ENVIAR_TEMPERATURA"))) {
+    if ("true".equalsIgnoreCase(System.getenv("DOCENTIA_IA_ENVIAR_TEMPERATURA"))) {
       cuerpo.put("temperature", 0);
     }
     cuerpo.put("max_tokens", SALIDA_LEGADO);
@@ -232,7 +232,7 @@ class BancoCargaTest {
             System.getenv("DOCENTIA_IA_CLAVE"),
             10,
             new IaProperties.Worker(false, 5000),
-            !"false".equalsIgnoreCase(System.getenv("DOCENTIA_IA_ENVIAR_TEMPERATURA"))),
+            "true".equalsIgnoreCase(System.getenv("DOCENTIA_IA_ENVIAR_TEMPERATURA"))),
         salida);
   }
 

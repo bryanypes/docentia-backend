@@ -24,5 +24,7 @@ docentia:
   ia:
     habilitado: true
     proveedor: simulado
+    # Sin espera entre reintentos: las pruebas cubren la lógica, no el reloj.
+    reintento-base-ms: 0
     worker:
       habilitado: false

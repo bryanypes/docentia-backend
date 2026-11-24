@@ -72,7 +72,25 @@ comprueba que los hallazgos tengan citas verificables, que no se apoyen en el co
 y que la oportunidad de mejora no desaparezca. No guarda ni imprime la respuesta.
 
 Se corrió una vez en local con un proveedor compatible con chat/completions y pasó. Hizo falta
-`DOCENTIA_IA_ENVIAR_TEMPERATURA=false` porque ese modelo rechaza el parámetro. En CI se omite.
+`DOCENTIA_IA_ENVIAR_TEMPERATURA=false` porque ese modelo rechaza el parámetro; desde el 23 de
+noviembre de 2026 ese es el valor por defecto. En CI se omite.
+
+## Robustez del respaldo local
+
+Cuando el externo falla, el análisis lo hace el modelo local, así que no puede fallar con ninguna
+entrada. `RobustezModeloLocalTest` recorre el camino completo del respaldo (filtro, anonimización,
+análisis, JSON del modelo local y lector) y exige que no lance excepción y que toda cita sea texto
+literal del comentario citado:
+
+| Caso | Prueba |
+|------|--------|
+| 0, 1, 5 y 5.000 comentarios, con tope de tiempo | `cualquierCantidadDeComentariosTerminaSinExcepcion` |
+| Nulo, vacío, «nada», «ok», emojis, mayúsculas, tildes combinadas, caracteres invisibles, de control y sustitutos sueltos, JSON y markdown dentro del texto, órdenes al modelo, letras repetidas, datos personales, comentarios de 120.000 caracteres | `entradasRarasNoRompenElAnalisis` |
+| 30 rondas de texto aleatorio con semilla fija | `textoAleatorioNoRompeElAnalisisYLasCitasSonLiterales` |
+
+Con el léxico de producción (`lexico-v2.txt`) las seis pasan sin cambiar el modelo local. Los fallos del
+proveedor y la caída al local los cubren `AnalisisIaFallosModeloTest` y
+`ModeloIAChatCompletionsTest`.
 
 ## Cómo repetirlo
 

@@ -125,7 +125,9 @@ docentia:
     modelo: ${DOCENTIA_IA_MODELO:}
     timeout-segundos: ${DOCENTIA_IA_TIMEOUT_SEGUNDOS:60}
     clave: ${DOCENTIA_IA_CLAVE:}
-    enviar-temperatura: ${DOCENTIA_IA_ENVIAR_TEMPERATURA:true}
+    enviar-temperatura: ${DOCENTIA_IA_ENVIAR_TEMPERATURA:false}
+    # Espera antes del primer reintento ante 429, 5xx o tiempo agotado; luego x4, con tope.
+    reintento-base-ms: 2000
     # Ahorro de tokens del proveedor externo (docs/ANALISIS_IA_COSTOS.md). Presupuesto 0 = sin tope.
     max-comentarios-llm: ${DOCENTIA_IA_MAX_COMENTARIOS_LLM:150}
     max-caracteres-comentario: ${DOCENTIA_IA_MAX_CARACTERES_COMENTARIO:300}

@@ -143,13 +143,46 @@ public class LectorRespuestaAnalisis {
     }
   }
 
-  /** Algunos modelos envuelven el JSON en un bloque ```json … ```. */
-  private String quitarCercoMarkdown(String contenido) {
-    String texto = contenido == null ? "" : contenido.strip();
-    if (texto.startsWith("```")) {
-      texto = texto.replaceFirst("^```[a-zA-Z]*\\s*", "").replaceFirst("\\s*```$", "");
+  /**
+   * El primer objeto JSON completo de la respuesta. Así se acepta el JSON envuelto en un bloque
+   * ```json … ``` o con texto antes o después, que algunos modelos agregan.
+   *
+   * @throws RespuestaCortadaException si el objeto empieza pero nunca se cierra: la respuesta llegó
+   *     a medias, que no es lo mismo que un JSON mal formado
+   * @throws RespuestaInvalidaException si no hay ningún objeto
+   */
+  static String extraerJson(String contenido) {
+    String texto = contenido == null ? "" : contenido;
+    int inicio = texto.indexOf('{');
+    if (inicio < 0) {
+      throw new RespuestaInvalidaException("La respuesta no es JSON válido");
     }
-    return texto;
+    int profundidad = 0;
+    boolean enCadena = false;
+    boolean escapado = false;
+    for (int i = inicio; i < texto.length(); i++) {
+      char c = texto.charAt(i);
+      if (enCadena) {
+        if (escapado) {
+          escapado = false;
+        } else if (c == '\\') {
+          escapado = true;
+        } else if (c == '"') {
+          enCadena = false;
+        }
+      } else if (c == '"') {
+        enCadena = true;
+      } else if (c == '{') {
+        profundidad++;
+      } else if (c == '}' && --profundidad == 0) {
+        return texto.substring(inicio, i + 1);
+      }
+    }
+    throw new RespuestaCortadaException();
+  }
+
+  private String quitarCercoMarkdown(String contenido) {
+    return extraerJson(contenido);
   }
 
   /**
@@ -174,6 +207,14 @@ public class LectorRespuestaAnalisis {
 
     public RespuestaInvalidaException(String motivo) {
       super(motivo);
+    }
+  }
+
+  /** El JSON empezó y no terminó: el modelo se quedó sin tokens a mitad de la respuesta. */
+  public static class RespuestaCortadaException extends RespuestaInvalidaException {
+
+    public RespuestaCortadaException() {
+      super("La respuesta llegó incompleta");
     }
   }
 }

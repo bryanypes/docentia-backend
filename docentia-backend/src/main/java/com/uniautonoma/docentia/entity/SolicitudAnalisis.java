@@ -215,6 +215,16 @@ public class SolicitudAnalisis {
     this.mensaje = null;
   }
 
+  /**
+   * Pidieron el modelo de lenguaje y respondió el local de respaldo: queda el motivo (por ejemplo
+   * PROVEEDOR_NO_DISPONIBLE) y el texto que lo explica al usuario. Se llama después de {@link
+   * #completar}.
+   */
+  public void registrarRespaldoLocal(String motivoRespaldo, String explicacion) {
+    this.motivo = motivoRespaldo;
+    this.mensaje = explicacion;
+  }
+
   public Long getIdSolicitud() {
     return idSolicitud;
   }

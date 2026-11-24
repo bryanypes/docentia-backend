@@ -10,16 +10,19 @@ FORMULARIO. Contrato: [api-comentarios-ia.md](api-comentarios-ia.md). Criterios:
 - **Modelo local por defecto.** `docentia.ia.proveedor=local` en `application.yml`, `dev` y Docker. Es
   un modelo por reglas con un léxico versionado (`resources/ia/lexico-v1.txt`). No es un modelo de
   lenguaje ni genera texto: clasifica y cuenta. En pantalla se rotula con `tipoModelo = REGLAS`.
-- **Modelo de lenguaje opcional.** `chat-completions` sigue disponible y apagado por defecto. Si falla,
-  la solicitud termina en ERROR; no se recurre al modelo local en silencio.
+- **Modelo de lenguaje opcional.** `chat-completions` sigue disponible y apagado por defecto. Si falla
+  de forma definitiva, el análisis lo hace el modelo local y queda rotulado con el motivo (regla P8,
+  ver «Fallos del proveedor externo»). Solo queda en ERROR si el modelo local también falla.
 - **Quién cuenta.** Aunque los hallazgos los proponga un modelo de lenguaje, los conteos, temas,
   tendencias y criterios del resultado los calcula siempre el modelo local, que es determinista y se
   puede verificar. El resultado queda rotulado `LLM` con la advertencia `CONTEO_POR_REGLAS`.
 - **Pruebas con el simulado.** El perfil de pruebas sigue con `simulado` para no cambiar lo que ya
   probaban E1 a E3. Las pruebas nuevas activan `local` con `@TestPropertySource`.
-- **Temperatura.** Se envía `temperature: 0` salvo que `DOCENTIA_IA_ENVIAR_TEMPERATURA=false`: un
-  modelo reciente probado la rechaza. Sin temperatura no hay garantía de respuestas idénticas; las
-  citas se siguen verificando.
+- **Temperatura.** No se envía por defecto. La documentación de Anthropic dice que, en el endpoint
+  compatible, Claude 4.7 y posteriores responden 400 a cualquier `temperature` menor que 1 (y a
+  `top_p` distinto del valor por defecto). Con `DOCENTIA_IA_ENVIAR_TEMPERATURA=true` se envía
+  `temperature: 0`, solo para un proveedor que la acepte. Sin temperatura no hay garantía de
+  respuestas idénticas; las citas se siguen verificando.
 - **Instrucción v2.** `analisis-v2` agrega que los comentarios son datos y que ninguna orden escrita en
   ellos se obedece. Las solicitudes ya completadas conservan `analisis-v1` en su borrador.
 
@@ -128,17 +131,51 @@ Costos medidos y valores por defecto en [ANALISIS_IA_COSTOS.md](ANALISIS_IA_COST
 - **El externo queda disponible aunque el defecto sea el local**, si el ambiente trae URL, modelo y
   clave. Nunca se usa sin que lo pidan.
 - **Sin proveedor, `LLM` es 409** al pedir. Si deja de estar configurado entre el pedido y el
-  procesamiento, la solicitud queda en `ERROR` con `motivo: LLM_NO_DISPONIBLE`. No se cambia al local
-  en silencio.
+  procesamiento, responde el modelo local con `motivo: LLM_NO_DISPONIBLE`, rotulado, y se avisa a
+  la administración y a la vicerrectoría.
 - **Mismas reglas.** Elegir `LLM` pasa por la política de roles (coordinador y vicerrector), el
   presupuesto y la caché. En `uso_ia` queda como `chat-completions` aunque el defecto sea `local`.
 - **`GET /analisis-comentarios/modelos`** muestra las opciones, el defecto, el tope de comentarios, el
   máximo de tokens por análisis, el presupuesto que queda hoy y una advertencia. Sin dinero.
 - **V41** amplía la restricción de `modelo_solicitado` a `LOCAL` y `LLM`.
 
+## Fallos del proveedor externo
+
+Objetivo: un fallo del proveedor nunca deja al docente sin resultado si el modelo local puede
+responder. Cada clase de fallo tiene su tratamiento (`ProcesadorSolicitudesAnalisis.generar`):
+
+| Clase | Cuándo | Tratamiento | Motivo si no se logra |
+|---|---|---|---|
+| Configuración | HTTP 400, 401, 403, 404, 422 y otros 4xx | Sin reintento. Registro ERROR con las variables a revisar y aviso `PROVEEDOR_IA_RECHAZO` a la administración y a la vicerrectoría (uno por día) | `PROVEEDOR_CONFIGURACION` |
+| Transitorio | 408, 409, 429, 5xx (incluido 529), tiempo agotado o red | Hasta 2 reintentos (3 llamadas) con espera de 2 s y 8 s, o el `Retry-After` si es mayor; una espera no pasa de 30 s y todas juntas de 45 s | `PROVEEDOR_NO_DISPONIBLE` |
+| Respuesta cortada | `finish_reason: "length"`, o un JSON que empieza y no termina | Un intento más con la mitad de los comentarios | `RESPUESTA_CORTADA` |
+| Respuesta inválida | JSON completo pero mal formado o sin los campos pedidos | Un intento más igual | `RESPUESTA_INVALIDA` |
+| Inesperado | Cualquier otra excepción al llamar | Sin reintento; registro ERROR sin mensajes que puedan traer texto | `PROVEEDOR_NO_DISPONIBLE` |
+
+- **Respaldo local (regla P8, aprobada el 23 de noviembre de 2026).** Si no se logra, el análisis lo
+  hace el modelo local con todos los comentarios preparados. La solicitud queda `COMPLETADO` con
+  `modelo = reglas-1.0`, el `motivo` de la tabla y un `mensaje` que lo explica; el resultado lleva la
+  advertencia `RESPALDO_LOCAL` y la pantalla del análisis dice «Usé el modelo local por reglas» y por
+  qué. No hace falta migración: `motivo` es `varchar(30)` sin restricción.
+- **Datos personales.** El respaldo reduce el tratamiento: el modelo local no usa red y nada sale del
+  servidor. Es compatible con la Ley 1581 tal como la aplica `SEGURIDAD.md`.
+- **Presupuesto.** Antes de repetir una llamada que gasta tokens (respuesta cortada o inválida) se
+  vuelve a revisar el presupuesto; si no alcanza, responde el local. Un 429 o 5xx no gasta tokens. Una
+  respuesta cortada sí: sus tokens quedan en `uso_ia` como `ERROR`.
+- **Lectura tolerante.** El lector toma el primer objeto JSON completo de la respuesta, así acepta el
+  bloque ```json``` y el texto antes o después.
+- **Espera configurable.** `docentia.ia.reintento-base-ms` (2000 por defecto; 0 en pruebas). No es
+  una variable del `.env`.
+- **Razonamiento de Claude 5.** En Claude Haiku 5.5 el razonamiento está activo por defecto y sus
+  tokens cuentan dentro de `max_tokens`. La documentación del endpoint compatible no dice si acepta
+  apagarlo (`thinking: {type: "disabled"}` sí está documentado en la API nativa). Por eso el tope
+  de salida recomendado sube a 8000 (`DOCENTIA_IA_MAX_TOKENS_SALIDA`) y la respuesta cortada se
+  trata aparte.
+
 ## Auditoría y avisos
 
 - **Auditoría.** Pedir un análisis registra `SOLICITUD_ANALISIS` con el id de la solicitud. Nunca el
   texto de un comentario.
-- **Avisos.** Se reutilizan los de análisis terminado, insuficiente y con error; no llevan datos de los
-  comentarios.
+- **Avisos.** Se reutilizan los de análisis terminado, insuficiente y con error, y se agrega
+  `PROVEEDOR_IA_RECHAZO` para la administración y la vicerrectoría cuando el proveedor rechaza la
+  configuración. Ninguno lleva datos de los comentarios.

@@ -12,6 +12,7 @@ import com.uniautonoma.docentia.entity.TipoNotificacion;
 import com.uniautonoma.docentia.repository.SolicitudAnalisisRepository;
 import com.uniautonoma.docentia.service.VentanaEtapaService;
 import com.uniautonoma.docentia.service.analisis.LectorRespuestaAnalisis.HallazgoPropuesto;
+import com.uniautonoma.docentia.service.analisis.LectorRespuestaAnalisis.RespuestaCortadaException;
 import com.uniautonoma.docentia.service.analisis.LectorRespuestaAnalisis.RespuestaInvalidaException;
 import com.uniautonoma.docentia.service.analisis.ModeloIA.ModeloIAException;
 import com.uniautonoma.docentia.service.analisis.ModeloIA.PeticionAnalisis;
@@ -34,6 +35,7 @@ import com.uniautonoma.docentia.service.analisis.local.ResultadoAnalisis.Adverte
 import com.uniautonoma.docentia.service.analisis.local.ResultadoAnalisis.LimitesAplicados;
 import com.uniautonoma.docentia.service.analisis.local.ResultadoAnalisis.Tema;
 import com.uniautonoma.docentia.service.notificacion.EventoNotificacion;
+import java.time.Duration;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,6 +47,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -71,6 +74,43 @@ public class ProcesadorSolicitudesAnalisis {
   static final String MENSAJE_ERROR =
       "No fue posible generar el análisis en este momento. Puedes volver a solicitarlo más tarde.";
 
+  /** Motivos guardados en la solicitud cuando el análisis sale del modelo local de respaldo. */
+  static final String PROVEEDOR_CONFIGURACION = "PROVEEDOR_CONFIGURACION";
+
+  static final String PROVEEDOR_NO_DISPONIBLE = "PROVEEDOR_NO_DISPONIBLE";
+  static final String RESPUESTA_INVALIDA = "RESPUESTA_INVALIDA";
+  static final String RESPUESTA_CORTADA = "RESPUESTA_CORTADA";
+  static final String LLM_NO_DISPONIBLE = "LLM_NO_DISPONIBLE";
+  static final String MODELO_LOCAL_FALLO = "MODELO_LOCAL_FALLO";
+
+  /** Lo que lee el usuario en el resultado: qué pasó con el externo y que respondió el local. */
+  static final Map<String, String> MENSAJES_RESPALDO =
+      Map.of(
+          PROVEEDOR_CONFIGURACION,
+          "El proveedor externo rechazó la configuración (modelo, clave o parámetros), así que"
+              + " este análisis lo hizo el modelo local por reglas. La administración ya fue"
+              + " avisada.",
+          PROVEEDOR_NO_DISPONIBLE,
+          "El proveedor externo no respondió después de varios intentos, así que este análisis lo"
+              + " hizo el modelo local por reglas.",
+          RESPUESTA_INVALIDA,
+          "La respuesta del proveedor externo no tuvo el formato esperado, así que este análisis"
+              + " lo hizo el modelo local por reglas.",
+          RESPUESTA_CORTADA,
+          "La respuesta del proveedor externo llegó incompleta, así que este análisis lo hizo el"
+              + " modelo local por reglas.",
+          LLM_NO_DISPONIBLE,
+          "No hay un modelo de lenguaje configurado en este ambiente, así que este análisis lo"
+              + " hizo el modelo local por reglas. La administración ya fue avisada.");
+
+  /** Reintentos ante un fallo transitorio: tres llamadas en total. */
+  static final int REINTENTOS_TRANSITORIOS = 2;
+
+  /** Tope de una espera y de todas juntas, para no tener el procesador detenido mucho tiempo. */
+  static final long ESPERA_UNICA_MAXIMA_MS = 30_000;
+
+  static final long ESPERA_MAXIMA_MS = 45_000;
+
   private static final Logger LOG = LoggerFactory.getLogger(ProcesadorSolicitudesAnalisis.class);
 
   private final SolicitudAnalisisRepository solicitudRepository;
@@ -92,6 +132,7 @@ public class ProcesadorSolicitudesAnalisis {
   private final IaProperties propiedades;
   private final TransactionTemplate transaccion;
   private final JdbcTemplate jdbcTemplate;
+  private final long esperaBaseMs;
 
   public ProcesadorSolicitudesAnalisis(
       SolicitudAnalisisRepository solicitudRepository,
@@ -112,7 +153,9 @@ public class ProcesadorSolicitudesAnalisis {
       IaProperties propiedades,
       TransactionTemplate transaccion,
       JdbcTemplate jdbcTemplate,
-      ApplicationEventPublisher eventos) {
+      ApplicationEventPublisher eventos,
+      @Value("${docentia.ia.reintento-base-ms:2000}") long esperaBaseMs) {
+    this.esperaBaseMs = esperaBaseMs;
     this.eventos = eventos;
     this.solicitudRepository = solicitudRepository;
     this.proveedores = proveedores;
@@ -159,12 +202,15 @@ public class ProcesadorSolicitudesAnalisis {
     try {
       Optional<Preparado> preparado = transaccion.execute(estado -> preparar(idSolicitud));
       if (preparado.isPresent()) {
-        Optional<Generado> generado = generar(idSolicitud, preparado.get());
-        if (generado.isPresent() && generado.get().rechazado()) {
+        Intento intento = generar(idSolicitud, preparado.get());
+        Generado generado = intento.generado();
+        if (generado != null && generado.rechazado()) {
           marcarSinPresupuesto(idSolicitud);
-        } else if (generado.isPresent()) {
+        } else if (generado != null) {
           transaccion.executeWithoutResult(
-              estado -> guardarBorrador(idSolicitud, preparado.get(), generado.get()));
+              estado -> guardarBorrador(idSolicitud, preparado.get(), generado));
+        } else if (!"REGLAS".equals(preparado.get().modelo().tipo())) {
+          usarModeloLocal(idSolicitud, preparado.get(), intento.fallo());
         } else {
           marcarError(idSolicitud);
         }
@@ -174,6 +220,33 @@ public class ProcesadorSolicitudesAnalisis {
       marcarError(idSolicitud);
     }
     return true;
+  }
+
+  /**
+   * El externo falló de forma definitiva: el análisis lo hace el modelo local, que no usa red, y el
+   * resultado queda rotulado con el motivo. Solo si el local también falla queda en ERROR.
+   */
+  private void usarModeloLocal(Long idSolicitud, Preparado externo, String motivo) {
+    LOG.warn("Solicitud {}: se usa el modelo local por {}", idSolicitud, motivo);
+    Preparado local = respaldoLocal(externo.preparados(), externo.idPeriodo(), motivo);
+    Generado generado = generar(idSolicitud, local).generado();
+    if (generado == null) {
+      marcarError(idSolicitud);
+      return;
+    }
+    transaccion.executeWithoutResult(estado -> guardarBorrador(idSolicitud, local, generado));
+  }
+
+  /** El modelo local lee todos los comentarios preparados, no la muestra del externo. */
+  private Preparado respaldoLocal(
+      PreparadorComentarios.Preparados preparados, Long idPeriodo, String motivo) {
+    return new Preparado(
+        new PeticionAnalisis(instruccion.texto(), preparados.enviados()),
+        preparados,
+        modeloLocal,
+        null,
+        idPeriodo,
+        motivo);
   }
 
   private Optional<Long> tomarSiguiente() {
@@ -240,13 +313,13 @@ public class ProcesadorSolicitudesAnalisis {
             ? modeloLocal
             : solicitud.pideLlm() ? modelos.externo().orElse(null) : modelo;
     if (elegido == null) {
-      // Pidieron el modelo de lenguaje y ya no está configurado: no se cambia al local en silencio.
-      solicitud.marcarError(
-          "No hay un modelo de lenguaje configurado en este ambiente. Pide el análisis con el"
-              + " modelo local por reglas.",
-          "LLM_NO_DISPONIBLE");
-      avisar(solicitud, TipoNotificacion.ANALISIS_ERROR);
-      return Optional.empty();
+      // Pidieron el modelo de lenguaje y ya no está configurado: responde el local, rotulado, y se
+      // avisa para que la configuración se corrija.
+      LOG.error(
+          "Solicitud {}: pidieron el modelo de lenguaje y no está configurado; se usa el local",
+          idSolicitud);
+      avisarConfiguracion(idSolicitud);
+      return Optional.of(respaldoLocal(preparados, idPeriodo, LLM_NO_DISPONIBLE));
     }
     if ("REGLAS".equals(elegido.tipo())) {
       return Optional.of(
@@ -292,23 +365,31 @@ public class ProcesadorSolicitudesAnalisis {
   }
 
   /**
-   * Llama al modelo y valida su respuesta; si el JSON no sirve lo intenta una vez más. Con un
-   * modelo de lenguaje, antes de llamar busca la misma entrada en la caché y revisa el presupuesto.
+   * Llama al modelo y valida su respuesta. Con un modelo de lenguaje, antes de llamar busca la
+   * misma entrada en la caché y revisa el presupuesto, y trata cada clase de fallo distinto:
    *
-   * @return los hallazgos con el modelo que los generó, o vacío si no se logró
+   * <ul>
+   *   <li>configuración (400, 401, 403, 404): no se reintenta y se avisa;
+   *   <li>transitorio (429, 5xx, tiempo, red): hasta {@value #REINTENTOS_TRANSITORIOS} reintentos
+   *       con espera creciente, respetando el {@code Retry-After} y un tope total;
+   *   <li>respuesta cortada: un intento más con la mitad de los comentarios;
+   *   <li>JSON mal formado: un intento más, igual.
+   * </ul>
+   *
+   * @return los hallazgos con el modelo que los generó, o el motivo por el que no se lograron
    */
-  private Optional<Generado> generar(Long idSolicitud, Preparado preparado) {
+  private Intento generar(Long idSolicitud, Preparado preparado) {
     ModeloIA elegido = preparado.modelo();
     PeticionAnalisis peticion = preparado.peticion();
     if ("REGLAS".equals(elegido.tipo())) {
       try {
         RespuestaModelo respuesta = elegido.analizar(peticion);
-        return Optional.of(
+        return Intento.logrado(
             new Generado(
                 lector.leer(respuesta.contenido()), respuesta.modelo(), null, false, false));
       } catch (RuntimeException fallo) {
-        LOG.warn("El modelo local falló para la solicitud {}", idSolicitud);
-        return Optional.empty();
+        LOG.error("El modelo local falló para la solicitud {}: {}", idSolicitud, describir(fallo));
+        return Intento.fallido(MODELO_LOCAL_FALLO);
       }
     }
     Muestra muestra = preparado.muestra();
@@ -326,7 +407,7 @@ public class ProcesadorSolicitudesAnalisis {
           "ACIERTO_CACHE",
           0);
       try {
-        return Optional.of(
+        return Intento.logrado(
             new Generado(
                 lector.leer(enCache.get().contenido()),
                 enCache.get().modelo(),
@@ -340,24 +421,33 @@ public class ProcesadorSolicitudesAnalisis {
     long estimado = (long) muestra.tokensEstimados() + ahorro.maxTokensSalida();
     if (sinPresupuesto(preparado.idPeriodo(), estimado)) {
       registrar(preparado, huella, 0, 0, 0, true, "RECHAZADO_PRESUPUESTO", 0);
-      return Optional.of(new Generado(List.of(), modeloConfigurado, null, false, true));
+      return Intento.logrado(new Generado(List.of(), modeloConfigurado, null, false, true));
     }
-    for (int intento = 1; intento <= 2; intento++) {
+    PeticionAnalisis actual = peticion;
+    String huellaActual = huella;
+    int transitorios = 0;
+    long esperadoMs = 0;
+    boolean puedeRepetirInvalida = true;
+    boolean puedePartirCortada = true;
+    for (int intento = 1; ; intento++) {
       long inicio = System.nanoTime();
       try {
-        RespuestaModelo respuesta = elegido.analizar(peticion);
+        RespuestaModelo respuesta = elegido.analizar(actual);
         long duracion = (System.nanoTime() - inicio) / 1_000_000;
         Uso gasto =
             respuesta.uso() != null
                 ? respuesta.uso()
                 : new Uso(
-                    muestra.tokensEstimados(),
+                    EstimadorTokens.estimar(actual.instruccion())
+                        + actual.comentarios().stream()
+                            .mapToInt(c -> EstimadorTokens.estimar(c.texto()))
+                            .sum(),
                     EstimadorTokens.estimar(respuesta.contenido()),
                     0,
                     true);
         registrar(
             preparado,
-            huella,
+            huellaActual,
             gasto.entrada(),
             gasto.salida(),
             gasto.cache(),
@@ -366,33 +456,164 @@ public class ProcesadorSolicitudesAnalisis {
             duracion);
         List<HallazgoPropuesto> hallazgos = lector.leer(respuesta.contenido());
         uso.guardar(
-            huella,
+            huellaActual,
             respuesta.modelo(),
             instruccion.version(),
             respuesta.contenido(),
             gasto.entrada(),
             gasto.salida());
-        return Optional.of(
+        return Intento.logrado(
             new Generado(
                 hallazgos,
                 respuesta.modelo(),
                 lector.resumen(respuesta.contenido()),
                 false,
-                false));
+                false,
+                actual == peticion ? null : actual));
+      } catch (RespuestaCortadaException cortada) {
+        LOG.warn(
+            "Respuesta incompleta del modelo para la solicitud {} (intento {})",
+            idSolicitud,
+            intento);
+        if (!puedePartirCortada || actual.comentarios().size() < 2 || !alcanza(preparado)) {
+          return Intento.fallido(RESPUESTA_CORTADA);
+        }
+        puedePartirCortada = false;
+        actual = mitad(actual);
+        huellaActual = huella(actual, elegido);
       } catch (RespuestaInvalidaException invalida) {
         LOG.warn(
             "Respuesta inválida del modelo para la solicitud {} (intento {}): {}",
             idSolicitud,
             intento,
             invalida.getMessage());
+        if (!puedeRepetirInvalida || !alcanza(preparado)) {
+          return Intento.fallido(RESPUESTA_INVALIDA);
+        }
+        puedeRepetirInvalida = false;
       } catch (ModeloIAException fallo) {
+        long duracion = (System.nanoTime() - inicio) / 1_000_000;
+        Uso gasto = fallo.uso();
         registrar(
-            preparado, huella, 0, 0, 0, false, "ERROR", (System.nanoTime() - inicio) / 1_000_000);
-        LOG.warn("El modelo falló para la solicitud {}: {}", idSolicitud, fallo.getMessage());
-        break;
+            preparado,
+            huellaActual,
+            gasto == null ? 0 : gasto.entrada(),
+            gasto == null ? 0 : gasto.salida(),
+            0,
+            gasto != null && gasto.estimado(),
+            "ERROR",
+            duracion);
+        LOG.warn(
+            "El modelo falló para la solicitud {} (intento {}, {}): {}",
+            idSolicitud,
+            intento,
+            fallo.clase(),
+            fallo.getMessage());
+        switch (fallo.clase()) {
+          case CONFIGURACION -> {
+            LOG.error(
+                "El proveedor externo rechazó la configuración (solicitud {}): {}. Revisa"
+                    + " DOCENTIA_IA_URL_BASE, DOCENTIA_IA_MODELO, DOCENTIA_IA_CLAVE y"
+                    + " DOCENTIA_IA_ENVIAR_TEMPERATURA.",
+                idSolicitud,
+                fallo.getMessage());
+            avisarConfiguracion(idSolicitud);
+            return Intento.fallido(PROVEEDOR_CONFIGURACION);
+          }
+          case CORTADA -> {
+            if (!puedePartirCortada || actual.comentarios().size() < 2 || !alcanza(preparado)) {
+              return Intento.fallido(RESPUESTA_CORTADA);
+            }
+            puedePartirCortada = false;
+            actual = mitad(actual);
+            huellaActual = huella(actual, elegido);
+          }
+          case INVALIDA -> {
+            if (!puedeRepetirInvalida || !alcanza(preparado)) {
+              return Intento.fallido(RESPUESTA_INVALIDA);
+            }
+            puedeRepetirInvalida = false;
+          }
+          case TRANSITORIO -> {
+            long espera = espera(transitorios, fallo.esperaSugerida());
+            if (transitorios >= REINTENTOS_TRANSITORIOS || esperadoMs + espera > ESPERA_MAXIMA_MS) {
+              return Intento.fallido(PROVEEDOR_NO_DISPONIBLE);
+            }
+            transitorios++;
+            esperadoMs += espera;
+            esperar(espera);
+          }
+        }
+      } catch (RuntimeException inesperada) {
+        LOG.error(
+            "Falló la llamada al proveedor externo (solicitud {}): {}",
+            idSolicitud,
+            describir(inesperada));
+        return Intento.fallido(PROVEEDOR_NO_DISPONIBLE);
       }
     }
-    return Optional.empty();
+  }
+
+  /** Antes de repetir una llamada que sí gasta tokens, el presupuesto debe alcanzar otra vez. */
+  private boolean alcanza(Preparado preparado) {
+    long estimado = (long) preparado.muestra().tokensEstimados() + ahorro.maxTokensSalida();
+    return !sinPresupuesto(preparado.idPeriodo(), estimado);
+  }
+
+  /** La primera mitad de los comentarios: una respuesta más corta que quepa en el tope. */
+  private static PeticionAnalisis mitad(PeticionAnalisis peticion) {
+    List<ModeloIA.ComentarioAnonimo> comentarios = peticion.comentarios();
+    return new PeticionAnalisis(
+        peticion.instruccion(),
+        List.copyOf(comentarios.subList(0, (comentarios.size() + 1) / 2)),
+        peticion.temas());
+  }
+
+  /**
+   * Espera antes del reintento {@code n} (desde 0): base, base×4, base×16…, o lo que pidió el
+   * proveedor si es más, con un tope por espera.
+   */
+  long espera(int n, Duration sugerida) {
+    long creciente = esperaBaseMs * (1L << (2 * Math.min(n, 10)));
+    long pedida = sugerida == null ? 0 : sugerida.toMillis();
+    return Math.min(Math.max(creciente, pedida), ESPERA_UNICA_MAXIMA_MS);
+  }
+
+  private void esperar(long milisegundos) {
+    if (milisegundos <= 0) {
+      return;
+    }
+    try {
+      Thread.sleep(milisegundos);
+    } catch (InterruptedException interrumpido) {
+      Thread.currentThread().interrupt();
+    }
+  }
+
+  /**
+   * El proveedor rechazó la configuración: el análisis sale con el modelo local, pero la
+   * administración y la vicerrectoría lo saben (un aviso por día) para que no quede escondido.
+   */
+  private void avisarConfiguracion(Long idSolicitud) {
+    String clave = "proveedor-ia:" + ventanas.hoy();
+    // Los avisos salen al confirmar una transacción; fuera de una se perderían.
+    transaccion.executeWithoutResult(
+        estado -> {
+          eventos.publishEvent(
+              EventoNotificacion.aAdministradores(
+                  TipoNotificacion.PROVEEDOR_IA_RECHAZO,
+                  null,
+                  "SOLICITUD_ANALISIS",
+                  idSolicitud,
+                  clave));
+          eventos.publishEvent(
+              EventoNotificacion.aVicerrectores(
+                  TipoNotificacion.PROVEEDOR_IA_RECHAZO,
+                  null,
+                  "SOLICITUD_ANALISIS",
+                  idSolicitud,
+                  clave));
+        });
   }
 
   /**
@@ -478,7 +699,8 @@ public class ProcesadorSolicitudesAnalisis {
   }
 
   private void guardarBorrador(Long idSolicitud, Preparado preparado, Generado generado) {
-    PeticionAnalisis peticion = preparado.peticion();
+    PeticionAnalisis peticion =
+        generado.enviada() != null ? generado.enviada() : preparado.peticion();
     SolicitudAnalisis solicitud = solicitudRepository.findById(idSolicitud).orElseThrow();
     // Solo cuentan los comentarios que de verdad se enviaron: no filtrados, del docente y periodo.
     VerificadorCitas verificador = new VerificadorCitas(peticion.comentarios());
@@ -524,6 +746,10 @@ public class ProcesadorSolicitudesAnalisis {
         peticion.comentarios().size(),
         generado.modelo(),
         instruccion.version());
+    if (preparado.respaldo() != null) {
+      solicitud.registrarRespaldoLocal(
+          preparado.respaldo(), MENSAJES_RESPALDO.get(preparado.respaldo()));
+    }
     guardarResultado(solicitud, preparado, generado);
     avisar(solicitud, TipoNotificacion.ANALISIS_TERMINADO);
   }
@@ -554,6 +780,11 @@ public class ProcesadorSolicitudesAnalisis {
                   + " comentarios útiles en el orden de su huella."));
     }
     boolean llm = !"REGLAS".equals(preparado.modelo().tipo());
+    if (preparado.respaldo() != null) {
+      // Cuenta 1 por análisis: el resumen de estadísticas suma cuántos salieron del respaldo.
+      advertencias.add(
+          new Advertencia("RESPALDO_LOCAL", 1, MENSAJES_RESPALDO.get(preparado.respaldo())));
+    }
     if (llm) {
       advertencias.add(
           new Advertencia(
@@ -715,23 +946,61 @@ public class ProcesadorSolicitudesAnalisis {
   /**
    * @param resumen resumen narrativo del modelo de lenguaje, si lo dio
    * @param rechazado no se llamó porque no alcanzaba el presupuesto
+   * @param enviada lo que de verdad recibió el modelo (la mitad, si se partió una respuesta
+   *     cortada); nula si fue la petición preparada
    */
   private record Generado(
       List<HallazgoPropuesto> hallazgos,
       String modelo,
       String resumen,
       boolean desdeCache,
-      boolean rechazado) {}
+      boolean rechazado,
+      PeticionAnalisis enviada) {
+
+    Generado(
+        List<HallazgoPropuesto> hallazgos,
+        String modelo,
+        String resumen,
+        boolean desdeCache,
+        boolean rechazado) {
+      this(hallazgos, modelo, resumen, desdeCache, rechazado, null);
+    }
+  }
+
+  /** Lo que dejó la generación: los hallazgos, o el motivo por el que no se lograron. */
+  private record Intento(Generado generado, String fallo) {
+
+    static Intento logrado(Generado generado) {
+      return new Intento(generado, null);
+    }
+
+    static Intento fallido(String motivo) {
+      return new Intento(null, motivo);
+    }
+  }
 
   /**
    * @param muestra lo que va al modelo de lenguaje; nula con el modelo local, que lee todo
+   * @param respaldo motivo por el que se usa el modelo local en lugar del externo pedido; nulo si
+   *     es el modelo que se pidió
    */
   private record Preparado(
       PeticionAnalisis peticion,
       PreparadorComentarios.Preparados preparados,
       ModeloIA modelo,
       Muestra muestra,
-      Long idPeriodo) {}
+      Long idPeriodo,
+      String respaldo) {
+
+    Preparado(
+        PeticionAnalisis peticion,
+        PreparadorComentarios.Preparados preparados,
+        ModeloIA modelo,
+        Muestra muestra,
+        Long idPeriodo) {
+      this(peticion, preparados, modelo, muestra, idPeriodo, null);
+    }
+  }
 
   /**
    * Tipos de la cadena de causas y el punto donde ocurrió, sin mensajes: el mensaje de un error de
