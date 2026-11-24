@@ -1,5 +1,21 @@
 # Cambios
 
+## Sin publicar: acta completa y congelada (F2 de la 0.5.0)
+
+- **El acta guarda una copia de lo que imprime.** Desde la creación conserva identificación del
+  docente, programa y facultad, periodo, cita, pesos, número de respuestas y aspectos conversados.
+  Hasta la primera firma se actualiza; desde esa firma queda fija para las firmas siguientes y el PDF.
+- **La base protege todo el contenido firmado.** Firmada o anulada, el acta no admite cambios. Con una
+  primera firma, el borrador ya no puede cambiar su contenido hasta cerrar la segunda firma. Las
+  firmas y los compromisos tampoco cambian después de cerrar el acta; solo se registra el seguimiento
+  de cada compromiso.
+- **El PDF muestra el formato configurable.** Los datos propuestos quedan identificados: código del
+  docente con `usuarios.codigo`, rótulo configurable, código y versión del formato y dirección pública
+  de verificación. El formato institucional definitivo puede cambiarse sin renombrar columnas.
+- Migraciones nuevas: la base pasa de V50 a **V52**.
+- Pruebas nuevas: congelamiento antes y después de la primera firma, cambios rechazados por la base,
+  firmas y compromisos inmutables, y ejercicios de migración.
+
 ## Sin publicar: puesta al día (F1 de la 0.5.0)
 
 - **Todas las variables de entorno llegan a la API.** El `docker-compose.yml` solo pasaba una parte: 21

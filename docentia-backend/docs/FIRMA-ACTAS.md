@@ -42,7 +42,13 @@ La imagen se puede dibujar, escribir con el nombre o subir como archivo PNG. En 
   - el **SHA-256 del contenido** del acta;
   - un **código de verificación público**, que se consulta en `/verificar-acta/{codigo}` sin iniciar sesión.
 - Además se guarda aparte el SHA-256 del archivo PDF. Así se puede comprobar que el PDF entregado es el mismo que se generó (ver `DECISIONES.md`).
-- Un **disparador en la base de datos** impide modificar o borrar un acta firmada.
+- El acta guarda una copia de su identificación, programa, facultad, periodo, reunión, pesos, respuestas
+  y aspectos conversados. Al crear el borrador toma los datos vigentes y los actualiza hasta la
+  primera firma. La primera firma fija ese contenido; los cambios posteriores del usuario o del
+  periodo no alteran lo que se firmó ni el PDF.
+- Un **disparador en la base de datos** impide modificar o borrar un acta firmada o anulada. Después
+  de la primera firma tampoco permite cambiar el contenido del borrador ni sus firmas o compromisos.
+  El único cambio permitido en un compromiso ya firmado es el seguimiento (estado y observación).
 - Para corregir un acta firmada, la vicerrectoría crea una versión nueva y explica el motivo. La versión anterior se conserva.
 - Las acciones quedan en la **auditoría**, que tampoco se puede modificar.
 

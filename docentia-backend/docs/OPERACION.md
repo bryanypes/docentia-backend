@@ -135,6 +135,9 @@ efecto**, entre ellas `DOCENTIA_IA_MAX_TOKENS_SALIDA`, `DOCENTIA_IA_TIMEOUT_SEGU
 | `DOCENTIA_PROCESO_EXIGIR_ASISTENCIA` | No, `true` | El docente ve su resultado y firma solo tras registrar la asistencia |
 | `DOCENTIA_ACTAS_EXIGIR_FIRMA_DIBUJADA` | No, `true` | La firma lleva imagen (dibujada, escrita o PNG) |
 | `DOCENTIA_ACTAS_LOGO` | No | Logo del PDF; por defecto el de la universidad incluido |
+| `DOCENTIA_ACTAS_ROTULO_DOCUMENTO` | No, `Código` | Rótulo del documento del docente tomado de `usuarios.codigo`; vacío no lo imprime |
+| `DOCENTIA_ACTAS_FORMATO_CODIGO` | No | Código del formato institucional impreso en el membrete; vacío hasta que la institución lo defina |
+| `DOCENTIA_ACTAS_FORMATO_VERSION` | No | Versión del formato institucional impreso en el membrete |
 | `DOCENTIA_UMBRAL_REVISION` | No | Nota final por debajo de la cual el docente queda «Para revisar» y la vicerrectoría recibe un aviso. Vacía: `4.0`. No cambia las categorías de la Resolución 074 |
 | `DOCENTIA_ACTAS_URL_VERIFICACION` | No | Dirección pública impresa en el PDF para verificar el acta. Vacía: `https://nova.uniautonoma.edu.co/Evadocente-app` |
 | `DOCENTIA_PERIODOS_MES_FIN_PRIMER_SEMESTRE` | No, 6 | Mes de corte del nombre automático del periodo (por confirmar) |

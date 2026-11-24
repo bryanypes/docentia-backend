@@ -8,15 +8,19 @@ import com.uniautonoma.docentia.dto.EstadoPromedio;
 import com.uniautonoma.docentia.dto.PromedioPonderadoResponse;
 import com.uniautonoma.docentia.dto.VerificacionActaResponse;
 import com.uniautonoma.docentia.entity.Acta;
+import com.uniautonoma.docentia.entity.Cita;
 import com.uniautonoma.docentia.entity.Compromiso;
 import com.uniautonoma.docentia.entity.CorreccionCalificacion;
+import com.uniautonoma.docentia.entity.DatosCongeladosActa;
 import com.uniautonoma.docentia.entity.EstadoActa;
 import com.uniautonoma.docentia.entity.FirmaActa;
 import com.uniautonoma.docentia.entity.FuenteEvaluacion;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
+import com.uniautonoma.docentia.entity.PesosFuentes;
 import com.uniautonoma.docentia.entity.Rol;
 import com.uniautonoma.docentia.entity.TipoActa;
 import com.uniautonoma.docentia.entity.TipoEtapa;
+import com.uniautonoma.docentia.entity.TipoHallazgo;
 import com.uniautonoma.docentia.entity.TipoNotificacion;
 import com.uniautonoma.docentia.entity.Usuario;
 import com.uniautonoma.docentia.exception.DatosInvalidosException;
@@ -38,6 +42,7 @@ import java.util.HexFormat;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Optional;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
@@ -268,6 +273,9 @@ public class ActaService {
       throw new ReglaNegocioException("Ya firmaste esta acta");
     }
     congelar(acta);
+    // La copia se escribe antes que la firma: con una firma registrada, la base ya no deja
+    // cambiar el contenido del acta (V52).
+    actaRepository.flush();
     if (acta.getEstadoPromedio() != EstadoPromedio.COMPLETO) {
       throw new ReglaNegocioException(
           "El acta se firma con el promedio completo de los tres evaluadores");
@@ -290,7 +298,9 @@ public class ActaService {
     }
     Acta guardada = actaRepository.saveAndFlush(acta);
     avisarFirma(guardada, papel);
-    return ActaResponse.desde(guardada);
+    return esPropia(guardada, sesion)
+        ? ActaResponse.paraDocente(guardada)
+        : ActaResponse.desde(guardada);
   }
 
   /**
@@ -368,6 +378,7 @@ public class ActaService {
   }
 
   private static ActaPorCodigoResponse resumenAdministrativo(Acta acta) {
+    DatosCongeladosActa datos = acta.getDatosCongelados();
     Usuario docente = acta.getDocente();
     return new ActaPorCodigoResponse(
         acta.getIdActa(),
@@ -376,11 +387,15 @@ public class ActaService {
             ? "Acta de compromiso docente"
             : "Acta de retroalimentación docente",
         acta.getEstado(),
-        acta.getPeriodo().getNombre(),
-        docente.getNombreCompleto(),
-        docente.getCorreo(),
-        docente.getPrograma() == null ? null : docente.getPrograma().getNombre(),
-        GeneradorPdfActa.nombreEscuela(docente.getFacultadDeAdscripcion()),
+        datos.periodoNombre() != null ? datos.periodoNombre() : acta.getPeriodo().getNombre(),
+        datos.docenteNombre() != null ? datos.docenteNombre() : docente.getNombreCompleto(),
+        datos.docenteCorreo() != null ? datos.docenteCorreo() : docente.getCorreo(),
+        datos.docenteNombre() != null
+            ? datos.programaNombre()
+            : docente.getPrograma() == null ? null : docente.getPrograma().getNombre(),
+        datos.docenteNombre() != null
+            ? (datos.escuelaNombre() == null ? "No aplica" : datos.escuelaNombre())
+            : GeneradorPdfActa.nombreEscuela(docente.getFacultadDeAdscripcion()),
         acta.getFechaFirma(),
         acta.getFirmas().stream()
             .map(
@@ -409,12 +424,16 @@ public class ActaService {
     return "DOC-" + HexFormat.of().formatHex(bytes).toUpperCase(Locale.ROOT);
   }
 
+  /** Copia el resultado y los datos del acta. Desde la primera firma el acta ya no cambia. */
   private void congelar(Acta acta) {
+    if (!acta.getFirmas().isEmpty()) {
+      return;
+    }
     Long idDocente = acta.getDocente().getIdUsuario();
     PeriodoAcademico periodo = acta.getPeriodo();
     PromedioPonderadoResponse promedio = promedioService.obtenerPromedio(idDocente, periodo);
-    Map<FuenteEvaluacion, BigDecimal> notas =
-        promedioService.cargarEvaluacion(idDocente, periodo).notasDeFuentes();
+    EvaluacionPeriodo evaluacion = promedioService.cargarEvaluacion(idDocente, periodo);
+    Map<FuenteEvaluacion, BigDecimal> notas = evaluacion.notasDeFuentes();
     Long idCorreccion =
         correccionRepository
             .findFirstByDocenteIdUsuarioAndPeriodoIdPeriodoOrderByIdCorreccionDesc(
@@ -429,6 +448,51 @@ public class ActaService {
         tresDecimales(notas.get(FuenteEvaluacion.COORDINACION)),
         tresDecimales(notas.get(FuenteEvaluacion.AUTOEVALUACION)),
         idCorreccion);
+    acta.congelarDatos(datosActuales(acta, evaluacion.pesos()));
+  }
+
+  /**
+   * Identificación, reunión, pesos y aspectos conversados tal como están hoy. El acta los copia
+   * hasta la primera firma; desde ahí imprime y muestra esa copia.
+   */
+  private DatosCongeladosActa datosActuales(Acta acta, PesosFuentes pesos) {
+    Usuario docente = acta.getDocente();
+    PeriodoAcademico periodo = acta.getPeriodo();
+    Long idDocente = docente.getIdUsuario();
+    Long idPeriodo = periodo.getIdPeriodo();
+    Optional<Cita> cita = citaRepository.buscarActiva(idDocente, idPeriodo);
+    String rotulo = propiedades.actas().rotuloDocumento();
+    String documento =
+        rotulo == null || docente.getCodigo() == null || docente.getCodigo().isBlank()
+            ? null
+            : docente.getCodigo().strip();
+    long respuestas = actaRepository.contarRespuestasEstudiantes(idDocente, idPeriodo);
+    return new DatosCongeladosActa(
+        docente.getNombreCompleto(),
+        docente.getCorreo(),
+        documento == null ? null : rotulo,
+        documento,
+        GeneradorPdfActa.cargoEnVivo(docente, Rol.DOCENTE),
+        docente.getPrograma() == null ? null : docente.getPrograma().getNombre(),
+        docente.getFacultadDeAdscripcion() == null
+            ? null
+            : GeneradorPdfActa.nombreEscuela(docente.getFacultadDeAdscripcion()),
+        periodo.getNombre(),
+        periodo.getFechaInicio(),
+        periodo.getFechaFin(),
+        GeneradorPdfActa.cargoEnVivo(docente, acta.rolEvaluador()),
+        cita.map(c -> c.getFranja().getFecha()).orElse(null),
+        cita.map(c -> c.getFranja().getHoraInicio()).orElse(null),
+        cita.map(c -> c.getFranja().getHoraFin()).orElse(null),
+        cita.map(Cita::getAsistencia).map(Enum::name).orElse(null),
+        pesos.pesoEstudiantes(),
+        pesos.pesoCoordinacion(),
+        pesos.pesoAutoevaluacion(),
+        (int) respuestas,
+        generadorPdf.hallazgosValidados(idDocente, idPeriodo, TipoHallazgo.FORTALEZA),
+        generadorPdf.hallazgosValidados(idDocente, idPeriodo, TipoHallazgo.OPORTUNIDAD_DE_MEJORA),
+        propiedades.actas().formatoCodigo(),
+        propiedades.actas().formatoVersion());
   }
 
   private BigDecimal tresDecimales(BigDecimal nota) {
