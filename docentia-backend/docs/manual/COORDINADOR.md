@@ -8,12 +8,19 @@ La coordinación ve los docentes de sus programas, los coevalúa, agenda y condu
 |---|---|
 | Inicio | Resumen del periodo: avance, pendientes y alertas |
 | Estadísticas | Gráficas con filtros y la descarga en Excel |
-| Docentes | Lista con filtros, orden por puntaje y paginación; abre el expediente de cada docente |
+| Docentes | Lista con filtros, orden por puntaje y paginación; abre el expediente de cada docente y descarga el reporte PDF colectivo |
 | Coevaluaciones | Lista de docentes por coevaluar y las coevaluaciones de periodos anteriores |
 | Análisis de comentarios | Pedir y revisar el análisis de los comentarios de los estudiantes |
 | Agenda de citas | Abrir horarios, ver reservas y registrar la asistencia |
 | Acciones sugeridas | Qué hacer con cada docente según su clasificación |
 | Panel por programa | Cobertura, promedio y distribución por programa |
+
+## Reporte PDF colectivo
+
+En **Docentes**, pulsa **Descargar reporte PDF** para obtener el periodo activo de tu facultad.
+El documento lista cada docente y coordinador evaluado con estudiantes, evaluación institucional,
+autoevaluación y promedio. Los registros parciales aparecen como pendientes. El reporte no cambia
+las calificaciones ni reemplaza los expedientes individuales.
 
 ## Coevaluar a un docente
 

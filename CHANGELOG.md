@@ -1,5 +1,15 @@
 # Cambios
 
+## Sin publicar: histórico propio y reporte colectivo (F3 y F4 de la 0.5.0)
+
+- **El docente conserva su historial final.** `ExpedientePropioResponse` incluye los promedios
+  completos de periodos anteriores, sin las tres notas por fuente. También puede abrir sus actas
+  desde «Mi evaluación».
+- **El coordinador descarga un PDF consolidado.** El reporte del periodo activo incluye a los
+  profesores de su facultad con estudiantes, evaluación institucional, autoevaluación y promedio.
+  La vicerrectoría obtiene el reporte de toda la universidad. Las páginas no incluyen administradores
+  ni estudiantes y respetan el alcance por facultad.
+
 ## Sin publicar: acta completa y congelada (F2 de la 0.5.0)
 
 - **El acta guarda una copia de lo que imprime.** Desde la creación conserva identificación del

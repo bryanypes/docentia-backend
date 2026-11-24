@@ -1,4 +1,4 @@
-import { RefreshCw, Search, SlidersHorizontal, X } from 'lucide-react'
+import { Printer, RefreshCw, Search, SlidersHorizontal, X } from 'lucide-react'
 import { useCallback, useMemo, useState } from 'react'
 import robotSenala from '../../../assets/ilustraciones/robot-senala.svg'
 import { Link, useNavigate } from 'react-router-dom'
@@ -18,6 +18,7 @@ import { ChipProceso } from '../../proceso/components/ChipProceso.jsx'
 import { ESTADOS_PROCESO, ORDEN_ESTADOS } from '../../proceso/estados.js'
 import { listarProcesos } from '../../proceso/services/procesoService.js'
 import { listarSeguimientoDocentes } from '../services/docentesService.js'
+import { descargarReporteEvaluacionPdf } from '../../expedientes/services/expedientesService.js'
 import './Docentes.css'
 
 const TODOS = ''
@@ -134,6 +135,16 @@ export default function Docentes() {
 
   const paginacion = usePaginacion(filas)
 
+  async function descargarReporte() {
+    const blob = await descargarReporteEvaluacionPdf()
+    const url = URL.createObjectURL(blob)
+    const enlace = document.createElement('a')
+    enlace.href = url
+    enlace.download = 'reporte-evaluacion-docente.pdf'
+    enlace.click()
+    URL.revokeObjectURL(url)
+  }
+
   function limpiarFiltros() {
     actualizarFiltros({
       facultad: TODOS,
@@ -191,6 +202,11 @@ export default function Docentes() {
             <span className="docentes__conteo" aria-live="polite">
               <strong>{filas.length}</strong> de {lista.length} docentes
             </span>
+            {[ROLES.COORDINADOR, ROLES.VICERRECTOR].includes(usuario.rol) && (
+              <Boton variante="contorno" icono={Printer} onClick={descargarReporte}>
+                Descargar reporte PDF
+              </Boton>
+            )}
           </div>
 
         <div

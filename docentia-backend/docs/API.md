@@ -18,6 +18,13 @@ La matriz completa de rol por endpoint es ejecutable y está en `MatrizAutorizac
 La colección de Postman del 4 de noviembre quedó en [historico/](historico/): no incluye las rutas posteriores
 y trae algunas que ya no existen. La lista vigente de rutas por rol está en [ROLES.md](ROLES.md).
 
+## Expedientes e histórico
+
+`GET /expedientes/propio` incluye el promedio y las dimensiones del periodo activo y `historico`
+con los promedios finales de periodos anteriores. No incluye las tres notas por fuente.
+`GET /expedientes/reporte/pdf` permite a coordinación y vicerrectoría descargar el reporte colectivo
+del periodo activo. Coordinación solo recibe docentes y coordinadores evaluados de su facultad.
+
 ## Actas
 
 `GET /actas/{id}` devuelve `identificacion` con la copia congelada del acta: docente y documento,

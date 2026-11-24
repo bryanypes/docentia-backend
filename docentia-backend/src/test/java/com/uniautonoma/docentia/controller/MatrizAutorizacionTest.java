@@ -110,6 +110,7 @@ class MatrizAutorizacionTest extends PruebaIntegracion {
       {"GET /docentes/{}/plan-seguimiento", "CV"},
       {"GET /expedientes/propio", "DC"},
       {"GET /expedientes/propio/comparativo", "DC"},
+      {"GET /expedientes/reporte/pdf", "CV"},
       {"GET /expedientes/{}", "CV"},
       {"GET /expedientes/{}/comparativo", "CV"},
       {"GET /facultades", "CVAL"},

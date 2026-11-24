@@ -95,6 +95,26 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
   @EntityGraph(attributePaths = {"facultad", "programa", "programa.facultad"})
   Optional<Usuario> findByIdUsuarioAndRolInAndEsActivoTrue(Long idUsuario, Collection<Rol> roles);
 
+  /** Evaluables activos para el informe colectivo: docentes y coordinadores evaluados. */
+  @Query(
+      """
+      select u from Usuario u
+      left join fetch u.programa p
+      left join fetch p.facultad pf
+      left join fetch u.facultad uf
+      where u.esActivo = true
+        and u.rol in (
+          com.uniautonoma.docentia.entity.Rol.DOCENTE,
+          com.uniautonoma.docentia.entity.Rol.COORDINADOR)
+        and (:idFacultad is null
+          or (u.rol = com.uniautonoma.docentia.entity.Rol.DOCENTE
+              and pf.idFacultad = :idFacultad)
+          or (u.rol = com.uniautonoma.docentia.entity.Rol.COORDINADOR
+              and uf.idFacultad = :idFacultad))
+      order by u.nombreCompleto asc
+      """)
+  List<Usuario> buscarEvaluablesActivosPorFacultad(Long idFacultad);
+
   /**
    * Lista los usuarios activos de un rol cuyos programas pertenecen a una facultad.
    *
