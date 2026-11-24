@@ -15,7 +15,8 @@ La matriz completa de rol por endpoint es ejecutable y está en `MatrizAutorizac
 | Periodos, calificaciones, importación | [api-sprint3-semana1.md](api-sprint3-semana1.md) |
 | Agenda e indicadores | [api-sprint3-semana2.md](api-sprint3-semana2.md) |
 
-Colección de Postman: [ejemplos/docentia.postman_collection.json](ejemplos/docentia.postman_collection.json).
+La colección de Postman del 4 de noviembre quedó en [historico/](historico/): no incluye las rutas posteriores
+y trae algunas que ya no existen. La lista vigente de rutas por rol está en [ROLES.md](ROLES.md).
 
 ## Nuevo en 0.3.1
 
