@@ -125,6 +125,7 @@ location /Evadocente-app/ {
 | `DOCENTIA_COMPROMISOS_UMBRAL` | No, 3.8 | Bajo esta nota el acta exige compromisos (por confirmar: 3,8 o 4,00) |
 | `DOCENTIA_ACTAS_ROL_CORRECTOR` | No, `VICERRECTOR` | Quién corrige actas firmadas (`VICERRECTOR` o `COORDINADOR`) |
 | `DOCENTIA_HETEROEVALUACION_MINIMO` | No, 5 | Respuestas mínimas para usar y mostrar la nota de estudiantes |
+| `DOCENTIA_HETEROEVALUACION_BLOQUE` | No, 4 | Con la recolección abierta, la nota de estudiantes se publica al llegar al mínimo y luego cada tantas respuestas más (5, 9, 13…). Al cerrar se consolida con todas, en la tarea que corre cada 15 minutos |
 | `DOCENTIA_PROCESO_EXIGIR_ASISTENCIA` | No, `true` | El docente ve su resultado y firma solo tras registrar la asistencia |
 | `DOCENTIA_ACTAS_EXIGIR_FIRMA_DIBUJADA` | No, `true` | La firma lleva imagen (dibujada, escrita o PNG) |
 | `DOCENTIA_ACTAS_LOGO` | No | Logo del PDF; por defecto el de la universidad incluido |

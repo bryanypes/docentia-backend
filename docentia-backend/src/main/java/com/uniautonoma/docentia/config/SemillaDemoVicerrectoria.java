@@ -162,8 +162,8 @@ class SemillaDemoVicerrectoria {
       responder(
           asignacion, estudiante, docente, periodo, descriptores, PUNTAJES[i], COMENTARIOS.get(i));
     }
-    // La nota de estudiantes sale por el mismo camino que un envío real.
-    heteroevaluacionService.recalcular(docente, periodo);
+    // La semilla deja la nota con todas sus respuestas, como al cerrar la recolección.
+    heteroevaluacionService.recalcular(docente, periodo, true);
   }
 
   /**

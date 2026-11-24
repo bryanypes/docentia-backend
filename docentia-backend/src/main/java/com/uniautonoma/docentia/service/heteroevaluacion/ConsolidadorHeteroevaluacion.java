@@ -1,61 +1,64 @@
 package com.uniautonoma.docentia.service.heteroevaluacion;
 
-import com.uniautonoma.docentia.entity.TipoEtapa;
-import com.uniautonoma.docentia.repository.UsuarioRepository;
 import com.uniautonoma.docentia.service.PeriodoAcademicoService;
-import com.uniautonoma.docentia.service.VentanaEtapaService;
-import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 /**
- * Al cerrar la recolección deja la nota de estudiantes con todas las respuestas: mientras estuvo
- * abierta solo se actualizó por bloques. Recalcular de nuevo no cambia nada si la nota ya está al
- * día.
+ * Revisa la nota de estudiantes de todos los docentes del periodo activo, abierta o cerrada la
+ * recolección, con la misma regla que el envío: abierta, solo en los puntos de publicación;
+ * cerrada, con todas las respuestas. Así consolida al cerrar y repara una nota que no se alcanzó a
+ * recalcular (por ejemplo, tras un reinicio). Es idempotente: si nada cambió, no escribe.
+ *
+ * <p>Cada docente va en su propia transacción, con el mismo bloqueo que el envío: la tarea no
+ * retiene a los estudiantes que envían mientras corre, y un fallo en un docente no detiene a los
+ * demás.
  */
 @Component
 public class ConsolidadorHeteroevaluacion {
 
+  private static final Logger LOG = LoggerFactory.getLogger(ConsolidadorHeteroevaluacion.class);
+
   private final PeriodoAcademicoService periodoService;
-  private final VentanaEtapaService ventanas;
   private final HeteroevaluacionService heteroevaluacion;
-  private final UsuarioRepository usuarioRepository;
   private final JdbcTemplate jdbcTemplate;
 
   public ConsolidadorHeteroevaluacion(
       PeriodoAcademicoService periodoService,
-      VentanaEtapaService ventanas,
       HeteroevaluacionService heteroevaluacion,
-      UsuarioRepository usuarioRepository,
       JdbcTemplate jdbcTemplate) {
     this.periodoService = periodoService;
-    this.ventanas = ventanas;
     this.heteroevaluacion = heteroevaluacion;
-    this.usuarioRepository = usuarioRepository;
     this.jdbcTemplate = jdbcTemplate;
   }
 
   @Scheduled(
       initialDelayString = "${docentia.heteroevaluacion.consolidacion.espera-inicial-ms:60000}",
       fixedDelayString = "${docentia.heteroevaluacion.consolidacion.intervalo-ms:900000}")
-  @Transactional
   public void consolidar() {
     periodoService
         .buscarPeriodoActivo()
-        .filter(periodo -> ventanas.haTerminado(periodo, TipoEtapa.RECOLECCION_CALIFICACIONES))
         .ifPresent(
-            periodo -> {
-              List<Long> docentes =
-                  jdbcTemplate.queryForList(
-                      "select distinct docente_id from respuestas_heteroevaluacion"
-                          + " where periodo_id = ?",
-                      Long.class,
-                      periodo.getIdPeriodo());
-              docentes.forEach(
-                  id ->
-                      heteroevaluacion.recalcular(usuarioRepository.getReferenceById(id), periodo));
-            });
+            periodo ->
+                jdbcTemplate
+                    .queryForList(
+                        "select distinct docente_id from respuestas_heteroevaluacion"
+                            + " where periodo_id = ?",
+                        Long.class,
+                        periodo.getIdPeriodo())
+                    .forEach(
+                        idDocente -> {
+                          try {
+                            heteroevaluacion.recalcular(idDocente, periodo.getIdPeriodo());
+                          } catch (RuntimeException fallo) {
+                            LOG.error(
+                                "No se pudo revisar la nota de estudiantes del docente {}: {}",
+                                idDocente,
+                                fallo.getClass().getName());
+                          }
+                        }));
   }
 }

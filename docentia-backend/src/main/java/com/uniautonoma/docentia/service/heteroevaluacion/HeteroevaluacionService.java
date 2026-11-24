@@ -241,23 +241,51 @@ public class HeteroevaluacionService {
         valores.entrySet().stream()
             .map(valor -> new Object[] {respuesta, valor.getKey(), valor.getValue()})
             .toList());
-    recalcular(usuarioRepository.getReferenceById(fila.idDocente()), periodo, false);
+    recalcular(usuarioRepository.getReferenceById(fila.idDocente()), periodo);
   }
 
-  /** Recálculo completo, sin esperar el bloque: al cerrar la recolección y en las semillas. */
+  /** Para la tarea periódica: carga docente y periodo dentro de su propia transacción. */
+  public void recalcular(Long idDocente, Long idPeriodo) {
+    recalcular(
+        usuarioRepository.getReferenceById(idDocente),
+        periodoRepository
+            .findById(idPeriodo)
+            .orElseThrow(
+                () -> new RecursoNoEncontradoException("Periodo académico no encontrado")));
+  }
+
+  /**
+   * Recálculo según el estado de la recolección: abierta, solo en los puntos de publicación;
+   * cerrada, con todas las respuestas. Lo usan el envío y la tarea periódica.
+   */
   public void recalcular(Usuario docente, PeriodoAcademico periodo) {
-    recalcular(docente, periodo, true);
+    recalcular(
+        docente,
+        periodo,
+        ventanaEtapaService.haTerminado(periodo, TipoEtapa.RECOLECCION_CALIFICACIONES));
   }
 
   /**
    * Con el mínimo de respuestas, la media de las medias por respuesta se vuelve la nota de
    * estudiantes y prevalece sobre el CSV. Por debajo del mínimo no se usa ni se muestra nada.
-   * Mientras la recolección sigue abierta solo se actualiza cada {@code bloqueRespuestas}
-   * respuestas: comparar dos notas seguidas nunca revela lo que respondió un estudiante.
    *
-   * @param completo recalcula aunque el número de respuestas no cierre un bloque
+   * <p>Con la recolección abierta la nota solo se publica al llegar al mínimo y luego cada {@code
+   * bloqueRespuestas} respuestas más (ver {@link #debePublicar}): comparar dos notas seguidas nunca
+   * revela lo que respondió un solo estudiante. Al cerrar se consolida con todas.
+   *
+   * <p>Idempotente: si la nota ya es la que corresponde no escribe nada, ni en la calificación ni
+   * en el promedio ni en el historial de correcciones. Un bloqueo por docente y periodo evita que
+   * el envío y la tarea periódica se pisen.
+   *
+   * @param completo publica con todas las respuestas aunque no sea un punto de publicación (al
+   *     cerrar la recolección y en las semillas)
    */
   public void recalcular(Usuario docente, PeriodoAcademico periodo, boolean completo) {
+    // Se libera al terminar la transacción: un segundo recálculo espera y ve lo que dejó el
+    // primero.
+    jdbcTemplate.queryForList(
+        "select pg_advisory_xact_lock(hashtextextended(?, 0))",
+        "heteroevaluacion:" + docente.getIdUsuario() + ":" + periodo.getIdPeriodo());
     Map<String, Object> agregado =
         jdbcTemplate.queryForMap(
             """
@@ -271,17 +299,44 @@ public class HeteroevaluacionService {
             docente.getIdUsuario(),
             periodo.getIdPeriodo());
     long respuestas = ((Number) agregado.get("respuestas")).longValue();
-    if (respuestas < propiedades.minimoRespuestas()) {
-      return;
-    }
-    int bloque = Math.max(1, propiedades.bloqueRespuestas());
-    if (!completo && respuestas % bloque != 0) {
+    if (!debePublicar(
+        respuestas, propiedades.minimoRespuestas(), propiedades.bloqueRespuestas(), completo)) {
       return;
     }
     BigDecimal media =
         ((BigDecimal) agregado.get("media")).setScale(DECIMALES_FUENTE, RoundingMode.HALF_UP);
+    if (yaPublicada(docente, periodo, media)) {
+      return;
+    }
     calificacionService.registrarDesdeFormulario(
         docente, periodo, FuenteEvaluacion.ESTUDIANTES, media, null);
+  }
+
+  /**
+   * Puntos de publicación de la nota de estudiantes: el mínimo y luego cada {@code bloque}
+   * respuestas más (con mínimo 5 y bloque 4: 5, 9, 13…). Con la recolección cerrada, siempre que se
+   * alcance el mínimo.
+   */
+  public static boolean debePublicar(long respuestas, int minimo, int bloque, boolean completo) {
+    if (respuestas < minimo) {
+      return false;
+    }
+    return completo || (respuestas - minimo) % Math.max(1, bloque) == 0;
+  }
+
+  /**
+   * La nota de estudiantes ya viene del formulario y vale exactamente esto: no hay que escribir.
+   */
+  private boolean yaPublicada(Usuario docente, PeriodoAcademico periodo, BigDecimal media) {
+    return jdbcTemplate
+        .queryForList(
+            "select nota_fuente from calificaciones where id_docente = ? and id_periodo = ?"
+                + " and fuente = 'ESTUDIANTES' and origen = 'FORMULARIO'",
+            BigDecimal.class,
+            docente.getIdUsuario(),
+            periodo.getIdPeriodo())
+        .stream()
+        .anyMatch(actual -> actual != null && actual.compareTo(media) == 0);
   }
 
   private Fila propia(Long idAsignacion, UsuarioSesion sesion, PeriodoAcademico periodo) {
