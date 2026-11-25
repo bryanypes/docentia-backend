@@ -535,10 +535,7 @@ public class ActaService {
       if (facultadCongelada == null || !facultadCongelada.equals(sesion.idFacultad())) {
         throw new RecursoNoEncontradoException("Acta no encontrada");
       }
-    }
-    try {
-      docenteService.buscarDocenteVisible(idDocente, sesion);
-    } catch (RecursoNoEncontradoException fueraDeAlcance) {
+    } else if (!sesion.esVicerrector()) {
       throw new RecursoNoEncontradoException("Acta no encontrada");
     }
     return acta;
