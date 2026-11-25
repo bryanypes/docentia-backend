@@ -153,6 +153,21 @@ class CoordinadorEvaluadoTest extends PruebaIntegracion {
   }
 
   @Test
+  void otroCoordinadorDeLaMismaEscuelaNoVeElActaDeSuColega() throws Exception {
+    for (FuenteEvaluacion fuente : FuenteEvaluacion.values()) {
+      escenario.registrarCalificacion(coordinador, periodo, fuente, "4.5");
+    }
+    citaRepository.saveAndFlush(new Cita(franja(vicerrector), coordinador));
+    Long acta = idDe(crearActa(vicerrector, coordinador).andExpect(status().isCreated()));
+    Usuario colega = escenario.crearCoordinador("Pedro Lara", coordinador.getFacultad());
+
+    mockMvc.perform(get("/actas/{id}", acta).with(como(colega))).andExpect(status().isNotFound());
+    mockMvc
+        .perform(get("/actas/{id}/pdf", acta).with(como(colega)))
+        .andExpect(status().isNotFound());
+  }
+
+  @Test
   void elCoordinadorVeSuPromedioConLaNotaDeLaVicerrectoria() throws Exception {
     escenario.registrarCalificacion(coordinador, periodo, FuenteEvaluacion.ESTUDIANTES, "4.0");
     escenario.registrarCalificacion(coordinador, periodo, FuenteEvaluacion.COORDINACION, "5.0");

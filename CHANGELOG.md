@@ -1,6 +1,15 @@
 # Cambios
 
-## Sin publicar: histórico propio y reporte colectivo (F3 y F4 de la 0.5.0)
+## Sin publicar: alcance de las actas e identificación en pantalla
+
+- **La coordinación ya no ve el acta de otro coordinador.** Al pasar el alcance de las actas a la
+  facultad congelada, un coordinador podía abrir (con nota y PDF) el acta de un colega coordinador de
+  su misma escuela, que evalúa la vicerrectoría. Ahora la coordinación solo ve las actas de docentes.
+- **La pantalla del acta muestra lo que el acta congeló**: docente, código, cargo, programa, escuela,
+  periodo, quién evaluó, reunión, ponderación y aspectos conversados. El número de respuestas de
+  estudiantes solo lo ven la coordinación y la vicerrectoría.
+
+## Sin publicar: histórico propio y reporte colectivo (F4 de la 0.5.0)
 
 - **El docente conserva su historial final.** `ExpedientePropioResponse` incluye los promedios
   completos de periodos anteriores, sin las tres notas por fuente. También puede abrir sus actas
@@ -22,7 +31,8 @@
 - **El PDF muestra el formato configurable.** Los datos propuestos quedan identificados: código del
   docente con `usuarios.codigo`, rótulo configurable, código y versión del formato y dirección pública
   de verificación. El formato institucional definitivo puede cambiarse sin renombrar columnas.
-- Migraciones nuevas: la base pasa de V50 a **V52**.
+- Migraciones nuevas: la base pasa de V50 a **V52** (V51 guarda también la facultad del acta, que
+  fija su alcance).
 - Pruebas nuevas: congelamiento antes y después de la primera firma, cambios rechazados por la base,
   firmas y compromisos inmutables, y ejercicios de migración.
 
