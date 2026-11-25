@@ -183,6 +183,43 @@ class ExpedienteDocenteTest extends PruebaIntegracion {
   }
 
   @Test
+  void elReporteDeLaCoordinacionNoTraeLasNotasDeLosCoordinadores() throws Exception {
+    var colega = escenario.crearCoordinador("Pedro Lara", ingenieria);
+    escenario.registrarCalificacion(colega, periodoActivo, FuenteEvaluacion.ESTUDIANTES, "2.1");
+    escenario.registrarCalificacion(colega, periodoActivo, FuenteEvaluacion.COORDINACION, "2.2");
+    escenario.registrarCalificacion(colega, periodoActivo, FuenteEvaluacion.AUTOEVALUACION, "2.3");
+
+    String coordinacion =
+        textoDelReporte(
+            get("/expedientes/reporte/pdf").with(comoCoordinador(ingenieria.getIdFacultad())));
+    assertThat(coordinacion)
+        .contains("Julian Hoyos")
+        .doesNotContain("Pedro Lara")
+        .doesNotContain("2.2");
+
+    String vicerrectoria = textoDelReporte(get("/expedientes/reporte/pdf").with(comoVicerrector()));
+    assertThat(vicerrectoria).contains("Julian Hoyos").contains("Pedro Lara");
+  }
+
+  private String textoDelReporte(org.springframework.test.web.servlet.RequestBuilder peticion)
+      throws Exception {
+    byte[] pdf =
+        mockMvc
+            .perform(peticion)
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsByteArray();
+    PdfReader lector = new PdfReader(pdf);
+    StringBuilder texto = new StringBuilder();
+    for (int pagina = 1; pagina <= lector.getNumberOfPages(); pagina++) {
+      texto.append(new PdfTextExtractor(lector).getTextFromPage(pagina));
+    }
+    lector.close();
+    return texto.toString();
+  }
+
+  @Test
   void elCoordinadorDescargaUnPdfConTodosLosProfesoresSusTresNotasYElPromedio() throws Exception {
     escenario.registrarCalificacion(docente, periodoActivo, FuenteEvaluacion.ESTUDIANTES, "4.0");
     escenario.registrarCalificacion(docente, periodoActivo, FuenteEvaluacion.COORDINACION, "3.5");
