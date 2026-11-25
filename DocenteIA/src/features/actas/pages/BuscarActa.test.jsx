@@ -6,7 +6,8 @@ import { buscarActaPorCodigo, descargarPdfActa, listarRegistroActas } from '../s
 import BuscarActa from './BuscarActa.jsx'
 
 vi.mock('../services/actasService.js')
-vi.mock('../../auth/sesionContext.js', () => ({ useSesion: () => ({ usuario: { rol: 'ADMINISTRADOR' } }) }))
+const sesion = vi.hoisted(() => ({ rol: 'ADMINISTRADOR' }))
+vi.mock('../../auth/sesionContext.js', () => ({ useSesion: () => ({ usuario: { rol: sesion.rol } }) }))
 vi.mock('../../../shared/components/layout/AppLayout/periodoContext.js', () => ({
   usePeriodoActivo: () => ({ periodo: { nombre: '2026-2' }, cargando: false }),
 }))
@@ -49,6 +50,7 @@ describe('BuscarActa', () => {
 
   beforeEach(() => {
     vi.clearAllMocks()
+    sesion.rol = 'ADMINISTRADOR'
     listarRegistroActas.mockResolvedValue([ACTA, RETRO, REEMPLAZADA])
   })
 
@@ -76,7 +78,8 @@ describe('BuscarActa', () => {
     expect(screen.getByText('Reemplazada')).toBeInTheDocument()
   })
 
-  it('abre el detalle con quién firmó y descarga el PDF', async () => {
+  it('la vicerrectoría abre el detalle con quién firmó y descarga el PDF', async () => {
+    sesion.rol = 'VICERRECTOR'
     buscarActaPorCodigo.mockResolvedValue(ACTA)
     descargarPdfActa.mockResolvedValue(new Blob(['%PDF']))
     URL.createObjectURL = vi.fn(() => 'blob:x')
@@ -89,6 +92,19 @@ describe('BuscarActa', () => {
 
     await userEvent.click(screen.getByRole('button', { name: 'Descargar PDF' }))
     expect(descargarPdfActa).toHaveBeenCalledWith(7)
+  })
+
+  it('la administración ve el registro y quién firmó, pero no descarga el PDF (lleva la nota)', async () => {
+    sesion.rol = 'ADMINISTRADOR'
+    buscarActaPorCodigo.mockResolvedValue(ACTA)
+    abrir()
+    await userEvent.click(await screen.findByRole('button', { name: 'Ver el acta de Nora Munoz' }))
+    expect(await screen.findByText('Marta Ruiz')).toBeInTheDocument()
+
+    expect(screen.queryByRole('button', { name: 'Descargar PDF' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Descargar el acta de/ })).not.toBeInTheDocument()
+    expect(screen.getByText(/el PDF lleva la nota y no se descarga desde aquí/)).toBeInTheDocument()
+    expect(descargarPdfActa).not.toHaveBeenCalled()
   })
 
   it('avisa cuando nada coincide', async () => {

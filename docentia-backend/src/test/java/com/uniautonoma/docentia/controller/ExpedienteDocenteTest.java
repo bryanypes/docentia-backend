@@ -1,5 +1,6 @@
 package com.uniautonoma.docentia.controller;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
@@ -7,6 +8,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.lowagie.text.pdf.PdfReader;
+import com.lowagie.text.pdf.parser.PdfTextExtractor;
 import com.uniautonoma.docentia.EscenarioPrueba;
 import com.uniautonoma.docentia.PruebaIntegracion;
 import com.uniautonoma.docentia.entity.Compromiso;
@@ -177,6 +180,33 @@ class ExpedienteDocenteTest extends PruebaIntegracion {
     mockMvc
         .perform(get("/expedientes/{id}", docente.getIdUsuario()).with(como(docente)))
         .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void elCoordinadorDescargaUnPdfConTodosLosProfesoresSusTresNotasYElPromedio() throws Exception {
+    escenario.registrarCalificacion(docente, periodoActivo, FuenteEvaluacion.ESTUDIANTES, "4.0");
+    escenario.registrarCalificacion(docente, periodoActivo, FuenteEvaluacion.COORDINACION, "3.5");
+    escenario.registrarCalificacion(docente, periodoActivo, FuenteEvaluacion.AUTOEVALUACION, "4.5");
+
+    byte[] pdf =
+        mockMvc
+            .perform(
+                get("/expedientes/reporte/pdf").with(comoCoordinador(ingenieria.getIdFacultad())))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsByteArray();
+
+    PdfReader lector = new PdfReader(pdf);
+    String texto = new PdfTextExtractor(lector).getTextFromPage(1);
+    lector.close();
+    assertThat(texto)
+        .contains("Reporte consolidado de evaluación docente")
+        .contains("Julian Hoyos")
+        .contains("4.0")
+        .contains("3.5")
+        .contains("4.5")
+        .contains("3.95");
   }
 
   private ResultActions consultarComoCoordinador() throws Exception {

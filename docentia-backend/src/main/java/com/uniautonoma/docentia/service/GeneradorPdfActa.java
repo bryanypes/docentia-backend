@@ -21,6 +21,7 @@ import com.lowagie.text.pdf.PdfWriter;
 import com.uniautonoma.docentia.entity.Acta;
 import com.uniautonoma.docentia.entity.CategoriaDesempeno;
 import com.uniautonoma.docentia.entity.Compromiso;
+import com.uniautonoma.docentia.entity.DatosCongeladosActa;
 import com.uniautonoma.docentia.entity.EstadoHallazgo;
 import com.uniautonoma.docentia.entity.Facultad;
 import com.uniautonoma.docentia.entity.FirmaActa;
@@ -30,12 +31,12 @@ import com.uniautonoma.docentia.entity.SolicitudAnalisis;
 import com.uniautonoma.docentia.entity.TipoActa;
 import com.uniautonoma.docentia.entity.TipoHallazgo;
 import com.uniautonoma.docentia.entity.Usuario;
-import com.uniautonoma.docentia.repository.CitaRepository;
 import com.uniautonoma.docentia.repository.SolicitudAnalisisRepository;
 import java.awt.Color;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -77,7 +78,6 @@ public class GeneradorPdfActa {
 
   private final byte[] logo;
   private final String urlVerificacion;
-  private final CitaRepository citas;
   private final SolicitudAnalisisRepository analisis;
 
   public GeneradorPdfActa(
@@ -85,9 +85,7 @@ public class GeneradorPdfActa {
       @Value("${docentia.actas.logo:classpath:marca/logo-uniautonoma.png}") String rutaLogo,
       @Value("${docentia.actas.url-verificacion:https://nova.uniautonoma.edu.co/Evadocente-app}")
           String urlPublica,
-      CitaRepository citas,
       SolicitudAnalisisRepository analisis) {
-    this.citas = citas;
     this.analisis = analisis;
     this.logo = leerLogo(recursos.getResource(rutaLogo));
     this.urlVerificacion = urlPublica.replaceAll("/+$", "") + "/verificar-acta/";
@@ -134,7 +132,38 @@ public class GeneradorPdfActa {
             compromisos,
             firmas)
         // Solo si existen: las actas firmadas antes de este campo conservan su hash.
-        + (acta.getObservaciones() == null ? "" : "\n" + acta.getObservaciones());
+        + (acta.getObservaciones() == null ? "" : "\n" + acta.getObservaciones())
+        + "\n"
+        + datosCanonicos(acta.getDatosCongelados());
+  }
+
+  /** Identificación, reunión, pesos y aspectos conversados que el acta congeló (V51). */
+  private static String datosCanonicos(DatosCongeladosActa d) {
+    return String.join(
+        "|",
+        String.valueOf(d.docenteNombre()),
+        String.valueOf(d.docenteCorreo()),
+        String.valueOf(d.documentoRotulo()),
+        String.valueOf(d.docenteDocumento()),
+        String.valueOf(d.docenteCargo()),
+        String.valueOf(d.programaNombre()),
+        String.valueOf(d.escuelaNombre()),
+        String.valueOf(d.periodoNombre()),
+        String.valueOf(d.periodoInicio()),
+        String.valueOf(d.periodoFin()),
+        String.valueOf(d.evaluadorCargo()),
+        String.valueOf(d.reunionFecha()),
+        String.valueOf(d.reunionHoraInicio()),
+        String.valueOf(d.reunionHoraFin()),
+        String.valueOf(d.reunionAsistencia()),
+        String.valueOf(d.pesoEstudiantes()),
+        String.valueOf(d.pesoCoordinacion()),
+        String.valueOf(d.pesoAutoevaluacion()),
+        String.valueOf(d.respuestasEstudiantes()),
+        String.join(";", d.fortalezas()),
+        String.join(";", d.aspectosPorMejorar()),
+        String.valueOf(d.formatoCodigo()),
+        String.valueOf(d.formatoVersion()));
   }
 
   public String sha256(byte[] datos) {
@@ -175,7 +204,8 @@ public class GeneradorPdfActa {
       PdfWriter escritor = PdfWriter.getInstance(documento, salida);
       // Al justificar se estiran los espacios, no las letras.
       escritor.setSpaceCharRatio(PdfWriter.NO_SPACE_CHAR_RATIO);
-      escritor.setPageEvent(new Membrete(logo, codigo, urlVerificacion));
+      DatosCongeladosActa datos = acta.getDatosCongelados();
+      escritor.setPageEvent(new Membrete(logo, codigo, urlVerificacion, formato(datos)));
       documento.open();
       documento.addTitle(nombreActa);
       documento.addAuthor(UNIVERSIDAD);
@@ -184,18 +214,18 @@ public class GeneradorPdfActa {
       encabezado.setAlignment(Element.ALIGN_CENTER);
       documento.add(encabezado);
       Paragraph periodo =
-          new Paragraph(
-              "Evaluación docente · Periodo académico " + acta.getPeriodo().getNombre(), cursiva);
+          new Paragraph("Evaluación docente · Periodo académico " + nombrePeriodo(acta), cursiva);
       periodo.setAlignment(Element.ALIGN_CENTER);
-      periodo.setSpacingAfter(22);
+      periodo.setSpacingAfter(16);
       documento.add(periodo);
+      documento.add(identificacion(acta, datos, rotulo, cargoFuente()));
 
       Paragraph lugar =
           new Paragraph(CIUDAD + ", " + fechaExpedicion(acta).format(FECHA_LARGA), texto);
       lugar.setSpacingAfter(14);
       documento.add(lugar);
 
-      Usuario docente = acta.getDocente();
+      String nombreDocente = nombreDocente(acta);
       String evaluador = nombreDeQuienEvaluo(acta);
       documento.add(
           parrafo(
@@ -203,8 +233,8 @@ public class GeneradorPdfActa {
               fuerte,
               aperturaReunion(acta),
               "Participaron ",
-              "**" + docente.getNombreCompleto() + "**",
-              ", " + presentacionDelEvaluado(docente) + ", y ",
+              "**" + nombreDocente + "**",
+              ", " + presentacionDelEvaluado(acta) + ", y ",
               "**" + evaluador + "**",
               ", en calidad de "
                   + minusculaInicial(cargoDelFirmante(acta, acta.rolEvaluador()))
@@ -219,8 +249,9 @@ public class GeneradorPdfActa {
               fuerte,
               "Con las calificaciones de los estudiantes, de "
                   + evaluadorDe(acta)
-                  + " y la autoevaluación, ponderadas según la Resolución 074, la evaluación arrojó"
-                  + " una nota final de ",
+                  + " y la autoevaluación, ponderadas según la Resolución 074"
+                  + ponderacion(acta, datos)
+                  + ", la evaluación arrojó una nota final de ",
               "**" + acta.getPromedio().toPlainString().replace('.', ',') + " sobre 5,00**",
               ", que corresponde a la categoría ",
               "**" + acta.getCategoria().getEtiqueta() + "**",
@@ -228,8 +259,8 @@ public class GeneradorPdfActa {
                   + minusculaInicial(acta.getCategoria().getAccionInstitucional())
                   + "."));
 
-      List<String> fortalezas = hallazgos(acta, TipoHallazgo.FORTALEZA);
-      List<String> mejoras = hallazgos(acta, TipoHallazgo.OPORTUNIDAD_DE_MEJORA);
+      List<String> fortalezas = datos.fortalezas();
+      List<String> mejoras = datos.aspectosPorMejorar();
       if (!fortalezas.isEmpty() || !mejoras.isEmpty()) {
         documento.add(subtitulo(numero++, "Aspectos conversados", seccion));
         if (!fortalezas.isEmpty()) {
@@ -275,7 +306,7 @@ public class GeneradorPdfActa {
                 texto,
                 fuerte,
                 "Como resultado de la reunión, ",
-                "**" + docente.getNombreCompleto() + "**",
+                "**" + nombreDocente + "**",
                 " se compromete a:"));
         char literal = 'a';
         for (Compromiso c : acta.getCompromisos()) {
@@ -355,38 +386,140 @@ public class GeneradorPdfActa {
   }
 
   /** "En Popayán, el 19 de noviembre de 2026, entre las 22:00 y las 22:30, se llevó a cabo…" */
-  private String aperturaReunion(Acta acta) {
+  private static String aperturaReunion(Acta acta) {
+    DatosCongeladosActa datos = acta.getDatosCongelados();
     String motivo =
         " la reunión de retroalimentación de la evaluación docente del periodo académico "
-            + acta.getPeriodo().getNombre()
+            + nombrePeriodo(acta)
             + ", conforme a la Resolución 074. ";
-    return citas
-        .buscarActiva(acta.getDocente().getIdUsuario(), acta.getPeriodo().getIdPeriodo())
-        .map(
-            c ->
-                "En "
-                    + CIUDAD
-                    + ", el "
-                    + c.getFranja().getFecha().format(FECHA_LARGA)
-                    + ", entre las "
-                    + c.getFranja().getHoraInicio().format(HORA)
-                    + " y las "
-                    + c.getFranja().getHoraFin().format(HORA)
-                    + ", se llevó a cabo"
-                    + motivo)
-        .orElse("Se llevó a cabo" + motivo);
+    if (datos.reunionFecha() == null) {
+      return "Se llevó a cabo" + motivo;
+    }
+    return "En "
+        + CIUDAD
+        + ", el "
+        + datos.reunionFecha().format(FECHA_LARGA)
+        + ", entre las "
+        + datos.reunionHoraInicio().format(HORA)
+        + " y las "
+        + datos.reunionHoraFin().format(HORA)
+        + ", se llevó a cabo"
+        + motivo;
   }
 
-  /** "docente del programa Ingeniería de Software, de la Escuela de Ingeniería". */
-  private static String presentacionDelEvaluado(Usuario docente) {
-    String escuela = nombreEscuela(docente.getFacultadDeAdscripcion());
-    if (docente.getRol() == Rol.COORDINADOR) {
-      return "docente y coordinador(a) de la " + escuela;
+  /**
+   * "docente del programa Ingeniería de Software, de la Escuela de Ingeniería", con los datos que
+   * el acta congeló.
+   */
+  private static String presentacionDelEvaluado(Acta acta) {
+    DatosCongeladosActa datos = acta.getDatosCongelados();
+    if (datos.programaNombre() != null) {
+      return "docente del programa "
+          + datos.programaNombre()
+          + ", de la "
+          + (datos.escuelaNombre() == null ? "No aplica" : datos.escuelaNombre());
     }
-    return "docente del programa "
-        + (docente.getPrograma() == null ? "" : docente.getPrograma().getNombre())
-        + ", de la "
-        + escuela;
+    return minusculaInicial(cargoDelFirmante(acta, Rol.DOCENTE));
+  }
+
+  private static String nombreDocente(Acta acta) {
+    String congelado = acta.getDatosCongelados().docenteNombre();
+    return congelado != null ? congelado : acta.getDocente().getNombreCompleto();
+  }
+
+  private static String nombrePeriodo(Acta acta) {
+    String congelado = acta.getDatosCongelados().periodoNombre();
+    return congelado != null ? congelado : acta.getPeriodo().getNombre();
+  }
+
+  /** " (estudiantes 50 %, coordinación 30 % y autoevaluación 20 %)", si el acta tiene los pesos. */
+  private static String ponderacion(Acta acta, DatosCongeladosActa datos) {
+    if (datos.pesoEstudiantes() == null) {
+      return "";
+    }
+    return " (estudiantes "
+        + porcentaje(datos.pesoEstudiantes())
+        + ", "
+        + (acta.rolEvaluador() == Rol.VICERRECTOR ? "vicerrectoría " : "coordinación ")
+        + porcentaje(datos.pesoCoordinacion())
+        + " y autoevaluación "
+        + porcentaje(datos.pesoAutoevaluacion())
+        + ")";
+  }
+
+  private static String porcentaje(BigDecimal peso) {
+    return peso.stripTrailingZeros().toPlainString().replace('.', ',') + " %";
+  }
+
+  /** "Formato F-VA-012 · Versión 1", o nulo si la institución aún no lo definió. */
+  private static String formato(DatosCongeladosActa datos) {
+    if (datos.formatoCodigo() == null) {
+      return null;
+    }
+    return "Formato "
+        + datos.formatoCodigo()
+        + (datos.formatoVersion() == null ? "" : " · Versión " + datos.formatoVersion());
+  }
+
+  private static Font cargoFuente() {
+    return FontFactory.getFont(FontFactory.TIMES_ROMAN, 10.5f);
+  }
+
+  /** Cuadro de identificación: docente, documento, cargo, programa, escuela, periodo y reunión. */
+  private static PdfPTable identificacion(
+      Acta acta, DatosCongeladosActa datos, Font rotulo, Font valor) {
+    PdfPTable tabla = new PdfPTable(new float[] {1.25f, 3f});
+    tabla.setWidthPercentage(100);
+    tabla.setSpacingAfter(16);
+    fila(tabla, "Docente", nombreDocente(acta), rotulo, valor);
+    if (datos.documentoRotulo() != null && datos.docenteDocumento() != null) {
+      fila(tabla, datos.documentoRotulo(), datos.docenteDocumento(), rotulo, valor);
+    }
+    fila(tabla, "Cargo", cargoDelFirmante(acta, Rol.DOCENTE), rotulo, valor);
+    if (datos.programaNombre() != null) {
+      fila(tabla, "Programa", datos.programaNombre(), rotulo, valor);
+    }
+    if (datos.escuelaNombre() != null) {
+      fila(tabla, "Escuela", datos.escuelaNombre(), rotulo, valor);
+    }
+    String periodo = nombrePeriodo(acta);
+    if (datos.periodoInicio() != null && datos.periodoFin() != null) {
+      periodo +=
+          " (del "
+              + datos.periodoInicio().format(FECHA_LARGA)
+              + " al "
+              + datos.periodoFin().format(FECHA_LARGA)
+              + ")";
+    }
+    fila(tabla, "Periodo académico", periodo, rotulo, valor);
+    fila(tabla, "Evaluó", cargoDelFirmante(acta, acta.rolEvaluador()), rotulo, valor);
+    if (datos.reunionFecha() != null) {
+      fila(
+          tabla,
+          "Reunión",
+          datos.reunionFecha().format(FECHA_LARGA)
+              + ", de "
+              + datos.reunionHoraInicio().format(HORA)
+              + " a "
+              + datos.reunionHoraFin().format(HORA),
+          rotulo,
+          valor);
+    }
+    return tabla;
+  }
+
+  private static void fila(PdfPTable tabla, String rotulo, String valor, Font fr, Font fv) {
+    PdfPCell nombre = new PdfPCell(new Phrase(rotulo.toUpperCase(ESPANOL), fr));
+    PdfPCell dato = new PdfPCell(new Phrase(valor, fv));
+    for (PdfPCell celda : List.of(nombre, dato)) {
+      celda.setBorder(Rectangle.BOTTOM);
+      celda.setBorderColor(BORDE);
+      celda.setBorderWidth(0.6f);
+      celda.setPaddingTop(3);
+      celda.setPaddingBottom(5);
+      celda.setVerticalAlignment(Element.ALIGN_MIDDLE);
+      tabla.addCell(celda);
+    }
   }
 
   /** Nombre de quien firmó como evaluador; el acta se genera con las dos firmas. */
@@ -399,12 +532,15 @@ public class GeneradorPdfActa {
         .orElse(evaluador == Rol.VICERRECTOR ? "la vicerrectoría" : "la coordinación");
   }
 
-  /** Hallazgos validados y publicados del análisis de comentarios del periodo. */
-  private List<String> hallazgos(Acta acta, TipoHallazgo tipo) {
+  /**
+   * Hallazgos validados y publicados del análisis de comentarios del periodo, en el texto con que
+   * van al acta. El acta los congela; el PDF imprime esa copia.
+   */
+  public List<String> hallazgosValidados(Long idDocente, Long idPeriodo, TipoHallazgo tipo) {
     Optional<SolicitudAnalisis> publicada =
         analisis
             .findFirstByDocenteIdUsuarioAndPeriodoIdPeriodoAndEstadoBorradorOrderByIdSolicitudDesc(
-                acta.getDocente().getIdUsuario(), acta.getPeriodo().getIdPeriodo(), "VALIDADO");
+                idDocente, idPeriodo, "VALIDADO");
     return publicada.map(SolicitudAnalisis::getHallazgos).orElse(List.of()).stream()
         .filter(h -> h.getEstado() == EstadoHallazgo.VALIDADO && h.getTipo() == tipo)
         .map(Hallazgo::getTexto)
@@ -447,9 +583,15 @@ public class GeneradorPdfActa {
         : "Docente";
   }
 
-  /** Cargo con el que firma cada parte. */
+  /** Cargo con el que firma cada parte, como lo congeló el acta. */
   static String cargoDelFirmante(Acta acta, Rol papel) {
-    Usuario docente = acta.getDocente();
+    DatosCongeladosActa datos = acta.getDatosCongelados();
+    String congelado = papel == Rol.DOCENTE ? datos.docenteCargo() : datos.evaluadorCargo();
+    return congelado != null ? congelado : cargoEnVivo(acta.getDocente(), papel);
+  }
+
+  /** Cargo de cada parte según los datos actuales del docente; se usa al congelar el acta. */
+  public static String cargoEnVivo(Usuario docente, Rol papel) {
     return switch (papel) {
       case DOCENTE ->
           docente.getPrograma() == null
@@ -476,16 +618,18 @@ public class GeneradorPdfActa {
     private final byte[] logo;
     private final String codigo;
     private final String urlVerificacion;
+    private final String formato;
     private final Font institucion = FontFactory.getFont(FontFactory.TIMES_BOLD, 12.5f, AZUL);
     private final Font dependencia = FontFactory.getFont(FontFactory.HELVETICA, 8.5f, TENUE);
     private final Font control = FontFactory.getFont(FontFactory.HELVETICA, 7.5f, TENUE);
     private final Font controlFuerte = FontFactory.getFont(FontFactory.HELVETICA_BOLD, 7.5f, AZUL);
     private PdfTemplate totalPaginas;
 
-    Membrete(byte[] logo, String codigo, String urlVerificacion) {
+    Membrete(byte[] logo, String codigo, String urlVerificacion, String formato) {
       this.logo = logo;
       this.codigo = codigo;
       this.urlVerificacion = urlVerificacion;
+      this.formato = formato;
     }
 
     @Override
@@ -527,6 +671,9 @@ public class GeneradorPdfActa {
           arriba - 42,
           false);
 
+      if (formato != null) {
+        escribir(lienzo, formato, control, derecha, arriba - 8, true);
+      }
       escribir(lienzo, "Código  " + codigo, controlFuerte, derecha, arriba - 20, true);
       String pagina = "Página " + escritor.getPageNumber() + " de ";
       float anchoTotal = 4.5f;
@@ -616,7 +763,7 @@ public class GeneradorPdfActa {
         acta.getFirmas().stream()
             .sorted(Comparator.comparing(f -> f.getRol() == Rol.DOCENTE ? 0 : 1))
             .toList();
-    Font cargo = FontFactory.getFont(FontFactory.TIMES_ROMAN, 10.5f);
+    Font cargo = cargoFuente();
     PdfPTable tabla = new PdfPTable(Math.max(1, ordenadas.size()));
     tabla.setWidthPercentage(100);
     tabla.setSpacingBefore(10);

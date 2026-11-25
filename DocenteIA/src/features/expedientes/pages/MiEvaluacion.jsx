@@ -14,7 +14,8 @@ import { PanelMiAutoevaluacion } from '../../formularios/components/PanelMiAutoe
 import { obtenerConfiguracionEvaluacion } from '../../kpis/services/configuracionService.js'
 import { LineaTiempo } from '../../periodos/components/LineaTiempo.jsx'
 import { PanelProcesoPropio } from '../../proceso/components/PanelProcesoPropio.jsx'
-import { PanelCompromisos } from '../components/PanelesExpediente.jsx'
+import { PanelCompromisos, PanelHistorico } from '../components/PanelesExpediente.jsx'
+import { PanelActa } from '../../actas/components/PanelActa.jsx'
 import { PanelComparativoPrograma } from '../components/PanelComparativoPrograma.jsx'
 import { obtenerExpedientePropio } from '../services/expedientesService.js'
 import { ROLES, evaluadorDe, migaEvaluado } from '../../../shared/constants/dominio.js'
@@ -64,7 +65,7 @@ export default function MiEvaluacion() {
     )
   }
 
-  const { periodo, promedio, compromisosVigentes } = expediente.datos
+  const { periodo, promedio, compromisosVigentes, historico = [] } = expediente.datos
   // Sin el campo (backend anterior) se comporta como antes.
   const habilitado = expediente.datos.resultadoHabilitado !== false
   const completo = promedio?.estado === 'COMPLETO' && habilitado
@@ -160,8 +161,10 @@ export default function MiEvaluacion() {
               className="mi-evaluacion__compromisos"
             />
             <PanelHallazgosPropios />
+            <PanelHistorico historico={historico} />
           </div>
           <PanelSeguimientoPlan />
+          <PanelActa />
           {completo && <PanelComparativoPrograma propio evaluadoEsCoordinador={usuario.rol === ROLES.COORDINADOR} />}
           </>
         )}

@@ -1,5 +1,46 @@
 # Cambios
 
+## Sin publicar: histórico propio y reporte colectivo (F3 y F4 de la 0.5.0)
+
+- **El docente conserva su historial final.** `ExpedientePropioResponse` incluye los promedios
+  completos de periodos anteriores, sin las tres notas por fuente. También puede abrir sus actas
+  desde «Mi evaluación».
+- **El coordinador descarga un PDF consolidado.** El reporte del periodo activo incluye a los
+  profesores de su facultad con estudiantes, evaluación institucional, autoevaluación y promedio.
+  La vicerrectoría obtiene el reporte de toda la universidad. Las páginas no incluyen administradores
+  ni estudiantes y respetan el alcance por facultad.
+
+## Sin publicar: acta completa y congelada (F2 de la 0.5.0)
+
+- **El acta guarda una copia de lo que imprime.** Desde la creación conserva identificación del
+  docente, programa y facultad, periodo, cita, pesos, número de respuestas y aspectos conversados.
+  Hasta la primera firma se actualiza; desde esa firma queda fija para las firmas siguientes y el PDF.
+- **La base protege todo el contenido firmado.** Firmada o anulada, el acta no admite cambios. Con una
+  primera firma, el borrador ya no puede cambiar su contenido hasta cerrar la segunda firma. Las
+  firmas y los compromisos tampoco cambian después de cerrar el acta; solo se registra el seguimiento
+  de cada compromiso.
+- **El PDF muestra el formato configurable.** Los datos propuestos quedan identificados: código del
+  docente con `usuarios.codigo`, rótulo configurable, código y versión del formato y dirección pública
+  de verificación. El formato institucional definitivo puede cambiarse sin renombrar columnas.
+- Migraciones nuevas: la base pasa de V50 a **V52**.
+- Pruebas nuevas: congelamiento antes y después de la primera firma, cambios rechazados por la base,
+  firmas y compromisos inmutables, y ejercicios de migración.
+
+## Sin publicar: puesta al día (F1 de la 0.5.0)
+
+- **Todas las variables de entorno llegan a la API.** El `docker-compose.yml` solo pasaba una parte: 21
+  variables del `.env` no surtían efecto, entre ellas `DOCENTIA_IA_MAX_TOKENS_SALIDA`,
+  `DOCENTIA_IA_TIMEOUT_SEGUNDOS`, `DOCENTIA_CORS_ORIGENES`, `DOCENTIA_PROCESO_EXIGIR_ASISTENCIA` y
+  `DOCENTIA_ACTAS_EXIGIR_FIRMA_DIBUJADA`. Ahora van todas, con el mismo valor por defecto, y el CI lo
+  revisa (`scripts/revisar-variables.py`).
+- **La administración ya no descarga el PDF de las actas**: lleva la nota y ella no ve notas. Sigue
+  viendo el registro de actas firmadas (quién, quién firmó, cuándo y el código).
+- **`ROLES.md` se genera desde el código** (`scripts/generar-roles.py`) y el CI revisa que esté al día.
+  Estaba atrasado: tenía 115 de 130 rutas y permisos de antes de la 0.4.3.
+- Documentación al día: migraciones y roles en `ARQUITECTURA.md`, `docentia-docker` y V43 en
+  `OPERACION.md`, limitaciones que ya no aplican, manual de la administración.
+- Pruebas: `@MockBean`, obsoleto, pasa a `@MockitoBean`.
+
 ## Sin publicar: anonimato de la nota de estudiantes
 
 Corrige el hueco de anonimato que abrió `b6fbadf` y el caso que ese commit resolvía.

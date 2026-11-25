@@ -21,4 +21,5 @@ public record ExpedientePropioResponse(
     List<ResultadoDimensionResponse> dimensiones,
     List<CompromisoResponse> compromisosVigentes,
     boolean resultadoHabilitado,
-    int clasesEnPeriodo) {}
+    int clasesEnPeriodo,
+    List<PromedioHistoricoResponse> historico) {}
