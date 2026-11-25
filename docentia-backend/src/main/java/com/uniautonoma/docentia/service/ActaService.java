@@ -532,7 +532,11 @@ public class ActaService {
     }
     if (sesion.esCoordinador()) {
       Long facultadCongelada = acta.getDatosCongelados().facultadId();
-      if (facultadCongelada == null || !facultadCongelada.equals(sesion.idFacultad())) {
+      // La coordinación ve las actas de los docentes de su escuela, nunca las de otro
+      // coordinador: esas las evalúa la vicerrectoría.
+      if (acta.getDocente().getRol() != Rol.DOCENTE
+          || facultadCongelada == null
+          || !facultadCongelada.equals(sesion.idFacultad())) {
         throw new RecursoNoEncontradoException("Acta no encontrada");
       }
     } else if (!sesion.esVicerrector()) {
