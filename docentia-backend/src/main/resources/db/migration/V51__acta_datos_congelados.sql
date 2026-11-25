@@ -24,7 +24,8 @@ alter table actas
     add column fortalezas             text,
     add column aspectos_por_mejorar   text,
     add column formato_codigo         varchar(50),
-    add column formato_version        varchar(20);
+    add column formato_version        varchar(20),
+    add column facultad_id            bigint;
 
 -- Las actas que ya existen toman los datos de hoy; las firmadas conservan su PDF y su hash, que
 -- son la prueba de lo que se firmó.
@@ -33,7 +34,8 @@ with datos as (
            'Escuela de ' || regexp_replace(trim(f.nombre), '^(facultad|escuela)\s+de\s+', '', 'i')
                as escuela,
            p.nombre as periodo, p.fecha_inicio, p.fecha_fin,
-           pon.peso_estudiantes, pon.peso_coordinacion, pon.peso_autoevaluacion
+           pon.peso_estudiantes, pon.peso_coordinacion, pon.peso_autoevaluacion,
+           coalesce(pr.id_facultad, u.id_facultad) as facultad_id
     from actas a
     join usuarios u on u.id_usuario = a.id_docente
     join periodos_academicos p on p.id_periodo = a.id_periodo
@@ -61,7 +63,8 @@ update actas a set
     periodo_fin         = d.fecha_fin,
     peso_estudiantes    = coalesce(d.peso_estudiantes, 50),
     peso_coordinacion   = coalesce(d.peso_coordinacion, 30),
-    peso_autoevaluacion = coalesce(d.peso_autoevaluacion, 20)
+    peso_autoevaluacion = coalesce(d.peso_autoevaluacion, 20),
+    facultad_id         = d.facultad_id
 from datos d
 where d.id_acta = a.id_acta;
 

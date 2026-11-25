@@ -304,7 +304,8 @@ class ActaCongeladaTest extends PruebaIntegracion {
             List.of("Explica con claridad"),
             List.of(),
             "F-VA-012",
-            "2"));
+            "2",
+            d.facultadId()));
 
     assertThat(generadorPdf.hashContenido(acta, "DOC-PRUEBA")).isNotEqualTo(antes);
     String texto = texto(generadorPdf.generar(acta, "DOC-PRUEBA", "hash"));

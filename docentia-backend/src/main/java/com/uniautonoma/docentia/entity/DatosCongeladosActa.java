@@ -41,7 +41,8 @@ public record DatosCongeladosActa(
     List<String> fortalezas,
     List<String> aspectosPorMejorar,
     String formatoCodigo,
-    String formatoVersion) {
+    String formatoVersion,
+    Long facultadId) {
 
   public DatosCongeladosActa {
     fortalezas = fortalezas == null ? List.of() : List.copyOf(fortalezas);

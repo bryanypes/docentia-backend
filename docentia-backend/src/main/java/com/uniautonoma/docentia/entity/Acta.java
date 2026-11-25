@@ -133,6 +133,8 @@ public class Acta {
   @Column(length = 200)
   private String escuelaNombre;
 
+  private Long facultadId;
+
   @Column(length = 50)
   private String periodoNombre;
 
@@ -250,6 +252,7 @@ public class Acta {
     this.docenteCargo = datos.docenteCargo();
     this.programaNombre = datos.programaNombre();
     this.escuelaNombre = datos.escuelaNombre();
+    this.facultadId = datos.facultadId();
     this.periodoNombre = datos.periodoNombre();
     this.periodoInicio = datos.periodoInicio();
     this.periodoFin = datos.periodoFin();
@@ -293,7 +296,8 @@ public class Acta {
         separar(fortalezas),
         separar(aspectosPorMejorar),
         formatoCodigo,
-        formatoVersion);
+        formatoVersion,
+        facultadId);
   }
 
   private static String lineas(List<String> textos) {

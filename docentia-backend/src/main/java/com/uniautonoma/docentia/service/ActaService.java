@@ -492,7 +492,10 @@ public class ActaService {
         generadorPdf.hallazgosValidados(idDocente, idPeriodo, TipoHallazgo.FORTALEZA),
         generadorPdf.hallazgosValidados(idDocente, idPeriodo, TipoHallazgo.OPORTUNIDAD_DE_MEJORA),
         propiedades.actas().formatoCodigo(),
-        propiedades.actas().formatoVersion());
+        propiedades.actas().formatoVersion(),
+        docente.getFacultadDeAdscripcion() == null
+            ? null
+            : docente.getFacultadDeAdscripcion().getIdFacultad());
   }
 
   private BigDecimal tresDecimales(BigDecimal nota) {
@@ -526,6 +529,12 @@ public class ActaService {
     }
     if (sesion.esDocente()) {
       throw new RecursoNoEncontradoException("Acta no encontrada");
+    }
+    if (sesion.esCoordinador()) {
+      Long facultadCongelada = acta.getDatosCongelados().facultadId();
+      if (facultadCongelada == null || !facultadCongelada.equals(sesion.idFacultad())) {
+        throw new RecursoNoEncontradoException("Acta no encontrada");
+      }
     }
     try {
       docenteService.buscarDocenteVisible(idDocente, sesion);
