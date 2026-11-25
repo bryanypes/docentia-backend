@@ -2,7 +2,6 @@ package com.uniautonoma.docentia.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatCode;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
@@ -34,6 +33,7 @@ import com.uniautonoma.docentia.repository.FranjaHorariaRepository;
 import com.uniautonoma.docentia.service.GeneradorPdfActa;
 import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
+import java.sql.Savepoint;
 import java.time.LocalTime;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
@@ -42,8 +42,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.transaction.PlatformTransactionManager;
-import org.springframework.transaction.support.TransactionTemplate;
 
 /**
  * F2 de la 0.5.0: el acta guarda una copia de lo que imprime y, firmada, no cambia aunque cambien
@@ -59,7 +57,6 @@ class ActaCongeladaTest extends PruebaIntegracion {
   @Autowired private GeneradorPdfActa generadorPdf;
   @Autowired private JdbcTemplate jdbcTemplate;
   @Autowired private EntityManager entityManager;
-  @Autowired private PlatformTransactionManager transactionManager;
 
   private Facultad ingenieria;
   private Usuario coordinador;
@@ -144,6 +141,7 @@ class ActaCongeladaTest extends PruebaIntegracion {
 
     mockMvc
         .perform(get("/actas/{id}", acta).with(como(coordinador)))
+        .andExpect(status().isOk())
         .andExpect(jsonPath("$.identificacion.docente").value("Nora Munoz"))
         .andExpect(jsonPath("$.identificacion.documento").value("1061234567"))
         .andExpect(jsonPath("$.identificacion.programa").value("Software"))
@@ -381,11 +379,20 @@ class ActaCongeladaTest extends PruebaIntegracion {
   }
 
   private void rechazarEnNuevaTransaccion(Runnable accion, String mensaje) {
-    TransactionTemplate transaccion = new TransactionTemplate(transactionManager);
-    transaccion.setPropagationBehavior(
-        org.springframework.transaction.TransactionDefinition.PROPAGATION_REQUIRES_NEW);
-    assertThatThrownBy(() -> transaccion.executeWithoutResult(status -> accion.run()))
-        .hasMessageContaining(mensaje);
+    jdbcTemplate.execute(
+        (org.springframework.jdbc.core.ConnectionCallback<Void>)
+            connection -> {
+              Savepoint savepoint = connection.setSavepoint();
+              try {
+                accion.run();
+              } catch (org.springframework.dao.DataAccessException error) {
+                connection.rollback(savepoint);
+                assertThat(error.getMessage()).contains(mensaje);
+                return null;
+              }
+              connection.rollback(savepoint);
+              throw new AssertionError("La base aceptó un cambio que debía rechazar");
+            });
   }
 
   @SuppressWarnings("unused")
