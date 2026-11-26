@@ -20,6 +20,7 @@
 | [DESPLIEGUE-0.4.0.md](DESPLIEGUE-0.4.0.md) | Paso de 0.3.3 a 0.4.0: respaldo, migraciones V34 a V43, primer administrador |
 | [DESPLIEGUE-0.4.1.md](DESPLIEGUE-0.4.1.md) | Paso a 0.4.1 y qué commit lleva cada repositorio |
 | [DESPLIEGUE-0.4.2.md](DESPLIEGUE-0.4.2.md) | Paso a 0.4.2 |
+| [DESPLIEGUE-0.5.0.md](DESPLIEGUE-0.5.0.md) | Paso de 0.4.1 a 0.5.0: migraciones V44 a V52, variables y vuelta atrás |
 | [consultas-verificacion.sql](consultas-verificacion.sql) | Consultas de solo lectura para antes y después de desplegar |
 
 ## API

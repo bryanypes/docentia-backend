@@ -1,6 +1,19 @@
 # Cambios
 
-## Sin publicar: alcance de las actas e identificación en pantalla
+## 0.5.0 (por publicar)
+
+Se instala sobre 0.4.1, la versión de producción: guía en `docentia-backend/docs/DESPLIEGUE-0.5.0.md`.
+La base pasa de V43 a **V52**, y el `docker-compose.yml` pasa todas las variables al contenedor.
+
+### Seguridad
+
+- **Reporte PDF colectivo:** la coordinación ve solo a los docentes de su facultad; antes traía también
+  a los coordinadores con sus tres notas por fuente. La vicerrectoría ve a todos.
+- **`log4j-api` 2.25.5** (CVE-2026-49844, transitiva). Las CVE-2026-47884 y CVE-2026-47890 de
+  `spring-webmvc` 6.2.19 no aplican: el código no usa `XsltView` ni SSE con vistas, y su corrección
+  exige Spring Boot 4.
+
+### Alcance de las actas e identificación en pantalla
 
 - **La coordinación ya no ve el acta de otro coordinador.** Al pasar el alcance de las actas a la
   facultad congelada, un coordinador podía abrir (con nota y PDF) el acta de un colega coordinador de
@@ -9,7 +22,7 @@
   periodo, quién evaluó, reunión, ponderación y aspectos conversados. El número de respuestas de
   estudiantes solo lo ven la coordinación y la vicerrectoría.
 
-## Sin publicar: histórico propio y reporte colectivo (F4 de la 0.5.0)
+### Histórico propio y reporte colectivo
 
 - **El docente conserva su historial final.** `ExpedientePropioResponse` incluye los promedios
   completos de periodos anteriores, sin las tres notas por fuente. También puede abrir sus actas
@@ -19,7 +32,7 @@
   La vicerrectoría obtiene el reporte de toda la universidad. Las páginas no incluyen administradores
   ni estudiantes y respetan el alcance por facultad.
 
-## Sin publicar: acta completa y congelada (F2 de la 0.5.0)
+### Acta completa y congelada
 
 - **El acta guarda una copia de lo que imprime.** Desde la creación conserva identificación del
   docente, programa y facultad, periodo, cita, pesos, número de respuestas y aspectos conversados.
@@ -36,7 +49,7 @@
 - Pruebas nuevas: congelamiento antes y después de la primera firma, cambios rechazados por la base,
   firmas y compromisos inmutables, y ejercicios de migración.
 
-## Sin publicar: puesta al día (F1 de la 0.5.0)
+### Puesta al día
 
 - **Todas las variables de entorno llegan a la API.** El `docker-compose.yml` solo pasaba una parte: 21
   variables del `.env` no surtían efecto, entre ellas `DOCENTIA_IA_MAX_TOKENS_SALIDA`,
@@ -51,7 +64,7 @@
   `OPERACION.md`, limitaciones que ya no aplican, manual de la administración.
 - Pruebas: `@MockBean`, obsoleto, pasa a `@MockitoBean`.
 
-## Sin publicar: anonimato de la nota de estudiantes
+### Anonimato de la nota de estudiantes
 
 Corrige el hueco de anonimato que abrió `b6fbadf` y el caso que ese commit resolvía.
 
@@ -67,7 +80,7 @@ Corrige el hueco de anonimato que abrió `b6fbadf` y el caso que ese commit reso
 - `DOCENTIA_HETEROEVALUACION_MINIMO` y `DOCENTIA_HETEROEVALUACION_BLOQUE` llegan al contenedor por el
   `docker-compose.yml`.
 
-## Sin publicar: análisis robusto
+### Análisis robusto
 
 Solo backend y frontend. Sin migraciones: la base sigue en V50.
 
@@ -84,7 +97,7 @@ Solo backend y frontend. Sin migraciones: la base sigue en V50.
   `temperature` menor que 1 en el endpoint compatible.
 - **Pruebas de robustez del modelo local** con 0 a 5.000 comentarios y entradas raras.
 
-## Sin versión (20 de noviembre de 2026)
+### Después de la 0.4.4 (20 de noviembre de 2026)
 
 Backend y frontend juntos. Sin migraciones: la base sigue en V50.
 
