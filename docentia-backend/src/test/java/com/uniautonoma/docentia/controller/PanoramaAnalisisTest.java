@@ -42,8 +42,8 @@ class PanoramaAnalisisTest extends PruebaIntegracion {
   void crearEscenario() {
     Facultad ingenieria = escenario.crearFacultad("Ingeniería");
     var software = escenario.crearPrograma("Ingeniería de Software", ingenieria);
-    julian = escenario.crearDocente("Julian Hoyos", software);
-    diana = escenario.crearDocente("Diana Astaiza", software);
+    julian = escenario.crearDocente("Julian Prueba", software);
+    diana = escenario.crearDocente("Diana Ejemplo", software);
     coordinador = escenario.crearCoordinador("Marta Ruiz", ingenieria);
     periodo =
         escenario.abrirEtapa(

@@ -68,8 +68,9 @@ class ActaCongeladaTest extends PruebaIntegracion {
   void crearEscenario() {
     ingenieria = escenario.crearFacultad("Facultad de Ingeniería");
     coordinador = escenario.crearCoordinador("Marta Ruiz", ingenieria);
-    vicerrector = escenario.crearVicerrector("Elena Munoz");
-    docente = escenario.crearDocente("Nora Munoz", escenario.crearPrograma("Software", ingenieria));
+    vicerrector = escenario.crearVicerrector("Elena Ficcion");
+    docente =
+        escenario.crearDocente("Nora Ficcion", escenario.crearPrograma("Software", ingenieria));
     docente.setCodigo("1061234567");
     periodo =
         escenario.abrirEtapa(
@@ -94,7 +95,7 @@ class ActaCongeladaTest extends PruebaIntegracion {
     mockMvc
         .perform(get("/actas/{id}", acta).with(como(coordinador)))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.identificacion.docente").value("Nora Munoz"))
+        .andExpect(jsonPath("$.identificacion.docente").value("Nora Ficcion"))
         .andExpect(jsonPath("$.identificacion.documentoRotulo").value("Código"))
         .andExpect(jsonPath("$.identificacion.documento").value("1061234567"))
         .andExpect(jsonPath("$.identificacion.cargo").value("Docente del programa Software"))
@@ -130,7 +131,7 @@ class ActaCongeladaTest extends PruebaIntegracion {
     Programa otro = escenario.crearPrograma("Datos", escenario.crearFacultad("Ciencias"));
     entityManager.flush();
     jdbcTemplate.update(
-        "update usuarios set nombre_completo = 'Nora Munoz Cambiada', codigo = '999',"
+        "update usuarios set nombre_completo = 'Nora Ficcion Cambiada', codigo = '999',"
             + " id_programa = ? where id_usuario = ?",
         otro.getIdPrograma(),
         docente.getIdUsuario());
@@ -142,14 +143,14 @@ class ActaCongeladaTest extends PruebaIntegracion {
     mockMvc
         .perform(get("/actas/{id}", acta).with(como(coordinador)))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.identificacion.docente").value("Nora Munoz"))
+        .andExpect(jsonPath("$.identificacion.docente").value("Nora Ficcion"))
         .andExpect(jsonPath("$.identificacion.documento").value("1061234567"))
         .andExpect(jsonPath("$.identificacion.programa").value("Software"))
         .andExpect(jsonPath("$.identificacion.escuela").value("Escuela de Ingeniería"))
         .andExpect(jsonPath("$.identificacion.periodo").value("2026-2"));
     mockMvc
         .perform(get("/actas/registro").with(como(vicerrector)))
-        .andExpect(jsonPath("$[0].nombreDocente").value("Nora Munoz"))
+        .andExpect(jsonPath("$[0].nombreDocente").value("Nora Ficcion"))
         .andExpect(jsonPath("$[0].programa").value("Software"))
         .andExpect(jsonPath("$[0].periodo").value("2026-2"));
   }

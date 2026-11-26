@@ -38,8 +38,9 @@ class CitasProgramadasTest extends PruebaIntegracion {
   void crearEscenario() {
     Facultad ingenieria = escenario.crearFacultad("Ingeniería");
     coordinador = escenario.crearCoordinador("Marta Ruiz", ingenieria);
-    docente = escenario.crearDocente("Nora Munoz", escenario.crearPrograma("Software", ingenieria));
-    vicerrector = escenario.crearVicerrector("Elena Munoz");
+    docente =
+        escenario.crearDocente("Nora Ficcion", escenario.crearPrograma("Software", ingenieria));
+    vicerrector = escenario.crearVicerrector("Elena Ficcion");
     administrador = escenario.crearConRol("Ana Gomez", Rol.ADMINISTRADOR);
     periodo = escenario.crearPeriodoActivo("2026-2");
   }
@@ -59,7 +60,7 @@ class CitasProgramadasTest extends PruebaIntegracion {
         .perform(get("/citas/programadas").with(como(administrador)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(2)))
-        .andExpect(jsonPath("$[0].nombreDocente").value("Nora Munoz"))
+        .andExpect(jsonPath("$[0].nombreDocente").value("Nora Ficcion"))
         .andExpect(jsonPath("$[0].unidad").value("Software"))
         .andExpect(jsonPath("$[0].nombreAnfitrion").value("Marta Ruiz"))
         .andExpect(jsonPath("$[0].rolAnfitrion").value("COORDINADOR"))

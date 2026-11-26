@@ -41,8 +41,8 @@ Contraseña: `Docentia2026*`.
 |-----|--------|
 | Vicerrectoría | `vicerrectoria@uniautonoma.edu.co` |
 | Coordinación | `coordinacion.ingenieria@uniautonoma.edu.co` |
-| Docente con nota 2,85 | `nora.munoz@uniautonoma.edu.co` |
-| Docente con comentarios | `julian.hoyos@uniautonoma.edu.co` |
+| Docente con nota 2,85 | `nora.ficcion@uniautonoma.edu.co` |
+| Docente con comentarios | `julian.prueba@uniautonoma.edu.co` |
 
 ## Primer administrador (paso obligatorio del despliegue)
 

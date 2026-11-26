@@ -34,7 +34,7 @@ class AutoevaluacionTest extends PruebaIntegracion {
   void crearEscenario() {
     ingenieria = escenario.crearFacultad("Ingeniería");
     docente =
-        escenario.crearDocente("Julian Hoyos", escenario.crearPrograma("Software", ingenieria));
+        escenario.crearDocente("Julian Prueba", escenario.crearPrograma("Software", ingenieria));
     periodo =
         escenario.crearPeriodoActivoConRecoleccion(
             "2026-2", BaseDatosPruebaConfig.HOY, BaseDatosPruebaConfig.HOY);

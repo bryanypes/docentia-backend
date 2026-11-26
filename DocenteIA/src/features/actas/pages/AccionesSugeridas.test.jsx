@@ -20,7 +20,7 @@ describe('AccionesSugeridas', () => {
     listarAccionesSugeridas.mockResolvedValue([
       {
         idDocente: 1,
-        nombreDocente: 'Ramiro Paz',
+        nombreDocente: 'Ramiro Muestra',
         programa: 'Electrónica',
         estadoPromedio: 'COMPLETO',
         categoria: { codigo: 'MUY_BAJO', etiqueta: 'Muy bajo' },
@@ -28,7 +28,7 @@ describe('AccionesSugeridas', () => {
       },
     ])
     renderizarConSesion(<AccionesSugeridas />)
-    expect(await screen.findByText('Ramiro Paz')).toBeInTheDocument()
+    expect(await screen.findByText('Ramiro Muestra')).toBeInTheDocument()
     expect(within(screen.getByRole('table')).getByText('Muy bajo')).toBeInTheDocument()
     expect(screen.getByText('Alerta informativa para Vicerrectoría')).toBeInTheDocument()
   })
@@ -36,12 +36,12 @@ describe('AccionesSugeridas', () => {
   it('avisa de los promedios por debajo de 4,0 y filtra con un clic', async () => {
     listarAccionesSugeridas.mockResolvedValue([
       { idDocente: 1, nombreDocente: 'Ana Ruiz', programa: 'Derecho', promedio: 4.6, estadoPromedio: 'COMPLETO', categoria: { codigo: 'ALTO', etiqueta: 'Alto' }, accion: 'Felicitación' },
-      { idDocente: 2, nombreDocente: 'Luis Paz', programa: 'Software', promedio: 3.9, estadoPromedio: 'COMPLETO', categoria: { codigo: 'ACEPTABLE', etiqueta: 'Aceptable' }, accion: 'Seguimiento' },
+      { idDocente: 2, nombreDocente: 'Luis Muestra', programa: 'Software', promedio: 3.9, estadoPromedio: 'COMPLETO', categoria: { codigo: 'ACEPTABLE', etiqueta: 'Aceptable' }, accion: 'Seguimiento' },
     ])
     renderizarConSesion(<AccionesSugeridas />)
     const aviso = await screen.findByRole('button', { name: /1 docente tiene un promedio por debajo de 4,0/ })
     await userEvent.click(aviso)
-    expect(screen.getByText('Luis Paz')).toBeInTheDocument()
+    expect(screen.getByText('Luis Muestra')).toBeInTheDocument()
     expect(screen.queryByText('Ana Ruiz')).not.toBeInTheDocument()
     expect(screen.getByText('1 de 2 docentes')).toBeInTheDocument()
   })

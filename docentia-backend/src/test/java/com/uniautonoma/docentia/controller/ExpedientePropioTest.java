@@ -35,7 +35,7 @@ class ExpedientePropioTest extends PruebaIntegracion {
     ingenieria = escenario.crearFacultad("Ingeniería");
     docente =
         escenario.crearDocente(
-            "Julian Hoyos", escenario.crearPrograma("Ingeniería de Software", ingenieria));
+            "Julian Prueba", escenario.crearPrograma("Ingeniería de Software", ingenieria));
   }
 
   @Test
@@ -50,7 +50,7 @@ class ExpedientePropioTest extends PruebaIntegracion {
         mockMvc
             .perform(get("/expedientes/propio").with(como(docente)))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.docente.nombreCompleto").value("Julian Hoyos"))
+            .andExpect(jsonPath("$.docente.nombreCompleto").value("Julian Prueba"))
             .andExpect(jsonPath("$.periodo.nombre").value("2026-2"))
             .andExpect(jsonPath("$.promedio.estado").value("PARCIAL"))
             .andExpect(jsonPath("$.promedio.valor").doesNotExist())

@@ -57,7 +57,7 @@ Roles: `COORDINADOR` (con alcance; si no, `404 Solicitud no encontrada`) y `VICE
 {
   "idSolicitud": 12,
   "idDocente": 4,
-  "nombreDocente": "Julián Camilo Hoyos",
+  "nombreDocente": "Julián Camilo Prueba",
   "idPeriodo": 2,
   "nombrePeriodo": "2026-2",
   "estado": "COMPLETADO",
@@ -325,7 +325,7 @@ Franjas propias del periodo activo, ordenadas por fecha y hora. Filtros opcional
 
 ```json
 "reservada": true,
-"reserva": { "idCita": 3, "idDocente": 4, "nombreDocente": "Julián Camilo Hoyos" }
+"reserva": { "idCita": 3, "idDocente": 4, "nombreDocente": "Julián Camilo Prueba" }
 ```
 
 ---
@@ -353,7 +353,7 @@ Todos los endpoints son solo para `DOCENTE` (coordinador y vicerrector → `403`
 
 ```json
 [
-  { "idFranja": 7, "fecha": "2026-11-09", "horaInicio": "08:00:00", "horaFin": "08:30:00", "nombreCoordinador": "Andrés Felipe Ordóñez" }
+  { "idFranja": 7, "fecha": "2026-11-09", "horaInicio": "08:00:00", "horaFin": "08:30:00", "nombreCoordinador": "Andrés Felipe Plantilla" }
 ]
 ```
 
@@ -372,7 +372,7 @@ Sin cuerpo. `201`:
   "fecha": "2026-11-09",
   "horaInicio": "08:30:00",
   "horaFin": "09:00:00",
-  "nombreCoordinador": "Andrés Felipe Ordóñez",
+  "nombreCoordinador": "Andrés Felipe Plantilla",
   "idCitaLiberada": 11
 }
 ```

@@ -86,13 +86,13 @@ perfil `dev`.
 | Administración | `administrador.demo@uniautonoma.edu.co` | Usuarios, Programas, Ponderaciones y Periodos. No ve notas ni actas |
 | Visualización | `visualizador.demo@uniautonoma.edu.co` | Solo el panel por programa, sin datos individuales |
 | Coordinación | `coordinacion.ingenieria@uniautonoma.edu.co` | Flujo completo de la Facultad de Ingeniería (8 docentes) |
-| Coordinación | `coordinacion.derecho@uniautonoma.edu.co` | Alcance: solo ve a Héctor Quilindo y Luisa Mosquera |
-| Docente | `nora.munoz@uniautonoma.edu.co` | 2,85, bajo desempeño: acta de compromiso, cita y firma |
-| Docente | `julian.hoyos@uniautonoma.edu.co` | 4,34, alto: análisis de comentarios (13 comentarios) |
-| Docente | `diana.astaiza@uniautonoma.edu.co` | 4,31: análisis insuficiente (6 de 10 encuestas) |
-| Docente | `ramiro.paz@uniautonoma.edu.co` | 1,90, muy bajo, autoevaluación sin responder |
+| Coordinación | `coordinacion.derecho@uniautonoma.edu.co` | Alcance: solo ve a Héctor Boceto y Luisa Simulacro |
+| Docente | `nora.ficcion@uniautonoma.edu.co` | 2,85, bajo desempeño: acta de compromiso, cita y firma |
+| Docente | `julian.prueba@uniautonoma.edu.co` | 4,34, alto: análisis de comentarios (13 comentarios) |
+| Docente | `diana.ejemplo@uniautonoma.edu.co` | 4,31: análisis insuficiente (6 de 10 encuestas) |
+| Docente | `ramiro.muestra@uniautonoma.edu.co` | 1,90, muy bajo, autoevaluación sin responder |
 | Docente | `laura.demo@uniautonoma.edu.co` | 3,50 con 4 respuestas de estudiantes: el caso en vivo |
-| Docente | `oscar.chantre@uniautonoma.edu.co` | Sin notas: sirve para mostrar un promedio PARCIAL |
+| Docente | `oscar.modelo@uniautonoma.edu.co` | Sin notas: sirve para mostrar un promedio PARCIAL |
 | Estudiante | `estudiante.demo5@uniautonoma.edu.co` | Dos evaluaciones pendientes, una de ellas a Laura |
 | Docente | `docente.flujo@uniautonoma.edu.co` | Mariana Ruiz Ortega: sin ninguna nota; 11 estudiantes ya la evaluaron. Flujo limpio de punta a punta |
 | Estudiante | `estudiante.flujo@uniautonoma.edu.co` | Santiago Gómez Ríos: solo le falta evaluar a Mariana |
@@ -119,10 +119,10 @@ reinicia los datos al terminar. Tiempos de referencia de la corrida del 11 de no
 | # | Acción | Esperado | Resultado |
 |---|--------|----------|-----------|
 | A1 | Abrir `http://localhost:5173` | Página de presentación de DOCENTIA (qué es, para quién, tres pasos) con el botón **Iniciar sesión** | [ ] PASA [ ] FALLA |
-| A2 | Entrar con vicerrectoría, coordinación ingeniería, coordinación derecho, `nora.munoz` y `estudiante.demo5` | Todos llegan a `/inicio`: «Resumen de la evaluación» (los tres de gestión), «Mi evaluación 2026-2» (docente), «Mis evaluaciones» (estudiante). Unos 2 s cada uno | [ ] PASA [ ] FALLA |
+| A2 | Entrar con vicerrectoría, coordinación ingeniería, coordinación derecho, `nora.ficcion` y `estudiante.demo5` | Todos llegan a `/inicio`: «Resumen de la evaluación» (los tres de gestión), «Mi evaluación 2026-2» (docente), «Mis evaluaciones» (estudiante). Unos 2 s cada uno | [ ] PASA [ ] FALLA |
 | A3 | **Salir** | Vuelve a la pantalla de inicio de sesión | [ ] PASA [ ] FALLA |
-| A4 | Entrar con `nora.munoz` y una clave errada; luego con un correo que no existe | Las dos veces: «Correo o contraseña incorrectos». No dice cuál de los dos falló | [ ] PASA [ ] FALLA |
-| A5 | En el inicio de sesión, **¿Olvidaste tu contraseña?** → escribir `nora.munoz@uniautonoma.edu.co` → **Enviar enlace**; repetir con un correo que no existe | Las dos veces el mismo mensaje. En Mailpit (`http://localhost:8226`) llega «DOCENTIA: Restablecer tu contraseña» solo para Nora; el enlace abre la pantalla para fijar la nueva (8 a 72 caracteres) y sirve una vez | [ ] PASA [ ] FALLA |
+| A4 | Entrar con `nora.ficcion` y una clave errada; luego con un correo que no existe | Las dos veces: «Correo o contraseña incorrectos». No dice cuál de los dos falló | [ ] PASA [ ] FALLA |
+| A5 | En el inicio de sesión, **¿Olvidaste tu contraseña?** → escribir `nora.ficcion@uniautonoma.edu.co` → **Enviar enlace**; repetir con un correo que no existe | Las dos veces el mismo mensaje. En Mailpit (`http://localhost:8226`) llega «DOCENTIA: Restablecer tu contraseña» solo para Nora; el enlace abre la pantalla para fijar la nueva (8 a 72 caracteres) y sirve una vez | [ ] PASA [ ] FALLA |
 
 ### B. Vicerrectoría
 
@@ -131,7 +131,7 @@ reinicia los datos al terminar. Tiempos de referencia de la corrida del 11 de no
 | B1 | **Periodos** | 2026-2 activo con las cuatro etapas y sus fechas, todas abiertas el 12 de noviembre | [ ] PASA [ ] FALLA |
 | B2 | Editar 2026-2: cambiar el cierre de Revisión de hallazgos al 21 de noviembre, guardar, y devolverlo al 20 | Se guarda las dos veces; queda en Auditoría | [ ] PASA [ ] FALLA |
 | B3 | En el menú de vicerrectoría ya **no** están Usuarios, Programas, Ponderaciones ni carga de estudiantes | La vicerrectoría decide y controla; la operación es de administración | [ ] PASA [ ] FALLA |
-| B5 | **Inicio**, **Estadísticas**, **Docentes**, **Panel por programa** | Indicadores de 2026-2 frente a 2026-1 y, debajo, la lista de **Docentes destacados** (nombre, programa, puntaje); Docentes ordenados por puntaje, primero Camilo Vidal (4,75), con filtros de clasificación y orden; el panel muestra cobertura y distribución sin nombres | [ ] PASA [ ] FALLA |
+| B5 | **Inicio**, **Estadísticas**, **Docentes**, **Panel por programa** | Indicadores de 2026-2 frente a 2026-1 y, debajo, la lista de **Docentes destacados** (nombre, programa, puntaje); Docentes ordenados por puntaje, primero Camilo Ensayo (4,75), con filtros de clasificación y orden; el panel muestra cobertura y distribución sin nombres | [ ] PASA [ ] FALLA |
 | B6 | Después del flujo C–D: **Docentes → Nora → Acta**, motivo de corrección y **Corregir con una versión nueva** | Aparece «versión 2» e «Historial de versiones (1)» | [ ] PASA [ ] FALLA |
 | B7 | Revisar el menú de vicerrectoría tras la corrección del acta | **Auditoría** no aparece como pantalla en el menú | [ ] PASA [ ] FALLA |
 
@@ -153,8 +153,8 @@ que corrige un acta ya firmada (`DOCENTIA_ACTAS_ROL_CORRECTOR=VICERRECTOR`).
 | # | Acción | Esperado | Resultado |
 |---|--------|----------|-----------|
 | C1 | **Docentes**; luego entra con `coordinacion.derecho` y abre `http://localhost:5173/docentes/7` | Ingeniería ve sus 8 docentes. Derecho ve solo a Héctor y Luisa, y Nora le responde «no encontrado» | [ ] PASA [ ] FALLA |
-| C4 | Entrar con `ramiro.paz` → **Mi autoevaluación**, responder los 14 ítems con 5, revisar, marcar la casilla y **Enviar formulario** | «Tu evaluación ha sido recibida», con el resumen por criterio. En el expediente de Ramiro (coordinación) pasa de 1,90 a 2,52: el cambio sale de la autoevaluación por formulario | [ ] PASA [ ] FALLA |
-| C5 | **Coevaluaciones** → fila de Óscar Chantre → responder los 6 ítems → enviar | Óscar queda **PARCIAL**: falta la autoevaluación. Al volver a abrir su coevaluación: «Tu evaluación ha sido recibida», sin los pasos | [ ] PASA [ ] FALLA |
+| C4 | Entrar con `ramiro.muestra` → **Mi autoevaluación**, responder los 14 ítems con 5, revisar, marcar la casilla y **Enviar formulario** | «Tu evaluación ha sido recibida», con el resumen por criterio. En el expediente de Ramiro (coordinación) pasa de 1,90 a 2,52: el cambio sale de la autoevaluación por formulario | [ ] PASA [ ] FALLA |
+| C5 | **Coevaluaciones** → fila de Óscar Modelo → responder los 6 ítems → enviar | Óscar queda **PARCIAL**: falta la autoevaluación. Al volver a abrir su coevaluación: «Tu evaluación ha sido recibida», sin los pasos | [ ] PASA [ ] FALLA |
 | C6 | **Docentes → Nora → Generar acta** → **Agregar compromiso** (texto y plazo) → **Guardar compromiso** | Acta de compromiso: «Nota menor a 3,80» y el compromiso en la lista | [ ] PASA [ ] FALLA |
 | C7 | **Agenda de citas** → vista Día → clic en una celda vacía de hoy → **Abrir 1 franja**. Abre tres: para Nora, Julián y Óscar | Cada una queda abierta, de 30 minutos | [ ] PASA [ ] FALLA |
 | C8 | Al final: `Docentes → Nora → Seguimiento del plan` | Muestra los compromisos del periodo **anterior** (2026-1) y su estado; en la semilla Nora no tiene. Los de esta acta se siguen en el periodo siguiente | [ ] PASA [ ] FALLA |
@@ -167,9 +167,9 @@ que corrige un acta ya firmada (`DOCENTIA_ACTAS_ROL_CORRECTOR=VICERRECTOR`).
 | D2 | Marcar el primero **válido**, **Descartar** y **Confirmar descarte** en los otros, **Publicar revisión** | «Revisión publicada» | [ ] PASA [ ] FALLA |
 | D3 | Docente Diana → **Solicitar análisis** | «Evidencia insuficiente. Llegaron 6 de 10 encuestas con comentario que necesito para analizar.» | [ ] PASA [ ] FALLA |
 | D4 | Volver a Julián → **Solicitar un análisis nuevo** | El botón está deshabilitado hasta escribir un motivo de 10 caracteres; con motivo: «Este análisis se generó hace poco. Puedes regenerarlo 60 minutos después de la última solicitud» | [ ] PASA [ ] FALLA |
-| D5 | `julian.hoyos` → **Mi cita** → elegir el horario → **Reservar**; luego `nora.munoz` y `oscar.chantre` igual | «Cita reservada: 12 de nov de 2026, …» | [ ] PASA [ ] FALLA |
+| D5 | `julian.prueba` → **Mi cita** → elegir el horario → **Reservar**; luego `nora.ficcion` y `oscar.modelo` igual | «Cita reservada: 12 de nov de 2026, …» | [ ] PASA [ ] FALLA |
 | D6 | Coordinación → **Docentes → Julián → Proceso de evaluación → Asistió · habilitar resultado** | Resultado «Habilitado» | [ ] PASA [ ] FALLA |
-| D7 | `julian.hoyos` → **Mi evaluación** | Su nota y «Alto desempeño», los pesos 50/30/20, la acción institucional y el hallazgo publicado. **No** ve notas por fuente ni el borrador | [ ] PASA [ ] FALLA |
+| D7 | `julian.prueba` → **Mi evaluación** | Su nota y «Alto desempeño», los pesos 50/30/20, la acción institucional y el hallazgo publicado. **No** ve notas por fuente ni el borrador | [ ] PASA [ ] FALLA |
 
 El docente no pide ni regenera el análisis: eso es de coordinación. El docente solo ve lo que
 coordinación publicó, y solo después de su reunión.
@@ -228,7 +228,7 @@ Si el estudiante responde otros valores, la nota final cambia: para que dé 4,50
 |---|--------|----------|-----------|
 | H1 | Coordinación → Análisis de Laura con fuente formulario (se ve en la API) | 409: «Los comentarios del formulario se pueden analizar cuando cierre la recolección» | [ ] PASA [ ] FALLA |
 | H2 | Vicerrectoría cierra la Agenda al 10 de noviembre en **Periodos**; coordinación intenta abrir un horario; luego se devuelve la fecha | 409: «La etapa Agenda de citas del periodo 2026-2 está abierta del 2026-10-13 al 2026-11-10; hoy es …» | [ ] PASA [ ] FALLA |
-| H3 | `nora.munoz` escribe `http://localhost:5173/usuarios` | «Sin acceso. Tu rol no tiene permiso para ver esta sección.» (la API responde 403 «No tienes permiso para realizar esta acción») | [ ] PASA [ ] FALLA |
+| H3 | `nora.ficcion` escribe `http://localhost:5173/usuarios` | «Sin acceso. Tu rol no tiene permiso para ver esta sección.» (la API responde 403 «No tienes permiso para realizar esta acción») | [ ] PASA [ ] FALLA |
 | H4 | Sesión vencida (8 horas) o token alterado | La API responde 401 «Debes iniciar sesión para continuar». Se probó con un token vencido y con uno de firma alterada; en pantalla vuelve al inicio de sesión (por confirmar a mano) | [ ] PASA [ ] FALLA |
 | H5 | Óscar (PARCIAL, con cita reservada) → coordinación → **Asistió · habilitar resultado** | «El docente aún no tiene las tres evaluaciones; no hay resultado para socializar». Sin reunión no hay firma: el acta queda bloqueada | [ ] PASA [ ] FALLA |
 

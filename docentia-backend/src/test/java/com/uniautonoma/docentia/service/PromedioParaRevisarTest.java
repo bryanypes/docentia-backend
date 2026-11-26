@@ -33,7 +33,7 @@ class PromedioParaRevisarTest extends PruebaIntegracion {
   void crearEscenario() {
     docente =
         escenario.crearDocente(
-            "Nora Munoz",
+            "Nora Ficcion",
             escenario.crearPrograma("Software", escenario.crearFacultad("Ingeniería")));
     periodo = escenario.crearPeriodoActivo("2026-2");
   }

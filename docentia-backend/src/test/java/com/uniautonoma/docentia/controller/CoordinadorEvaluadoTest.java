@@ -53,8 +53,9 @@ class CoordinadorEvaluadoTest extends PruebaIntegracion {
     Facultad ingenieria = escenario.crearFacultad("Ingeniería");
     coordinador = escenario.crearCoordinador("Marta Ruiz", ingenieria);
     otroCoordinador = escenario.crearCoordinador("Luis Pardo", escenario.crearFacultad("Salud"));
-    vicerrector = escenario.crearVicerrector("Elena Munoz");
-    docente = escenario.crearDocente("Nora Munoz", escenario.crearPrograma("Software", ingenieria));
+    vicerrector = escenario.crearVicerrector("Elena Ficcion");
+    docente =
+        escenario.crearDocente("Nora Ficcion", escenario.crearPrograma("Software", ingenieria));
     periodo =
         escenario.abrirEtapa(
             escenario.crearPeriodoActivo("2026-2"),
@@ -81,7 +82,7 @@ class CoordinadorEvaluadoTest extends PruebaIntegracion {
     mockMvc
         .perform(get("/docentes").with(como(coordinador)))
         .andExpect(jsonPath("$", hasSize(1)))
-        .andExpect(jsonPath("$[0].nombreCompleto").value("Nora Munoz"));
+        .andExpect(jsonPath("$[0].nombreCompleto").value("Nora Ficcion"));
     mockMvc
         .perform(get("/docentes/{id}", otroCoordinador.getIdUsuario()).with(como(coordinador)))
         .andExpect(status().isNotFound());

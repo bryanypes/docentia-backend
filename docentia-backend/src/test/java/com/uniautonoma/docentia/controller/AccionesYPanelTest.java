@@ -48,12 +48,12 @@ class AccionesYPanelTest extends PruebaIntegracion {
     coordinador = escenario.crearCoordinador("Marta Ruiz", ingenieria);
     vicerrector = escenario.crearVicerrector("Ana Vice");
     periodo = escenario.crearPeriodoActivo("2026-2");
-    docente = escenario.crearDocente("Ramiro Paz", software);
+    docente = escenario.crearDocente("Ramiro Muestra", software);
     guardar(docente, "1.90", "MUY_BAJO", EstadoPromedio.COMPLETO);
     guardar(
-        escenario.crearDocente("Nora Munoz", software), "2.85", "BAJO", EstadoPromedio.COMPLETO);
+        escenario.crearDocente("Nora Ficcion", software), "2.85", "BAJO", EstadoPromedio.COMPLETO);
     // Sin las tres notas no hay promedio ni categoría: no aparece en las acciones sugeridas.
-    guardar(escenario.crearDocente("Camilo Vidal", software), null, null, EstadoPromedio.PARCIAL);
+    guardar(escenario.crearDocente("Camilo Ensayo", software), null, null, EstadoPromedio.PARCIAL);
     escenario.crearDocente("Sin Nota", software);
     guardar(
         escenario.crearDocente("Otra Facultad", leyes), "4.00", "ALTO", EstadoPromedio.COMPLETO);
@@ -75,14 +75,14 @@ class AccionesYPanelTest extends PruebaIntegracion {
         .perform(get("/acciones-sugeridas").with(como(coordinador)))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$", hasSize(2)))
-        .andExpect(jsonPath("$[0].nombreDocente").value("Ramiro Paz"))
+        .andExpect(jsonPath("$[0].nombreDocente").value("Ramiro Muestra"))
         .andExpect(jsonPath("$[0].categoria.codigo").value("MUY_BAJO"))
         .andExpect(
             jsonPath("$[0].accion")
                 .value(
                     "Alerta informativa para Vicerrectoría — la institución evalúa el proceso"
                         + " conforme a su normativa"))
-        .andExpect(content().string(not(containsString("Camilo Vidal"))))
+        .andExpect(content().string(not(containsString("Camilo Ensayo"))))
         .andExpect(content().string(not(containsString("esvincula"))));
   }
 

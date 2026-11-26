@@ -71,7 +71,7 @@ class SemillaHeteroevaluacion {
     Optional<PeriodoAcademico> periodo = periodoRepository.findByEsActivoTrue();
     Optional<Usuario> coordinador =
         usuarioRepository.findByCorreoIgnoreCase("coordinacion.ingenieria" + DOMINIO);
-    Optional<Usuario> camilo = usuarioRepository.findByCorreoIgnoreCase("camilo.vidal" + DOMINIO);
+    Optional<Usuario> camilo = usuarioRepository.findByCorreoIgnoreCase("camilo.ensayo" + DOMINIO);
     if (periodo.isEmpty() || coordinador.isEmpty() || camilo.isEmpty()) {
       return;
     }

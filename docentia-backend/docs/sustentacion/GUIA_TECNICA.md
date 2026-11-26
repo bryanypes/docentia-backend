@@ -155,14 +155,14 @@ Solo existen con el perfil `dev`. Contraseña de todos: `Docentia2026*`.
 | Vicerrectoría | `vicerrectoria@uniautonoma.edu.co` | Toda la universidad, periodos, usuarios, auditoría, corrección de actas |
 | Coordinación | `coordinacion.ingenieria@uniautonoma.edu.co` | Facultad de Ingeniería: el flujo completo |
 | Coordinación | `coordinacion.derecho@uniautonoma.edu.co`, `coordinacion.finanzas@uniautonoma.edu.co` | Alcance por facultad |
-| Docente | `nora.munoz@uniautonoma.edu.co` | Nota 2,85, bajo desempeño: acta de compromiso |
-| Docente | `julian.hoyos@uniautonoma.edu.co` | Nota 4,34, alto, con 13 comentarios para el análisis |
-| Docente | `diana.astaiza@uniautonoma.edu.co` | Nota 4,31, solo 6 comentarios: «evidencia insuficiente» |
-| Docente | `camilo.vidal@uniautonoma.edu.co` | Nota 4,75, muy alto |
-| Docente | `ramiro.paz@uniautonoma.edu.co` | Nota 1,90, muy bajo; autoevaluación sin responder |
+| Docente | `nora.ficcion@uniautonoma.edu.co` | Nota 2,85, bajo desempeño: acta de compromiso |
+| Docente | `julian.prueba@uniautonoma.edu.co` | Nota 4,34, alto, con 13 comentarios para el análisis |
+| Docente | `diana.ejemplo@uniautonoma.edu.co` | Nota 4,31, solo 6 comentarios: «evidencia insuficiente» |
+| Docente | `camilo.ensayo@uniautonoma.edu.co` | Nota 4,75, muy alto |
+| Docente | `ramiro.muestra@uniautonoma.edu.co` | Nota 1,90, muy bajo; autoevaluación sin responder |
 | Docente | `laura.demo@uniautonoma.edu.co` | 4 respuestas de estudiantes, una menos que el mínimo |
 | Estudiante | `estudiante.demo5@uniautonoma.edu.co` | Dos evaluaciones pendientes, una de ellas de Laura |
-| Estudiante | `karen.mancilla@uniautonoma.edu.co` | Tres clases importadas del JSON de Campus |
+| Estudiante | `sara.ficha@uniautonoma.edu.co` | Tres clases importadas del JSON de Campus |
 
 ## 9. Guion de demostración por rol
 
@@ -188,14 +188,14 @@ pruebas `DocenteIA/e2e` (11 de 11).
 
 7. **Docentes → Laura Demo:** con la quinta respuesta, la nota de estudiantes sale del formulario.
 8. **Panel por programa:** cobertura de respuestas por docente y programa, sin saber quién respondió qué.
-9. **Docentes → Nora Muñoz:** 2,85, bajo desempeño, acción institucional. **Generar acta:** acta de
+9. **Docentes → Nora Ficción:** 2,85, bajo desempeño, acción institucional. **Generar acta:** acta de
    compromiso; **Agregar compromiso** con plazo.
 10. **Agenda de citas:** abrir un horario de 30 minutos para hoy.
 11. **Análisis de comentarios → Julián → Solicitar análisis:** borrador con hallazgos y citas. Editar uno,
     marcarlo válido, descartar otro y **Publicar revisión**. En Diana: «evidencia insuficiente».
 12. **Panel por programa:** cobertura y distribución sin nombres de docentes.
 
-**Docente** (`nora.munoz`)
+**Docente** (`nora.ficcion`)
 
 13. **Mi cita:** reservar el horario de hoy. **Mi acta** todavía no se puede firmar.
 

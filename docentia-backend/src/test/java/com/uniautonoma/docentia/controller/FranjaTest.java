@@ -55,10 +55,10 @@ class FranjaTest extends PruebaIntegracion {
   void crearEscenario() {
     Facultad ingenieria = escenario.crearFacultad("Ingeniería");
     docente =
-        escenario.crearDocente("Julian Hoyos", escenario.crearPrograma("Software", ingenieria));
+        escenario.crearDocente("Julian Prueba", escenario.crearPrograma("Software", ingenieria));
     coordinador = escenario.crearCoordinador("Marta Ruiz", ingenieria);
     otroCoordinador =
-        escenario.crearCoordinador("Paola Sarria", escenario.crearFacultad("Derecho"));
+        escenario.crearCoordinador("Paola Patrón", escenario.crearFacultad("Derecho"));
     periodo =
         escenario.abrirEtapa(
             escenario.crearPeriodoActivo("2026-2"),
@@ -232,7 +232,7 @@ class FranjaTest extends PruebaIntegracion {
         .perform(get("/franjas").param("estado", "ABIERTA").with(como(coordinador)))
         .andExpect(jsonPath("$", hasSize(1)))
         .andExpect(jsonPath("$[0].reservada").value(true))
-        .andExpect(jsonPath("$[0].reserva.nombreDocente").value("Julian Hoyos"));
+        .andExpect(jsonPath("$[0].reserva.nombreDocente").value("Julian Prueba"));
   }
 
   @Test
@@ -245,7 +245,7 @@ class FranjaTest extends PruebaIntegracion {
             new Cita(
                 conHistorial,
                 escenario.crearDocente(
-                    "Diana Astaiza",
+                    "Diana Ejemplo",
                     escenario.crearPrograma("Otro", escenario.crearFacultad("Otra")))));
     anterior.liberar(MotivoLiberacion.REEMPLAZADA);
     citaRepository.saveAndFlush(anterior);

@@ -60,12 +60,12 @@ class SesionControllerTest extends PruebaIntegracion {
     Programa software = programaRepository.save(new Programa("Ingeniería de Software", ingenieria));
     usuarioRepository.save(
         Usuario.crearDocente(
-            "Luis Paz",
-            "luis.paz@uniautonoma.edu.co",
+            "Luis Muestra",
+            "luis.muestra@uniautonoma.edu.co",
             passwordEncoder.encode(CONTRASENA),
             software));
 
-    iniciarSesion("luis.paz@uniautonoma.edu.co", CONTRASENA)
+    iniciarSesion("luis.muestra@uniautonoma.edu.co", CONTRASENA)
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.usuario.idPrograma").value(software.getIdPrograma()))
         .andExpect(jsonPath("$.usuario.idFacultad").value(ingenieria.getIdFacultad()));
@@ -126,8 +126,8 @@ class SesionControllerTest extends PruebaIntegracion {
     Programa software = programaRepository.save(new Programa("Ingeniería de Software", ingenieria));
     usuarioRepository.save(
         Usuario.crearDocente(
-            "Luis Paz",
-            "luis.paz@uniautonoma.edu.co",
+            "Luis Muestra",
+            "luis.muestra@uniautonoma.edu.co",
             passwordEncoder.encode(CONTRASENA),
             software));
 
@@ -136,9 +136,9 @@ class SesionControllerTest extends PruebaIntegracion {
             get("/sesiones/actual/perfil")
                 .header(
                     HttpHeaders.AUTHORIZATION,
-                    "Bearer " + obtenerToken("luis.paz@uniautonoma.edu.co")))
+                    "Bearer " + obtenerToken("luis.muestra@uniautonoma.edu.co")))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.nombreCompleto").value("Luis Paz"))
+        .andExpect(jsonPath("$.nombreCompleto").value("Luis Muestra"))
         .andExpect(jsonPath("$.rol").value("DOCENTE"))
         .andExpect(jsonPath("$.nombrePrograma").value("Ingeniería de Software"))
         .andExpect(jsonPath("$.nombreFacultad").value("Ingeniería"))
