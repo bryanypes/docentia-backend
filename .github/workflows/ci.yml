@@ -47,6 +47,15 @@ jobs:
       - run: npx vitest run
       - run: npx vite build
 
+  configuracion:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Toda variable que lee la API debe llegar al contenedor por el docker-compose.yml.
+      - run: python3 scripts/revisar-variables.py
+      # ROLES.md se genera desde la matriz de autorización y el menú: debe estar al día.
+      - run: python3 scripts/generar-roles.py --revisar
+
   secretos:
     runs-on: ubuntu-latest
     steps:

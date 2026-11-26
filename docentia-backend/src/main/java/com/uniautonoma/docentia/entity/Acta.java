@@ -20,8 +20,10 @@ import jakarta.persistence.Version;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 import org.hibernate.annotations.CreationTimestamp;
 
 /**
@@ -109,6 +111,74 @@ public class Acta {
 
   private LocalDateTime fechaFirma;
 
+  // Copia de lo que imprime el acta (V51); fija desde la primera firma.
+  @Column(length = 150)
+  private String docenteNombre;
+
+  @Column(length = 150)
+  private String docenteCorreo;
+
+  @Column(length = 40)
+  private String documentoRotulo;
+
+  @Column(length = 40)
+  private String docenteDocumento;
+
+  @Column(length = 300)
+  private String docenteCargo;
+
+  @Column(length = 150)
+  private String programaNombre;
+
+  @Column(length = 200)
+  private String escuelaNombre;
+
+  private Long facultadId;
+
+  @Column(length = 50)
+  private String periodoNombre;
+
+  private LocalDate periodoInicio;
+
+  private LocalDate periodoFin;
+
+  @Column(length = 300)
+  private String evaluadorCargo;
+
+  private LocalDate reunionFecha;
+
+  private LocalTime reunionHoraInicio;
+
+  private LocalTime reunionHoraFin;
+
+  @Column(length = 20)
+  private String reunionAsistencia;
+
+  @Column(precision = 5, scale = 2)
+  private BigDecimal pesoEstudiantes;
+
+  @Column(precision = 5, scale = 2)
+  private BigDecimal pesoCoordinacion;
+
+  @Column(precision = 5, scale = 2)
+  private BigDecimal pesoAutoevaluacion;
+
+  private Integer respuestasEstudiantes;
+
+  /** Una fortaleza por línea. */
+  @Column(columnDefinition = "text")
+  private String fortalezas;
+
+  /** Un aspecto por mejorar por línea. */
+  @Column(columnDefinition = "text")
+  private String aspectosPorMejorar;
+
+  @Column(length = 50)
+  private String formatoCodigo;
+
+  @Column(length = 20)
+  private String formatoVersion;
+
   @CreationTimestamp
   @Column(nullable = false, updatable = false)
   private LocalDateTime fechaCreacion;
@@ -165,6 +235,85 @@ public class Acta {
     if (notaBajoUmbral()) {
       this.tipo = TipoActa.COMPROMISO;
     }
+  }
+
+  /**
+   * Copia la identificación, la reunión, los pesos y los aspectos conversados. Solo mientras nadie
+   * haya firmado: desde la primera firma el acta conserva lo que se firmó.
+   */
+  public void congelarDatos(DatosCongeladosActa datos) {
+    if (!firmas.isEmpty()) {
+      return;
+    }
+    this.docenteNombre = datos.docenteNombre();
+    this.docenteCorreo = datos.docenteCorreo();
+    this.documentoRotulo = datos.documentoRotulo();
+    this.docenteDocumento = datos.docenteDocumento();
+    this.docenteCargo = datos.docenteCargo();
+    this.programaNombre = datos.programaNombre();
+    this.escuelaNombre = datos.escuelaNombre();
+    this.facultadId = datos.facultadId();
+    this.periodoNombre = datos.periodoNombre();
+    this.periodoInicio = datos.periodoInicio();
+    this.periodoFin = datos.periodoFin();
+    this.evaluadorCargo = datos.evaluadorCargo();
+    this.reunionFecha = datos.reunionFecha();
+    this.reunionHoraInicio = datos.reunionHoraInicio();
+    this.reunionHoraFin = datos.reunionHoraFin();
+    this.reunionAsistencia = datos.reunionAsistencia();
+    this.pesoEstudiantes = datos.pesoEstudiantes();
+    this.pesoCoordinacion = datos.pesoCoordinacion();
+    this.pesoAutoevaluacion = datos.pesoAutoevaluacion();
+    this.respuestasEstudiantes = datos.respuestasEstudiantes();
+    this.fortalezas = lineas(datos.fortalezas());
+    this.aspectosPorMejorar = lineas(datos.aspectosPorMejorar());
+    this.formatoCodigo = datos.formatoCodigo();
+    this.formatoVersion = datos.formatoVersion();
+  }
+
+  /** Lo que el acta guardó de la identificación, la reunión y los pesos. */
+  public DatosCongeladosActa getDatosCongelados() {
+    return new DatosCongeladosActa(
+        docenteNombre,
+        docenteCorreo,
+        documentoRotulo,
+        docenteDocumento,
+        docenteCargo,
+        programaNombre,
+        escuelaNombre,
+        periodoNombre,
+        periodoInicio,
+        periodoFin,
+        evaluadorCargo,
+        reunionFecha,
+        reunionHoraInicio,
+        reunionHoraFin,
+        reunionAsistencia,
+        pesoEstudiantes,
+        pesoCoordinacion,
+        pesoAutoevaluacion,
+        respuestasEstudiantes,
+        separar(fortalezas),
+        separar(aspectosPorMejorar),
+        formatoCodigo,
+        formatoVersion,
+        facultadId);
+  }
+
+  private static String lineas(List<String> textos) {
+    if (textos.isEmpty()) {
+      return null;
+    }
+    String unidas =
+        textos.stream()
+            .map(t -> t.replaceAll("\\s+", " ").strip())
+            .filter(t -> !t.isEmpty())
+            .collect(Collectors.joining("\n"));
+    return unidas.isEmpty() ? null : unidas;
+  }
+
+  private static List<String> separar(String texto) {
+    return texto == null ? List.of() : List.of(texto.split("\n"));
   }
 
   /**

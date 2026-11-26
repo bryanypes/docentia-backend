@@ -13,7 +13,7 @@
 
   <groupId>com.uniautonoma</groupId>
   <artifactId>docentia</artifactId>
-  <version>0.4.4</version>
+  <version>0.5.0</version>
   <name>docentia</name>
   <description>Sistema de evaluación docente de la Corporación Universitaria Autónoma del Cauca</description>
 
@@ -29,6 +29,8 @@
     <tomcat.version>10.1.59</tomcat.version>
     <jackson-bom.version>2.21.7</jackson-bom.version>
     <postgresql.version>42.7.12</postgresql.version>
+    <!-- CVE-2026-49844 (log4j-api, transitiva por log4j-to-slf4j). -->
+    <log4j2.version>2.25.5</log4j2.version>
   </properties>
 
   <dependencyManagement>

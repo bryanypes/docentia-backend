@@ -61,8 +61,9 @@ class ActaTest extends PruebaIntegracion {
   void crearEscenario() {
     ingenieria = escenario.crearFacultad("Ingeniería");
     coordinador = escenario.crearCoordinador("Marta Ruiz", ingenieria);
-    vicerrector = escenario.crearVicerrector("Elena Munoz");
-    docente = escenario.crearDocente("Nora Munoz", escenario.crearPrograma("Software", ingenieria));
+    vicerrector = escenario.crearVicerrector("Elena Ficcion");
+    docente =
+        escenario.crearDocente("Nora Ficcion", escenario.crearPrograma("Software", ingenieria));
     periodo =
         escenario.abrirEtapa(
             escenario.crearPeriodoActivo("2026-2"),
@@ -113,7 +114,7 @@ class ActaTest extends PruebaIntegracion {
         .contains("PLAN DE MEJORAMIENTO PROFESORAL")
         .contains("Actualizar el plan de asignatura")
         .contains("Marta Ruiz")
-        .contains("Nora Munoz")
+        .contains("Nora Ficcion")
         .contains("SHA-256");
     assertThat(texto).doesNotContain("Nota de estudiantes");
 
@@ -138,7 +139,7 @@ class ActaTest extends PruebaIntegracion {
     mockMvc
         .perform(get("/actas/codigo/{codigo}", codigo.toLowerCase()).with(como(administrador)))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.nombreDocente").value("Nora Munoz"))
+        .andExpect(jsonPath("$.nombreDocente").value("Nora Ficcion"))
         .andExpect(jsonPath("$.nombreActa").value("Acta de compromiso docente"))
         .andExpect(jsonPath("$.firmas", hasSize(2)))
         .andExpect(jsonPath("$.promedio").doesNotExist())
@@ -151,14 +152,10 @@ class ActaTest extends PruebaIntegracion {
         .andExpect(status().isOk())
         .andExpect(jsonPath("$[0].codigo").value(codigo))
         .andExpect(jsonPath("$[0].promedio").doesNotExist());
-    byte[] delArchivo =
-        mockMvc
-            .perform(get("/actas/{id}/pdf", acta).with(como(administrador)))
-            .andExpect(status().isOk())
-            .andReturn()
-            .getResponse()
-            .getContentAsByteArray();
-    assertThat(delArchivo).isEqualTo(pdf);
+    // La administración no ve notas: el registro sí, el PDF (que lleva la nota) no.
+    mockMvc
+        .perform(get("/actas/{id}/pdf", acta).with(como(administrador)))
+        .andExpect(status().isForbidden());
     mockMvc
         .perform(get("/actas/codigo/{codigo}", "DOC-000000000000").with(como(administrador)))
         .andExpect(status().isNotFound());
@@ -290,9 +287,9 @@ class ActaTest extends PruebaIntegracion {
     calificarTodo("4.5");
     Long acta = crearActa();
     Usuario otroCoordinador =
-        escenario.crearCoordinador("Paola Sarria", escenario.crearFacultad("Derecho"));
+        escenario.crearCoordinador("Paola Patrón", escenario.crearFacultad("Derecho"));
     Usuario otroDocente =
-        escenario.crearDocente("Luis Paz", escenario.crearPrograma("Electrónica", ingenieria));
+        escenario.crearDocente("Luis Muestra", escenario.crearPrograma("Electrónica", ingenieria));
 
     mockMvc
         .perform(get("/actas/{id}", acta).with(como(otroCoordinador)))
@@ -352,7 +349,7 @@ class ActaTest extends PruebaIntegracion {
     mockMvc
         .perform(get("/verificacion-actas/{c}", codigo))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.nombreDocente").value("Nora Munoz"))
+        .andExpect(jsonPath("$.nombreDocente").value("Nora Ficcion"))
         .andExpect(jsonPath("$.estado").value("FIRMADA"))
         .andExpect(jsonPath("$.promedio").doesNotExist());
     mockMvc.perform(get("/verificacion-actas/NOEXISTE")).andExpect(status().isNotFound());

@@ -9,7 +9,7 @@ El detalle de cada tema está en los documentos de `docentia-backend/docs/` que 
 |------|------------|
 | Web | React 19 con Vite, servida por nginx; nginx reenvía `/api` al backend |
 | API | Spring Boot 3.5 sobre Java 21: Web, Security (JWT HS256), Data JPA, Validation, Mail, Actuator |
-| Datos | PostgreSQL 16, esquema versionado con Flyway (36 migraciones); Hibernate solo valida |
+| Datos | PostgreSQL 16, esquema versionado con Flyway (47 migraciones, hasta V52); Hibernate solo valida |
 | PDF | OpenPDF |
 | Correo | Cola en base de datos; Mailpit en desarrollo, SMTP con TLS en producción |
 | Empaquetado | `docker-compose.yml` con cuatro servicios: `db`, `api`, `web` y `mailpit` |
@@ -115,7 +115,7 @@ publicó, después de su reunión. Detalle en [DECISIONES-ANALISIS-IA.md](../DEC
 | Tema | Cómo |
 |------|------|
 | Sesión | JWT HS256 de 8 horas; en `prod` la app no arranca con un secreto de desarrollo o de menos de 32 caracteres |
-| Roles | Seis: estudiante, docente, coordinación, vicerrectoría, administración y visualización. `@PreAuthorize` en cada ruta; `MatrizAutorizacionTest` comprueba las 115 rutas con cada rol y sin sesión (`ROLES.md`) |
+| Roles | Seis: estudiante, docente, coordinación, vicerrectoría, administración y visualización. `@PreAuthorize` en cada ruta; `MatrizAutorizacionTest` comprueba las 130 rutas con cada rol y sin sesión (`ROLES.md`) |
 | Alcance | Coordinación solo ve su facultad y el docente lo propio; fuera de alcance responde 404 |
 | Rutas públicas | Solo inicio de sesión (correo o Google), verificación de actas y salud |
 | Contraseña temporal | Toda cuenta creada por vicerrectoría debe cambiarla antes de usar el sistema |
@@ -155,14 +155,14 @@ Solo existen con el perfil `dev`. Contraseña de todos: `Docentia2026*`.
 | Vicerrectoría | `vicerrectoria@uniautonoma.edu.co` | Toda la universidad, periodos, usuarios, auditoría, corrección de actas |
 | Coordinación | `coordinacion.ingenieria@uniautonoma.edu.co` | Facultad de Ingeniería: el flujo completo |
 | Coordinación | `coordinacion.derecho@uniautonoma.edu.co`, `coordinacion.finanzas@uniautonoma.edu.co` | Alcance por facultad |
-| Docente | `nora.munoz@uniautonoma.edu.co` | Nota 2,85, bajo desempeño: acta de compromiso |
-| Docente | `julian.hoyos@uniautonoma.edu.co` | Nota 4,34, alto, con 13 comentarios para el análisis |
-| Docente | `diana.astaiza@uniautonoma.edu.co` | Nota 4,31, solo 6 comentarios: «evidencia insuficiente» |
-| Docente | `camilo.vidal@uniautonoma.edu.co` | Nota 4,75, muy alto |
-| Docente | `ramiro.paz@uniautonoma.edu.co` | Nota 1,90, muy bajo; autoevaluación sin responder |
+| Docente | `nora.ficcion@uniautonoma.edu.co` | Nota 2,85, bajo desempeño: acta de compromiso |
+| Docente | `julian.prueba@uniautonoma.edu.co` | Nota 4,34, alto, con 13 comentarios para el análisis |
+| Docente | `diana.ejemplo@uniautonoma.edu.co` | Nota 4,31, solo 6 comentarios: «evidencia insuficiente» |
+| Docente | `camilo.ensayo@uniautonoma.edu.co` | Nota 4,75, muy alto |
+| Docente | `ramiro.muestra@uniautonoma.edu.co` | Nota 1,90, muy bajo; autoevaluación sin responder |
 | Docente | `laura.demo@uniautonoma.edu.co` | 4 respuestas de estudiantes, una menos que el mínimo |
 | Estudiante | `estudiante.demo5@uniautonoma.edu.co` | Dos evaluaciones pendientes, una de ellas de Laura |
-| Estudiante | `karen.mancilla@uniautonoma.edu.co` | Tres clases importadas del JSON de Campus |
+| Estudiante | `sara.ficha@uniautonoma.edu.co` | Tres clases importadas del JSON de Campus |
 
 ## 9. Guion de demostración por rol
 
@@ -188,14 +188,14 @@ pruebas `DocenteIA/e2e` (11 de 11).
 
 7. **Docentes → Laura Demo:** con la quinta respuesta, la nota de estudiantes sale del formulario.
 8. **Panel por programa:** cobertura de respuestas por docente y programa, sin saber quién respondió qué.
-9. **Docentes → Nora Muñoz:** 2,85, bajo desempeño, acción institucional. **Generar acta:** acta de
+9. **Docentes → Nora Ficción:** 2,85, bajo desempeño, acción institucional. **Generar acta:** acta de
    compromiso; **Agregar compromiso** con plazo.
 10. **Agenda de citas:** abrir un horario de 30 minutos para hoy.
 11. **Análisis de comentarios → Julián → Solicitar análisis:** borrador con hallazgos y citas. Editar uno,
     marcarlo válido, descartar otro y **Publicar revisión**. En Diana: «evidencia insuficiente».
 12. **Panel por programa:** cobertura y distribución sin nombres de docentes.
 
-**Docente** (`nora.munoz`)
+**Docente** (`nora.ficcion`)
 
 13. **Mi cita:** reservar el horario de hoy. **Mi acta** todavía no se puede firmar.
 

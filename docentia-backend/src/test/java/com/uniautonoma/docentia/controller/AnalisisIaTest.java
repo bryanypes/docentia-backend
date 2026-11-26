@@ -49,8 +49,8 @@ class AnalisisIaTest extends PruebaIntegracion {
   void crearEscenario() {
     ingenieria = escenario.crearFacultad("Ingeniería");
     var software = escenario.crearPrograma("Ingeniería de Software", ingenieria);
-    julian = escenario.crearDocente("Julian Hoyos", software);
-    diana = escenario.crearDocente("Diana Astaiza", software);
+    julian = escenario.crearDocente("Julian Prueba", software);
+    diana = escenario.crearDocente("Diana Ejemplo", software);
     coordinador = escenario.crearCoordinador("Marta Ruiz", ingenieria);
     periodo =
         escenario.abrirEtapa(
@@ -135,7 +135,7 @@ class AnalisisIaTest extends PruebaIntegracion {
 
   @Test
   void conCincoComentariosYaSePuedeAnalizar() throws Exception {
-    Usuario camilo = escenario.crearDocente("Camilo Vidal", julian.getPrograma());
+    Usuario camilo = escenario.crearDocente("Camilo Ensayo", julian.getPrograma());
     escenario.cargarComentarios(
         camilo,
         periodo,
@@ -242,7 +242,7 @@ class AnalisisIaTest extends PruebaIntegracion {
   @Test
   void soloElCoordinadorConAlcanceSolicitaYConsulta() throws Exception {
     Usuario otroCoordinador =
-        escenario.crearCoordinador("Paola Sarria", escenario.crearFacultad("Derecho"));
+        escenario.crearCoordinador("Paola Patrón", escenario.crearFacultad("Derecho"));
     long id = idDe(solicitar(julian).andReturn().getResponse().getContentAsString());
 
     solicitar(julian, como(otroCoordinador))
@@ -254,7 +254,7 @@ class AnalisisIaTest extends PruebaIntegracion {
         .andExpect(jsonPath("$.mensaje").value("Solicitud no encontrada"));
     // La vicerrectoría también pide análisis: pasa la autorización y choca con la que está en
     // curso.
-    solicitar(julian, como(escenario.crearVicerrector("Elena Munoz")))
+    solicitar(julian, como(escenario.crearVicerrector("Elena Ficcion")))
         .andExpect(status().isConflict())
         .andExpect(jsonPath("$.mensaje").value(containsString("en curso")));
     solicitar(julian, como(julian)).andExpect(status().isForbidden());
@@ -269,7 +269,7 @@ class AnalisisIaTest extends PruebaIntegracion {
 
   @Test
   void laVicerrectoriaPideAnalisisYRevisaSoloLosDeCoordinadores() throws Exception {
-    Usuario vicerrector = escenario.crearVicerrector("Elena Munoz");
+    Usuario vicerrector = escenario.crearVicerrector("Elena Ficcion");
     escenario.cargarComentarios(
         coordinador,
         periodo,

@@ -9,7 +9,7 @@ import { Cargando } from '../../../shared/components/ui/EstadoVista/EstadoVista.
 import { Modal } from '../../../shared/components/ui/Modal/Modal.jsx'
 import { Paginacion } from '../../../shared/components/ui/Paginacion/Paginacion.jsx'
 import { Panel } from '../../../shared/components/ui/Panel/Panel.jsx'
-import { ETIQUETA_ROL } from '../../../shared/constants/dominio.js'
+import { ETIQUETA_ROL, ROLES } from '../../../shared/constants/dominio.js'
 import { useFetch } from '../../../shared/hooks/useFetch.js'
 import { usePaginacion } from '../../../shared/hooks/usePaginacion.js'
 import { formatearFecha, formatearFechaHora } from '../../../shared/utils/formatters.js'
@@ -61,10 +61,12 @@ function useDescarga() {
 
 /**
  * Archivo de actas firmadas para la administración y la vicerrectoría: un buscador (docente,
- * programa o código del PDF), la lista y, al abrir una, quién la firmó y su descarga. Nunca la nota.
+ * programa o código del PDF), la lista y, al abrir una, quién la firmó. Nunca la nota. El PDF sí la
+ * lleva: lo descarga la vicerrectoría; la administración, que no ve notas, solo el registro.
  */
 export default function BuscarActa() {
   const { usuario } = useSesion()
+  const conPdf = usuario.rol !== ROLES.ADMINISTRADOR
   const [parametros, setParametros] = useSearchParams()
   const abierta = parametros.get('codigo')
   const descarga = useDescarga()
@@ -84,17 +86,21 @@ export default function BuscarActa() {
       <Encabezado
         miga={`${ETIQUETA_ROL[usuario.rol]} · Actas firmadas`}
         titulo="Actas firmadas"
-        subtitulo="Todas las actas de compromiso y de retroalimentación que ya firmaron el docente y quien lo evaluó. Ábralas para ver quién firmó o descárguelas en PDF."
+        subtitulo={
+          conPdf
+            ? 'Todas las actas de compromiso y de retroalimentación que ya firmaron el docente y quien lo evaluó. Ábralas para ver quién firmó o descárguelas en PDF.'
+            : 'Todas las actas de compromiso y de retroalimentación que ya firmaron el docente y quien lo evaluó. Ábralas para ver quién firmó y cuándo; el PDF lleva la nota y no se descarga desde aquí.'
+        }
       />
       <div className="pagina">
-        <Registro alAbrir={abrir} descarga={descarga} />
+        <Registro alAbrir={abrir} descarga={descarga} conPdf={conPdf} />
       </div>
-      {abierta && <DetalleActa codigo={abierta} descarga={descarga} alCerrar={() => abrir(null)} />}
+      {abierta && <DetalleActa codigo={abierta} descarga={descarga} conPdf={conPdf} alCerrar={() => abrir(null)} />}
     </>
   )
 }
 
-function Registro({ alAbrir, descarga }) {
+function Registro({ alAbrir, descarga, conPdf }) {
   const cargar = useCallback(() => listarRegistroActas(), [])
   const registro = useFetch(cargar, [cargar])
   const [texto, setTexto] = useState('')
@@ -235,15 +241,17 @@ function Registro({ alAbrir, descarga }) {
                         >
                           Ver
                         </Boton>
-                        <Boton
-                          variante="contorno"
-                          icono={Download}
-                          aria-label={`Descargar el acta de ${a.nombreDocente}`}
-                          disabled={descarga.descargando === a.idActa}
-                          onClick={() => descarga.descargar(a)}
-                        >
-                          {descarga.descargando === a.idActa ? 'Descargando…' : 'PDF'}
-                        </Boton>
+                        {conPdf && (
+                          <Boton
+                            variante="contorno"
+                            icono={Download}
+                            aria-label={`Descargar el acta de ${a.nombreDocente}`}
+                            disabled={descarga.descargando === a.idActa}
+                            onClick={() => descarga.descargar(a)}
+                          >
+                            {descarga.descargando === a.idActa ? 'Descargando…' : 'PDF'}
+                          </Boton>
+                        )}
                       </div>
                     </td>
                   </tr>
@@ -259,7 +267,7 @@ function Registro({ alAbrir, descarga }) {
 }
 
 /** Ventana con los datos del acta: de quién es, quién firmó y cuándo; descarga y verificación. */
-function DetalleActa({ codigo, descarga, alCerrar }) {
+function DetalleActa({ codigo, descarga, conPdf, alCerrar }) {
   const cargar = useCallback(() => buscarActaPorCodigo(codigo), [codigo])
   const { datos, error, cargando } = useFetch(cargar, [cargar])
   const vigente = datos?.estado === 'FIRMADA'
@@ -302,9 +310,11 @@ function DetalleActa({ codigo, descarga, alCerrar }) {
           </dl>
           {descarga.error && <ErrorApi error={descarga.error} />}
           <div className="registro-actas__pie">
-            <Boton icono={Download} onClick={() => descarga.descargar(datos)} disabled={descarga.descargando === datos.idActa}>
-              {descarga.descargando === datos.idActa ? 'Descargando…' : 'Descargar PDF'}
-            </Boton>
+            {conPdf && (
+              <Boton icono={Download} onClick={() => descarga.descargar(datos)} disabled={descarga.descargando === datos.idActa}>
+                {descarga.descargando === datos.idActa ? 'Descargando…' : 'Descargar PDF'}
+              </Boton>
+            )}
             <Link
               className="boton boton--contorno"
               to={`/verificar-acta/${encodeURIComponent(datos.codigo)}`}

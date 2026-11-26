@@ -1,5 +1,6 @@
 package com.uniautonoma.docentia.controller;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
@@ -7,6 +8,8 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import com.lowagie.text.pdf.PdfReader;
+import com.lowagie.text.pdf.parser.PdfTextExtractor;
 import com.uniautonoma.docentia.EscenarioPrueba;
 import com.uniautonoma.docentia.PruebaIntegracion;
 import com.uniautonoma.docentia.entity.Compromiso;
@@ -39,7 +42,7 @@ class ExpedienteDocenteTest extends PruebaIntegracion {
     derecho = escenario.crearFacultad("Derecho");
     docente =
         escenario.crearDocente(
-            "Julian Hoyos", escenario.crearPrograma("Ingeniería de Software", ingenieria));
+            "Julian Prueba", escenario.crearPrograma("Ingeniería de Software", ingenieria));
     periodoActivo = escenario.crearPeriodoActivo("2026-2");
   }
 
@@ -54,7 +57,7 @@ class ExpedienteDocenteTest extends PruebaIntegracion {
 
     consultarComoCoordinador()
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.docente.nombreCompleto").value("Julian Hoyos"))
+        .andExpect(jsonPath("$.docente.nombreCompleto").value("Julian Prueba"))
         .andExpect(jsonPath("$.periodo.nombre").value("2026-2"))
         .andExpect(jsonPath("$.notasPorFuente[0].fuente").value("ESTUDIANTES"))
         .andExpect(jsonPath("$.notasPorFuente[0].nota").doesNotExist())
@@ -177,6 +180,70 @@ class ExpedienteDocenteTest extends PruebaIntegracion {
     mockMvc
         .perform(get("/expedientes/{id}", docente.getIdUsuario()).with(como(docente)))
         .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void elReporteDeLaCoordinacionNoTraeLasNotasDeLosCoordinadores() throws Exception {
+    var colega = escenario.crearCoordinador("Pedro Lara", ingenieria);
+    escenario.registrarCalificacion(colega, periodoActivo, FuenteEvaluacion.ESTUDIANTES, "2.1");
+    escenario.registrarCalificacion(colega, periodoActivo, FuenteEvaluacion.COORDINACION, "2.2");
+    escenario.registrarCalificacion(colega, periodoActivo, FuenteEvaluacion.AUTOEVALUACION, "2.3");
+
+    String coordinacion =
+        textoDelReporte(
+            get("/expedientes/reporte/pdf").with(comoCoordinador(ingenieria.getIdFacultad())));
+    assertThat(coordinacion)
+        .contains("Julian Prueba")
+        .doesNotContain("Pedro Lara")
+        .doesNotContain("2.2");
+
+    String vicerrectoria = textoDelReporte(get("/expedientes/reporte/pdf").with(comoVicerrector()));
+    assertThat(vicerrectoria).contains("Julian Prueba").contains("Pedro Lara");
+  }
+
+  private String textoDelReporte(org.springframework.test.web.servlet.RequestBuilder peticion)
+      throws Exception {
+    byte[] pdf =
+        mockMvc
+            .perform(peticion)
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsByteArray();
+    PdfReader lector = new PdfReader(pdf);
+    StringBuilder texto = new StringBuilder();
+    for (int pagina = 1; pagina <= lector.getNumberOfPages(); pagina++) {
+      texto.append(new PdfTextExtractor(lector).getTextFromPage(pagina));
+    }
+    lector.close();
+    return texto.toString();
+  }
+
+  @Test
+  void elCoordinadorDescargaUnPdfConTodosLosProfesoresSusTresNotasYElPromedio() throws Exception {
+    escenario.registrarCalificacion(docente, periodoActivo, FuenteEvaluacion.ESTUDIANTES, "4.0");
+    escenario.registrarCalificacion(docente, periodoActivo, FuenteEvaluacion.COORDINACION, "3.5");
+    escenario.registrarCalificacion(docente, periodoActivo, FuenteEvaluacion.AUTOEVALUACION, "4.5");
+
+    byte[] pdf =
+        mockMvc
+            .perform(
+                get("/expedientes/reporte/pdf").with(comoCoordinador(ingenieria.getIdFacultad())))
+            .andExpect(status().isOk())
+            .andReturn()
+            .getResponse()
+            .getContentAsByteArray();
+
+    PdfReader lector = new PdfReader(pdf);
+    String texto = new PdfTextExtractor(lector).getTextFromPage(1);
+    lector.close();
+    assertThat(texto)
+        .contains("Reporte consolidado de evaluación docente")
+        .contains("Julian Prueba")
+        .contains("4.0")
+        .contains("3.5")
+        .contains("4.5")
+        .contains("3.95");
   }
 
   private ResultActions consultarComoCoordinador() throws Exception {

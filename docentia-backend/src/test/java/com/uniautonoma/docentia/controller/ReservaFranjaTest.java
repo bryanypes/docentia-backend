@@ -54,11 +54,11 @@ class ReservaFranjaTest extends PruebaIntegracion {
     Facultad ingenieria = escenario.crearFacultad("Ingeniería");
     Facultad derecho = escenario.crearFacultad("Derecho");
     var software = escenario.crearPrograma("Software", ingenieria);
-    julian = escenario.crearDocente("Julian Hoyos", software);
-    diana = escenario.crearDocente("Diana Astaiza", software);
-    luisa = escenario.crearDocente("Luisa Mosquera", escenario.crearPrograma("Derecho", derecho));
+    julian = escenario.crearDocente("Julian Prueba", software);
+    diana = escenario.crearDocente("Diana Ejemplo", software);
+    luisa = escenario.crearDocente("Luisa Simulacro", escenario.crearPrograma("Derecho", derecho));
     Usuario coordinador = escenario.crearCoordinador("Marta Ruiz", ingenieria);
-    Usuario coordinadoraDerecho = escenario.crearCoordinador("Paola Sarria", derecho);
+    Usuario coordinadoraDerecho = escenario.crearCoordinador("Paola Patrón", derecho);
     periodo =
         escenario.abrirEtapa(
             escenario.crearPeriodoActivo("2026-2"),

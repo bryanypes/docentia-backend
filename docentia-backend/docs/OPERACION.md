@@ -30,8 +30,8 @@ DOCENTIA_API_URL=http://localhost:8080 npm run dev
 
 La fuente del frontend es la carpeta `DocenteIA/` de este monorepo: ahí se desarrolla, la prueba el CI y
 la construye Docker. El repositorio `DocenteIA` es un espejo que se actualiza al publicar una versión.
-`docentia-docker` reúne backend y frontend de una versión publicada; hoy está en 0.3.2 y no tiene la
-heteroevaluación ni el modelo local, así que no sirve para desplegar.
+`docentia-docker` reúne backend y frontend de cada versión publicada (`backend/` y `frontend/`), con la
+misma etiqueta que este repositorio; el commit de cada uno está en la guía de despliegue de esa versión.
 
 ## Usuarios de demo
 
@@ -41,8 +41,8 @@ Contraseña: `Docentia2026*`.
 |-----|--------|
 | Vicerrectoría | `vicerrectoria@uniautonoma.edu.co` |
 | Coordinación | `coordinacion.ingenieria@uniautonoma.edu.co` |
-| Docente con nota 2,85 | `nora.munoz@uniautonoma.edu.co` |
-| Docente con comentarios | `julian.hoyos@uniautonoma.edu.co` |
+| Docente con nota 2,85 | `nora.ficcion@uniautonoma.edu.co` |
+| Docente con comentarios | `julian.prueba@uniautonoma.edu.co` |
 
 ## Primer administrador (paso obligatorio del despliegue)
 
@@ -106,6 +106,12 @@ location /Evadocente-app/ {
 
 ## Variables de entorno
 
+El `docker-compose.yml` no carga el `.env` entero en la API: le pasa solo las variables que nombra en el
+`environment` de `api`. Desde la 0.5.0 nombra todas las que lee la API, con el mismo valor por defecto, y
+el CI lo revisa (`scripts/revisar-variables.py`). **Antes de la 0.5.0, varias del `.env` no surtían
+efecto**, entre ellas `DOCENTIA_IA_MAX_TOKENS_SALIDA`, `DOCENTIA_IA_TIMEOUT_SEGUNDOS`,
+`DOCENTIA_CORS_ORIGENES`, `DOCENTIA_PROCESO_EXIGIR_ASISTENCIA` y `DOCENTIA_ACTAS_EXIGIR_FIRMA_DIBUJADA`.
+
 | Variable | Obligatoria en producción | Uso |
 |----------|---------------------------|-----|
 | `SPRING_PROFILES_ACTIVE` | Sí, `prod` | `dev` carga usuarios y datos de demostración; `prod` no carga ninguno |
@@ -125,9 +131,13 @@ location /Evadocente-app/ {
 | `DOCENTIA_COMPROMISOS_UMBRAL` | No, 3.8 | Bajo esta nota el acta exige compromisos (por confirmar: 3,8 o 4,00) |
 | `DOCENTIA_ACTAS_ROL_CORRECTOR` | No, `VICERRECTOR` | Quién corrige actas firmadas (`VICERRECTOR` o `COORDINADOR`) |
 | `DOCENTIA_HETEROEVALUACION_MINIMO` | No, 5 | Respuestas mínimas para usar y mostrar la nota de estudiantes |
+| `DOCENTIA_HETEROEVALUACION_BLOQUE` | No, 4 | Con la recolección abierta, la nota de estudiantes se publica al llegar al mínimo y luego cada tantas respuestas más (5, 9, 13…). Al cerrar se consolida con todas, en la tarea que corre cada 15 minutos |
 | `DOCENTIA_PROCESO_EXIGIR_ASISTENCIA` | No, `true` | El docente ve su resultado y firma solo tras registrar la asistencia |
 | `DOCENTIA_ACTAS_EXIGIR_FIRMA_DIBUJADA` | No, `true` | La firma lleva imagen (dibujada, escrita o PNG) |
 | `DOCENTIA_ACTAS_LOGO` | No | Logo del PDF; por defecto el de la universidad incluido |
+| `DOCENTIA_ACTAS_ROTULO_DOCUMENTO` | No, `Código` | Rótulo del documento del docente tomado de `usuarios.codigo`; vacío no lo imprime |
+| `DOCENTIA_ACTAS_FORMATO_CODIGO` | No | Código del formato institucional impreso en el membrete; vacío hasta que la institución lo defina |
+| `DOCENTIA_ACTAS_FORMATO_VERSION` | No | Versión del formato institucional impreso en el membrete |
 | `DOCENTIA_UMBRAL_REVISION` | No | Nota final por debajo de la cual el docente queda «Para revisar» y la vicerrectoría recibe un aviso. Vacía: `4.0`. No cambia las categorías de la Resolución 074 |
 | `DOCENTIA_ACTAS_URL_VERIFICACION` | No | Dirección pública impresa en el PDF para verificar el acta. Vacía: `https://nova.uniautonoma.edu.co/Evadocente-app` |
 | `DOCENTIA_PERIODOS_MES_FIN_PRIMER_SEMESTRE` | No, 6 | Mes de corte del nombre automático del periodo (por confirmar) |
@@ -168,7 +178,7 @@ donde se corren; para otro proyecto de Compose, exporta antes `COMPOSE_PROJECT_N
 
 ## Despliegue de 0.4.0 (sábado 14 de noviembre de 2026)
 
-Pasa el servidor de 0.3.3 (migración V28) a 0.4.0 (V41). Las migraciones nuevas son V34 a V41: agregan
+Pasa el servidor de 0.3.3 (migración V28) a 0.4.0 (V43). Las migraciones nuevas son V34 a V43: agregan
 tablas y columnas, normalizan mayúsculas y tildes de nombres (V38 y V39) y no borran filas. No tienen
 vuelta atrás: el retorno es restaurar el respaldo.
 

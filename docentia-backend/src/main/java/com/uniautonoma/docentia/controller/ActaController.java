@@ -160,8 +160,9 @@ public class ActaController {
     return acta;
   }
 
+  /** Con nota: no lo descarga la administración, que solo ve el registro. */
   @GetMapping("/{idActa}/pdf")
-  @PreAuthorize("hasAnyRole('COORDINADOR', 'DOCENTE', 'VICERRECTOR', 'ADMINISTRADOR')")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'DOCENTE', 'VICERRECTOR')")
   public ResponseEntity<byte[]> descargarPdf(
       @PathVariable Long idActa, @AuthenticationPrincipal UsuarioSesion sesion) {
     PdfActa pdf = actaService.descargarPdf(idActa, sesion);

@@ -14,7 +14,7 @@ Si en el periodo no tienes materias asignadas, **Mi evaluación** lo dice y te o
 
 | Entrada | Para qué |
 |---|---|
-| Mi evaluación | Las etapas del periodo, el avance de tu proceso y, después de la reunión, tu resultado y tus compromisos |
+| Mi evaluación | Las etapas del periodo, el avance de tu proceso, tu histórico de promedios finales y, después de la reunión, tu resultado y tus compromisos |
 | Mi autoevaluación | Responder los catorce ítems del Anexo 1 |
 | Mi cita | Reservar, confirmar o cambiar la reunión de retroalimentación |
 | Mi acta | Ver y firmar el acta, y descargar el PDF |
@@ -45,3 +45,6 @@ Solo se puede responder mientras la etapa de recolección está abierta.
 3. Marca la confirmación de lectura y pulsa **Firmar acta**. La firma no se puede retirar.
 
 Con las dos firmas, la tuya y la de la coordinación, se genera el PDF con un código de verificación. Si tu nota está por debajo del umbral (3,8), el acta incluye compromisos con plazo que se revisan el periodo siguiente.
+
+En **Mi evaluación** puedes consultar el promedio final de tus periodos anteriores. Historial y actas
+muestran resultados finales, no las notas separadas de estudiantes, coordinación y autoevaluación.

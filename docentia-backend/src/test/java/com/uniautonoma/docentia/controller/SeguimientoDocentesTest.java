@@ -32,8 +32,8 @@ class SeguimientoDocentesTest extends PruebaIntegracion {
     ingenieria = escenario.crearFacultad("Ingeniería");
     derecho = escenario.crearFacultad("Derecho");
     julian =
-        escenario.crearDocente("Julian Hoyos", escenario.crearPrograma("Software", ingenieria));
-    luisa = escenario.crearDocente("Luisa Mosquera", escenario.crearPrograma("Leyes", derecho));
+        escenario.crearDocente("Julian Prueba", escenario.crearPrograma("Software", ingenieria));
+    luisa = escenario.crearDocente("Luisa Simulacro", escenario.crearPrograma("Leyes", derecho));
   }
 
   @Test
@@ -47,7 +47,7 @@ class SeguimientoDocentesTest extends PruebaIntegracion {
         .perform(get("/docentes/seguimiento").with(comoVicerrector()))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.periodo.nombre").value("2026-2"))
-        .andExpect(jsonPath("$.docentes[0].docente.nombreCompleto").value("Julian Hoyos"))
+        .andExpect(jsonPath("$.docentes[0].docente.nombreCompleto").value("Julian Prueba"))
         .andExpect(jsonPath("$.docentes[0].promedio.estado").value("COMPLETO"))
         .andExpect(jsonPath("$.docentes[0].promedio.valor").value(4.0))
         .andExpect(jsonPath("$.docentes[0].notasPorFuente").doesNotExist())
@@ -68,7 +68,7 @@ class SeguimientoDocentesTest extends PruebaIntegracion {
             get("/docentes/seguimiento")
                 .param("idFacultad", derecho.getIdFacultad().toString())
                 .with(comoCoordinador(ingenieria.getIdFacultad())))
-        .andExpect(jsonPath("$.docentes[*].docente.nombreCompleto", contains("Julian Hoyos")));
+        .andExpect(jsonPath("$.docentes[*].docente.nombreCompleto", contains("Julian Prueba")));
   }
 
   @Test
@@ -80,7 +80,7 @@ class SeguimientoDocentesTest extends PruebaIntegracion {
             get("/docentes/seguimiento")
                 .param("idFacultad", derecho.getIdFacultad().toString())
                 .with(comoVicerrector()))
-        .andExpect(jsonPath("$.docentes[*].docente.nombreCompleto", contains("Luisa Mosquera")));
+        .andExpect(jsonPath("$.docentes[*].docente.nombreCompleto", contains("Luisa Simulacro")));
   }
 
   @Test

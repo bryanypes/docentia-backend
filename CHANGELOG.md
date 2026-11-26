@@ -1,6 +1,86 @@
 # Cambios
 
-## Sin publicar: análisis robusto
+## 0.5.0 (por publicar)
+
+Se instala sobre 0.4.1, la versión de producción: guía en `docentia-backend/docs/DESPLIEGUE-0.5.0.md`.
+La base pasa de V43 a **V52**, y el `docker-compose.yml` pasa todas las variables al contenedor.
+
+### Seguridad
+
+- **Reporte PDF colectivo:** la coordinación ve solo a los docentes de su facultad; antes traía también
+  a los coordinadores con sus tres notas por fuente. La vicerrectoría ve a todos.
+- **`log4j-api` 2.25.5** (CVE-2026-49844, transitiva). Las CVE-2026-47884 y CVE-2026-47890 de
+  `spring-webmvc` 6.2.19 no aplican: el código no usa `XsltView` ni SSE con vistas, y su corrección
+  exige Spring Boot 4.
+
+### Alcance de las actas e identificación en pantalla
+
+- **La coordinación ya no ve el acta de otro coordinador.** Al pasar el alcance de las actas a la
+  facultad congelada, un coordinador podía abrir (con nota y PDF) el acta de un colega coordinador de
+  su misma escuela, que evalúa la vicerrectoría. Ahora la coordinación solo ve las actas de docentes.
+- **La pantalla del acta muestra lo que el acta congeló**: docente, código, cargo, programa, escuela,
+  periodo, quién evaluó, reunión, ponderación y aspectos conversados. El número de respuestas de
+  estudiantes solo lo ven la coordinación y la vicerrectoría.
+
+### Histórico propio y reporte colectivo
+
+- **El docente conserva su historial final.** `ExpedientePropioResponse` incluye los promedios
+  completos de periodos anteriores, sin las tres notas por fuente. También puede abrir sus actas
+  desde «Mi evaluación».
+- **El coordinador descarga un PDF consolidado.** El reporte del periodo activo incluye a los
+  profesores de su facultad con estudiantes, evaluación institucional, autoevaluación y promedio.
+  La vicerrectoría obtiene el reporte de toda la universidad. Las páginas no incluyen administradores
+  ni estudiantes y respetan el alcance por facultad.
+
+### Acta completa y congelada
+
+- **El acta guarda una copia de lo que imprime.** Desde la creación conserva identificación del
+  docente, programa y facultad, periodo, cita, pesos, número de respuestas y aspectos conversados.
+  Hasta la primera firma se actualiza; desde esa firma queda fija para las firmas siguientes y el PDF.
+- **La base protege todo el contenido firmado.** Firmada o anulada, el acta no admite cambios. Con una
+  primera firma, el borrador ya no puede cambiar su contenido hasta cerrar la segunda firma. Las
+  firmas y los compromisos tampoco cambian después de cerrar el acta; solo se registra el seguimiento
+  de cada compromiso.
+- **El PDF muestra el formato configurable.** Los datos propuestos quedan identificados: código del
+  docente con `usuarios.codigo`, rótulo configurable, código y versión del formato y dirección pública
+  de verificación. El formato institucional definitivo puede cambiarse sin renombrar columnas.
+- Migraciones nuevas: la base pasa de V50 a **V52** (V51 guarda también la facultad del acta, que
+  fija su alcance).
+- Pruebas nuevas: congelamiento antes y después de la primera firma, cambios rechazados por la base,
+  firmas y compromisos inmutables, y ejercicios de migración.
+
+### Puesta al día
+
+- **Todas las variables de entorno llegan a la API.** El `docker-compose.yml` solo pasaba una parte: 21
+  variables del `.env` no surtían efecto, entre ellas `DOCENTIA_IA_MAX_TOKENS_SALIDA`,
+  `DOCENTIA_IA_TIMEOUT_SEGUNDOS`, `DOCENTIA_CORS_ORIGENES`, `DOCENTIA_PROCESO_EXIGIR_ASISTENCIA` y
+  `DOCENTIA_ACTAS_EXIGIR_FIRMA_DIBUJADA`. Ahora van todas, con el mismo valor por defecto, y el CI lo
+  revisa (`scripts/revisar-variables.py`).
+- **La administración ya no descarga el PDF de las actas**: lleva la nota y ella no ve notas. Sigue
+  viendo el registro de actas firmadas (quién, quién firmó, cuándo y el código).
+- **`ROLES.md` se genera desde el código** (`scripts/generar-roles.py`) y el CI revisa que esté al día.
+  Estaba atrasado: tenía 115 de 130 rutas y permisos de antes de la 0.4.3.
+- Documentación al día: migraciones y roles en `ARQUITECTURA.md`, `docentia-docker` y V43 en
+  `OPERACION.md`, limitaciones que ya no aplican, manual de la administración.
+- Pruebas: `@MockBean`, obsoleto, pasa a `@MockitoBean`.
+
+### Anonimato de la nota de estudiantes
+
+Corrige el hueco de anonimato que abrió `b6fbadf` y el caso que ese commit resolvía.
+
+- **La nota de estudiantes se publica al llegar al mínimo** (5 respuestas) y, con la recolección
+  abierta, luego cada 4 respuestas más (9, 13…; `DOCENTIA_HETEROEVALUACION_BLOQUE`). Así ya no hay
+  que esperar 8 respuestas, y un grupo pequeño tiene nota desde la quinta; ningún cambio de nota
+  corresponde a una sola respuesta. Al cerrar la recolección se consolida con todas.
+- **La tarea periódica revisa siempre** (abierta o cerrada la recolección) con la misma regla: repara
+  una nota que no se alcanzó a recalcular. Recalcular sin cambios no escribe nada ni deja rastro en el
+  historial de correcciones.
+- **El envío y la tarea ya no se pisan**: un bloqueo por docente y periodo evita que dos recálculos
+  simultáneos creen la nota dos veces.
+- `DOCENTIA_HETEROEVALUACION_MINIMO` y `DOCENTIA_HETEROEVALUACION_BLOQUE` llegan al contenedor por el
+  `docker-compose.yml`.
+
+### Análisis robusto
 
 Solo backend y frontend. Sin migraciones: la base sigue en V50.
 
@@ -17,7 +97,7 @@ Solo backend y frontend. Sin migraciones: la base sigue en V50.
   `temperature` menor que 1 en el endpoint compatible.
 - **Pruebas de robustez del modelo local** con 0 a 5.000 comentarios y entradas raras.
 
-## Sin versión (20 de noviembre de 2026)
+### Después de la 0.4.4 (20 de noviembre de 2026)
 
 Backend y frontend juntos. Sin migraciones: la base sigue en V50.
 

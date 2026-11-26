@@ -16,10 +16,10 @@ import com.uniautonoma.docentia.security.VerificadorTokenGoogle;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 
 @TestPropertySource(
     properties = {"docentia.google.client-id=cliente-de-prueba.apps.googleusercontent.com"})
@@ -32,7 +32,7 @@ class SesionGoogleControllerTest extends PruebaIntegracion {
   @Autowired private FacultadRepository facultadRepository;
   @Autowired private PasswordEncoder passwordEncoder;
 
-  @MockBean private VerificadorTokenGoogle verificadorTokenGoogle;
+  @MockitoBean private VerificadorTokenGoogle verificadorTokenGoogle;
 
   @BeforeEach
   void crearUsuario() {

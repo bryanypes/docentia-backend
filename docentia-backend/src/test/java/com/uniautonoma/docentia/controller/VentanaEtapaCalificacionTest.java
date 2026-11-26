@@ -38,9 +38,9 @@ class VentanaEtapaCalificacionTest extends PruebaIntegracion {
     Facultad ingenieria = escenario.crearFacultad("Ingeniería");
     docente =
         escenario.crearDocente(
-            "Julian Hoyos", escenario.crearPrograma("Ingeniería de Software", ingenieria));
+            "Julian Prueba", escenario.crearPrograma("Ingeniería de Software", ingenieria));
     coordinador = escenario.crearCoordinador("Marta Ruiz", ingenieria);
-    vicerrector = escenario.crearVicerrector("Elena Munoz");
+    vicerrector = escenario.crearVicerrector("Elena Ficcion");
   }
 
   @Test
@@ -82,7 +82,7 @@ class VentanaEtapaCalificacionTest extends PruebaIntegracion {
   void unDocenteFueraDeAlcanceSigueRespondiendoNoEncontradoAntesQueLaEtapa() throws Exception {
     escenario.crearPeriodoActivoConRecoleccion("2026-2", HOY.plusDays(1), HOY.plusDays(10));
     Usuario coordinadorDerecho =
-        escenario.crearCoordinador("Paola Sarria", escenario.crearFacultad("Derecho"));
+        escenario.crearCoordinador("Paola Patrón", escenario.crearFacultad("Derecho"));
 
     calificar(coordinadorDerecho, "coordinacion").andExpect(status().isNotFound());
   }

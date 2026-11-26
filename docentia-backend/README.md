@@ -81,24 +81,24 @@ usuarios, todos con la contraseña `Docentia2026*`:
 | Vicerrector  | vicerrectoria@uniautonoma.edu.co           | Toda la universidad    |
 | Coordinador  | coordinacion.ingenieria@uniautonoma.edu.co | Facultad de Ingeniería |
 | Coordinador  | coordinacion.derecho@uniautonoma.edu.co    | Facultad de Derecho    |
-| Docente      | julian.hoyos@uniautonoma.edu.co            | Ingeniería de Software |
-| Docente      | diana.astaiza@uniautonoma.edu.co           | Ingeniería de Software |
-| Docente      | oscar.chantre@uniautonoma.edu.co           | Ingeniería Electrónica |
-| Docente      | luisa.mosquera@uniautonoma.edu.co          | Derecho                |
-| Docente      | hector.quilindo@uniautonoma.edu.co         | Derecho                |
-| Estudiante   | karen.mancilla@uniautonoma.edu.co          | Administración (3 clases Campus) |
-| Estudiante   | andrea.nieto@uniautonoma.edu.co            | Administración (Zulema grupo B) |
+| Docente      | julian.prueba@uniautonoma.edu.co            | Ingeniería de Software |
+| Docente      | diana.ejemplo@uniautonoma.edu.co           | Ingeniería de Software |
+| Docente      | oscar.modelo@uniautonoma.edu.co           | Ingeniería Electrónica |
+| Docente      | luisa.simulacro@uniautonoma.edu.co          | Derecho                |
+| Docente      | hector.boceto@uniautonoma.edu.co         | Derecho                |
+| Estudiante   | sara.ficha@uniautonoma.edu.co          | Administración (3 clases Campus) |
+| Estudiante   | daniela.maqueta@uniautonoma.edu.co            | Administración (Lucía grupo B) |
 | Estudiante   | estudiante.sinmaterias@uniautonoma.edu.co  | Sin matrículas: «No tienes docentes por evaluar» |
 | Docente      | docente.sinmaterias@uniautonoma.edu.co     | Sin clases ni notas: «No tienes materias asignadas» |
 
-Si la base arranca vacía, el seed de Campus (`campus-clases-demo.json`) también crea a Zulema León,
-Martín Valencia y Francisco Ramírez como docentes, y a Karen Mancilla y Andrea Nieto como
+Si la base arranca vacía, el seed de Campus (`campus-clases-demo.json`) también crea a Lucía Prototipo,
+Tomás Réplica y Gabriel Calco como docentes, y a Sara Ficha y Daniela Maqueta como
 estudiantes, todos con la misma contraseña.
 
 Además quedan el periodo 2026-1 cerrado y el 2026-2 activo. En 2026-2 la nota de cada docente sale de
 tres fuentes: estudiantes (50 %), coordinación (30 %) y autoevaluación (20 %). Con las tres quedan
-COMPLETO: Camilo Vidal 4,75 (muy alto), Julián Hoyos 4,34 y Diana Astaiza 4,31 (alto), Laura Demo 3,50
-(aceptable), Nora Muñoz 2,85 (bajo) y Ramiro Paz 1,90 (muy bajo). Los demás quedan SIN_NOTA.
+COMPLETO: Camilo Ensayo 4,75 (muy alto), Julián Prueba 4,34 y Diana Ejemplo 4,31 (alto), Laura Demo 3,50
+(aceptable), Nora Ficción 2,85 (bajo) y Ramiro Muestra 1,90 (muy bajo). Los demás quedan SIN_NOTA.
 
 Las etapas de 2026-2 son: recolección de calificaciones del 28 de septiembre al 13 de noviembre,
 revisión de hallazgos del 13 de octubre al 20 de noviembre, agenda de citas del 13 de octubre al 27 de

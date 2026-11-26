@@ -96,6 +96,28 @@ public interface UsuarioRepository extends JpaRepository<Usuario, Long> {
   Optional<Usuario> findByIdUsuarioAndRolInAndEsActivoTrue(Long idUsuario, Collection<Rol> roles);
 
   /**
+   * Evaluables activos para el informe colectivo. Sin facultad (vicerrectoría): docentes y
+   * coordinadores. Con facultad (coordinación): solo los docentes de sus programas; a los
+   * coordinadores los evalúa la vicerrectoría y sus notas no las ve otro coordinador.
+   */
+  @Query(
+      """
+      select u from Usuario u
+      left join fetch u.programa p
+      left join fetch p.facultad pf
+      left join fetch u.facultad uf
+      where u.esActivo = true
+        and u.rol in (
+          com.uniautonoma.docentia.entity.Rol.DOCENTE,
+          com.uniautonoma.docentia.entity.Rol.COORDINADOR)
+        and (:idFacultad is null
+          or (u.rol = com.uniautonoma.docentia.entity.Rol.DOCENTE
+              and pf.idFacultad = :idFacultad))
+      order by u.nombreCompleto asc
+      """)
+  List<Usuario> buscarEvaluablesActivosPorFacultad(Long idFacultad);
+
+  /**
    * Lista los usuarios activos de un rol cuyos programas pertenecen a una facultad.
    *
    * @param rol rol buscado

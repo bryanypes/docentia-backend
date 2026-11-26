@@ -106,7 +106,7 @@ class CuentaUsuarioTest extends PruebaIntegracion {
   @Test
   void restablecerLaContrasenaLaVuelveTemporal() throws Exception {
     Usuario docente =
-        escenario.crearDocente("Julian Hoyos", escenario.crearPrograma("Software", ingenieria));
+        escenario.crearDocente("Julian Prueba", escenario.crearPrograma("Software", ingenieria));
 
     mockMvc
         .perform(
@@ -116,7 +116,7 @@ class CuentaUsuarioTest extends PruebaIntegracion {
                 .content(
                     aJson(
                         new UsuarioRequest(
-                            "Julian Hoyos",
+                            "Julian Prueba",
                             docente.getCorreo(),
                             Rol.DOCENTE,
                             null,
@@ -143,7 +143,7 @@ class CuentaUsuarioTest extends PruebaIntegracion {
 
   @Test
   void nadieDesactivaSuPropiaCuentaYSoloLaVicerrectoriaCambiaElEstado() throws Exception {
-    Usuario vicerrectora = escenario.crearConRol("Elena Munoz", Rol.ADMINISTRADOR);
+    Usuario vicerrectora = escenario.crearConRol("Elena Ficcion", Rol.ADMINISTRADOR);
     Usuario coordinador = escenario.crearCoordinador("Marta Ruiz", ingenieria);
 
     mockMvc

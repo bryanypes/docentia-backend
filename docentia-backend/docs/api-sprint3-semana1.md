@@ -62,8 +62,8 @@ Coordinador, docente y estudiante reciben 403.
 [
   {
     "idUsuario": 4,
-    "nombreCompleto": "Julián Camilo Hoyos",
-    "correo": "julian.hoyos@uniautonoma.edu.co",
+    "nombreCompleto": "Julián Camilo Prueba",
+    "correo": "julian.prueba@uniautonoma.edu.co",
     "rol": "DOCENTE",
     "idFacultad": 1,
     "nombreFacultad": "Facultad de Ingeniería",
@@ -242,7 +242,7 @@ Roles: `COORDINADOR` (solo docentes de su facultad; otro docente → `404 Docent
     "promedioAnterior": { "estado": "COMPLETO", "valor": 3.90, "fuentesPendientes": [] },
     "promedioNuevo": { "estado": "COMPLETO", "valor": 4.50, "fuentesPendientes": [] },
     "idUsuario": 2,
-    "nombreUsuario": "Andrés Felipe Ordóñez",
+    "nombreUsuario": "Andrés Felipe Plantilla",
     "motivo": "Error de digitación en la visita de aula",
     "fechaCorreccion": "2026-10-20T10:15:42.120331"
   }
@@ -340,8 +340,8 @@ Las demás columnas (nombre, programa, etc.) se ignoran.
   ],
   "docentes": [
     {
-      "idDocente": 4, "nombreCompleto": "Julián Camilo Hoyos",
-      "correo": "julian.hoyos@uniautonoma.edu.co",
+      "idDocente": 4, "nombreCompleto": "Julián Camilo Prueba",
+      "correo": "julian.prueba@uniautonoma.edu.co",
       "filas": 2, "filasConNotas": 2, "comentarios": 2,
       "dominioDisciplinar": 4.25, "planeacionAcademica": 4.00, "metodologiaEnsenanza": 4.00,
       "evaluacionAprendizaje": 4.00, "compromisoInstitucional": 4.00, "notaFuente": 4.05
@@ -377,7 +377,7 @@ Importa en el **periodo activo**. Respuestas:
     "nombreArchivo": "evaluacion-estudiantes.csv",
     "hashSha256": "9f2c…",
     "idPeriodo": 2, "nombrePeriodo": "2026-2",
-    "idUsuario": 2, "nombreUsuario": "Andrés Felipe Ordóñez",
+    "idUsuario": 2, "nombreUsuario": "Andrés Felipe Plantilla",
     "fechaImportacion": "2026-10-20T09:41:10.231",
     "resultado": "EXITOSA",
     "codificacion": "UTF-8", "delimitador": ";",
@@ -499,7 +499,9 @@ dos veces o si no cubre los campos obligatorios.
 
 `204`. `404` si no existe o es de otro coordinador.
 
-### Archivos de ejemplo (`docs/ejemplos/`)
+### Archivos de ejemplo (retirados)
+
+Se quitaron del repositorio junto con la carga por CSV; quedan en el historial de git.
 
 | Archivo | Para qué |
 | ------- | -------- |

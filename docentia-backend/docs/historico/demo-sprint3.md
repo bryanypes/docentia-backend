@@ -131,7 +131,7 @@ Validar un hallazgo (E3) y comprobar que el docente no ve el borrador:
 
 ```bash
 curl -s -X POST -H "Authorization: Bearer $C" $B/analisis-ia/hallazgos/1/validacion | json   # VALIDADO
-J=$(login julian.hoyos@uniautonoma.edu.co)
+J=$(login julian.prueba@uniautonoma.edu.co)
 curl -s -o /dev/null -w "%{http_code}\n" -H "Authorization: Bearer $J" $B/analisis-ia/solicitudes/1   # 403
 ```
 
@@ -159,7 +159,7 @@ curl -s -X POST -H "Authorization: Bearer $C" -H 'Content-Type: application/json
 ## 7. Login docente y reserva (F2)
 
 ```bash
-J=$(login julian.hoyos@uniautonoma.edu.co)
+J=$(login julian.prueba@uniautonoma.edu.co)
 curl -s -H "Authorization: Bearer $J" $B/franjas/disponibles | json
 curl -s -X POST -H "Authorization: Bearer $J" $B/franjas/1/reserva | json     # 201, idCitaLiberada null
 curl -s -X POST -H "Authorization: Bearer $J" $B/franjas/2/reserva | json     # 201, idCitaLiberada = la anterior
@@ -167,7 +167,7 @@ curl -s -H "Authorization: Bearer $J" $B/citas/mia | json
 curl -s -H "Authorization: Bearer $C" "$B/franjas?fecha=2026-11-09" | json    # el coordinador ve quién reservó
 ```
 
-Para mostrar el conflicto: con Diana (`diana.astaiza@uniautonoma.edu.co`) intentar reservar la
+Para mostrar el conflicto: con Diana (`diana.ejemplo@uniautonoma.edu.co`) intentar reservar la
 franja que ya tiene Julián → `409 "La franja ya fue reservada por otro docente"`.
 
 ## Si algo no sale

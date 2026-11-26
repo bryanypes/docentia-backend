@@ -14,8 +14,7 @@ class NombrePropioTest {
         .isEqualTo("Finanzas y Negocios Internacionales");
     assertThat(NombrePropio.normalizar("DESARROLLO DE APLICACIONES MÓVILES"))
         .isEqualTo("Desarrollo de Aplicaciones Móviles");
-    assertThat(NombrePropio.normalizar("  karen   verónica mancilla  "))
-        .isEqualTo("Karen Verónica Mancilla");
+    assertThat(NombrePropio.normalizar("  sara   isabel ficha  ")).isEqualTo("Sara Isabel Ficha");
     assertThat(NombrePropio.normalizar("ELECTIVA II (OPTATIVA)"))
         .isEqualTo("Electiva II (Optativa)");
     assertThat(NombrePropio.normalizar("DE LA CRUZ")).isEqualTo("De la Cruz");

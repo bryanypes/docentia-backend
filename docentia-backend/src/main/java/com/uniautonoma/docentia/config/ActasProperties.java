@@ -20,10 +20,28 @@ public record ActasProperties(@DefaultValue Compromisos compromisos, @DefaultVal
 
   /**
    * @param exigirFirmaDibujada la firma lleva el trazo hecho en la página, que va al PDF
+   * @param rotuloDocumento cómo se llama en el acta el código del docente ({@code
+   *     usuarios.codigo}); vacío, el acta no lo guarda ni lo imprime
+   * @param formatoCodigo código del formato institucional del acta; vacío mientras no exista
+   * @param formatoVersion versión de ese formato
    */
   public record Actas(
       @DefaultValue("VICERRECTOR") Rol rolCorrector,
-      @DefaultValue("true") boolean exigirFirmaDibujada) {}
+      @DefaultValue("true") boolean exigirFirmaDibujada,
+      @DefaultValue("Código") String rotuloDocumento,
+      String formatoCodigo,
+      String formatoVersion) {
+
+    public Actas {
+      rotuloDocumento = vacioANulo(rotuloDocumento);
+      formatoCodigo = vacioANulo(formatoCodigo);
+      formatoVersion = vacioANulo(formatoVersion);
+    }
+
+    private static String vacioANulo(String texto) {
+      return texto == null || texto.isBlank() ? null : texto.strip();
+    }
+  }
 
   @Configuration
   @EnableConfigurationProperties(ActasProperties.class)

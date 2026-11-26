@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { validarUsuario } from './validators.js'
 
 const base = {
-  nombreCompleto: 'Karen Mancilla',
-  correo: 'karen@uniautonoma.edu.co',
+  nombreCompleto: 'Sara Ficha',
+  correo: 'sara@uniautonoma.edu.co',
   contrasena: 'Docentia2026*',
   rol: '',
   idFacultad: '',

@@ -123,7 +123,7 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
       sembrarCatalogoLocal(hash);
     }
     // El recorte Campus es idempotente: tiene que correr también si la base ya tenía el seed
-    // de Ingeniería/Derecho (si no, Karen no existe y el login responde 401).
+    // de Ingeniería/Derecho (si no, Sara no existe y el login responde 401).
     periodoRepository
         .findByEsActivoTrue()
         .ifPresent(periodo -> cargadorClasesCampus.cargarDemo(periodo, hash));
@@ -145,7 +145,8 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
 
     Usuario vicerrector =
         usuarioRepository.save(
-            Usuario.crearVicerrector("Elena Muñoz Cerón", "vicerrectoria" + DOMINIO_CORREO, hash));
+            Usuario.crearVicerrector(
+                "Elena Ficción Borrador", "vicerrectoria" + DOMINIO_CORREO, hash));
     usuarioRepository.save(
         Usuario.crear(
             "Administración Demo",
@@ -165,23 +166,23 @@ public class CargadorDatosDesarrollo implements CommandLineRunner {
     Usuario coordinadorIngenieria =
         usuarioRepository.save(
             Usuario.crearCoordinador(
-                "Andrés Felipe Ordóñez",
+                "Andrés Felipe Plantilla",
                 "coordinacion.ingenieria" + DOMINIO_CORREO,
                 hash,
                 ingenieria));
     Usuario coordinadorDerecho =
         usuarioRepository.save(
             Usuario.crearCoordinador(
-                "Paola Andrea Sarria", "coordinacion.derecho" + DOMINIO_CORREO, hash, derecho));
+                "Paola Andrea Patrón", "coordinacion.derecho" + DOMINIO_CORREO, hash, derecho));
 
-    Usuario julian = crearDocente("Julián Camilo Hoyos", "julian.hoyos", hash, software);
-    Usuario diana = crearDocente("Diana Marcela Astaiza", "diana.astaiza", hash, software);
-    crearDocente("Óscar Iván Chantre", "oscar.chantre", hash, electronica);
-    Usuario nora = crearDocente("Nora Patricia Muñoz", "nora.munoz", hash, software);
-    Usuario camilo = crearDocente("Camilo Andrés Vidal", "camilo.vidal", hash, software);
-    Usuario ramiro = crearDocente("Ramiro Antonio Paz", "ramiro.paz", hash, electronica);
-    crearDocente("Luisa Fernanda Mosquera", "luisa.mosquera", hash, programaDerecho);
-    crearDocente("Héctor Fabio Quilindo", "hector.quilindo", hash, programaDerecho);
+    Usuario julian = crearDocente("Julián Camilo Prueba", "julian.prueba", hash, software);
+    Usuario diana = crearDocente("Diana Marcela Ejemplo", "diana.ejemplo", hash, software);
+    crearDocente("Óscar Iván Modelo", "oscar.modelo", hash, electronica);
+    Usuario nora = crearDocente("Nora Patricia Ficción", "nora.ficcion", hash, software);
+    Usuario camilo = crearDocente("Camilo Andrés Ensayo", "camilo.ensayo", hash, software);
+    Usuario ramiro = crearDocente("Ramiro Antonio Muestra", "ramiro.muestra", hash, electronica);
+    crearDocente("Luisa Fernanda Simulacro", "luisa.simulacro", hash, programaDerecho);
+    crearDocente("Héctor Fabio Boceto", "hector.boceto", hash, programaDerecho);
 
     PeriodoAcademico periodoAnterior =
         periodoRepository.save(

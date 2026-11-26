@@ -5,6 +5,10 @@ import com.uniautonoma.docentia.dto.ExpedienteDocenteResponse;
 import com.uniautonoma.docentia.dto.ExpedientePropioResponse;
 import com.uniautonoma.docentia.security.UsuarioSesion;
 import com.uniautonoma.docentia.service.ExpedienteService;
+import org.springframework.http.ContentDisposition;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -21,6 +25,25 @@ public class ExpedienteController {
 
   public ExpedienteController(ExpedienteService expedienteService) {
     this.expedienteService = expedienteService;
+  }
+
+  /**
+   * Reporte PDF colectivo: coordinación solo dentro de su facultad; vicerrectoría en toda la
+   * universidad.
+   */
+  @GetMapping("/reporte/pdf")
+  @PreAuthorize("hasAnyRole('COORDINADOR', 'VICERRECTOR')")
+  public ResponseEntity<byte[]> descargarReporte(@AuthenticationPrincipal UsuarioSesion sesion) {
+    byte[] pdf = expedienteService.generarReportePdf(sesion);
+    return ResponseEntity.ok()
+        .contentType(MediaType.APPLICATION_PDF)
+        .header(
+            HttpHeaders.CONTENT_DISPOSITION,
+            ContentDisposition.attachment()
+                .filename("reporte-evaluacion-docente.pdf")
+                .build()
+                .toString())
+        .body(pdf);
   }
 
   /**

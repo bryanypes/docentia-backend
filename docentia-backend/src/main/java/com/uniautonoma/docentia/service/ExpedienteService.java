@@ -5,6 +5,7 @@ import com.uniautonoma.docentia.dto.ComparativoProgramaResponse.FuenteComparada;
 import com.uniautonoma.docentia.dto.CompromisoResponse;
 import com.uniautonoma.docentia.dto.DimensionPorFuenteResponse;
 import com.uniautonoma.docentia.dto.DocenteResponse;
+import com.uniautonoma.docentia.dto.EstadoPromedio;
 import com.uniautonoma.docentia.dto.ExpedienteDocenteResponse;
 import com.uniautonoma.docentia.dto.ExpedientePropioResponse;
 import com.uniautonoma.docentia.dto.NotaFuenteResponse;
@@ -52,6 +53,7 @@ public class ExpedienteService {
   private final PeriodoAcademicoService periodoService;
   private final PromedioService promedioService;
   private final ProcesoEvaluacionService procesoService;
+  private final GeneradorReporteEvaluacionPdf generadorReportePdf;
 
   public ExpedienteService(
       UsuarioRepository usuarioRepository,
@@ -61,7 +63,8 @@ public class ExpedienteService {
       DocenteService docenteService,
       PeriodoAcademicoService periodoService,
       PromedioService promedioService,
-      ProcesoEvaluacionService procesoService) {
+      ProcesoEvaluacionService procesoService,
+      GeneradorReporteEvaluacionPdf generadorReportePdf) {
     this.usuarioRepository = usuarioRepository;
     this.calificacionRepository = calificacionRepository;
     this.compromisoRepository = compromisoRepository;
@@ -70,6 +73,7 @@ public class ExpedienteService {
     this.periodoService = periodoService;
     this.promedioService = promedioService;
     this.procesoService = procesoService;
+    this.generadorReportePdf = generadorReportePdf;
   }
 
   /**
@@ -147,7 +151,57 @@ public class ExpedienteService {
                         .findByPeriodoIdPeriodoAndDocentesIdUsuario(
                             periodo.getIdPeriodo(), docente.getIdUsuario())
                         .size())
-            .orElse(0));
+            .orElse(0),
+        listarHistorico(
+            docente.getIdUsuario(),
+            periodoActivo.map(PeriodoAcademico::getIdPeriodo).orElse(null)));
+  }
+
+  /** Construye el reporte colectivo del periodo vigente dentro del alcance del consultante. */
+  public byte[] generarReportePdf(UsuarioSesion sesion) {
+    PeriodoAcademico periodo =
+        periodoService
+            .buscarPeriodoActivo()
+            .orElseThrow(() -> new ReglaNegocioException("No hay un periodo académico activo"));
+    Long idFacultad = sesion.esVicerrector() ? null : sesion.idFacultad();
+    List<Usuario> evaluados = usuarioRepository.buscarEvaluablesActivosPorFacultad(idFacultad);
+    List<GeneradorReporteEvaluacionPdf.FilaReporteEvaluacion> filas =
+        evaluados.stream()
+            .map(
+                docente -> {
+                  EvaluacionPeriodo evaluacion =
+                      promedioService.cargarEvaluacion(docente.getIdUsuario(), periodo);
+                  Map<FuenteEvaluacion, BigDecimal> notas = evaluacion.notasDeFuentes();
+                  PromedioPonderadoResponse promedio =
+                      promedioService.obtenerPromedio(docente.getIdUsuario(), periodo);
+                  String adscripcion =
+                      docente.getPrograma() != null
+                          ? docente.getPrograma().getNombre()
+                          : docente.getFacultad() != null
+                              ? "Coordinación · " + docente.getFacultad().getNombre()
+                              : "Sin adscripción";
+                  return new GeneradorReporteEvaluacionPdf.FilaReporteEvaluacion(
+                      docente.getNombreCompleto(),
+                      adscripcion,
+                      redondear(notas.get(FuenteEvaluacion.ESTUDIANTES)),
+                      redondear(notas.get(FuenteEvaluacion.COORDINACION)),
+                      redondear(notas.get(FuenteEvaluacion.AUTOEVALUACION)),
+                      promedio.estado() == EstadoPromedio.COMPLETO
+                          ? redondear(promedio.valor())
+                          : null);
+                })
+            .toList();
+    String alcance =
+        sesion.esVicerrector()
+            ? "Toda la universidad"
+            : "Facultad "
+                + evaluados.stream()
+                    .map(Usuario::getFacultadDeAdscripcion)
+                    .filter(java.util.Objects::nonNull)
+                    .findFirst()
+                    .map(com.uniautonoma.docentia.entity.Facultad::getNombre)
+                    .orElse("de adscripción");
+    return generadorReportePdf.generar(periodo, alcance, filas);
   }
 
   /** Comparativo completo dentro del alcance autorizado de coordinación o vicerrectoría. */

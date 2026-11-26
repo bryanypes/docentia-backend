@@ -2,6 +2,7 @@ package com.uniautonoma.docentia.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.hasSize;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -12,6 +13,7 @@ import com.uniautonoma.docentia.entity.Facultad;
 import com.uniautonoma.docentia.entity.FuenteEvaluacion;
 import com.uniautonoma.docentia.entity.PeriodoAcademico;
 import com.uniautonoma.docentia.entity.Usuario;
+import java.time.LocalDate;
 import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -33,7 +35,7 @@ class ExpedientePropioTest extends PruebaIntegracion {
     ingenieria = escenario.crearFacultad("Ingeniería");
     docente =
         escenario.crearDocente(
-            "Julian Hoyos", escenario.crearPrograma("Ingeniería de Software", ingenieria));
+            "Julian Prueba", escenario.crearPrograma("Ingeniería de Software", ingenieria));
   }
 
   @Test
@@ -48,7 +50,7 @@ class ExpedientePropioTest extends PruebaIntegracion {
         mockMvc
             .perform(get("/expedientes/propio").with(como(docente)))
             .andExpect(status().isOk())
-            .andExpect(jsonPath("$.docente.nombreCompleto").value("Julian Hoyos"))
+            .andExpect(jsonPath("$.docente.nombreCompleto").value("Julian Prueba"))
             .andExpect(jsonPath("$.periodo.nombre").value("2026-2"))
             .andExpect(jsonPath("$.promedio.estado").value("PARCIAL"))
             .andExpect(jsonPath("$.promedio.valor").doesNotExist())
@@ -109,5 +111,22 @@ class ExpedientePropioTest extends PruebaIntegracion {
             get("/expedientes/propio")
                 .with(como(escenario.crearCoordinador("Marta Ruiz", ingenieria))))
         .andExpect(status().isOk());
+  }
+
+  @Test
+  void elDocenteRecibeSoloSuPromedioFinalEnElHistorico() throws Exception {
+    PeriodoAcademico anterior = escenario.crearPeriodoCerrado("2025-2", LocalDate.of(2025, 8, 4));
+    escenario.registrarCalificacion(docente, anterior, FuenteEvaluacion.ESTUDIANTES, "4.0");
+    escenario.registrarCalificacion(docente, anterior, FuenteEvaluacion.COORDINACION, "3.5");
+    escenario.registrarCalificacion(docente, anterior, FuenteEvaluacion.AUTOEVALUACION, "4.5");
+
+    mockMvc
+        .perform(get("/expedientes/propio").with(como(docente)))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$.historico", hasSize(1)))
+        .andExpect(jsonPath("$.historico[0].periodo.nombre").value("2025-2"))
+        .andExpect(jsonPath("$.historico[0].promedio.estado").value("COMPLETO"))
+        .andExpect(jsonPath("$.historico[0].promedio.valor").value(3.95))
+        .andExpect(jsonPath("$.historico[0].notasPorFuente").doesNotExist());
   }
 }

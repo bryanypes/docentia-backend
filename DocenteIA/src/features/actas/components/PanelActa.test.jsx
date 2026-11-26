@@ -40,6 +40,55 @@ beforeEach(() => {
 })
 
 describe('PanelActa', () => {
+  it('muestra la identificación congelada del acta', async () => {
+    listarActas.mockResolvedValue([
+      {
+        ...ACTA,
+        firmas: [{ rol: 'COORDINADOR', nombre: 'Marta Ruiz', fecha: '2026-11-20T10:00:00', conTrazo: false }],
+        identificacion: {
+          docente: 'Nora Ficcion',
+          documentoRotulo: 'Código',
+          documento: '1061234567',
+          cargo: 'Docente del programa Software',
+          programa: 'Software',
+          escuela: 'Escuela de Ingeniería',
+          periodo: '2026-2',
+          periodoInicio: '2026-07-01',
+          periodoFin: '2026-12-15',
+          evaluador: 'Coordinación de la Escuela de Ingeniería',
+          reunionFecha: '2026-11-20',
+          reunionHoraInicio: '09:00:00',
+          reunionHoraFin: '09:30:00',
+          reunionAsistencia: 'ASISTIO',
+          pesoEstudiantes: 50,
+          pesoCoordinacion: 30,
+          pesoAutoevaluacion: 20,
+          respuestasEstudiantes: 12,
+          fortalezas: ['Explica con claridad'],
+          aspectosPorMejorar: [],
+        },
+      },
+    ])
+    renderizarConSesion(<PanelActa idDocente={3} />)
+    const bloque = await screen.findByRole('region', { name: 'Identificación del acta' })
+    expect(within(bloque).getByText('1061234567')).toBeInTheDocument()
+    expect(within(bloque).getByText('Código')).toBeInTheDocument()
+    expect(within(bloque).getByText('Escuela de Ingeniería')).toBeInTheDocument()
+    expect(within(bloque).getByText('Estudiantes 50 %, coordinación 30 %, autoevaluación 20 %')).toBeInTheDocument()
+    expect(within(bloque).getByText('12')).toBeInTheDocument()
+    expect(within(bloque).getByText('Explica con claridad')).toBeInTheDocument()
+    expect(within(bloque).getByText(/quedaron fijos con la primera firma/)).toBeInTheDocument()
+  })
+
+  it('en la vista del docente no hay conteo de respuestas', async () => {
+    listarActas.mockResolvedValue([
+      { ...ACTA, identificacion: { docente: 'Nora Ficcion', cargo: 'Docente', periodo: '2026-2', evaluador: 'Coordinación' } },
+    ])
+    renderizarConSesion(<PanelActa />)
+    const bloque = await screen.findByRole('region', { name: 'Identificación del acta' })
+    expect(within(bloque).queryByText('Respuestas de estudiantes')).not.toBeInTheDocument()
+  })
+
   it('toma el umbral del acta y exige compromiso', async () => {
     listarActas.mockResolvedValue([ACTA])
     renderizarConSesion(<PanelActa idDocente={3} />)

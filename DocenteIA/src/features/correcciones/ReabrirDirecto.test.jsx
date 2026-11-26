@@ -9,15 +9,15 @@ vi.mock('../usuarios/services/usuariosService.js')
 vi.mock('./correccionesService.js')
 
 const USUARIOS = [
-  { idUsuario: 4, nombreCompleto: 'Nora Muñoz', correo: 'nora@u.co', rol: 'DOCENTE', esActivo: true },
-  { idUsuario: 9, nombreCompleto: 'Luis Paz', correo: 'luis@u.co', rol: 'ESTUDIANTE', esActivo: true },
+  { idUsuario: 4, nombreCompleto: 'Nora Ficción', correo: 'nora@u.co', rol: 'DOCENTE', esActivo: true },
+  { idUsuario: 9, nombreCompleto: 'Luis Muestra', correo: 'luis@u.co', rol: 'ESTUDIANTE', esActivo: true },
 ]
 const FORMULARIOS = [
-  { idFormulario: 21, tipo: 'AUTO', nombreEvaluador: 'Nora Muñoz', enviadaEn: '2026-11-19T10:00:00', reabrible: true },
+  { idFormulario: 21, tipo: 'AUTO', nombreEvaluador: 'Nora Ficción', enviadaEn: '2026-11-19T10:00:00', reabrible: true },
   {
     idFormulario: 22,
     tipo: 'COEVAL',
-    nombreEvaluador: 'Paola Sarria',
+    nombreEvaluador: 'Paola Patrón',
     enviadaEn: '2026-11-19T11:00:00',
     reabrible: false,
     motivoNoReabrible: 'El acta de este periodo ya está firmada',
@@ -35,7 +35,7 @@ describe('ReabrirDirecto', () => {
   it('solo ofrece docentes y coordinadores, y dice por qué un formulario no se reabre', async () => {
     render(<ReabrirDirecto />)
     const selector = await screen.findByLabelText('Docente')
-    expect(screen.queryByRole('option', { name: /Luis Paz/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('option', { name: /Luis Muestra/ })).not.toBeInTheDocument()
     await userEvent.selectOptions(selector, '4')
 
     expect(await screen.findByText('Autoevaluación')).toBeInTheDocument()
@@ -56,7 +56,7 @@ describe('ReabrirDirecto', () => {
 
     expect(reabrirDirecto).toHaveBeenCalledWith(21, 'Respondió por error la escala')
     expect(await screen.findByText('Evaluación reabierta')).toBeInTheDocument()
-    expect(screen.getByText(/Le avisamos a Nora Muñoz/)).toBeInTheDocument()
+    expect(screen.getByText(/Le avisamos a Nora Ficción/)).toBeInTheDocument()
     expect(onReabierto).toHaveBeenCalled()
   })
 })

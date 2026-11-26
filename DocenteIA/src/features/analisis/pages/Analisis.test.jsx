@@ -85,7 +85,7 @@ describe('Analisis', () => {
   beforeEach(() => {
     vi.resetAllMocks()
     docentesService.listarDocentes.mockResolvedValue([
-      { idDocente: 4, nombreCompleto: 'Julián Camilo Hoyos', nombrePrograma: 'Software' },
+      { idDocente: 4, nombreCompleto: 'Julián Camilo Prueba', nombrePrograma: 'Software' },
     ])
     periodosService.listarPeriodos.mockResolvedValue([{ idPeriodo: 2, nombre: '2026-2', esActivo: true }])
     analisisService.obtenerModelosAnalisis.mockResolvedValue(MODELOS)
@@ -261,13 +261,13 @@ describe('Analisis', () => {
 
   it('la vicerrectoría revisa el análisis de un coordinador', async () => {
     docentesService.listarDocentes.mockResolvedValue([
-      { idDocente: 4, nombreCompleto: 'Andrés Ordóñez', nombrePrograma: null, nombreFacultad: 'Ingeniería', esCoordinador: true },
+      { idDocente: 4, nombreCompleto: 'Andrés Plantilla', nombrePrograma: null, nombreFacultad: 'Ingeniería', esCoordinador: true },
     ])
     analisisService.listarSolicitudes.mockResolvedValue([COMPLETADO])
     analisisService.obtenerSolicitud.mockResolvedValue(COMPLETADO)
     renderizar('VICERRECTOR')
 
-    expect(await screen.findByRole('option', { name: /Andrés Ordóñez · Coordinación · Ingeniería/ })).toBeInTheDocument()
+    expect(await screen.findByRole('option', { name: /Andrés Plantilla · Coordinación · Ingeniería/ })).toBeInTheDocument()
     expect(await screen.findAllByRole('button', { name: 'Marcar como válido' })).not.toHaveLength(0)
   })
 })

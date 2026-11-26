@@ -34,12 +34,12 @@ class CalificacionControllerTest extends PruebaIntegracion {
   void crearEscenario() {
     Facultad ingenieria = escenario.crearFacultad("Ingeniería");
     Facultad derecho = escenario.crearFacultad("Derecho");
-    coordinadorIngenieria = escenario.crearCoordinador("Andres Ordonez", ingenieria);
+    coordinadorIngenieria = escenario.crearCoordinador("Andres Plantilla", ingenieria);
     docenteIngenieria =
         escenario.crearDocente(
-            "Julian Hoyos", escenario.crearPrograma("Ingeniería de Software", ingenieria));
+            "Julian Prueba", escenario.crearPrograma("Ingeniería de Software", ingenieria));
     docenteDerecho =
-        escenario.crearDocente("Luisa Mosquera", escenario.crearPrograma("Derecho", derecho));
+        escenario.crearDocente("Luisa Simulacro", escenario.crearPrograma("Derecho", derecho));
   }
 
   @Test

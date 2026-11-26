@@ -6,9 +6,7 @@ Lo que el sistema no hace hoy y por qué.
 |-------------|---------|
 | Sync en vivo con Campus/NOVA | El JSON de personas y clases es el contrato; el seed lo simula. No hay cliente HTTP a Campus |
 | Escala de 1 a 5 confirmada | La resolución no la define; se aplica 1 a 5 y queda pendiente de Vicerrectoría |
-| Reabrir un formulario enviado | Queda fijo al enviarse |
 | HU-09, evidencias complementarias y grupos focales | Fuera de alcance por el orden de corte |
-| Etiquetas de los seis criterios en los hallazgos | Quedó fuera por el orden de corte |
 | SSO institucional real | El estudiante entra con Google institucional o, en desarrollo, con la contraseña de demo; sin SSO real, su acceso en producción depende de Google |
 | Matrícula real de Campus/NOVA | Sin integración directa: la inscripción usa el servicio de matrícula del backend (sin pantalla) o la semilla; la integración está por confirmar |
 | Métricas del análisis con comentarios reales | La validación usa 90 comentarios sintéticos escritos por el mismo autor del léxico; las cifras sobreestiman. Hace falta una muestra real etiquetada |
@@ -29,3 +27,4 @@ Lo que el sistema no hace hoy y por qué.
 | Nota de estudiantes con menos de 5 respuestas | Por k-anonimato no se usa: el promedio queda PARCIAL y el acta no se firma. Política pendiente (DECISIONES P1 y P4) |
 | Análisis de comentarios del formulario con 5 a 9 respuestas | El análisis exige 10 respuestas; con 5 a 9 el docente tiene nota de estudiantes pero no análisis |
 | Cerrar etapas a mano | No hay botón ni tarea: cada etapa abre y cierra por las fechas que fija vicerrectoría |
+| Anonimato de la nota de estudiantes al cerrar la recolección | Abierta, la nota solo cambia por bloques (mínimo 5, luego cada 4 respuestas). Al cerrar entran juntas las que quedaron fuera del último bloque, de 1 a 3: comparar la nota antes y después del cierre revela el promedio de esas respuestas (con una sola, el de esa respuesta), aunque no quién la dio, porque las respuestas no guardan autor ni orden de llegada. La resolución exige contarlas todas |

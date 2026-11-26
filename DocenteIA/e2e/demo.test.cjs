@@ -5,7 +5,7 @@ const { chromium } = require('playwright')
 const BASE = process.env.BASE_URL ?? 'http://localhost:5173'
 const CLAVE = 'Docentia2026*'
 const COORDINACION = 'coordinacion.ingenieria'
-const DOCENTE = 'nora.munoz'
+const DOCENTE = 'nora.ficcion'
 
 let navegador
 
@@ -181,7 +181,7 @@ test('la coordinación registra la asistencia y firma el acta', async () => {
 test('el docente firma su acta en la reunión', async () => {
   const pagina = await entrar(DOCENTE)
   await pagina.click('a[href="/mi-acta"]')
-  await firmarEnModal(pagina, 'Nora Patricia Muñoz')
+  await firmarEnModal(pagina, 'Nora Patricia Ficción')
   await pagina.getByText('Firmada', { exact: true }).first().waitFor()
   const actas = await llamar(pagina, 'GET', '/actas')
   idActa = actas.datos[0].idActa
@@ -251,7 +251,7 @@ async function enviarFormulario(pagina) {
 }
 
 test('los formularios cambian la nota y el docente no ve la coevaluación', async () => {
-  const docente = await entrar('ramiro.paz')
+  const docente = await entrar('ramiro.muestra')
   await docente.click('a[href="/mi-autoevaluacion"]')
   await docente.getByText('0 de 14 ítems respondidos').waitFor()
   assert.equal(await responderTodo(docente, 5), 14)
@@ -268,10 +268,10 @@ test('los formularios cambian la nota y el docente no ve la coevaluación', asyn
   // La lista va paginada: se busca al docente por nombre.
   await coordinacion.getByPlaceholder('Buscar docente o programa').fill('Ramiro')
   await coordinacion
-    .locator('tr', { hasText: 'Ramiro Antonio Paz' })
+    .locator('tr', { hasText: 'Ramiro Antonio Muestra' })
     .locator('a[href^="/coevaluaciones/"]')
     .click()
-  await coordinacion.getByText('Coevaluación de Ramiro Antonio Paz').first().waitFor()
+  await coordinacion.getByText('Coevaluación de Ramiro Antonio Muestra').first().waitFor()
   assert.equal(await responderTodo(coordinacion, 5), 6)
   await enviarFormulario(coordinacion)
   await abrirExpediente(coordinacion, 'Ramiro')
@@ -280,7 +280,7 @@ test('los formularios cambian la nota y el docente no ve la coevaluación', asyn
   await coordinacion.getByText('Desempeño aceptable').first().waitFor()
   await coordinacion.context().close()
 
-  const otraVez = await entrar('ramiro.paz')
+  const otraVez = await entrar('ramiro.muestra')
   const propio = await llamar(otraVez, 'GET', '/expedientes/propio')
   assert.equal(propio.datos.notasPorFuente, undefined)
   const sesion = await llamar(otraVez, 'GET', '/sesiones/actual')
@@ -289,10 +289,10 @@ test('los formularios cambian la nota y el docente no ve la coevaluación', asyn
   await otraVez.context().close()
 })
 
-test('el estudiante evalúa de forma anónima y una sola respuesta no mueve la nota', async () => {
-  // Laura tiene 6 estudiantes matriculados y 4 respuestas: con la quinta se alcanza el mínimo, pero
-  // con la recolección abierta la nota solo se actualiza por bloques de 4 respuestas
-  // (DOCENTIA_HETEROEVALUACION_BLOQUE), así que comparar dos notas seguidas no revela a nadie.
+test('el estudiante evalúa de forma anónima, la nota se publica en el mínimo y una sola respuesta más no la mueve', async () => {
+  // Laura tiene 6 estudiantes matriculados y 4 respuestas. Con la recolección abierta la nota de
+  // estudiantes se publica al llegar al mínimo (5) y luego cada 4 respuestas más (9, 13…;
+  // DOCENTIA_HETEROEVALUACION_BLOQUE): comparar dos notas seguidas no revela a ningún estudiante.
   const coordinacion = await entrar(COORDINACION)
   await abrirExpediente(coordinacion, 'Laura Demo')
   await coordinacion.getByText('3,50').first().waitFor()
@@ -324,11 +324,31 @@ test('el estudiante evalúa de forma anónima y una sola respuesta no mueve la n
 
   const otraVez = await entrar(COORDINACION)
   await abrirExpediente(otraVez, 'Laura Demo')
-  // La quinta respuesta no cierra un bloque: la nota sigue en 3,50 y no delata ese envío. Se
-  // consolida con todas las respuestas cuando cierra la recolección.
-  await otraVez.getByText('3,50').first().waitFor()
-  assert.equal(await otraVez.getByText('4,50').count(), 0)
+  // Con la quinta se alcanza el mínimo: los estudiantes pasan de 3,00 (nota inicial de la semilla)
+  // a 5,00 por formulario y el promedio queda en 4,50.
+  await otraVez.getByText('4,50').first().waitFor()
+  await otraVez.getByText('Alto desempeño').first().waitFor()
   await otraVez.context().close()
+
+  // La sexta respuesta, toda en 1, no cierra un bloque: la nota no se mueve y no delata ese envío.
+  const sexto = await entrar('estudiante.demo5')
+  const evaluaciones = await llamar(sexto, 'GET', '/estudiante/evaluaciones')
+  const deLaura = evaluaciones.datos.evaluaciones.find((e) => e.docente === 'Laura Demo Estudiantes')
+  assert.ok(deLaura, JSON.stringify(evaluaciones.datos))
+  const unos = Object.fromEntries(
+    ['D02', 'D03', 'D04', 'D05', 'D06', 'D07', 'D08', 'D09', 'D10', 'D11', 'D12'].map((c) => [c, 1]),
+  )
+  const sexta = await llamar(sexto, 'POST', `/estudiante/evaluaciones/${deLaura.idAsignacion}/enviar`, {
+    respuestas: unos,
+    comentario: 'No explica los temas con claridad ni responde las dudas.',
+  })
+  assert.equal(sexta.estado, 200, JSON.stringify(sexta.datos))
+  await sexto.context().close()
+
+  const despues = await entrar(COORDINACION)
+  await abrirExpediente(despues, 'Laura Demo')
+  await despues.getByText('4,50').first().waitFor()
+  await despues.context().close()
 
   const docente = await entrar('laura.demo')
   assert.equal((await llamar(docente, 'GET', '/cobertura-heteroevaluacion')).estado, 403)

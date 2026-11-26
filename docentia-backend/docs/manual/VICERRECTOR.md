@@ -8,7 +8,7 @@ La vicerrectoría consulta la evaluación de toda la universidad, define los per
 |---|---|
 | Inicio | Indicadores del periodo, docentes destacados con su clasificación y el seguimiento por programa |
 | Estadísticas | Gráficas con filtros, lectura en una frase y descarga en Excel |
-| Docentes | Todos los docentes, con filtros, orden por puntaje y paginación |
+| Docentes | Todos los docentes, con filtros, orden por puntaje y paginación y reporte PDF colectivo |
 | Análisis de comentarios | Panorama del análisis por docente y programa |
 | Acciones sugeridas | Acción institucional por clasificación |
 | Panel por programa | Cobertura, promedio y distribución por programa |

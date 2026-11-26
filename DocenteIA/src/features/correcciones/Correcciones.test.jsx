@@ -15,9 +15,9 @@ const BASE = {
   tipo: 'AUTO',
   periodo: '2026-2',
   idDocente: 4,
-  nombreDocente: 'Julián Hoyos',
+  nombreDocente: 'Julián Prueba',
   nombreFacultad: 'Ingeniería',
-  nombreSolicitante: 'Julián Hoyos',
+  nombreSolicitante: 'Julián Prueba',
   motivo: 'Marqué mal varios ítems del segundo criterio',
   rolAprobador: 'COORDINADOR',
   fechaSolicitud: '2026-11-18T10:00:00',
@@ -53,7 +53,7 @@ describe('Solicitudes de corrección', () => {
     servicio.verificarSolicitud.mockResolvedValue({ ...BASE, estado: 'APROBADA' })
     renderizarConSesion(<SolicitudesCorreccion />, { rol: 'COORDINADOR' })
 
-    const tarjeta = (await screen.findByText(/Autoevaluación · Julián Hoyos/)).closest('li')
+    const tarjeta = (await screen.findByText(/Autoevaluación · Julián Prueba/)).closest('li')
     expect(within(tarjeta).getByRole('button', { name: 'Rechazar' })).toBeDisabled()
     await userEvent.click(within(tarjeta).getByRole('button', { name: 'Aprobar corrección' }))
 

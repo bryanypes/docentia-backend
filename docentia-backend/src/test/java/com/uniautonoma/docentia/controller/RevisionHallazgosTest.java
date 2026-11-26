@@ -49,7 +49,7 @@ class RevisionHallazgosTest extends PruebaIntegracion {
   void crearEscenario() throws Exception {
     Facultad ingenieria = escenario.crearFacultad("Ingeniería");
     julian =
-        escenario.crearDocente("Julian Hoyos", escenario.crearPrograma("Software", ingenieria));
+        escenario.crearDocente("Julian Prueba", escenario.crearPrograma("Software", ingenieria));
     coordinador = escenario.crearCoordinador("Marta Ruiz", ingenieria);
     PeriodoAcademico periodo =
         escenario.abrirEtapa(
@@ -156,7 +156,7 @@ class RevisionHallazgosTest extends PruebaIntegracion {
   @Test
   void respetaRolYAlcance() throws Exception {
     Long id = hallazgos.get(0).getIdHallazgo();
-    Usuario otro = escenario.crearCoordinador("Paola Sarria", escenario.crearFacultad("Derecho"));
+    Usuario otro = escenario.crearCoordinador("Paola Patrón", escenario.crearFacultad("Derecho"));
 
     mockMvc
         .perform(

@@ -17,3 +17,8 @@ export function obtenerComparativoDocente(idDocente) {
 export function obtenerComparativoPropio() {
   return api.get('/expedientes/propio/comparativo')
 }
+
+/** Reporte PDF colectivo del periodo activo, limitado al alcance del coordinador. */
+export function descargarReporteEvaluacionPdf() {
+  return api.get('/expedientes/reporte/pdf', { binario: true })
+}

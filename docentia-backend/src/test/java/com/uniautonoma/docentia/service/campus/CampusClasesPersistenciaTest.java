@@ -25,9 +25,9 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 /** HU-01 etapa 1: el JSON de Campus se vuelve clases y matrículas, sin formulario todavía. */
 class CampusClasesPersistenciaTest extends PruebaIntegracion {
 
-  private static final String KAREN = "karen.mancilla@uniautonoma.edu.co";
-  private static final String ANDREA = "andrea.nieto@uniautonoma.edu.co";
-  private static final String ZULEMA = "zulema.leon@uniautonoma.edu.co";
+  private static final String SARA = "sara.ficha@uniautonoma.edu.co";
+  private static final String DANIELA = "daniela.maqueta@uniautonoma.edu.co";
+  private static final String LUCIA = "lucia.prototipo@uniautonoma.edu.co";
 
   @Autowired private EscenarioPrueba escenario;
   @Autowired private CargadorClasesCampus cargador;
@@ -37,45 +37,45 @@ class CampusClasesPersistenciaTest extends PruebaIntegracion {
   @Autowired private PasswordEncoder passwordEncoder;
 
   @Test
-  void elSeedDejaAKarenConTresClasesYAndreaSoloEnElGrupoB() {
+  void elSeedDejaASaraConTresClasesYDanielaSoloEnElGrupoB() {
     PeriodoAcademico periodo = escenario.crearPeriodoActivo("2026-2");
     cargador.cargarDemo(periodo, "hash-de-prueba");
 
-    Usuario karen = usuario(KAREN);
-    assertThat(karen.getRol()).isEqualTo(Rol.ESTUDIANTE);
-    assertThat(karen.getPrograma().getCodigo()).isEqualTo("CU027");
+    Usuario sara = usuario(SARA);
+    assertThat(sara.getRol()).isEqualTo(Rol.ESTUDIANTE);
+    assertThat(sara.getPrograma().getCodigo()).isEqualTo("CU027");
 
-    List<Matricula> deKaren =
-        matriculaRepository.findByEstudianteIdUsuarioAndEsActivaTrue(karen.getIdUsuario());
-    assertThat(deKaren).hasSize(3);
-    assertThat(deKaren)
+    List<Matricula> deSara =
+        matriculaRepository.findByEstudianteIdUsuarioAndEsActivaTrue(sara.getIdUsuario());
+    assertThat(deSara).hasSize(3);
+    assertThat(deSara)
         .extracting(matricula -> matricula.getClase().getCurso().getCodigo())
         .containsExactlyInAnyOrder("19072209", "12190626", "12190835");
     assertThat(
-            deKaren.stream()
+            deSara.stream()
                 .filter(m -> m.getClase().getCurso().getCodigo().equals("12190626"))
                 .map(m -> m.getClase().getGrupo())
                 .toList())
         .containsExactly("A");
 
-    Usuario andrea = usuario(ANDREA);
-    List<Matricula> deAndrea =
-        matriculaRepository.findByEstudianteIdUsuarioAndEsActivaTrue(andrea.getIdUsuario());
-    assertThat(deAndrea).hasSize(1);
-    assertThat(deAndrea.getFirst().getClase().getGrupo()).isEqualTo("B");
-    assertThat(deAndrea.getFirst().getClase().getCurso().getCodigo()).isEqualTo("12190626");
+    Usuario daniela = usuario(DANIELA);
+    List<Matricula> deDaniela =
+        matriculaRepository.findByEstudianteIdUsuarioAndEsActivaTrue(daniela.getIdUsuario());
+    assertThat(deDaniela).hasSize(1);
+    assertThat(deDaniela.getFirst().getClase().getGrupo()).isEqualTo("B");
+    assertThat(deDaniela.getFirst().getClase().getCurso().getCodigo()).isEqualTo("12190626");
   }
 
   @Test
-  void elMismoCursoEnGrupoAYgrupoBSonClasesDistintasDeZulema() {
+  void elMismoCursoEnGrupoAYgrupoBSonClasesDistintasDeLucia() {
     PeriodoAcademico periodo = escenario.crearPeriodoActivo("2026-2");
     cargador.cargarDemo(periodo, "hash-de-prueba");
 
-    Usuario zulema = usuario(ZULEMA);
-    assertThat(zulema.getRol()).isEqualTo(Rol.DOCENTE);
+    Usuario lucia = usuario(LUCIA);
+    assertThat(lucia.getRol()).isEqualTo(Rol.DOCENTE);
     List<Clase> clases =
         claseRepository.findByPeriodoIdPeriodoAndDocentesIdUsuario(
-            periodo.getIdPeriodo(), zulema.getIdUsuario());
+            periodo.getIdPeriodo(), lucia.getIdUsuario());
     assertThat(clases).hasSize(2);
     assertThat(clases).extracting(Clase::getGrupo).containsExactlyInAnyOrder("A", "B");
     assertThat(clases.get(0).getId()).isNotEqualTo(clases.get(1).getId());
@@ -83,8 +83,8 @@ class CampusClasesPersistenciaTest extends PruebaIntegracion {
   }
 
   @Test
-  void karenEntraAunqueLaBaseYaTengaElSeedAnterior() throws Exception {
-    escenario.crearVicerrector("Elena Muñoz");
+  void saraEntraAunqueLaBaseYaTengaElSeedAnterior() throws Exception {
+    escenario.crearVicerrector("Elena Ficción");
     PeriodoAcademico periodo = escenario.crearPeriodoActivo("2026-2");
     cargador.cargarDemo(periodo, passwordEncoder.encode("Docentia2026*"));
 
@@ -92,10 +92,10 @@ class CampusClasesPersistenciaTest extends PruebaIntegracion {
         .perform(
             post("/sesiones")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(aJson(new InicioSesionRequest(KAREN, "Docentia2026*"))))
+                .content(aJson(new InicioSesionRequest(SARA, "Docentia2026*"))))
         .andExpect(status().isCreated())
         .andExpect(jsonPath("$.usuario.rol").value("ESTUDIANTE"))
-        .andExpect(jsonPath("$.usuario.correo").value(KAREN));
+        .andExpect(jsonPath("$.usuario.correo").value(SARA));
   }
 
   @Test
@@ -104,8 +104,8 @@ class CampusClasesPersistenciaTest extends PruebaIntegracion {
     cargador.cargarDemo(periodo, "hash-de-prueba");
     cargador.cargarDemo(periodo, "hash-de-prueba");
 
-    Usuario karen = usuario(KAREN);
-    assertThat(matriculaRepository.findByEstudianteIdUsuarioAndEsActivaTrue(karen.getIdUsuario()))
+    Usuario sara = usuario(SARA);
+    assertThat(matriculaRepository.findByEstudianteIdUsuarioAndEsActivaTrue(sara.getIdUsuario()))
         .hasSize(3);
   }
 

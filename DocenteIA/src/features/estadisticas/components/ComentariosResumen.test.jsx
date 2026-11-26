@@ -59,8 +59,8 @@ describe('ComentariosResumen', () => {
           ...RESUMEN.temas[0],
           docentes: 2,
           listaDocentes: [
-            { idDocente: 4, nombre: 'Nora Muñoz', menciones: 6 },
-            { idDocente: 9, nombre: 'Luis Paz', menciones: 4 },
+            { idDocente: 4, nombre: 'Nora Ficción', menciones: 6 },
+            { idDocente: 9, nombre: 'Luis Muestra', menciones: 4 },
           ],
         },
       ],
@@ -71,7 +71,7 @@ describe('ComentariosResumen', () => {
       </MemoryRouter>,
     )
     await userEvent.click(await screen.findByRole('button', { name: /2 docentes/ }))
-    expect(screen.getByRole('link', { name: 'Nora Muñoz' })).toHaveAttribute('href', '/docentes/4')
+    expect(screen.getByRole('link', { name: 'Nora Ficción' })).toHaveAttribute('href', '/docentes/4')
     expect(screen.getByText('6 menciones')).toBeInTheDocument()
   })
 

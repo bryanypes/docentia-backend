@@ -27,7 +27,7 @@ docker compose up --build -d
 | Correos (Mailpit) | <http://localhost:8025> |
 
 Los usuarios de demo están en `docentia-backend/README.md`; su contraseña es `Docentia2026*`. Para
-el flujo de actas, entra con `coordinacion.ingenieria@uniautonoma.edu.co` y `nora.munoz@uniautonoma.edu.co`,
+el flujo de actas, entra con `coordinacion.ingenieria@uniautonoma.edu.co` y `nora.ficcion@uniautonoma.edu.co`,
 y para correcciones con `vicerrectoria@uniautonoma.edu.co`. Para la evaluación de estudiantes, `estudiante.demo5@uniautonoma.edu.co`
 (dos evaluaciones pendientes) y la docente `laura.demo@uniautonoma.edu.co`. Estas cuentas existen solo
 en el perfil de desarrollo.
@@ -65,8 +65,8 @@ Los correos de desarrollo se ven en <http://localhost:8025>. La operación compl
 `docentia-backend/docs/OPERACION.md`; la arquitectura en `ARQUITECTURA.md`, la API en `API.md`, la
 seguridad en `SEGURIDAD.md`, las notificaciones en `NOTIFICACIONES.md` y los límites en `LIMITACIONES.md`.
 
-El recorrido de demo está en `DocenteIA/docs/checklist-demo-sprint3.md` y el contrato de la API en
-`docentia-backend/docs/`. Las decisiones y la trazabilidad con la Resolución 074 están en
+El guion de demo está en `docentia-backend/docs/sustentacion/GUION_PRUEBA_Y_DEMO.md` y el contrato de la
+API en `docentia-backend/docs/` (índice en `docentia-backend/docs/README.md`). Las decisiones y la trazabilidad con la Resolución 074 están en
 `docentia-backend/docs/DECISIONES.md` y `docentia-backend/docs/RES074-TRAZABILIDAD.md`.
 
 ## Ramas

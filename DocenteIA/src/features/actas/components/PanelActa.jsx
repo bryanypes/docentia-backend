@@ -361,6 +361,93 @@ function Observaciones({ acta, editable, ejecutar, ocupado }) {
   )
 }
 
+const ASISTENCIA = { ASISTIO: 'Asistió', NO_ASISTIO: 'No asistió' }
+
+/** "50 %" desde el peso que guarda el acta. */
+function porcentaje(peso) {
+  return `${String(Number(peso)).replace('.', ',')} %`
+}
+
+/**
+ * Lo que el acta congeló: identificación, periodo, reunión, ponderación y aspectos conversados. Desde
+ * la primera firma no cambia aunque cambien los datos del docente. El número de respuestas solo llega
+ * a la coordinación y la vicerrectoría.
+ */
+function Identificacion({ acta, rolEvaluador }) {
+  const datos = acta.identificacion
+  if (!datos?.docente) return null
+  const reunion =
+    datos.reunionFecha &&
+    `${formatearFecha(datos.reunionFecha)}, ${datos.reunionHoraInicio?.slice(0, 5)} a ${datos.reunionHoraFin?.slice(0, 5)}` +
+      (datos.reunionAsistencia ? ` · ${ASISTENCIA[datos.reunionAsistencia] ?? datos.reunionAsistencia}` : '')
+  const evaluador = rolEvaluador === ROLES.VICERRECTOR ? 'vicerrectoría' : 'coordinación'
+  const filas = [
+    ['Docente', datos.docente],
+    datos.documento && [datos.documentoRotulo ?? 'Documento', datos.documento],
+    ['Cargo', datos.cargo],
+    datos.programa && ['Programa', datos.programa],
+    datos.escuela && ['Escuela', datos.escuela],
+    [
+      'Periodo académico',
+      datos.periodoInicio && datos.periodoFin
+        ? `${datos.periodo} (${formatearFecha(datos.periodoInicio)} – ${formatearFecha(datos.periodoFin)})`
+        : datos.periodo,
+    ],
+    ['Evaluó', datos.evaluador],
+    reunion && ['Reunión', reunion],
+    datos.pesoEstudiantes != null && [
+      'Ponderación',
+      `Estudiantes ${porcentaje(datos.pesoEstudiantes)}, ${evaluador} ${porcentaje(datos.pesoCoordinacion)}, autoevaluación ${porcentaje(datos.pesoAutoevaluacion)}`,
+    ],
+    datos.respuestasEstudiantes != null && ['Respuestas de estudiantes', String(datos.respuestasEstudiantes)],
+    datos.formatoCodigo && [
+      'Formato',
+      `${datos.formatoCodigo}${datos.formatoVersion ? ` · versión ${datos.formatoVersion}` : ''}`,
+    ],
+  ].filter(Boolean)
+  const fortalezas = datos.fortalezas ?? []
+  const mejoras = datos.aspectosPorMejorar ?? []
+
+  return (
+    <section aria-label="Identificación del acta">
+      <h3 className="acta__subtitulo">Identificación</h3>
+      <dl className="acta__identificacion">
+        {filas.map(([rotulo, valor]) => (
+          <div key={rotulo}>
+            <dt>{rotulo}</dt>
+            <dd>{valor}</dd>
+          </div>
+        ))}
+      </dl>
+      {(fortalezas.length > 0 || mejoras.length > 0) && (
+        <div className="acta__aspectos">
+          {fortalezas.length > 0 && (
+            <div>
+              <strong>Fortalezas conversadas</strong>
+              <ul>
+                {fortalezas.map((texto) => (
+                  <li key={texto}>{texto}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {mejoras.length > 0 && (
+            <div>
+              <strong>Aspectos por mejorar</strong>
+              <ul>
+                {mejoras.map((texto) => (
+                  <li key={texto}>{texto}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+        </div>
+      )}
+      {acta.firmas.length > 0 && <p className="campo__ayuda">Estos datos quedaron fijos con la primera firma.</p>}
+    </section>
+  )
+}
+
 function DetalleActa({ acta, usuario, papel, rolEvaluador, rolCorrector, ejecutar, ocupado, error, onDescargar }) {
   const estado = ESTADO_ACTA[acta.estado]
   const editable = acta.estado === 'BORRADOR' && papel === rolEvaluador && acta.firmas.length === 0
@@ -389,6 +476,7 @@ function DetalleActa({ acta, usuario, papel, rolEvaluador, rolCorrector, ejecuta
       </div>
       {acta.categoria && <p className="acta__accion">Acción institucional: {acta.categoria.accionInstitucional}</p>}
       {acta.motivoCorreccion && <p className="acta__accion">Motivo de la corrección: {acta.motivoCorreccion}</p>}
+      <Identificacion acta={acta} rolEvaluador={rolEvaluador} />
       {editable && acta.tipo && <TipoActa acta={acta} ejecutar={ejecutar} ocupado={ocupado} />}
       {acta.estado === 'BORRADOR' && acta.categoria && (
         <Aviso

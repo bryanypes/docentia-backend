@@ -15,7 +15,27 @@ La matriz completa de rol por endpoint es ejecutable y está en `MatrizAutorizac
 | Periodos, calificaciones, importación | [api-sprint3-semana1.md](api-sprint3-semana1.md) |
 | Agenda e indicadores | [api-sprint3-semana2.md](api-sprint3-semana2.md) |
 
-Colección de Postman: [ejemplos/docentia.postman_collection.json](ejemplos/docentia.postman_collection.json).
+La colección de Postman del 4 de noviembre quedó en [historico/](historico/): no incluye las rutas posteriores
+y trae algunas que ya no existen. La lista vigente de rutas por rol está en [ROLES.md](ROLES.md).
+
+## Expedientes e histórico
+
+`GET /expedientes/propio` incluye el promedio y las dimensiones del periodo activo y `historico`
+con los promedios finales de periodos anteriores. No incluye las tres notas por fuente.
+`GET /expedientes/reporte/pdf` permite a coordinación y vicerrectoría descargar el reporte colectivo
+del periodo activo. Coordinación solo recibe docentes y coordinadores evaluados de su facultad.
+
+## Actas
+
+`GET /actas/{id}` devuelve `identificacion` con la copia congelada del acta: docente y documento,
+programa, escuela, periodo, evaluador, reunión y pesos. La cifra de respuestas de estudiantes solo
+aparece para coordinación y vicerrectoría. `GET /actas/registro` lleva el registro administrativo
+sin descargar PDF. Solo coordinación, docente y vicerrectoría pueden descargar el PDF.
+
+Al crear el acta se copia el código de `usuarios.codigo` si existe. El rótulo puede configurarse con
+`DOCENTIA_ACTAS_ROTULO_DOCUMENTO`. `DOCENTIA_ACTAS_FORMATO_CODIGO` y
+`DOCENTIA_ACTAS_FORMATO_VERSION` identifican el formato institucional del membrete. La primera firma
+fija los datos; desde entonces el backend rechaza cambios del contenido del acta.
 
 ## Nuevo en 0.3.1
 

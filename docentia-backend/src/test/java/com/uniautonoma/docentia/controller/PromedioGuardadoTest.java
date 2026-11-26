@@ -57,9 +57,9 @@ class PromedioGuardadoTest extends PruebaIntegracion {
     ingenieria = escenario.crearFacultad("Ingeniería");
     docente =
         escenario.crearDocente(
-            "Julian Hoyos", escenario.crearPrograma("Ingeniería de Software", ingenieria));
+            "Julian Prueba", escenario.crearPrograma("Ingeniería de Software", ingenieria));
     coordinador = escenario.crearCoordinador("Marta Ruiz", ingenieria);
-    vicerrector = escenario.crearVicerrector("Elena Munoz");
+    vicerrector = escenario.crearVicerrector("Elena Ficcion");
     periodo = escenario.crearPeriodoActivo("2026-2");
   }
 
@@ -116,7 +116,7 @@ class PromedioGuardadoTest extends PruebaIntegracion {
   void cambiarLasPonderacionesRecalculaLosPromediosDelPeriodo() throws Exception {
     Usuario otroDocente =
         escenario.crearDocente(
-            "Diana Astaiza", escenario.crearPrograma("Ingeniería Electrónica", ingenieria));
+            "Diana Ejemplo", escenario.crearPrograma("Ingeniería Electrónica", ingenieria));
     registrarLasTresFuentes(docente, "4.0", "3.0", "5.0");
     registrarLasTresFuentes(otroDocente, "5.0", "3.0", "4.0");
 
@@ -182,7 +182,7 @@ class PromedioGuardadoTest extends PruebaIntegracion {
   void unCoordinadorDeOtraFacultadNoCalificaNiGeneraPromedio() throws Exception {
     Facultad derecho = escenario.crearFacultad("Derecho");
     Usuario docenteDerecho =
-        escenario.crearDocente("Luisa Mosquera", escenario.crearPrograma("Derecho", derecho));
+        escenario.crearDocente("Luisa Simulacro", escenario.crearPrograma("Derecho", derecho));
 
     calificar(coordinador, RUTA_COORDINACION, docenteDerecho, "4.0")
         .andExpect(status().isNotFound())

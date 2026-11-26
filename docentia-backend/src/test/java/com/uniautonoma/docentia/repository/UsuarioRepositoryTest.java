@@ -48,7 +48,8 @@ class UsuarioRepositoryTest extends PruebaIntegracion {
   void laSesionDelDocenteHeredaLaFacultadDeSuPrograma() {
     Usuario docente =
         usuarioRepository.saveAndFlush(
-            Usuario.crearDocente("Luis Paz", "luis@uniautonoma.edu.co", HASH, ingenieriaSoftware));
+            Usuario.crearDocente(
+                "Luis Muestra", "luis@uniautonoma.edu.co", HASH, ingenieriaSoftware));
 
     UsuarioSesion sesion = UsuarioSesion.desde(docente);
 

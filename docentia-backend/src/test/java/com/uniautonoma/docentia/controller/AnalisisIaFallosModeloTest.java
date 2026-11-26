@@ -64,7 +64,7 @@ class AnalisisIaFallosModeloTest extends PruebaIntegracion {
   void crearSolicitud() {
     Facultad ingenieria = escenario.crearFacultad("Ingeniería");
     Usuario docente =
-        escenario.crearDocente("Julian Hoyos", escenario.crearPrograma("Software", ingenieria));
+        escenario.crearDocente("Julian Prueba", escenario.crearPrograma("Software", ingenieria));
     Usuario coordinador = escenario.crearCoordinador("Marta Ruiz", ingenieria);
     PeriodoAcademico periodo =
         escenario.abrirEtapa(

@@ -37,7 +37,7 @@ capturas: [recorrido-heteroevaluacion/FLUJO.md](recorrido-heteroevaluacion/FLUJO
 
 - **Qué se evalúa.** Un formulario HETERO por (estudiante, clase, docente) en el periodo activo.
   Clase = `cod_curso` + `grupo` + `jornada` (y periodo), como viene de Campus.
-- **Grupo A y grupo B.** Son dos clases. Karen ve Zulema en A; Andrea la ve en B. El mismo
+- **Grupo A y grupo B.** Son dos clases. Sara ve Lucía en A; Andrea la ve en B. El mismo
   profesor no se “aplana” a una sola fila.
 - **Varios docentes en una clase.** Un formulario por cada uno de `docentes[]`.
 - **Unique.** AUTO y COEVAL siguen únicos en `(periodo, docente, tipo)` con `clase_id` nulo.
@@ -59,7 +59,7 @@ capturas: [recorrido-heteroevaluacion/FLUJO.md](recorrido-heteroevaluacion/FLUJO
 - **Precedencia.** Esa media reemplaza la nota ESTUDIANTES que hubiera llegado por CSV.
   El cambio queda en el historial de correcciones.
 - **Coordinación.** Ve la nota agregada y cobertura. Nunca quién puntó qué.
-- **Caso de demo.** Karen 5 en Zulema A + Andrea 3 en Zulema B = **4,00**.
+- **Caso de demo.** Sara 5 en Lucía A + Andrea 3 en Lucía B = **4,00**.
 
 ## Comentarios e IA
 
@@ -93,7 +93,7 @@ capturas: [recorrido-heteroevaluacion/FLUJO.md](recorrido-heteroevaluacion/FLUJO
   formulario, checks de tipo y unique HETERO. No se editó V25 ni anteriores.
 - **Seed.** `campus-clases-demo.json`, mismo esquema, correos de demo. Contraseña
   `Docentia2026*`. Corre aunque la base ya tenga el seed de Ingeniería/Derecho: si no,
-  Karen no existe y el login responde 401.
+  Sara no existe y el login responde 401.
 
 ## Pantalla
 

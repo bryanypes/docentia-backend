@@ -49,9 +49,9 @@ class CorreccionCalificacionTest extends PruebaIntegracion {
     ingenieria = escenario.crearFacultad("Ingeniería");
     docente =
         escenario.crearDocente(
-            "Julian Hoyos", escenario.crearPrograma("Ingeniería de Software", ingenieria));
+            "Julian Prueba", escenario.crearPrograma("Ingeniería de Software", ingenieria));
     coordinador = escenario.crearCoordinador("Marta Ruiz", ingenieria);
-    vicerrector = escenario.crearVicerrector("Elena Munoz");
+    vicerrector = escenario.crearVicerrector("Elena Ficcion");
     periodo = escenario.crearPeriodoActivo("2026-2");
   }
 
@@ -156,7 +156,7 @@ class CorreccionCalificacionTest extends PruebaIntegracion {
     calificar(coordinador, "coordinacion", "3.0", null);
     calificar(coordinador, "coordinacion", "3.5", null);
     Usuario coordinadorDerecho =
-        escenario.crearCoordinador("Paola Sarria", escenario.crearFacultad("Derecho"));
+        escenario.crearCoordinador("Paola Patrón", escenario.crearFacultad("Derecho"));
 
     mockMvc
         .perform(get(RUTA_HISTORIAL, docente.getIdUsuario()).with(como(coordinadorDerecho)))

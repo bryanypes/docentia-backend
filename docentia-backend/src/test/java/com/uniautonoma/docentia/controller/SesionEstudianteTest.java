@@ -25,7 +25,7 @@ import org.springframework.test.web.servlet.ResultActions;
 class SesionEstudianteTest extends PruebaIntegracion {
 
   private static final String CONTRASENA = "Clave-Segura-123";
-  private static final String CORREO = "karen.mancilla@prueba.co";
+  private static final String CORREO = "sara.ficha@prueba.co";
 
   @Autowired private UsuarioRepository usuarioRepository;
   @Autowired private FacultadRepository facultadRepository;
@@ -41,7 +41,7 @@ class SesionEstudianteTest extends PruebaIntegracion {
     software = programaRepository.save(new Programa("Ingeniería de Software", ingenieria));
     usuarioRepository.save(
         Usuario.crearEstudiante(
-            "Karen Mancilla", CORREO, passwordEncoder.encode(CONTRASENA), software));
+            "Sara Ficha", CORREO, passwordEncoder.encode(CONTRASENA), software));
   }
 
   @Test
