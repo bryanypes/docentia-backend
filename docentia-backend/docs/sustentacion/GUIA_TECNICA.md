@@ -9,7 +9,7 @@ El detalle de cada tema está en los documentos de `docentia-backend/docs/` que 
 |------|------------|
 | Web | React 19 con Vite, servida por nginx; nginx reenvía `/api` al backend |
 | API | Spring Boot 3.5 sobre Java 21: Web, Security (JWT HS256), Data JPA, Validation, Mail, Actuator |
-| Datos | PostgreSQL 16, esquema versionado con Flyway (36 migraciones); Hibernate solo valida |
+| Datos | PostgreSQL 16, esquema versionado con Flyway (47 migraciones, hasta V52); Hibernate solo valida |
 | PDF | OpenPDF |
 | Correo | Cola en base de datos; Mailpit en desarrollo, SMTP con TLS en producción |
 | Empaquetado | `docker-compose.yml` con cuatro servicios: `db`, `api`, `web` y `mailpit` |
