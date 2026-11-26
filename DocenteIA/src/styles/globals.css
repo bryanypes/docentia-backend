@@ -462,7 +462,7 @@ textarea.campo__control {
   }
 }
 
-/* ===== Sistema visual: movimiento, foco y superficies (alineado con la presentación) ===== */
+/* Movimiento, foco y superficies, igual que en la presentación. */
 @keyframes entrar-suave {
   from {
     opacity: 0;
