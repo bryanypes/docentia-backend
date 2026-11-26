@@ -5,7 +5,7 @@ const { chromium } = require('playwright')
 const BASE = process.env.BASE_URL ?? 'http://localhost:5173'
 const CLAVE = 'Docentia2026*'
 const COORDINACION = 'coordinacion.ingenieria'
-const DOCENTE = 'nora.munoz'
+const DOCENTE = 'nora.ficcion'
 
 let navegador
 
@@ -181,7 +181,7 @@ test('la coordinación registra la asistencia y firma el acta', async () => {
 test('el docente firma su acta en la reunión', async () => {
   const pagina = await entrar(DOCENTE)
   await pagina.click('a[href="/mi-acta"]')
-  await firmarEnModal(pagina, 'Nora Patricia Muñoz')
+  await firmarEnModal(pagina, 'Nora Patricia Ficción')
   await pagina.getByText('Firmada', { exact: true }).first().waitFor()
   const actas = await llamar(pagina, 'GET', '/actas')
   idActa = actas.datos[0].idActa
@@ -251,7 +251,7 @@ async function enviarFormulario(pagina) {
 }
 
 test('los formularios cambian la nota y el docente no ve la coevaluación', async () => {
-  const docente = await entrar('ramiro.paz')
+  const docente = await entrar('ramiro.muestra')
   await docente.click('a[href="/mi-autoevaluacion"]')
   await docente.getByText('0 de 14 ítems respondidos').waitFor()
   assert.equal(await responderTodo(docente, 5), 14)
@@ -268,10 +268,10 @@ test('los formularios cambian la nota y el docente no ve la coevaluación', asyn
   // La lista va paginada: se busca al docente por nombre.
   await coordinacion.getByPlaceholder('Buscar docente o programa').fill('Ramiro')
   await coordinacion
-    .locator('tr', { hasText: 'Ramiro Antonio Paz' })
+    .locator('tr', { hasText: 'Ramiro Antonio Muestra' })
     .locator('a[href^="/coevaluaciones/"]')
     .click()
-  await coordinacion.getByText('Coevaluación de Ramiro Antonio Paz').first().waitFor()
+  await coordinacion.getByText('Coevaluación de Ramiro Antonio Muestra').first().waitFor()
   assert.equal(await responderTodo(coordinacion, 5), 6)
   await enviarFormulario(coordinacion)
   await abrirExpediente(coordinacion, 'Ramiro')
@@ -280,7 +280,7 @@ test('los formularios cambian la nota y el docente no ve la coevaluación', asyn
   await coordinacion.getByText('Desempeño aceptable').first().waitFor()
   await coordinacion.context().close()
 
-  const otraVez = await entrar('ramiro.paz')
+  const otraVez = await entrar('ramiro.muestra')
   const propio = await llamar(otraVez, 'GET', '/expedientes/propio')
   assert.equal(propio.datos.notasPorFuente, undefined)
   const sesion = await llamar(otraVez, 'GET', '/sesiones/actual')

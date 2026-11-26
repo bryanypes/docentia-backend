@@ -40,7 +40,7 @@ class PlanSeguimientoTest extends PruebaIntegracion {
     ingenieria = escenario.crearFacultad("Ingeniería");
     coordinador = escenario.crearCoordinador("Marta Ruiz", ingenieria);
     docente =
-        escenario.crearDocente("Julian Hoyos", escenario.crearPrograma("Software", ingenieria));
+        escenario.crearDocente("Julian Prueba", escenario.crearPrograma("Software", ingenieria));
     PeriodoAcademico anterior = escenario.crearPeriodoCerrado("2026-1", LocalDate.of(2026, 2, 2));
     escenario.crearPeriodoActivo("2026-2");
     vencido =
@@ -97,7 +97,7 @@ class PlanSeguimientoTest extends PruebaIntegracion {
 
   @Test
   void respetaElAlcancePorFacultad() throws Exception {
-    Usuario otro = escenario.crearCoordinador("Paola Sarria", escenario.crearFacultad("Derecho"));
+    Usuario otro = escenario.crearCoordinador("Paola Patrón", escenario.crearFacultad("Derecho"));
 
     mockMvc
         .perform(get("/docentes/{id}/plan-seguimiento", docente.getIdUsuario()).with(como(otro)))

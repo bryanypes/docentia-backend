@@ -41,7 +41,7 @@ Se calculan en cada consulta a partir de los datos (`EstadoProcesoEvaluacion`); 
 
 ```json
 {
-  "docente": { "idDocente": 4, "nombreCompleto": "Nora Muñoz", "...": "..." },
+  "docente": { "idDocente": 4, "nombreCompleto": "Nora Ficción", "...": "..." },
   "estado": "ASISTENCIA_CONFIRMADA",
   "nombreEstado": "Asistencia confirmada",
   "paso": 5,

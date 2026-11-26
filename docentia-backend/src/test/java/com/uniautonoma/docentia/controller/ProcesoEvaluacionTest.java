@@ -80,7 +80,7 @@ class ProcesoEvaluacionTest extends PruebaIntegracion {
     ingenieria = escenario.crearFacultad("Ingeniería");
     software = escenario.crearPrograma("Software", ingenieria);
     coordinador = escenario.crearCoordinador("Marta Ruiz", ingenieria);
-    docente = escenario.crearDocente("Nora Munoz", software);
+    docente = escenario.crearDocente("Nora Ficcion", software);
     periodo =
         escenario.abrirEtapa(
             escenario.crearPeriodoActivo("2026-2"), TipoEtapa.FIRMA_ACTAS, HOY, HOY);
@@ -252,7 +252,7 @@ class ProcesoEvaluacionTest extends PruebaIntegracion {
         franjaRepository
             .saveAndFlush(
                 new FranjaHoraria(
-                    escenario.crearCoordinador("Paola Sarria", escenario.crearFacultad("Derecho")),
+                    escenario.crearCoordinador("Paola Patrón", escenario.crearFacultad("Derecho")),
                     periodo,
                     HOY.plusDays(2),
                     LocalTime.of(11, 0)))
@@ -295,7 +295,7 @@ class ProcesoEvaluacionTest extends PruebaIntegracion {
     calificarTodo("4.0");
     Long cita = agendarCita(HOY, LocalTime.of(8, 0));
     Usuario otraCoordinacion =
-        escenario.crearCoordinador("Paola Sarria", escenario.crearFacultad("Derecho"));
+        escenario.crearCoordinador("Paola Patrón", escenario.crearFacultad("Derecho"));
 
     mockMvc
         .perform(
@@ -346,7 +346,7 @@ class ProcesoEvaluacionTest extends PruebaIntegracion {
         .andExpect(jsonPath("$.tipo").value("COMPROMISO"));
     cambiarTipo(acta, TipoActa.RETROALIMENTACION).andExpect(status().isConflict());
 
-    Usuario destacado = escenario.crearDocente("Luis Paz", software);
+    Usuario destacado = escenario.crearDocente("Luis Muestra", software);
     for (FuenteEvaluacion fuente : FuenteEvaluacion.values()) {
       escenario.registrarCalificacion(destacado, periodo, fuente, "4.7");
     }
@@ -372,8 +372,8 @@ class ProcesoEvaluacionTest extends PruebaIntegracion {
     Clase clase =
         escenario.crearClase(
             periodo, escenario.crearCurso("IS101", "Programación", software), "A", docente);
-    escenario.matricular(clase, escenario.crearEstudiante("Karen Ruiz", software));
-    escenario.matricular(clase, escenario.crearEstudiante("Andrea Paz", software));
+    escenario.matricular(clase, escenario.crearEstudiante("Sara Ruiz", software));
+    escenario.matricular(clase, escenario.crearEstudiante("Andrea Muestra", software));
     calificar(FuenteEvaluacion.COORDINACION, "4.0");
 
     mockMvc

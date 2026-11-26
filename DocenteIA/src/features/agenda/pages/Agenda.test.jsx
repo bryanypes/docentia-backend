@@ -21,7 +21,7 @@ const FRANJAS = [
     horaFin: '08:30:00',
     estado: 'ABIERTA',
     reservada: true,
-    reserva: { idCita: 3, idDocente: 4, nombreDocente: 'Julián Camilo Hoyos', confirmacion: 'CONFIRMADA', asistencia: null },
+    reserva: { idCita: 3, idDocente: 4, nombreDocente: 'Julián Camilo Prueba', confirmacion: 'CONFIRMADA', asistencia: null },
   },
   {
     idFranja: 2,
@@ -50,8 +50,8 @@ describe('Agenda', () => {
   it('muestra la semana con quién reservó y si confirmó', async () => {
     renderizarConSesion(<Agenda />)
 
-    const reservada = await screen.findByRole('button', { name: /08:00–08:30: Julián Camilo Hoyos, Confirmó/ })
-    expect(reservada).toHaveTextContent('Julián Camilo Hoyos')
+    const reservada = await screen.findByRole('button', { name: /08:00–08:30: Julián Camilo Prueba, Confirmó/ })
+    expect(reservada).toHaveTextContent('Julián Camilo Prueba')
     expect(screen.getByRole('button', { name: /martes, 10 de noviembre, 08:30–09:00: Libre/ })).toBeInTheDocument()
     const estados = screen.getByRole('list', { name: 'Estado de las franjas visibles' })
     expect(estados).toHaveTextContent('1 libres')
@@ -93,7 +93,7 @@ describe('Agenda', () => {
     procesoService.registrarAsistencia.mockResolvedValue({ idCita: 3, asistencia: 'ASISTIO' })
     renderizarConSesion(<Agenda />)
 
-    await userEvent.click(await screen.findByRole('button', { name: /Julián Camilo Hoyos, Confirmó/ }))
+    await userEvent.click(await screen.findByRole('button', { name: /Julián Camilo Prueba, Confirmó/ }))
     expect(screen.getByRole('link', { name: 'Ver expediente y proceso' })).toHaveAttribute('href', '/docentes/4')
     await userEvent.click(screen.getByRole('button', { name: 'Asistió · habilitar resultado' }))
 
@@ -106,14 +106,14 @@ describe('Agenda', () => {
     agendaService.cancelarCita.mockResolvedValue({ idCita: 3, estado: 'LIBERADA' })
     renderizarConSesion(<Agenda />)
 
-    await userEvent.click(await screen.findByRole('button', { name: /Julián Camilo Hoyos, Confirmó/ }))
+    await userEvent.click(await screen.findByRole('button', { name: /Julián Camilo Prueba, Confirmó/ }))
     await userEvent.click(screen.getByRole('button', { name: 'Cambiar horario' }))
     await userEvent.selectOptions(screen.getByLabelText('Nuevo horario'), '2')
     await userEvent.click(screen.getByRole('button', { name: 'Mover la cita' }))
     expect(agendaService.reprogramarCita).toHaveBeenCalledWith(3, 2)
     expect(await screen.findByText('Cita movida. Se avisó al docente.')).toBeInTheDocument()
 
-    await userEvent.click(await screen.findByRole('button', { name: /Julián Camilo Hoyos, Confirmó/ }))
+    await userEvent.click(await screen.findByRole('button', { name: /Julián Camilo Prueba, Confirmó/ }))
     await userEvent.click(screen.getByRole('button', { name: 'Cancelar cita' }))
     const confirmacion = await screen.findByRole('dialog', { name: '¿Cancelar la cita?' })
     await userEvent.click(within(confirmacion).getByRole('button', { name: 'Cancelar cita' }))

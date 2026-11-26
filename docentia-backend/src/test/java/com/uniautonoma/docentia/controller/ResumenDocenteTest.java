@@ -37,7 +37,7 @@ class ResumenDocenteTest extends PruebaIntegracion {
   void crearDocenteYPeriodo() {
     software =
         escenario.crearPrograma("Ingeniería de Software", escenario.crearFacultad("Ingeniería"));
-    docente = escenario.crearDocente("Julian Hoyos", software);
+    docente = escenario.crearDocente("Julian Prueba", software);
     periodo = escenario.crearPeriodoActivo("2026-2");
   }
 
@@ -90,7 +90,7 @@ class ResumenDocenteTest extends PruebaIntegracion {
 
   @Test
   void veSusCompromisosVigentesYNoLosDeOtroDocente() throws Exception {
-    Usuario otroDocente = escenario.crearDocente("Diana Astaiza", software);
+    Usuario otroDocente = escenario.crearDocente("Diana Ejemplo", software);
     compromisoRepository.save(
         new Compromiso(docente, periodo, "Entregar notas a tiempo", LocalDate.of(2026, 10, 15)));
     compromisoRepository.saveAndFlush(

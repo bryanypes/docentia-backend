@@ -171,7 +171,7 @@ código. Guion: `docentia-backend/docs/sustentacion/GUION_PRUEBA_Y_DEMO.md`.
 Quedó fuera o por revisar después de la presentación:
 
 - **La semilla no trae ningún docente PARCIAL.** En la demo se crea uno en vivo con la coevaluación de
-  Óscar Chantre.
+  Óscar Modelo.
 - **Importar el CSV de ejemplo cambia a Julián** de 4,34 a 4,27, y la guía técnica dice 4,34. En la
   presentación no se importa.
 - **Anonimato.** La respuesta del estudiante guarda la asignación (clase y docente). En una clase de un

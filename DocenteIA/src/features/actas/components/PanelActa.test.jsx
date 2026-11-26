@@ -46,7 +46,7 @@ describe('PanelActa', () => {
         ...ACTA,
         firmas: [{ rol: 'COORDINADOR', nombre: 'Marta Ruiz', fecha: '2026-11-20T10:00:00', conTrazo: false }],
         identificacion: {
-          docente: 'Nora Munoz',
+          docente: 'Nora Ficcion',
           documentoRotulo: 'Código',
           documento: '1061234567',
           cargo: 'Docente del programa Software',
@@ -82,7 +82,7 @@ describe('PanelActa', () => {
 
   it('en la vista del docente no hay conteo de respuestas', async () => {
     listarActas.mockResolvedValue([
-      { ...ACTA, identificacion: { docente: 'Nora Munoz', cargo: 'Docente', periodo: '2026-2', evaluador: 'Coordinación' } },
+      { ...ACTA, identificacion: { docente: 'Nora Ficcion', cargo: 'Docente', periodo: '2026-2', evaluador: 'Coordinación' } },
     ])
     renderizarConSesion(<PanelActa />)
     const bloque = await screen.findByRole('region', { name: 'Identificación del acta' })

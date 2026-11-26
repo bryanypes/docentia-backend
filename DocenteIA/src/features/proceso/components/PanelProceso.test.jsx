@@ -9,7 +9,7 @@ import { PanelProcesoPropio } from './PanelProcesoPropio.jsx'
 vi.mock('../services/procesoService.js')
 
 const PROCESO = {
-  docente: { idDocente: 4, nombreCompleto: 'Nora Muñoz' },
+  docente: { idDocente: 4, nombreCompleto: 'Nora Ficción' },
   estado: 'ASISTENCIA_CONFIRMADA',
   paso: 5,
   fuentesPendientes: [],

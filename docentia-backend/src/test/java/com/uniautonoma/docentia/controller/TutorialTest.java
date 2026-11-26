@@ -24,7 +24,7 @@ class TutorialTest extends PruebaIntegracion {
   @BeforeEach
   void crearEscenario() {
     coordinador = escenario.crearCoordinador("Marta Ruiz", escenario.crearFacultad("Ingeniería"));
-    otro = escenario.crearVicerrector("Elena Munoz");
+    otro = escenario.crearVicerrector("Elena Ficcion");
   }
 
   @Test

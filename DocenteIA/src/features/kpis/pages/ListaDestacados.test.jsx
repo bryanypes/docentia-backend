@@ -13,8 +13,8 @@ describe('ListaDestacados', () => {
     const seguimiento = {
       datos: {
         docentes: [
-          docente(1, 'Julián Hoyos', 'Ingeniería de Software', 'COMPLETO', 4.34),
-          docente(2, 'Camilo Vidal', 'Ingeniería de Software', 'COMPLETO', 4.75),
+          docente(1, 'Julián Prueba', 'Ingeniería de Software', 'COMPLETO', 4.34),
+          docente(2, 'Camilo Ensayo', 'Ingeniería de Software', 'COMPLETO', 4.75),
           docente(3, 'Ana Parcial', 'Derecho', 'PARCIAL', 4.9),
           docente(4, 'Luis Justo', 'Derecho', 'COMPLETO', 4.5),
         ],
@@ -23,10 +23,10 @@ describe('ListaDestacados', () => {
     render(<MemoryRouter><ListaDestacados seguimiento={seguimiento} umbral={4.5} /></MemoryRouter>)
     const filas = within(screen.getByRole('table')).getAllByRole('row').slice(1)
     expect(filas.map((f) => f.textContent)).toEqual([
-      'Camilo VidalIngeniería de Software4,75Muy alto desempeño',
+      'Camilo EnsayoIngeniería de Software4,75Muy alto desempeño',
       'Luis JustoDerecho4,50Alto desempeño',
     ])
-    expect(screen.getByRole('link', { name: 'Camilo Vidal' })).toHaveAttribute('href', '/docentes/2')
+    expect(screen.getByRole('link', { name: 'Camilo Ensayo' })).toHaveAttribute('href', '/docentes/2')
   })
 
   it('sin destacados lo dice', () => {

@@ -81,7 +81,7 @@ filtro). `DOCENTE` → `403`.
   "periodo": { "idPeriodo": 2, "nombre": "2026-2" },
   "docentes": [
     {
-      "docente": { "idDocente": 4, "nombreCompleto": "Julián Camilo Hoyos", "correo": "…",
+      "docente": { "idDocente": 4, "nombreCompleto": "Julián Camilo Prueba", "correo": "…",
                    "idPrograma": 1, "nombrePrograma": "Ingeniería de Software",
                    "idFacultad": 1, "nombreFacultad": "Facultad de Ingeniería" },
       "promedio": { "estado": "COMPLETO", "valor": 4.34, "fuentesPendientes": [] }

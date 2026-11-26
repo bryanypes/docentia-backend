@@ -13,8 +13,8 @@ vi.mock('../../auth/services/authService.js')
 
 const USUARIO = {
   idUsuario: 4,
-  nombreCompleto: 'Julián Camilo Hoyos',
-  correo: 'julian.hoyos@uniautonoma.edu.co',
+  nombreCompleto: 'Julián Camilo Prueba',
+  correo: 'julian.prueba@uniautonoma.edu.co',
   rol: 'DOCENTE',
   idFacultad: 1,
   idPrograma: 2,
@@ -51,10 +51,10 @@ describe('MiPerfil', () => {
 
   it('muestra los datos propios con su programa, sin hablar de facultad', async () => {
     renderizar()
-    expect(screen.getByRole('heading', { name: 'Julián Camilo Hoyos' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Julián Camilo Prueba' })).toBeInTheDocument()
     expect(await screen.findByText('Ingeniería de Software')).toBeInTheDocument()
     expect(screen.queryByText('Facultad de Ingeniería')).not.toBeInTheDocument()
-    expect(screen.getByText('julian.hoyos@uniautonoma.edu.co')).toBeInTheDocument()
+    expect(screen.getByText('julian.prueba@uniautonoma.edu.co')).toBeInTheDocument()
   })
 
   it('cambia la contraseña en un modal sobre el perfil', async () => {

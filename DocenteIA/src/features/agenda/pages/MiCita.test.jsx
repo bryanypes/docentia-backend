@@ -11,9 +11,9 @@ vi.mock('../services/agendaService.js')
 vi.mock('../../proceso/services/procesoService.js')
 
 const DISPONIBLES = [
-  { idFranja: 1, fecha: '2026-11-09', horaInicio: '08:00:00', horaFin: '08:30:00', nombreCoordinador: 'Andrés Ordóñez' },
-  { idFranja: 2, fecha: '2026-11-09', horaInicio: '08:30:00', horaFin: '09:00:00', nombreCoordinador: 'Andrés Ordóñez' },
-  { idFranja: 3, fecha: '2026-11-12', horaInicio: '10:00:00', horaFin: '10:30:00', nombreCoordinador: 'Andrés Ordóñez' },
+  { idFranja: 1, fecha: '2026-11-09', horaInicio: '08:00:00', horaFin: '08:30:00', nombreCoordinador: 'Andrés Plantilla' },
+  { idFranja: 2, fecha: '2026-11-09', horaInicio: '08:30:00', horaFin: '09:00:00', nombreCoordinador: 'Andrés Plantilla' },
+  { idFranja: 3, fecha: '2026-11-12', horaInicio: '10:00:00', horaFin: '10:30:00', nombreCoordinador: 'Andrés Plantilla' },
 ]
 
 const CITA = { ...DISPONIBLES[0], idCita: 7, idCitaLiberada: null, confirmacion: null, asistencia: null }
@@ -47,7 +47,7 @@ describe('MiCita', () => {
     await userEvent.click(screen.getByRole('button', { name: /^Reservar 9 de nov de 2026, 08:00–08:30/ }))
 
     const modal = screen.getByRole('dialog', { name: 'Reservar cita' })
-    expect(within(modal).getByText('Andrés Ordóñez')).toBeInTheDocument()
+    expect(within(modal).getByText('Andrés Plantilla')).toBeInTheDocument()
     await userEvent.click(within(modal).getByRole('button', { name: 'Reservar' }))
     expect(agendaService.reservarFranja).toHaveBeenCalledWith(1)
     expect(await screen.findByText(/Cita reservada/)).toBeInTheDocument()

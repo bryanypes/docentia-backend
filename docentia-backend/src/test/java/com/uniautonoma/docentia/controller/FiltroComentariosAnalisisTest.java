@@ -46,7 +46,7 @@ class FiltroComentariosAnalisisTest extends PruebaIntegracion {
   void solicitarYProcesar() {
     Facultad ingenieria = escenario.crearFacultad("Ingeniería");
     julian =
-        escenario.crearDocente("Julian Hoyos", escenario.crearPrograma("Software", ingenieria));
+        escenario.crearDocente("Julian Prueba", escenario.crearPrograma("Software", ingenieria));
     coordinador = escenario.crearCoordinador("Marta Ruiz", ingenieria);
     PeriodoAcademico periodo =
         escenario.abrirEtapa(
@@ -115,7 +115,7 @@ class FiltroComentariosAnalisisTest extends PruebaIntegracion {
 
   @Test
   void elRegistroDeFiltradosRespetaRolYAlcance() throws Exception {
-    Usuario otro = escenario.crearCoordinador("Paola Sarria", escenario.crearFacultad("Derecho"));
+    Usuario otro = escenario.crearCoordinador("Paola Patrón", escenario.crearFacultad("Derecho"));
 
     mockMvc
         .perform(

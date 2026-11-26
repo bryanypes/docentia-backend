@@ -53,7 +53,7 @@ class CitasVerificablesTest extends PruebaIntegracion {
   void generarBorrador() throws Exception {
     Facultad ingenieria = escenario.crearFacultad("Ingeniería");
     julian =
-        escenario.crearDocente("Julian Hoyos", escenario.crearPrograma("Software", ingenieria));
+        escenario.crearDocente("Julian Prueba", escenario.crearPrograma("Software", ingenieria));
     coordinador = escenario.crearCoordinador("Marta Ruiz", ingenieria);
     periodo =
         escenario.abrirEtapa(
@@ -160,7 +160,7 @@ class CitasVerificablesTest extends PruebaIntegracion {
 
   @Test
   void validarRespetaRolYAlcanceSinEsperarLaVentanaDeRevision() throws Exception {
-    Usuario otro = escenario.crearCoordinador("Paola Sarria", escenario.crearFacultad("Derecho"));
+    Usuario otro = escenario.crearCoordinador("Paola Patrón", escenario.crearFacultad("Derecho"));
 
     mockMvc
         .perform(post("/analisis-ia/hallazgos/{id}/validacion", hallazgo(0)).with(como(otro)))

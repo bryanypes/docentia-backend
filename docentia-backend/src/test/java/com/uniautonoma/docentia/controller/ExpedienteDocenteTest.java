@@ -42,7 +42,7 @@ class ExpedienteDocenteTest extends PruebaIntegracion {
     derecho = escenario.crearFacultad("Derecho");
     docente =
         escenario.crearDocente(
-            "Julian Hoyos", escenario.crearPrograma("Ingeniería de Software", ingenieria));
+            "Julian Prueba", escenario.crearPrograma("Ingeniería de Software", ingenieria));
     periodoActivo = escenario.crearPeriodoActivo("2026-2");
   }
 
@@ -57,7 +57,7 @@ class ExpedienteDocenteTest extends PruebaIntegracion {
 
     consultarComoCoordinador()
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$.docente.nombreCompleto").value("Julian Hoyos"))
+        .andExpect(jsonPath("$.docente.nombreCompleto").value("Julian Prueba"))
         .andExpect(jsonPath("$.periodo.nombre").value("2026-2"))
         .andExpect(jsonPath("$.notasPorFuente[0].fuente").value("ESTUDIANTES"))
         .andExpect(jsonPath("$.notasPorFuente[0].nota").doesNotExist())
@@ -193,12 +193,12 @@ class ExpedienteDocenteTest extends PruebaIntegracion {
         textoDelReporte(
             get("/expedientes/reporte/pdf").with(comoCoordinador(ingenieria.getIdFacultad())));
     assertThat(coordinacion)
-        .contains("Julian Hoyos")
+        .contains("Julian Prueba")
         .doesNotContain("Pedro Lara")
         .doesNotContain("2.2");
 
     String vicerrectoria = textoDelReporte(get("/expedientes/reporte/pdf").with(comoVicerrector()));
-    assertThat(vicerrectoria).contains("Julian Hoyos").contains("Pedro Lara");
+    assertThat(vicerrectoria).contains("Julian Prueba").contains("Pedro Lara");
   }
 
   private String textoDelReporte(org.springframework.test.web.servlet.RequestBuilder peticion)
@@ -239,7 +239,7 @@ class ExpedienteDocenteTest extends PruebaIntegracion {
     lector.close();
     assertThat(texto)
         .contains("Reporte consolidado de evaluación docente")
-        .contains("Julian Hoyos")
+        .contains("Julian Prueba")
         .contains("4.0")
         .contains("3.5")
         .contains("4.5")

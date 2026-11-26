@@ -40,7 +40,7 @@ class UsuarioControllerTest extends PruebaIntegracion {
     ingenieria = escenario.crearFacultad("Ingeniería");
     derecho = escenario.crearFacultad("Derecho");
     software = escenario.crearPrograma("Ingeniería de Software", ingenieria);
-    escenario.crearDocente("Luisa Mosquera", escenario.crearPrograma("Derecho", derecho));
+    escenario.crearDocente("Luisa Simulacro", escenario.crearPrograma("Derecho", derecho));
   }
 
   @Test
@@ -136,7 +136,7 @@ class UsuarioControllerTest extends PruebaIntegracion {
 
   @Test
   void editarCambiaElRolYElVinculoSinTocarLaContrasena() throws Exception {
-    Usuario docente = escenario.crearDocente("Julian Hoyos", software);
+    Usuario docente = escenario.crearDocente("Julian Prueba", software);
 
     mockMvc
         .perform(
@@ -146,7 +146,7 @@ class UsuarioControllerTest extends PruebaIntegracion {
                 .content(
                     aJson(
                         new UsuarioRequest(
-                            "Julian Hoyos",
+                            "Julian Prueba",
                             docente.getCorreo(),
                             Rol.COORDINADOR,
                             derecho.getIdFacultad(),
@@ -159,7 +159,7 @@ class UsuarioControllerTest extends PruebaIntegracion {
 
     mockMvc
         .perform(get("/usuarios").param("rol", "COORDINADOR").with(comoAdministrador()))
-        .andExpect(jsonPath("$[*].nombreCompleto", contains("Julian Hoyos")));
+        .andExpect(jsonPath("$[*].nombreCompleto", contains("Julian Prueba")));
   }
 
   @Test
@@ -175,13 +175,13 @@ class UsuarioControllerTest extends PruebaIntegracion {
 
   @Test
   void soloElVicerrectorAdministraUsuarios() throws Exception {
-    Usuario docente = escenario.crearDocente("Julian Hoyos", software);
+    Usuario docente = escenario.crearDocente("Julian Prueba", software);
     RequestPostProcessor coordinador = comoCoordinador(ingenieria.getIdFacultad());
 
     mockMvc.perform(get("/usuarios").with(coordinador)).andExpect(status().isForbidden());
     mockMvc.perform(get("/usuarios").with(como(docente))).andExpect(status().isForbidden());
     mockMvc
-        .perform(get("/usuarios").with(como(escenario.crearEstudiante("Karen Mancilla", software))))
+        .perform(get("/usuarios").with(como(escenario.crearEstudiante("Sara Ficha", software))))
         .andExpect(status().isForbidden());
     mockMvc
         .perform(
@@ -198,7 +198,7 @@ class UsuarioControllerTest extends PruebaIntegracion {
   void elUsuarioCreadoIniciaSesionYSuAlcanceViajaEnElToken() throws Exception {
     crear(solicitud("coord@prueba.co", Rol.COORDINADOR, ingenieria.getIdFacultad(), null))
         .andExpect(status().isCreated());
-    escenario.crearDocente("Julian Hoyos", software);
+    escenario.crearDocente("Julian Prueba", software);
 
     String cuerpo =
         mockMvc
@@ -234,7 +234,7 @@ class UsuarioControllerTest extends PruebaIntegracion {
             get("/docentes")
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + sesion.get("token").asText()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$[*].nombreCompleto", contains("Julian Hoyos")));
+        .andExpect(jsonPath("$[*].nombreCompleto", contains("Julian Prueba")));
   }
 
   private ResultActions crear(UsuarioRequest solicitud) throws Exception {

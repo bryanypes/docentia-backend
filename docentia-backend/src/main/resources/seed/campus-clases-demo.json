@@ -24,14 +24,14 @@
   ],
   "personas": [
     {
-      "correo": "zulema.leon@uniautonoma.edu.co",
-      "nombres": "Zulema Yidney",
-      "apellidos": "León Escobar",
+      "correo": "lucia.prototipo@uniautonoma.edu.co",
+      "nombres": "Lucía Fernanda",
+      "apellidos": "Prototipo Esquema",
       "programa": "CU027",
       "roles": [
         {
           "rol": "Docente",
-          "codigo": "D-17090",
+          "codigo": "D-90001",
           "es_facultad": false,
           "clases": [
             {
@@ -43,10 +43,10 @@
               "jornada": "S001",
               "docentes": [
                 {
-                  "codigo": "D-17090",
-                  "correo": "zulema.leon@uniautonoma.edu.co",
-                  "nombres": "Zulema Yidney",
-                  "apellidos": "León Escobar"
+                  "codigo": "D-90001",
+                  "correo": "lucia.prototipo@uniautonoma.edu.co",
+                  "nombres": "Lucía Fernanda",
+                  "apellidos": "Prototipo Esquema"
                 }
               ],
               "num_estudiantes": 1
@@ -60,10 +60,10 @@
               "jornada": "S001",
               "docentes": [
                 {
-                  "codigo": "D-17090",
-                  "correo": "zulema.leon@uniautonoma.edu.co",
-                  "nombres": "Zulema Yidney",
-                  "apellidos": "León Escobar"
+                  "codigo": "D-90001",
+                  "correo": "lucia.prototipo@uniautonoma.edu.co",
+                  "nombres": "Lucía Fernanda",
+                  "apellidos": "Prototipo Esquema"
                 }
               ],
               "num_estudiantes": 1
@@ -73,14 +73,14 @@
       ]
     },
     {
-      "correo": "martin.valencia@uniautonoma.edu.co",
-      "nombres": "Martín José",
-      "apellidos": "Valencia Gutiérrez",
+      "correo": "tomas.replica@uniautonoma.edu.co",
+      "nombres": "Tomás Eduardo",
+      "apellidos": "Réplica Copia",
       "programa": "CU027",
       "roles": [
         {
           "rol": "Docente",
-          "codigo": "D-0355",
+          "codigo": "D-90002",
           "es_facultad": false,
           "clases": [
             {
@@ -92,10 +92,10 @@
               "jornada": "S001",
               "docentes": [
                 {
-                  "codigo": "D-0355",
-                  "correo": "martin.valencia@uniautonoma.edu.co",
-                  "nombres": "Martín José",
-                  "apellidos": "Valencia Gutiérrez"
+                  "codigo": "D-90002",
+                  "correo": "tomas.replica@uniautonoma.edu.co",
+                  "nombres": "Tomás Eduardo",
+                  "apellidos": "Réplica Copia"
                 }
               ],
               "num_estudiantes": 1
@@ -105,14 +105,14 @@
       ]
     },
     {
-      "correo": "francisco.ramirez@uniautonoma.edu.co",
-      "nombres": "Francisco Javier",
-      "apellidos": "Ramírez Ante",
+      "correo": "gabriel.calco@uniautonoma.edu.co",
+      "nombres": "Gabriel Andrés",
+      "apellidos": "Calco Duplo",
       "programa": "CU027",
       "roles": [
         {
           "rol": "Docente",
-          "codigo": "D-1501",
+          "codigo": "D-90003",
           "es_facultad": false,
           "clases": [
             {
@@ -124,10 +124,10 @@
               "jornada": "S001",
               "docentes": [
                 {
-                  "codigo": "D-1501",
-                  "correo": "francisco.ramirez@uniautonoma.edu.co",
-                  "nombres": "Francisco Javier",
-                  "apellidos": "Ramírez Ante"
+                  "codigo": "D-90003",
+                  "correo": "gabriel.calco@uniautonoma.edu.co",
+                  "nombres": "Gabriel Andrés",
+                  "apellidos": "Calco Duplo"
                 }
               ],
               "num_estudiantes": 1
@@ -137,14 +137,14 @@
       ]
     },
     {
-      "correo": "karen.mancilla@uniautonoma.edu.co",
-      "nombres": "Karen Verónica",
-      "apellidos": "Mancilla Solarte",
+      "correo": "sara.ficha@uniautonoma.edu.co",
+      "nombres": "Sara Isabel",
+      "apellidos": "Ficha Molde",
       "programa": "CU027",
       "roles": [
         {
           "rol": "Estudiante",
-          "codigo": "E-18764",
+          "codigo": "E-90001",
           "es_facultad": false,
           "clases": [
             {
@@ -156,10 +156,10 @@
               "jornada": "S001",
               "docentes": [
                 {
-                  "codigo": "D-0355",
-                  "correo": "martin.valencia@uniautonoma.edu.co",
-                  "nombres": "Martín José",
-                  "apellidos": "Valencia Gutiérrez"
+                  "codigo": "D-90002",
+                  "correo": "tomas.replica@uniautonoma.edu.co",
+                  "nombres": "Tomás Eduardo",
+                  "apellidos": "Réplica Copia"
                 }
               ]
             },
@@ -172,10 +172,10 @@
               "jornada": "S001",
               "docentes": [
                 {
-                  "codigo": "D-17090",
-                  "correo": "zulema.leon@uniautonoma.edu.co",
-                  "nombres": "Zulema Yidney",
-                  "apellidos": "León Escobar"
+                  "codigo": "D-90001",
+                  "correo": "lucia.prototipo@uniautonoma.edu.co",
+                  "nombres": "Lucía Fernanda",
+                  "apellidos": "Prototipo Esquema"
                 }
               ]
             },
@@ -188,10 +188,10 @@
               "jornada": "S001",
               "docentes": [
                 {
-                  "codigo": "D-1501",
-                  "correo": "francisco.ramirez@uniautonoma.edu.co",
-                  "nombres": "Francisco Javier",
-                  "apellidos": "Ramírez Ante"
+                  "codigo": "D-90003",
+                  "correo": "gabriel.calco@uniautonoma.edu.co",
+                  "nombres": "Gabriel Andrés",
+                  "apellidos": "Calco Duplo"
                 }
               ]
             }
@@ -200,14 +200,14 @@
       ]
     },
     {
-      "correo": "andrea.nieto@uniautonoma.edu.co",
+      "correo": "daniela.maqueta@uniautonoma.edu.co",
       "nombres": "Andrea",
       "apellidos": "Nieto",
       "programa": "CU027",
       "roles": [
         {
           "rol": "Estudiante",
-          "codigo": "E-18765",
+          "codigo": "E-90002",
           "es_facultad": false,
           "clases": [
             {
@@ -219,10 +219,10 @@
               "jornada": "S001",
               "docentes": [
                 {
-                  "codigo": "D-17090",
-                  "correo": "zulema.leon@uniautonoma.edu.co",
-                  "nombres": "Zulema Yidney",
-                  "apellidos": "León Escobar"
+                  "codigo": "D-90001",
+                  "correo": "lucia.prototipo@uniautonoma.edu.co",
+                  "nombres": "Lucía Fernanda",
+                  "apellidos": "Prototipo Esquema"
                 }
               ]
             }

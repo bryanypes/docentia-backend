@@ -55,13 +55,13 @@ guarda `codigo` (`CU027`) y el nombre.
 
 ```json
 {
-  "correo": "karen.mancilla@uniautonoma.edu.co",
-  "nombres": "Karen Verónica",
-  "apellidos": "Mancilla Solarte",
+  "correo": "sara.ficha@uniautonoma.edu.co",
+  "nombres": "Sara Isabel",
+  "apellidos": "Ficha Molde",
   "roles": [
     {
       "rol": "Estudiante",
-      "codigo": "E-18764",
+      "codigo": "E-90001",
       "es_facultad": false,
       "clases": [
         {
@@ -73,10 +73,10 @@ guarda `codigo` (`CU027`) y el nombre.
           "jornada": "S001",
           "docentes": [
             {
-              "codigo": "D-0355",
-              "correo": "martin.valencia@uniautonoma.edu.co",
-              "nombres": "Martín José",
-              "apellidos": "Valencia Gutiérrez"
+              "codigo": "D-90002",
+              "correo": "tomas.replica@uniautonoma.edu.co",
+              "nombres": "Tomás Eduardo",
+              "apellidos": "Réplica Copia"
             }
           ]
         }
@@ -96,13 +96,13 @@ No se persisten `documento`, `persona_id`, `usuario_id` ni `correo_generico` (Le
 
 ```json
 {
-  "correo": "zulema.leon@uniautonoma.edu.co",
-  "nombres": "Zulema Yidney",
-  "apellidos": "León Escobar",
+  "correo": "lucia.prototipo@uniautonoma.edu.co",
+  "nombres": "Lucía Fernanda",
+  "apellidos": "Prototipo Esquema",
   "roles": [
     {
       "rol": "Docente",
-      "codigo": "D-17090",
+      "codigo": "D-90001",
       "es_facultad": false,
       "clases": [
         {
@@ -114,10 +114,10 @@ No se persisten `documento`, `persona_id`, `usuario_id` ni `correo_generico` (Le
           "jornada": "S001",
           "docentes": [
             {
-              "codigo": "D-17090",
-              "correo": "zulema.leon@uniautonoma.edu.co",
-              "nombres": "Zulema Yidney",
-              "apellidos": "León Escobar"
+              "codigo": "D-90001",
+              "correo": "lucia.prototipo@uniautonoma.edu.co",
+              "nombres": "Lucía Fernanda",
+              "apellidos": "Prototipo Esquema"
             }
           ],
           "num_estudiantes": 13
@@ -131,10 +131,10 @@ No se persisten `documento`, `persona_id`, `usuario_id` ni `correo_generico` (Le
           "jornada": "S001",
           "docentes": [
             {
-              "codigo": "D-17090",
-              "correo": "zulema.leon@uniautonoma.edu.co",
-              "nombres": "Zulema Yidney",
-              "apellidos": "León Escobar"
+              "codigo": "D-90001",
+              "correo": "lucia.prototipo@uniautonoma.edu.co",
+              "nombres": "Lucía Fernanda",
+              "apellidos": "Prototipo Esquema"
             }
           ],
           "num_estudiantes": 20
@@ -251,15 +251,15 @@ Contraseña de las cuentas nuevas: `Docentia2026*`.
 
 | Correo | Rol | Qué permite probar |
 |--------|-----|--------------------|
-| `karen.mancilla@uniautonoma.edu.co` | Estudiante CU027 | Tres clases: Martín (E), Zulema (A) y Francisco (A) |
-| `andrea.nieto@uniautonoma.edu.co` | Estudiante CU027 | Solo ve a Zulema en el **grupo B** (misma asignatura, otra clase) |
-| `zulema.leon@uniautonoma.edu.co` | Docente | Dos grupos del mismo curso; su nota `ESTUDIANTES` agrega A y B |
-| `martin.valencia@uniautonoma.edu.co` | Docente | Una clase |
-| `francisco.ramirez@uniautonoma.edu.co` | Docente | Electiva I, grupo A |
+| `sara.ficha@uniautonoma.edu.co` | Estudiante CU027 | Tres clases: Martín (E), Lucía (A) y Francisco (A) |
+| `daniela.maqueta@uniautonoma.edu.co` | Estudiante CU027 | Solo ve a Lucía en el **grupo B** (misma asignatura, otra clase) |
+| `lucia.prototipo@uniautonoma.edu.co` | Docente | Dos grupos del mismo curso; su nota `ESTUDIANTES` agrega A y B |
+| `tomas.replica@uniautonoma.edu.co` | Docente | Una clase |
+| `gabriel.calco@uniautonoma.edu.co` | Docente | Electiva I, grupo A |
 | `coordinacion.finanzas@uniautonoma.edu.co` | Coordinador FC001 | Cobertura y promedio; no ve puntajes individuales |
 
-Recorrido feliz: Karen envía 5 en las dos clases → Martín queda en 5; Andrea envía 3 a Zulema B
-y Karen envía 5 a Zulema A → nota de Zulema = 4,00. El CSV no debe aceptar notas nuevas.
+Recorrido feliz: Sara envía 5 en las dos clases → Martín queda en 5; Daniela envía 3 a Lucía B
+y Sara envía 5 a Lucía A → nota de Lucía = 4,00. El CSV no debe aceptar notas nuevas.
 
 ## Códigos HTTP
 

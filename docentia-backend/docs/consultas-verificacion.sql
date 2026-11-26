@@ -70,11 +70,11 @@ where lower(correo) in (
     'coordinacion.ingenieria@uniautonoma.edu.co',
     'coordinacion.derecho@uniautonoma.edu.co',
     'coordinacion.finanzas@uniautonoma.edu.co',
-    'julian.hoyos@uniautonoma.edu.co',
-    'diana.astaiza@uniautonoma.edu.co',
-    'nora.munoz@uniautonoma.edu.co',
-    'camilo.vidal@uniautonoma.edu.co',
-    'ramiro.paz@uniautonoma.edu.co',
+    'julian.prueba@uniautonoma.edu.co',
+    'diana.ejemplo@uniautonoma.edu.co',
+    'nora.ficcion@uniautonoma.edu.co',
+    'camilo.ensayo@uniautonoma.edu.co',
+    'ramiro.muestra@uniautonoma.edu.co',
     'laura.demo@uniautonoma.edu.co'
 ) or lower(correo) like 'estudiante.demo%@uniautonoma.edu.co';
 

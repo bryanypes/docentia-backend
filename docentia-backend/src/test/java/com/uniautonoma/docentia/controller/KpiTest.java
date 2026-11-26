@@ -34,11 +34,11 @@ class KpiTest extends PruebaIntegracion {
     ingenieria = escenario.crearFacultad("Ingeniería");
     derecho = escenario.crearFacultad("Derecho");
     julian =
-        escenario.crearDocente("Julian Hoyos", escenario.crearPrograma("Software", ingenieria));
+        escenario.crearDocente("Julian Prueba", escenario.crearPrograma("Software", ingenieria));
     Usuario diana =
-        escenario.crearDocente("Diana Astaiza", escenario.crearPrograma("Electrónica", ingenieria));
+        escenario.crearDocente("Diana Ejemplo", escenario.crearPrograma("Electrónica", ingenieria));
     Usuario luisa =
-        escenario.crearDocente("Luisa Mosquera", escenario.crearPrograma("Derecho", derecho));
+        escenario.crearDocente("Luisa Simulacro", escenario.crearPrograma("Derecho", derecho));
     anterior = escenario.crearPeriodoCerrado("2026-1", LocalDate.of(2026, 2, 2));
     activo = escenario.crearPeriodoActivo("2026-2");
 

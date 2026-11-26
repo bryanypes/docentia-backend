@@ -32,8 +32,8 @@ class DocenteControllerTest extends PruebaIntegracion {
     derecho = escenario.crearFacultad("Derecho");
     Programa software = escenario.crearPrograma("Ingeniería de Software", ingenieria);
     programaDerecho = escenario.crearPrograma("Derecho", derecho);
-    docenteIngenieria = escenario.crearDocente("Julian Hoyos", software);
-    docenteDerecho = escenario.crearDocente("Luisa Mosquera", programaDerecho);
+    docenteIngenieria = escenario.crearDocente("Julian Prueba", software);
+    docenteDerecho = escenario.crearDocente("Luisa Simulacro", programaDerecho);
   }
 
   @Test
@@ -41,7 +41,7 @@ class DocenteControllerTest extends PruebaIntegracion {
     mockMvc
         .perform(get("/docentes").with(comoCoordinador(ingenieria.getIdFacultad())))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$[*].nombreCompleto", contains("Julian Hoyos")));
+        .andExpect(jsonPath("$[*].nombreCompleto", contains("Julian Prueba")));
   }
 
   @Test
@@ -52,7 +52,7 @@ class DocenteControllerTest extends PruebaIntegracion {
                 .param("idFacultad", derecho.getIdFacultad().toString())
                 .with(comoCoordinador(ingenieria.getIdFacultad())))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$[*].nombreCompleto", contains("Julian Hoyos")));
+        .andExpect(jsonPath("$[*].nombreCompleto", contains("Julian Prueba")));
   }
 
   @Test
@@ -90,7 +90,7 @@ class DocenteControllerTest extends PruebaIntegracion {
     mockMvc
         .perform(get("/docentes").with(comoVicerrector()))
         .andExpect(status().isOk())
-        .andExpect(jsonPath("$[*].nombreCompleto", contains("Julian Hoyos", "Luisa Mosquera")));
+        .andExpect(jsonPath("$[*].nombreCompleto", contains("Julian Prueba", "Luisa Simulacro")));
 
     mockMvc
         .perform(get("/docentes/{id}", docenteDerecho.getIdUsuario()).with(comoVicerrector()))

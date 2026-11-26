@@ -27,7 +27,7 @@ docker compose up --build -d
 | Correos (Mailpit) | <http://localhost:8025> |
 
 Los usuarios de demo están en `docentia-backend/README.md`; su contraseña es `Docentia2026*`. Para
-el flujo de actas, entra con `coordinacion.ingenieria@uniautonoma.edu.co` y `nora.munoz@uniautonoma.edu.co`,
+el flujo de actas, entra con `coordinacion.ingenieria@uniautonoma.edu.co` y `nora.ficcion@uniautonoma.edu.co`,
 y para correcciones con `vicerrectoria@uniautonoma.edu.co`. Para la evaluación de estudiantes, `estudiante.demo5@uniautonoma.edu.co`
 (dos evaluaciones pendientes) y la docente `laura.demo@uniautonoma.edu.co`. Estas cuentas existen solo
 en el perfil de desarrollo.

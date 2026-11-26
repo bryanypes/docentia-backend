@@ -27,7 +27,7 @@ base de desarrollo" en el README del backend). Contraseña de los usuarios de de
       "Franjas abiertas: 2. Omitidas: 1." con el motivo.
 - [ ] **Alcance:** `/docentes/7` (docente de Derecho) → no encontrado.
 
-## 2. Docente — `julian.hoyos@uniautonoma.edu.co`
+## 2. Docente — `julian.prueba@uniautonoma.edu.co`
 
 - [ ] **Mi cita:** reservar la primera franja; reservar otra → confirmación de que la anterior se
       liberará → "Tu cita anterior quedó liberada."

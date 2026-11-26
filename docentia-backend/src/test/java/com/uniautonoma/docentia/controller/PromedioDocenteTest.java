@@ -32,7 +32,7 @@ class PromedioDocenteTest extends PruebaIntegracion {
   void crearDocenteYPeriodo() {
     docente =
         escenario.crearDocente(
-            "Julian Hoyos",
+            "Julian Prueba",
             escenario.crearPrograma(
                 "Ingeniería de Software", escenario.crearFacultad("Ingeniería")));
     periodo = escenario.crearPeriodoActivo("2026-2");
