@@ -102,7 +102,7 @@ public class GeneradorPdfActa {
     }
   }
 
-  /** Texto canónico del acta: lo que el hash de contenido garantiza. */
+  /** Texto canónico del acta: lo que cubre el hash del contenido. */
   public String contenidoCanonico(Acta acta, String codigo) {
     String compromisos =
         acta.getCompromisos().stream()
